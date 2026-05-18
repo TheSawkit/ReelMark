@@ -99,7 +99,7 @@ export default async function RootLayout({
                     </a>
                     <Navbar />
                     <CinemaSpotlightWrapper />
-                    <main id="main-content" className="pt-12" style={{ paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)', paddingTop: 'calc(4rem + env(safe-area-inset-top))' }}>
+                    <main id="main-content" className="pt-12" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top))' }}>
                         {children}
                     </main>
                     <footer className="border-t border-border-subtle mt-auto py-8 text-center text-sm text-muted">

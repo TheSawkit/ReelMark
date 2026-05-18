@@ -50,7 +50,6 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
                     paddingLeft: "env(safe-area-inset-left)",
                     paddingRight: "env(safe-area-inset-right)",
                     paddingTop: "env(safe-area-inset-top)",
-                    width: "calc(100% - env(safe-area-inset-left) - env(safe-area-inset-right))",
                 }}
             >
                 <div className="mx-auto max-w-7xl px-6 lg:px-12">
@@ -154,11 +153,11 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 
                 <div
                     className={cn(
-                        "overflow-hidden transition-all duration-(--duration-base) ease-in-out safe-area-inset-left safe-area-inset-right",
+                        "overflow-hidden transition-all duration-(--duration-base) ease-in-out",
                         isMediaBarActive ? "max-h-12 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
                     )}
                 >
-                    <div className="mx-auto max-w-7xl px-12 h-12 flex items-center gap-2 border-t border-border/20">
+                    <div className="mx-auto max-w-7xl px-6 md:px-12 h-12 flex items-center gap-2 border-t border-border/20">
                         <button
                             onClick={() => router.back()}
                             className="h-8 w-8 shrink-0 flex items-center justify-center rounded-full hover:bg-surface-2/50 text-text transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
