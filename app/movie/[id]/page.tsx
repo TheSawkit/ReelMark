@@ -17,16 +17,9 @@ import { formatDate } from "@/lib/format"
 import { CommunityRating } from "@/components/media/CommunityRating"
 import { PublicReviewsSection } from "@/components/media/PublicReviewsSection"
 import { WatchProviders } from "@/components/media/WatchProviders"
+import { MediaActionsBar } from "@/components/media/MediaActionsBar"
 import type { MoviePageProps } from "@/types/pages"
 
-/**
- * Generates metadata for movie detail page for SEO and social sharing.
- * Fetches movie data and constructs OpenGraph and Twitter card information.
- *
- * @param props - Route parameters
- * @param props.params - Promise resolving to { id: string } movie ID
- * @returns Metadata object with title, description, OpenGraph, and Twitter card data
- */
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
   const movieId = parseInt(id)
@@ -136,31 +129,32 @@ export default async function MoviePage(props: MoviePageProps) {
             )}
           </div>
         }
-        stickyActions={
-          <div className="flex items-center gap-2">
-            {!isWatched && (
-              <WatchButton
-                mediaId={movieDetails.id}
-                mediaTitle={movieDetails.title}
-                mediaType="movie"
-                posterPath={movieDetails.poster_path}
-                status="to_watch"
-                initialActive={watchlistEntry?.status === "to_watch"}
-              />
-            )}
-            <WatchButton
-              mediaId={movieDetails.id}
-              mediaTitle={movieDetails.title}
-              mediaType="movie"
-              posterPath={movieDetails.poster_path}
-              status="watched"
-              initialActive={isWatched}
-              fallbackStatus="to_watch"
-              releaseDate={movieDetails.release_date}
-            />
-          </div>
-        }
       />
+
+      <MediaActionsBar>
+        {!isWatched && (
+          <WatchButton
+            mediaId={movieDetails.id}
+            mediaTitle={movieDetails.title}
+            mediaType="movie"
+            posterPath={movieDetails.poster_path}
+            status="to_watch"
+            variant="responsive"
+            initialActive={watchlistEntry?.status === "to_watch"}
+          />
+        )}
+        <WatchButton
+          mediaId={movieDetails.id}
+          mediaTitle={movieDetails.title}
+          mediaType="movie"
+          posterPath={movieDetails.poster_path}
+          status="watched"
+          variant="responsive"
+          initialActive={isWatched}
+          fallbackStatus="to_watch"
+          releaseDate={movieDetails.release_date}
+        />
+      </MediaActionsBar>
 
       <div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16">
         <MediaDescription description={movieDetails.overview} />

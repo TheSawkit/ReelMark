@@ -75,6 +75,38 @@ export function WatchButton({
 
     const Icon = isPending ? Loader2 : error ? XCircle : active ? Check : status === "watched" ? Eye : Plus
 
+    if (variant === "responsive") {
+        return (
+            <>
+                <button
+                    onClick={handleClick}
+                    disabled={isPending}
+                    aria-label={status === "watched" ? t.movie.markAsWatched : t.movie.addToList}
+                    className={cn(
+                        "h-12 w-12 md:h-auto md:w-auto md:min-h-11 md:px-4 md:py-2.5",
+                        "rounded-full md:rounded-lg",
+                        "flex items-center justify-center gap-2 shrink-0",
+                        "backdrop-blur-2xl border text-sm font-semibold",
+                        "transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                        active
+                            ? "bg-primary/50 text-white border-white/10 shadow-glow-red"
+                            : "bg-white/15 text-text border-white/10 hover:bg-white/25 hover:text-text shadow-card-sm"
+                    )}
+                >
+                    <Icon className={cn("h-4 w-4 shrink-0", isPending && "animate-spin")} />
+                    <span className="hidden md:inline">
+                        {error
+                            ? t.common.actionError
+                            : active
+                                ? status === "watched" ? t.movie.watched : t.movie.added
+                                : status === "watched" ? t.movie.markAsWatched : t.movie.addToList}
+                    </span>
+                </button>
+                {reviewDialog}
+            </>
+        )
+    }
+
     if (variant === "full") {
         return (
             <>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { getImageUrl } from "@/lib/tmdb/images"
@@ -9,25 +9,12 @@ import { Star, Clock, Calendar, ArrowLeft } from "lucide-react"
 import { useTranslation } from "@/lib/i18n/context"
 import { getLocale } from "@/lib/i18n/utils"
 import { formatDate, formatRuntime } from "@/lib/format"
-import { cn } from "@/lib/utils"
 import { useDominantColor } from "@/hooks/useDominantColor"
+import { mediaHeaderStore } from "@/lib/media-header-store"
 
 /**
- * Large hero banner component displaying media details with parallax backdrop effect.
- * Shows title, poster, metadata badges, and action buttons in a sticky header on scroll.
- *
- * @param props - MediaBannerProps configuration
- * @param props.title - Media title
- * @param props.tagline - Optional tagline or motto
- * @param props.backdropUrl - Full backdrop image URL for parallax background
- * @param props.posterPath - Poster image path
- * @param props.voteAverage - IMDb-style rating score
- * @param props.releaseDate - Release/air date
- * @param props.runtime - Duration in minutes for movies or minutes per episode for TV
- * @param props.certification - Content rating (PG, R, etc.)
- * @param props.genres - Array of genre objects with id and name
- * @param props.actions - Optional React nodes for action buttons (WatchButton, etc.)
- * @returns Hero banner with scroll-aware sticky header
+ * Large hero banner displaying media details with parallax backdrop.
+ * Feeds title and scroll state into mediaHeaderStore for NavbarClient and MediaActionsBar.
  */
 export function MediaBanner({
     title,
@@ -40,107 +27,53 @@ export function MediaBanner({
     certification,
     genres,
     actions,
-    stickyActions,
 }: MediaBannerProps) {
     const { t, lang } = useTranslation()
     const locale = getLocale(lang)
     const router = useRouter()
-    const [scrolled, setScrolled] = useState(false)
     const bottomRef = useRef<HTMLDivElement>(null)
     const dominantColor = useDominantColor(backdropUrl)
+
+    useEffect(() => {
+        mediaHeaderStore.setMedia(title)
+        return () => mediaHeaderStore.clear()
+    }, [title])
 
     useEffect(() => {
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
-                    setScrolled(false)
+                    mediaHeaderStore.setScrolled(false)
                 } else if (window.scrollY > 0) {
-                    setScrolled(true)
+                    mediaHeaderStore.setScrolled(true)
                 }
             },
             { threshold: 0, rootMargin: "-64px 0px 0px 0px" }
         )
 
-        const currentRef = bottomRef.current
-        if (currentRef) {
-            observer.observe(currentRef)
-        }
-
-        return () => {
-            if (currentRef) observer.unobserve(currentRef)
-        }
+        const el = bottomRef.current
+        if (el) observer.observe(el)
+        return () => { if (el) observer.unobserve(el) }
     }, [])
 
     return (
-        <>
-            <div
-                className="fixed inset-x-0 top-0 w-full -z-30 pointer-events-none"
-                style={{
-                    height: 'calc(6rem + env(safe-area-inset-top))',
-                    backgroundColor: dominantColor || "var(--color-background)",
-                    transition: 'background-color 300ms ease-out'
-                }}
-            />
-
-            <div className={cn(
-                "fixed top-16 inset-x-0 z-40 transition-all duration-(--duration-base) ease-in-out",
-                scrolled ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
-            )}>
-                <div className="bg-surface/30 backdrop-blur-3xl backdrop-saturate-150 border-b border-border/10 shadow-card">
-                    <div className="container mx-auto px-3 sm:px-4 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
-                        <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                            <button
-                                onClick={() => router.back()}
-                                aria-label={t.common.goBack}
-                                className="h-11 w-11 shrink-0 flex items-center justify-center rounded-full bg-surface/10 hover:bg-surface/20 text-text transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                            >
-                                <ArrowLeft className="h-5 w-5" />
-                            </button>
-                            <div className="relative h-12 w-8 sm:h-14 sm:w-10 rounded overflow-hidden shrink-0 border border-border/10 shadow-card-xs hidden xs:block">
-                                <Image
-                                    src={getImageUrl(posterPath, "w154")}
-                                    alt={title}
-                                    fill
-                                    className="object-cover"
-                                />
-                            </div>
-                            <div className="min-w-0">
-                                <h2 className="text-text font-bold text-sm sm:text-base truncate">
-                                    {title}
-                                </h2>
-                                <div className="flex items-center gap-2 sm:gap-4 text-xs text-muted mt-0.5 whitespace-nowrap overflow-hidden">
-                                    <div className="flex items-center gap-1 shrink-0">
-                                        <Star className="h-3 w-3 text-(--color-rating-gold) fill-(--color-rating-gold)" />
-                                        <span className="font-medium text-muted">
-                                            {voteAverage && voteAverage > 0 ? voteAverage.toFixed(1) : t.movie.notRated}
-                                        </span>
-                                    </div>
-                                    {releaseDate && (
-                                        <div className="hidden sm:block shrink-0">{new Date(releaseDate).getFullYear()}</div>
-                                    )}
-                                    {runtime && runtime > 0 && (
-                                        <div className="hidden sm:block shrink-0">{formatRuntime(runtime)}</div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {(stickyActions ?? actions) && (
-                            <div className="flex items-center gap-2 shrink-0">
-                                {stickyActions ?? actions}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            <div className="relative w-full -mt-16 min-h-[70vh] md:min-h-[80vh] flex flex-col justify-end pt-20 sm:pt-32 pb-6 sm:pb-12 overflow-hidden" style={{ marginTop: 'calc(-4rem - env(safe-area-inset-top))', paddingTop: 'calc(5rem + env(safe-area-inset-top))' }}>
+        <div className="relative w-full -mt-16 min-h-[70vh] md:min-h-[80vh] flex flex-col justify-end pt-20 sm:pt-32 pb-6 sm:pb-12 overflow-hidden" style={{ marginTop: "calc(-4rem - env(safe-area-inset-top))", paddingTop: "calc(5rem + env(safe-area-inset-top))" }}>
+                <div
+                    className="absolute inset-x-0 top-0 pointer-events-none"
+                    style={{
+                        height: "calc(4rem + env(safe-area-inset-top))",
+                        background: dominantColor
+                            ? `linear-gradient(to right, var(--color-surface), ${dominantColor})`
+                            : `linear-gradient(to right, var(--color-surface), var(--color-background))`,
+                        transition: "background 300ms ease-out",
+                    }}
+                />
                 <div className="absolute inset-x-0 inset-y-0 -z-10">
                     <Image
                         src={backdropUrl}
                         alt={title}
                         fill
-                        style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top))' }}
+                        style={{ paddingTop: "calc(4rem + env(safe-area-inset-top))" }}
                         className="pt-20 object-cover object-top"
                         priority
                         sizes="100vw"
@@ -202,9 +135,7 @@ export function MediaBanner({
 
                                 {certification && (
                                     <HeroBadge>
-                                        <span className="font-semibold text-text">
-                                            {certification}
-                                        </span>
+                                        <span className="font-semibold text-text">{certification}</span>
                                     </HeroBadge>
                                 )}
                             </div>
@@ -223,25 +154,20 @@ export function MediaBanner({
                             )}
 
                             {actions && (
-                                <div ref={bottomRef} className="flex flex-wrap justify-center sm:justify-normal items-center gap-3 mt-2">{actions}</div>
+                                <div ref={bottomRef} className="flex flex-wrap justify-center sm:justify-normal items-center gap-3 mt-2">
+                                    {actions}
+                                </div>
                             )}
 
                             {!actions && <div ref={bottomRef} className="h-1 w-full" />}
                         </div>
                     </div>
                 </div>
-            </div>
-        </>
+        </div>
     )
 }
 
-function HeroBadge({
-    children,
-    icon,
-}: {
-    children: React.ReactNode
-    icon?: React.ReactNode
-}) {
+function HeroBadge({ children, icon }: { children: React.ReactNode; icon?: React.ReactNode }) {
     return (
         <div className="flex items-center gap-2 bg-glass-bg-hover backdrop-blur-2xl backdrop-saturate-150 px-4 py-2 rounded-full border border-glass-border-hover shadow-card-sm">
             {icon}

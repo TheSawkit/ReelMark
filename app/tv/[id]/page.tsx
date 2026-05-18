@@ -16,6 +16,7 @@ import { getShowAverageRating } from "@/app/actions/reviews"
 import { CommunityRating } from "@/components/media/CommunityRating"
 import { PublicReviewsSection } from "@/components/media/PublicReviewsSection"
 import { WatchProviders } from "@/components/media/WatchProviders"
+import { MediaActionsBar } from "@/components/media/MediaActionsBar"
 import { filterAvailableVideos } from "@/lib/youtube"
 import { getServerLocale, getTranslations } from "@/lib/i18n/server"
 import { buildMediaMetadata, BASE_URL } from "@/lib/metadata"
@@ -133,18 +134,20 @@ export default async function TvShowPage(props: TvPageProps) {
                         )}
                     </div>
                 }
-                stickyActions={
-                    <WatchButton
-                        mediaId={tvDetails.id}
-                        mediaTitle={tvDetails.name}
-                        mediaType="tv"
-                        posterPath={tvDetails.poster_path}
-                        status={watchlistEntry?.status === "watched" ? "watched" : "to_watch"}
-                        initialActive={!!watchlistEntry}
-                        releaseDate={tvDetails.first_air_date}
-                    />
-                }
             />
+
+            <MediaActionsBar>
+                <WatchButton
+                    mediaId={tvDetails.id}
+                    mediaTitle={tvDetails.name}
+                    mediaType="tv"
+                    posterPath={tvDetails.poster_path}
+                    status={watchlistEntry?.status === "watched" ? "watched" : "to_watch"}
+                    variant="responsive"
+                    initialActive={!!watchlistEntry}
+                    releaseDate={tvDetails.first_air_date}
+                />
+            </MediaActionsBar>
 
             <div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16">
                 <MediaDescription description={tvDetails.overview} />

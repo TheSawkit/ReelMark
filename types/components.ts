@@ -46,7 +46,6 @@ export interface MediaBannerProps {
   certification?: string
   genres?: { id: number; name: string }[]
   actions?: ReactNode
-  stickyActions?: ReactNode
 }
 
 export interface MediaDescriptionProps {
@@ -69,21 +68,24 @@ export interface WatchButtonProps {
   status: WatchStatus
   initialActive?: boolean
   fallbackStatus?: WatchStatus
-  variant?: "icon" | "full"
+  variant?: "icon" | "full" | "responsive"
   onDark?: boolean
   releaseDate?: string
 }
 
-export interface NavbarMobileProps {
-  user: {
-    user_metadata: {
-      full_name?: string
-      username?: string
-      picture?: string
-      avatar_url?: string
-      email?: string
-    }
+export interface NavbarUser {
+  email?: string
+  user_metadata: {
+    full_name?: string
+    username?: string
+    picture?: string
+    avatar_url?: string
+    email?: string
   }
+}
+
+export interface NavbarMobileProps {
+  user: NavbarUser
 }
 
 export interface NavLinksProps {
