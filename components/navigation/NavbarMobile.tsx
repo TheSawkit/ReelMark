@@ -38,11 +38,14 @@ export function NavbarMobile({ user }: NavbarMobileProps) {
             />
 
             <div
-                className="fixed inset-y-0 left-0 z-50 w-80 bg-surface border-r border-border shadow-navbar overflow-y-auto md:hidden"
-                style={{ animation: "slideInFromLeft var(--duration-base) ease-out", paddingBottom: "env(safe-area-inset-bottom)" }}
+                className="fixed inset-y-0 left-0 z-50 w-80 bg-surface border-r border-border shadow-navbar md:hidden"
+                style={{ animation: "slideInFromLeft var(--duration-base) ease-out" }}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex flex-col h-full">
+                <div
+                    className="flex flex-col h-full overflow-y-auto"
+                    style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+                >
                     <div className="p-6 border-b border-border">
                         <div className="flex justify-end">
                             <Button
