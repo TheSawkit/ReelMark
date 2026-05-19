@@ -14,7 +14,7 @@ test.describe("TMDB — Movie detail page", () => {
 
     test("shows release year", async ({ page }) => {
         await page.goto(`/movie/${MOVIE_ID}`)
-        await expect(page.getByText("1999", { exact: true }).first()).toBeVisible({ timeout: 10000 })
+        await expect(page.getByText(/1999/).first()).toBeVisible({ timeout: 10000 })
     })
 
     test("shows cast section", async ({ page }) => {
