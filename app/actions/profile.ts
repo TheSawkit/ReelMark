@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers'
+import { createClient } from '@/lib/supabase/server'
 import { formStr } from '@/lib/validators'
 import { getTranslations } from '@/lib/i18n/server'
 import { revalidateProfile } from '@/app/actions/_helpers'
@@ -23,7 +24,7 @@ function toVisibility(value: FormDataEntryValue | null): PrivacyVisibility {
  * @returns UserProfile or null.
  */
 export async function getProfileByUsername(username: string): Promise<UserProfile | null> {
-    const { supabase } = await getAuthenticatedUser()
+    const supabase = await createClient()
 
     const { data } = await supabase
         .from('user_profiles')
@@ -31,7 +32,7 @@ export async function getProfileByUsername(username: string): Promise<UserProfil
         .ilike('username', username)
         .single()
 
-    return (data as UserProfile) ?? null
+    return data ?? null
 }
 
 export async function updateSocialLinks(prevState: unknown, formData: FormData) {
@@ -76,7 +77,7 @@ export async function updateSocialLinks(prevState: unknown, formData: FormData) 
  * @returns PrivacySettings object.
  */
 export async function getPrivacySettings(userId: string): Promise<PrivacySettings> {
-    const { supabase } = await getAuthenticatedUser()
+    const supabase = await createClient()
 
     const { data } = await supabase
         .from('privacy_settings')

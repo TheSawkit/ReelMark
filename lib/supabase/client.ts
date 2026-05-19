@@ -1,14 +1,10 @@
 import { createBrowserClient } from '@supabase/ssr'
+import type { Database } from '@/types/database'
 
-/**
- * Creates a Supabase browser client for use in client components.
- * Uses the public URL and anon key from environment variables.
- *
- * @returns A configured Supabase browser client instance.
- */
+/** Supabase browser client for client components. */
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+    return createBrowserClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
 }

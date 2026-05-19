@@ -36,7 +36,7 @@ export function CategoryNav() {
                 href={`/explorer?type=${activeDomain}`}
                 aria-current={pathname === "/explorer" ? "page" : undefined}
                 className={cn(
-                    "px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-[var(--duration-fast)] ease-[var(--ease-apple)]",
+                    "px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple",
                     pathname === "/explorer"
                         ? "bg-primary text-white shadow-cinema ring-2 ring-primary/40"
                         : "bg-glass-bg backdrop-blur-md border border-glass-border text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs"
@@ -50,7 +50,7 @@ export function CategoryNav() {
                     href={category.href}
                     aria-current={pathname === category.href ? "page" : undefined}
                     className={cn(
-                        "px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-[var(--duration-fast)] ease-[var(--ease-apple)]",
+                        "px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple",
                         pathname === category.href
                             ? "bg-primary text-white shadow-cinema ring-2 ring-primary/40"
                             : "bg-glass-bg backdrop-blur-md border border-glass-border text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs"

@@ -11,13 +11,11 @@ import type { PublicReview } from '@/types/profile'
 
 function relativeDate(dateStr: string, lang: string): string {
     const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000)
-    if (days === 0) return lang === 'fr' ? "aujourd'hui" : 'today'
-    if (days === 1) return lang === 'fr' ? 'hier' : 'yesterday'
-    if (days < 30) return lang === 'fr' ? `il y a ${days} j` : `${days}d ago`
+    const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' })
+    if (days < 30) return rtf.format(-days, 'day')
     const months = Math.floor(days / 30)
-    if (months < 12) return lang === 'fr' ? `il y a ${months} mois` : `${months}mo ago`
-    const years = Math.floor(months / 12)
-    return lang === 'fr' ? `il y a ${years} an${years > 1 ? 's' : ''}` : `${years}y ago`
+    if (months < 12) return rtf.format(-months, 'month')
+    return rtf.format(-Math.floor(months / 12), 'year')
 }
 
 function Avatar({ username, avatarUrl }: { username: string; avatarUrl: string | null }) {

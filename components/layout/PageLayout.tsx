@@ -5,12 +5,7 @@ interface PageLayoutProps {
   className?: string
 }
 
-/**
- * Centered page wrapper with consistent horizontal and vertical padding.
- *
- * @param children - Page content.
- * @param className - Additional classes merged with the base container styles.
- */
+/** Centered page wrapper with consistent horizontal and vertical padding. */
 export function PageLayout({ children, className }: PageLayoutProps) {
   return (
     <div className={cn("container mx-auto py-12 md:py-16 lg:py-20 px-6 lg:px-12", className)}>
@@ -24,13 +19,7 @@ interface PageHeaderProps {
   subtitle?: string
 }
 
-/**
- * Animated page header with a title and an optional subtitle.
- * Slides up on mount via the `slideUp` keyframe animation.
- *
- * @param title - Primary heading text.
- * @param subtitle - Optional secondary description.
- */
+/** Animated page header with a title and an optional subtitle. */
 export function PageHeader({ title, subtitle }: PageHeaderProps) {
   return (
     <div

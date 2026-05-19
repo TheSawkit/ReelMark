@@ -1,3 +1,5 @@
+'use client'
+
 import { Lock, Users } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/context'
 import type { PrivacyVisibility } from '@/types/profile'

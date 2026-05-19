@@ -11,25 +11,7 @@ interface StaggeredItemProps {
   eager?: boolean
 }
 
-/**
- * Wrapper that applies a staggered enter animation to its children based on their index.
- * Starts invisible (opacity 0) and animates in with a delay of `index × staggerMs`.
- *
- * @param index - Position in the list; drives the animation delay.
- * @param staggerMs - Delay multiplier in milliseconds per item (default: 50).
- * @param animation - CSS animation name to apply (default: "slideUp").
- * @param duration - CSS duration value, supports custom properties (default: "var(--duration-slow)").
- * @param className - Additional classes for the wrapper element.
- * @param children - Content to animate.
- * @param eager - If true, renders immediately visible (skips opacity:0 start). Use for above-the-fold items.
- *
- * @example
- * {items.map((item, index) => (
- *   <StaggeredItem key={item.id} index={index} className="flex-none w-40 snap-start">
- *     <MediaCard media={item} />
- *   </StaggeredItem>
- * ))}
- */
+/** Animates children in with a per-index delay, creating a staggered cascade effect on mount. */
 export function StaggeredItem({
   index,
   staggerMs = 50,

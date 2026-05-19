@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { ArrowLeft, Settings, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,7 @@ import { useMediaHeader } from "@/lib/media-header-store"
 import type { NavbarUser } from "@/types/components"
 
 interface NavbarTranslations {
+    common: { goBack: string }
     navbar: {
         userMenu: string
         profile: string
@@ -40,6 +41,7 @@ interface NavbarClientProps {
 export function NavbarClient({ user, t }: NavbarClientProps) {
     const { title, scrolled } = useMediaHeader()
     const router = useRouter()
+    const pathname = usePathname()
     const isMediaBarActive = scrolled && !!title
 
     return (
@@ -79,7 +81,7 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
                         <div className="hidden md:flex gap-4 justify-end col-start-3">
                             {user ? (
                                 <div className="flex items-center gap-4">
-                                    <SearchModal />
+                                    <SearchModal key={pathname} />
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button
@@ -161,7 +163,7 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
                         <button
                             onClick={() => router.back()}
                             className="h-8 w-8 shrink-0 flex items-center justify-center rounded-full hover:bg-surface-2/50 text-text transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                            aria-label="Go back"
+                            aria-label={t.common.goBack}
                         >
                             <ArrowLeft className="h-4 w-4" />
                         </button>

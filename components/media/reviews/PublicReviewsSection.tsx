@@ -1,7 +1,7 @@
 import { getPublicReviews } from '@/app/actions/reviews'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { getTranslations } from '@/lib/i18n/server'
-import { ReviewsList } from '@/components/media/ReviewsList'
+import { ReviewsList } from '@/components/media/reviews/ReviewsList'
 import type { ReviewMediaType } from '@/types/profile'
 
 interface PublicReviewsSectionProps {

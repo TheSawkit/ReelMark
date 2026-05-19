@@ -87,7 +87,7 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
                                         {avatarPreview ? (
                                             <Image
                                                 src={avatarPreview}
-                                                alt="User profile avatar"
+                                                alt={t.common.userAvatar}
                                                 width={80}
                                                 height={80}
                                                 className="rounded-full object-cover border-2 border-border"

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { getImageUrl } from "@/lib/tmdb/images"
 import { Star, Eye, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { WatchButton } from "@/components/media/WatchButton"
+import { WatchButton } from "@/components/media/detail/WatchButton"
 import { useTranslation } from "@/lib/i18n/context"
 import { getLocale } from "@/lib/i18n/utils"
 import { formatShortDate } from "@/lib/format"
@@ -41,6 +41,12 @@ export function MediaCard({ media, className, watchlistEntry, hideRating, tvProg
 
     const href = media.media_type === "tv" ? `/tv/${media.id}` : `/movie/${media.id}`
     const isWatched = watchlistEntry?.status === "watched"
+    const resolvedStatus = media.media_type === "tv"
+        ? "to_watch"
+        : (watchlistEntry ? watchlistEntry.status : (media.watchlistEntry?.status ?? "to_watch"))
+    const resolvedFallback = media.media_type === "movie" && (isWatched || media.watchlistEntry?.status === "watched")
+        ? "to_watch"
+        : undefined
 
     return (
         <Link
@@ -54,7 +60,7 @@ export function MediaCard({ media, className, watchlistEntry, hideRating, tvProg
         >
             <div className="relative aspect-2/3 w-full overflow-hidden rounded-poster bg-surface">
                 <Image
-                    src={getImageUrl(media.poster_path, imageSize === "grid" ? "w342" : "w342")}
+                    src={getImageUrl(media.poster_path, imageSize === "grid" ? "w342" : "w185")}
                     alt={media.title}
                     fill
                     loading={priority ? "eager" : "lazy"}
@@ -139,27 +145,17 @@ export function MediaCard({ media, className, watchlistEntry, hideRating, tvProg
                         )}
                     </div>
 
-                    {(() => {
-                        const resolvedStatus = media.media_type === "tv"
-                            ? "to_watch"
-                            : (watchlistEntry ? watchlistEntry.status : (media.watchlistEntry?.status ?? "to_watch"))
-                        const resolvedFallback = media.media_type === "movie" && (isWatched || media.watchlistEntry?.status === "watched")
-                            ? "to_watch"
-                            : undefined
-                        return (
-                            <WatchButton
-                                mediaId={watchlistEntry?.media_id ?? media.id}
-                                mediaTitle={watchlistEntry?.media_title ?? media.title}
-                                mediaType={watchlistEntry?.media_type ?? media.media_type}
-                                posterPath={watchlistEntry?.poster_path ?? media.poster_path}
-                                status={resolvedStatus}
-                                initialActive={!!watchlistEntry || !!media.watchlistEntry}
-                                fallbackStatus={resolvedFallback}
-                                variant="full"
-                                onDark
-                            />
-                        )
-                    })()}
+                    <WatchButton
+                        mediaId={watchlistEntry?.media_id ?? media.id}
+                        mediaTitle={watchlistEntry?.media_title ?? media.title}
+                        mediaType={watchlistEntry?.media_type ?? media.media_type}
+                        posterPath={watchlistEntry?.poster_path ?? media.poster_path}
+                        status={resolvedStatus}
+                        initialActive={!!watchlistEntry || !!media.watchlistEntry}
+                        fallbackStatus={resolvedFallback}
+                        variant="full"
+                        onDark
+                    />
                 </div>
             </div>
         </Link>

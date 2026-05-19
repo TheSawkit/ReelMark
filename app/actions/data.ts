@@ -3,6 +3,7 @@
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers'
 import { fetchTMDB } from '@/lib/tmdb/client'
 import { searchMulti } from '@/lib/tmdb/search'
+import { VALID_STATUSES, VALID_MEDIA_TYPES, validateRating } from '@/lib/validators'
 import type { WatchStatus } from '@/types/tmdb'
 
 export interface ExportData {
@@ -29,7 +30,7 @@ export interface ExportData {
         tv_id: number
         season_number: number
         episode_number: number
-        created_at: string
+        watched_at: string | null
     }>
 }
 
@@ -49,7 +50,7 @@ export async function exportUserData(): Promise<ExportData> {
             .order('created_at', { ascending: false }),
         supabase
             .from('episode_watches')
-            .select('tv_id,season_number,episode_number,created_at')
+            .select('tv_id,season_number,episode_number,watched_at')
             .eq('user_id', userId),
     ])
 
@@ -78,9 +79,6 @@ export interface ImportBatchResult {
     imported: number
     failed: string[]
 }
-
-const VALID_STATUSES = new Set<string>(['watched', 'to_watch'])
-const VALID_MEDIA_TYPES = new Set<string>(['movie', 'tv'])
 
 interface FindResult {
     id: number
@@ -128,6 +126,11 @@ async function findByTvdbId(tvdbId: number): Promise<FindResult | null> {
     }
 }
 
+/**
+ * Imports a batch of media items into the user's watchlist, resolving TMDB IDs in priority order:
+ * direct TMDB ID → IMDb ID → TVDB ID → title+year search fallback.
+ * "watched" entries upgrade existing "to_watch" ones; "to_watch" entries never downgrade "watched" ones.
+ */
 export async function importBatch(items: ImportItem[]): Promise<ImportBatchResult> {
     if (!Array.isArray(items) || items.length === 0) return { imported: 0, failed: [] }
     if (items.length > 50) throw new Error('Batch size exceeds limit (50)')
@@ -142,11 +145,7 @@ export async function importBatch(items: ImportItem[]): Promise<ImportBatchResul
                 const status = VALID_STATUSES.has(item.status) ? item.status : 'watched'
                 const mediaType: 'movie' | 'tv' =
                     item.mediaType && VALID_MEDIA_TYPES.has(item.mediaType) ? item.mediaType : 'movie'
-                const rating = typeof item.rating === 'number'
-                    && Number.isInteger(item.rating)
-                    && item.rating >= 1
-                    && item.rating <= 10
-                    ? item.rating : null
+                const rating = validateRating(item.rating)
 
                 const fallbackTitle = String(item.title).slice(0, 500)
                 const resolve = (id: number, type: 'movie' | 'tv', title: string, poster: string | null) => ({
@@ -154,24 +153,20 @@ export async function importBatch(items: ImportItem[]): Promise<ImportBatchResul
                     rating,
                 })
 
-                // 1. Direct TMDB ID (Trakt, ReelMark)
                 if (item.tmdbId && Number.isInteger(item.tmdbId) && item.tmdbId > 0) {
                     return resolve(item.tmdbId, mediaType, fallbackTitle, item.posterPath ?? null)
                 }
 
-                // 2. IMDb ID → TMDB resolve (TV Time movies)
                 if (item.imdbId && /^tt\d+$/.test(item.imdbId)) {
                     const found = await findByImdbId(item.imdbId, mediaType)
                     if (found) return resolve(found.id, mediaType, found.title, found.poster_path)
                 }
 
-                // 3. TVDB ID → TMDB resolve (TV Time series)
                 if (item.tvdbId && Number.isInteger(item.tvdbId) && item.tvdbId > 0) {
                     const found = await findByTvdbId(item.tvdbId)
                     if (found) return resolve(found.id, 'tv', found.title, found.poster_path)
                 }
 
-                // 4. Fallback: title + year search (Letterboxd, legacy TV Time)
                 const results = await searchMulti(String(item.title).slice(0, 200))
                 const candidates = item.mediaType
                     ? results.filter(r => r.media_type === item.mediaType)
@@ -196,8 +191,6 @@ export async function importBatch(items: ImportItem[]): Promise<ImportBatchResul
 
     if (rows.length === 0) return { imported: 0, failed }
 
-    // "watched" rows can upgrade an existing "to_watch" entry — upsert normally
-    // "to_watch" rows must never downgrade an existing "watched" entry — skip on conflict
     const watchedRows = rows.filter(r => r.status === 'watched')
     const toWatchRows = rows.filter(r => r.status === 'to_watch')
 
@@ -214,7 +207,6 @@ export async function importBatch(items: ImportItem[]): Promise<ImportBatchResul
 
     if (error) return { imported: 0, failed: items.map(i => i.title) }
 
-    // Insert ratings as reviews — also never overwrite existing reviews
     const reviewRows = hits
         .filter(h => h.rating !== null)
         .map(h => ({

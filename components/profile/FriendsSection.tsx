@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { FriendEntry, PrivacyVisibility } from '@/types/profile'
 import { useTranslation } from '@/lib/i18n/context'
-import { PrivacyBlock } from '@/components/ui/PrivacyBlock'
+import { PrivacyBlock } from '@/components/profile/PrivacyBlock'
 import { EmptyState } from '@/components/ui/EmptyState'
 
 interface FriendsSectionProps {

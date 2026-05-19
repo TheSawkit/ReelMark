@@ -3,7 +3,7 @@ import { SectionHeading } from '@/components/ui/SectionHeading'
 import { getTranslations } from '@/lib/i18n/server'
 import { getUserRegion } from '@/lib/tmdb/client'
 import { getTmdbProviderLogoMap, resolveProviderLogo, normalizeName } from '@/lib/tmdb/watch-providers'
-import { getAppStoreIconMap } from '@/lib/providers/app-store'
+import { getAppStoreIconMap } from '@/lib/watchmode/app-store'
 import type { WatchProvidersRegion, WatchProvider } from '@/types/tmdb'
 
 interface WatchProvidersProps {

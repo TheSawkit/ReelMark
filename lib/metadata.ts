@@ -11,6 +11,23 @@ interface MediaMetadataOptions {
     ogType: "video.movie" | "video.tv_show"
 }
 
+interface PageMetadataOptions {
+    isPrivate?: boolean
+    canonical?: string
+}
+
+/** Builds standard Next.js Metadata for static app pages, avoiding title/description repetition. */
+export function buildPageMetadata(title: string, description: string, options?: PageMetadataOptions): Metadata {
+    return {
+        title,
+        description,
+        ...(options?.isPrivate && { robots: { index: false, follow: false, googleBot: { index: false, follow: false } } }),
+        ...(options?.canonical && { alternates: { canonical: options.canonical } }),
+        openGraph: { title, description, type: "website" },
+        twitter: { card: "summary", title, description },
+    }
+}
+
 /** Builds canonical Next.js Metadata for a movie or TV show detail page. */
 export function buildMediaMetadata({ title, description, backdropPath, canonical, ogType }: MediaMetadataOptions): Metadata {
     const backdropUrl = backdropPath ? getImageUrl(backdropPath, "w1280") : undefined

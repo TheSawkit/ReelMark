@@ -40,7 +40,7 @@ export function StarRating({ value, onChange, size = "md", className }: StarRati
     function handleClick(e: React.MouseEvent<SVGSVGElement>, starIndex: number) {
         if (!interactive) return
         const rect = e.currentTarget.getBoundingClientRect()
-        onChange!(e.clientX - rect.left < rect.width / 2 ? starIndex * 2 - 1 : starIndex * 2)
+        onChange?.(e.clientX - rect.left < rect.width / 2 ? starIndex * 2 - 1 : starIndex * 2)
     }
 
     function handleKeyDown(e: React.KeyboardEvent) {
@@ -48,10 +48,10 @@ export function StarRating({ value, onChange, size = "md", className }: StarRati
         const current = value ?? 0
         if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
             e.preventDefault()
-            onChange!(Math.min(10, current + 1))
+            onChange?.(Math.min(10, current + 1))
         } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
             e.preventDefault()
-            onChange!(Math.max(1, current - 1))
+            onChange?.(Math.max(1, current - 1))
         }
     }
 

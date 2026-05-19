@@ -3,15 +3,17 @@
 import { useEffect, useState, useRef, useCallback, useTransition } from "react"
 import { useInView } from "@/hooks/useInView"
 import type { MediaItem } from "@/types/tmdb"
-import { MediaGrid } from "@/components/media/MediaGrid"
-import { MediaCardSkeleton } from "@/components/media/MediaCardSkeleton"
+import { MediaGrid } from "@/components/media/card/MediaGrid"
+import { MediaCardSkeleton } from "@/components/media/card/MediaCardSkeleton"
 import { fetchMoreMedia } from "@/app/actions/media"
 import { useTranslation } from "@/lib/i18n/context"
 import type { InfiniteScrollMediaProps } from "@/types/components"
 
+const MAX_RENDERED_ITEMS = 80
+
 function computeHasMore(clientSideData: MediaItem[] | undefined, initialItems: MediaItem[]): boolean {
     if (clientSideData) return clientSideData.length > initialItems.length
-    return true
+    return initialItems.length < MAX_RENDERED_ITEMS
 }
 
 export function InfiniteScrollMedia({ initialItems, category, clientSideData, hideRating, showWatchlistMeta }: InfiniteScrollMediaProps) {
@@ -87,6 +89,9 @@ export function InfiniteScrollMedia({ initialItems, category, clientSideData, hi
                     }
                     const merged = [...prev, ...uniqueItems]
                     if (clientSideData && merged.length >= clientSideData.length) {
+                        setHasMore(false)
+                    }
+                    if (!clientSideData && merged.length >= MAX_RENDERED_ITEMS) {
                         setHasMore(false)
                     }
                     return merged

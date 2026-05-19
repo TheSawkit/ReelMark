@@ -7,31 +7,18 @@ import {
   movieToMediaItem, tvShowToMediaItem
 } from "@/lib/tmdb"
 import { mergeMediaWithWatchlist } from "@/app/actions/media"
-import { MediaSection } from "@/components/media/MediaSection"
+import { MediaSection } from "@/components/media/card/MediaSection"
 import { CategoryNav } from "@/components/navigation/CategoryNav"
 import { SearchBar } from "@/components/search/SearchBar"
-import { PageLayout, PageHeader } from "@/components/ui/PageLayout"
+import { PageLayout, PageHeader } from "@/components/layout/PageLayout"
 import { getTranslations } from "@/lib/i18n/server"
-import { MediaTypeSwitcher } from "@/components/media/MediaTypeSwitcher"
+import { MediaTypeSwitcher } from "@/components/media/card/MediaTypeSwitcher"
+import { buildPageMetadata } from "@/lib/metadata"
 import type { Movie, TvShow } from "@/types/tmdb"
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations()
-
-  return {
-    title: t.metadata.explorerTitle,
-    description: t.metadata.explorerDescription,
-    openGraph: {
-      title: t.metadata.explorerTitle,
-      description: t.metadata.explorerDescription,
-      type: "website",
-    },
-    twitter: {
-      card: "summary",
-      title: t.metadata.explorerTitle,
-      description: t.metadata.explorerDescription,
-    },
-  }
+  return buildPageMetadata(t.metadata.explorerTitle, t.metadata.explorerDescription)
 }
 
 type Props = {
@@ -84,13 +71,13 @@ export default async function ExplorerPage({ searchParams }: Props) {
 
       <SearchBar />
 
-      <div className="mb-8 min-h-[56px] flex justify-center">
+      <div className="mb-8 min-h-14 flex justify-center">
         <Suspense fallback={null}>
           <MediaTypeSwitcher defaultType="movie" />
         </Suspense>
       </div>
 
-      <div className="mb-8 min-h-[44px]">
+      <div className="mb-8 min-h-11">
         <Suspense fallback={null}>
           <CategoryNav />
         </Suspense>

@@ -2,20 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
-import { usePathname } from "next/navigation"
 import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SearchBar } from "@/components/search/SearchBar"
+import { useTranslation } from "@/lib/i18n/context"
 
 export function SearchModal() {
     const [isOpen, setIsOpen] = useState(false)
-    const pathname = usePathname()
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIsOpen(false)
-        document.body.style.overflow = ""
-    }, [pathname])
+    const { t } = useTranslation()
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -42,7 +36,7 @@ export function SearchModal() {
                 size="icon"
                 onClick={() => setIsOpen(true)}
                 className="text-muted hover:text-text transition-colors"
-                aria-label="Open search"
+                aria-label={t.common.search}
             >
                 <Search className="h-5 w-5" />
             </Button>

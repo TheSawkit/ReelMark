@@ -1,4 +1,9 @@
-import type { CinemaSpotlightProps } from "@/types/components"
+interface CinemaSpotlightProps {
+  height?: number
+  maxWidth?: number | string
+  intensity?: number
+  position?: string
+}
 
 export default function CinemaSpotlight({
   height = 600,

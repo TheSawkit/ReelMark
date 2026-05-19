@@ -3,34 +3,18 @@ import { requireAuth } from "@/lib/auth"
 import { getUserWatchlist } from "@/app/actions/watchlist"
 import { getAllTvShowsWatchProgress } from "@/app/actions/episodes"
 import { LibraryTabs } from "@/components/library/LibraryTabs"
-import { PageLayout, PageHeader } from "@/components/ui/PageLayout"
+import { PageLayout, PageHeader } from "@/components/layout/PageLayout"
 import { getTranslations } from "@/lib/i18n/server"
-import { MediaTypeSwitcher } from "@/components/media/MediaTypeSwitcher"
+import { MediaTypeSwitcher } from "@/components/media/card/MediaTypeSwitcher"
 import { getTvShowTotalEpisodes } from "@/lib/tmdb"
-import { BASE_URL } from "@/lib/metadata"
+import { BASE_URL, buildPageMetadata } from "@/lib/metadata"
 
 export async function generateMetadata() {
     const t = await getTranslations()
-    return {
-        title: t.pages.library.title,
-        description: t.metadata.libraryDescription,
-        robots: {
-            index: false,
-            follow: false,
-            googleBot: { index: false, follow: false },
-        },
-        alternates: { canonical: `${BASE_URL}/library` },
-        openGraph: {
-            title: t.pages.library.title,
-            description: t.metadata.libraryDescription,
-            type: "website",
-        },
-        twitter: {
-            card: "summary",
-            title: t.pages.library.title,
-            description: t.metadata.libraryDescription,
-        },
-    }
+    return buildPageMetadata(t.pages.library.title, t.metadata.libraryDescription, {
+        isPrivate: true,
+        canonical: `${BASE_URL}/library`,
+    })
 }
 
 type Props = {

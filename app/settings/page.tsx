@@ -1,7 +1,7 @@
 import { requireAuth } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { SettingsContent } from '@/components/settings/SettingsContent'
-import { PageLayout, PageHeader } from '@/components/ui/PageLayout'
+import { PageLayout, PageHeader } from '@/components/layout/PageLayout'
 import { getTranslations } from '@/lib/i18n/server'
 import type { UserProfile, PrivacySettings } from '@/types/profile'
 

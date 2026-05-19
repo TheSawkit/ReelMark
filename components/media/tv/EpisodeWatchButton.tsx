@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { toggleEpisodeWatch } from "@/app/actions/episodes"
 import { useTranslation } from "@/lib/i18n/context"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
-import { ReviewDialog } from "@/components/media/ReviewDialog"
+import { ReviewDialog } from "@/components/media/reviews/ReviewDialog"
 
 interface EpisodeWatchButtonProps {
     tvId: number

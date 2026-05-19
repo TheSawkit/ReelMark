@@ -1,11 +1,42 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { checkRateLimit } from '@/lib/rate-limiter'
 
 const PROTECTED_ROUTES = ['/dashboard', '/library', '/settings']
 const AUTH_ROUTES = ['/login', '/signup']
 
+const SEARCH_LIMIT = 30
+const SEARCH_WINDOW_MS = 60_000
+
+function getClientIp(req: NextRequest): string {
+    return (
+        req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+        req.headers.get('x-real-ip') ??
+        'unknown'
+    )
+}
+
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
+
+    if (pathname === '/api/search') {
+        const ip = getClientIp(request)
+        const rate = checkRateLimit(`search:${ip}`, SEARCH_LIMIT, SEARCH_WINDOW_MS)
+
+        if (!rate.allowed) {
+            return NextResponse.json(
+                { error: 'Too many requests' },
+                {
+                    status: 429,
+                    headers: {
+                        'Retry-After': String(Math.ceil((rate.resetAt - Date.now()) / 1000)),
+                        'X-RateLimit-Limit': String(SEARCH_LIMIT),
+                        'X-RateLimit-Remaining': '0',
+                    },
+                }
+            )
+        }
+    }
 
     const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route))
     const isAuthRoute = AUTH_ROUTES.some(route => pathname.startsWith(route))
@@ -51,6 +82,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
     matcher: [
-        '/((?!_next/static|_next/image|favicon.ico|api/|auth/).*)',
+        '/((?!_next/static|_next/image|favicon.ico|auth/).*)',
     ],
 }

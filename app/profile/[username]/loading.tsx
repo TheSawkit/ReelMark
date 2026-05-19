@@ -1,5 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton'
-import { PageLayout } from '@/components/ui/PageLayout'
+import { PageLayout } from '@/components/layout/PageLayout'
 
 export default function ProfileLoading() {
     return (

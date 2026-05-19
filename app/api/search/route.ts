@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const results = await searchMulti(query)
     return NextResponse.json({ results })
   } catch (error) {
-    console.error('[api/search] TMDB search failed:', error)
+    console.error("[api/search] TMDB search failed:", error)
     return NextResponse.json({ error: "Failed to fetch search results" }, { status: 500 })
   }
 }

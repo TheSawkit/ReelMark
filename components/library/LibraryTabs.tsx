@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { MediaCard } from "@/components/media/MediaCard"
+import { MediaCard } from "@/components/media/card/MediaCard"
 import { BookMarked, Eye, ChevronDown } from "lucide-react"
 import { useTranslation } from "@/lib/i18n/context"
 import type { WatchlistEntry } from "@/types/tmdb"
@@ -23,12 +23,12 @@ export function LibraryTabs({ toWatch, watched, tvProgress = {} }: LibraryTabsPr
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
     const { t } = useTranslation()
 
-    const tabs = [
-        { id: "to_watch" as Tab, label: t.library.toWatch, icon: BookMarked, items: toWatch },
-        { id: "watched" as Tab, label: t.library.watched, icon: Eye, items: watched },
-    ]
+    const tabs: Record<Tab, { label: string; icon: typeof BookMarked; items: WatchlistEntry[] }> = {
+        to_watch: { label: t.library.toWatch, icon: BookMarked, items: toWatch },
+        watched: { label: t.library.watched, icon: Eye, items: watched },
+    }
 
-    const current = tabs.find((tab) => tab.id === activeTab)!
+    const current = tabs[activeTab]
 
     function switchTab(tab: Tab) {
         setActiveTab(tab)
@@ -37,18 +37,18 @@ export function LibraryTabs({ toWatch, watched, tvProgress = {} }: LibraryTabsPr
 
     return (
         <div>
-            <div className="flex gap-2 mb-8 border-b border-border pb-0" role="tablist" aria-label="Library filters">
-                {tabs.map((tab) => (
+            <div className="flex gap-2 mb-8 border-b border-border pb-0" role="tablist" aria-label={t.library.filtersLabel}>
+                {(Object.entries(tabs) as [Tab, typeof tabs[Tab]][]).map(([id, tab]) => (
                     <button
-                        key={tab.id}
+                        key={id}
                         role="tab"
-                        aria-selected={activeTab === tab.id}
-                        aria-controls={`panel-${tab.id}`}
-                        onClick={() => switchTab(tab.id)}
+                        aria-selected={activeTab === id}
+                        aria-controls={`panel-${id}`}
+                        onClick={() => switchTab(id)}
                         className={cn(
-                            "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all duration-[var(--duration-fast)] ease-[var(--ease-apple)] cursor-pointer",
+                            "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all duration-(--duration-fast) ease-apple cursor-pointer",
                             "border-b-2 -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:rounded-sm",
-                            activeTab === tab.id
+                            activeTab === id
                                 ? "border-primary text-text"
                                 : "border-transparent text-muted hover:text-text hover:border-border"
                         )}
@@ -58,7 +58,7 @@ export function LibraryTabs({ toWatch, watched, tvProgress = {} }: LibraryTabsPr
                         <span
                             className={cn(
                                 "ml-1 px-1.5 py-0.5 rounded-full text-xs",
-                                activeTab === tab.id
+                                activeTab === id
                                     ? "bg-primary/20 text-text"
                                     : "bg-surface-2 text-muted"
                             )}
@@ -73,7 +73,7 @@ export function LibraryTabs({ toWatch, watched, tvProgress = {} }: LibraryTabsPr
                 <div
                     role="tabpanel"
                     id={`panel-${activeTab}`}
-                    className="flex flex-col items-center justify-center py-32 animate-in fade-in slide-in-from-bottom-4 duration-500"
+                    className="flex flex-col items-center justify-center py-32 animate-in fade-in slide-in-from-bottom-4 duration-(--duration-slow)"
                     style={{ animation: "fadeIn var(--duration-medium) ease-out forwards" }}
                 >
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/10 mb-6">

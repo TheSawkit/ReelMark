@@ -9,12 +9,12 @@ import { deleteReview } from '@/app/actions/reviews'
 import { getImageUrl } from '@/lib/tmdb/images'
 import type { Review, PrivacyVisibility } from '@/types/profile'
 import { useTranslation } from '@/lib/i18n/context'
-import { PrivacyBlock } from '@/components/ui/PrivacyBlock'
+import { PrivacyBlock } from '@/components/profile/PrivacyBlock'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { StarRating } from '@/components/ui/StarRating'
 import { DeleteIconButton } from '@/components/ui/DeleteIconButton'
 import { Button } from '@/components/ui/button'
-import { ReviewDialog } from '@/components/media/ReviewDialog'
+import { ReviewDialog } from '@/components/media/reviews/ReviewDialog'
 
 interface ReviewsSectionProps {
     reviews: Review[]
@@ -95,13 +95,13 @@ export function ReviewsSection({ reviews: initial, visibility, canView, isOwnPro
                         {isOwnProfile && (
                             <div className="flex items-start gap-0.5 shrink-0">
                                 {confirmDeleteId === review.id ? (
-                                    <div className="flex items-center gap-1 animate-in fade-in duration-150">
+                                    <div className="flex items-center gap-1 animate-in fade-in duration-(--duration-instant)">
                                         <Button
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => handleDeleteConfirm(review.id)}
                                             disabled={isPending}
-                                            className="h-8 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                                            className="h-8 px-2 text-xs text-red-2 hover:text-red hover:bg-red/10"
                                         >
                                             {t.common.confirm}
                                         </Button>

@@ -1,10 +1,22 @@
+export const VALID_STATUSES = new Set<string>(['watched', 'to_watch'])
+export const VALID_MEDIA_TYPES = new Set<string>(['movie', 'tv'])
+
+export function validateRating(rating: unknown): number | null {
+    if (typeof rating !== 'number' || !Number.isInteger(rating) || rating < 1 || rating > 10) return null
+    return rating
+}
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{1,50}$/
-const VALID_REGIONS = new Set(["BE", "FR", "US", "CA", "GB", "CH", "LU"])
-const VALID_LANGUAGES = new Set(["fr", "en"])
-const ALLOWED_AVATAR_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"])
-const ALLOWED_AVATAR_MIMES = new Set(["image/jpeg", "image/png", "image/webp"])
+
+const VALID_REGIONS = ["BE", "FR", "US", "CA", "GB", "CH", "LU"] as const
+const VALID_LANGUAGES = ["fr", "en"] as const
+const ALLOWED_AVATAR_EXTENSIONS = ["jpg", "jpeg", "png", "webp"] as const
+const ALLOWED_AVATAR_MIMES = ["image/jpeg", "image/png", "image/webp"] as const
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024
+
+export type Region = typeof VALID_REGIONS[number]
+export type AppLanguage = typeof VALID_LANGUAGES[number]
 
 export function sanitizeRedirectPath(path: string | null, fallback: string): string {
     if (!path) return fallback
@@ -31,16 +43,18 @@ export function validateUsername(username: unknown): string | null {
     return username.trim()
 }
 
-export function validateRegion(region: unknown): string | null {
+export function validateRegion(region: unknown): Region | null {
     if (typeof region !== 'string') return null
-    const upper = region.toUpperCase()
-    if (!VALID_REGIONS.has(upper)) return null
+    const upper = region.toUpperCase() as Region
+    if (!(VALID_REGIONS as readonly string[]).includes(upper)) return null
     return upper
 }
 
-export function validateLanguage(language: unknown): string {
+export function validateLanguage(language: unknown): AppLanguage {
     if (typeof language !== 'string') return 'en'
-    return VALID_LANGUAGES.has(language) ? language : 'en'
+    return (VALID_LANGUAGES as readonly string[]).includes(language)
+        ? language as AppLanguage
+        : 'en'
 }
 
 export function formStr(formData: FormData, key: string): string | null {
@@ -48,12 +62,12 @@ export function formStr(formData: FormData, key: string): string | null {
     return typeof v === 'string' ? v || null : null
 }
 
-export type AvatarErrorCode = 'fileTooLarge' | 'invalidExtension' | 'invalidMimeType'
+type AvatarErrorCode = 'fileTooLarge' | 'invalidExtension' | 'invalidMimeType'
 
-export function validateAvatarFile(file: File): { valid: true } | { valid: false; errorCode: AvatarErrorCode } {
+export function validateAvatarFile(file: File): { valid: true; ext: string } | { valid: false; errorCode: AvatarErrorCode } {
     if (file.size > MAX_AVATAR_SIZE) return { valid: false, errorCode: 'fileTooLarge' }
     const ext = file.name.split('.').pop()?.toLowerCase()
-    if (!ext || !ALLOWED_AVATAR_EXTENSIONS.has(ext)) return { valid: false, errorCode: 'invalidExtension' }
-    if (!ALLOWED_AVATAR_MIMES.has(file.type)) return { valid: false, errorCode: 'invalidMimeType' }
-    return { valid: true }
+    if (!ext || !(ALLOWED_AVATAR_EXTENSIONS as readonly string[]).includes(ext)) return { valid: false, errorCode: 'invalidExtension' }
+    if (!(ALLOWED_AVATAR_MIMES as readonly string[]).includes(file.type)) return { valid: false, errorCode: 'invalidMimeType' }
+    return { valid: true, ext }
 }

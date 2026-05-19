@@ -3,6 +3,7 @@
 import { useRef, useCallback } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "@/lib/i18n/context"
 import type { HorizontalScrollProps } from "@/types/components"
 
 export function HorizontalScroll({
@@ -12,6 +13,7 @@ export function HorizontalScroll({
   className = "",
   containerClassName = "",
 }: HorizontalScrollProps) {
+  const { t } = useTranslation()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const scroll = useCallback((direction: 'left' | 'right') => {
@@ -30,7 +32,7 @@ export function HorizontalScroll({
             <Button
               variant="outline"
               size="icon"
-              aria-label="Scroll left"
+              aria-label={t.common.scrollLeft}
               className="h-10 w-10 rounded-full bg-background/50 backdrop-blur-sm border-surface-3 hover:bg-surface-2 hover:text-text focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               onClick={() => scroll('left')}
             >
@@ -39,7 +41,7 @@ export function HorizontalScroll({
             <Button
               variant="outline"
               size="icon"
-              aria-label="Scroll right"
+              aria-label={t.common.scrollRight}
               className="h-10 w-10 rounded-full bg-background/50 backdrop-blur-sm border-surface-3 hover:bg-surface-2 hover:text-text focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               onClick={() => scroll('right')}
             >

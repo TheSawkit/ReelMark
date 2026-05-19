@@ -3,6 +3,7 @@
 import { getAuthenticatedUser, getOptionalUser } from '@/lib/supabase/auth-helpers'
 import { createClient } from '@/lib/supabase/server'
 import { getTranslations } from '@/lib/i18n/server'
+import { validateRating } from '@/lib/validators'
 import { revalidateProfile } from '@/app/actions/_helpers'
 import { getTvShowDetails, getSeasonDetails } from '@/lib/tmdb/tv'
 import { MAX_REVIEW_LENGTH } from '@/types/profile'
@@ -18,7 +19,7 @@ function parseRatingRow(data: unknown): { avg: number; count: number } | null {
  * Returns all reviews for a given user, newest first.
  */
 export async function getUserReviews(userId: string): Promise<Review[]> {
-    const { supabase } = await getAuthenticatedUser()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
         .from('reviews')
@@ -117,13 +118,10 @@ export async function getPublicReviews(
     const { data, error } = await supabase.rpc('get_public_reviews', {
         p_media_id: mediaId,
         p_media_type: mediaType,
-        p_viewer_id: userId,
+        p_viewer_id: userId ?? undefined,
     })
 
-    if (error) {
-        console.error('[getPublicReviews]', error.message)
-        return []
-    }
+    if (error) return []
     return (data as PublicReview[]) ?? []
 }
 
@@ -138,13 +136,10 @@ export async function getPublicEpisodeReviews(
 
     const { data, error } = await supabase.rpc('get_public_episode_reviews', {
         p_episode_ids: episodeIds,
-        p_viewer_id: userId,
+        p_viewer_id: userId ?? undefined,
     })
 
-    if (error) {
-        console.error('[getPublicEpisodeReviews]', error.message)
-        return []
-    }
+    if (error) return []
     return (data as PublicReview[]) ?? []
 }
 
@@ -163,7 +158,7 @@ export async function upsertReview(
     if (!(['movie', 'tv', 'episode'] as const).includes(mediaType)) {
         throw new Error('Invalid media type')
     }
-    if (rating !== null && (rating < 1 || rating > 10 || !Number.isInteger(rating))) {
+    if (rating !== null && validateRating(rating) === null) {
         throw new Error(t.profile.errors.ratingInvalid)
     }
     if (content && content.length > MAX_REVIEW_LENGTH) {

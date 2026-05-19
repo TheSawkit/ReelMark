@@ -24,7 +24,9 @@ export interface PrivacySettings {
   friends_visibility: PrivacyVisibility
 }
 
-export type ReviewMediaType = 'movie' | 'tv' | 'episode'
+import type { MediaType } from '@/types/tmdb'
+
+export type ReviewMediaType = MediaType | 'episode'
 
 export interface Review {
   id: string

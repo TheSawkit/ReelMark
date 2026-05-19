@@ -125,7 +125,7 @@ describe("validateAvatarFile", () => {
 
     it("accepts valid image files", () => {
         const file = makeFile("avatar.jpg", "image/jpeg", 1024)
-        expect(validateAvatarFile(file)).toEqual({ valid: true })
+        expect(validateAvatarFile(file)).toEqual({ valid: true, ext: 'jpg' })
     })
 
     it("rejects files over 5MB", () => {

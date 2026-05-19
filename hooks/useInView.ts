@@ -1,7 +1,11 @@
 "use client"
 
 import { useState, useEffect, RefObject } from "react"
-import type { InViewOptions } from "@/types/hooks"
+interface InViewOptions {
+    root?: Element | null
+    rootMargin?: string
+    threshold?: number | number[]
+}
 
 /**
  * Observes whether a DOM element is intersecting the viewport.

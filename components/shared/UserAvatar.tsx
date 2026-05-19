@@ -2,7 +2,13 @@
 
 import Image from "next/image"
 import { useTranslation } from "@/lib/i18n/context"
-import type { UserAvatarProps } from "@/types/user"
+interface UserAvatarProps {
+  picture?: string
+  fullName?: string
+  email?: string
+  size?: number
+  className?: string
+}
 
 export function UserAvatar({
   picture,

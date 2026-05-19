@@ -116,7 +116,18 @@ jobs:
           path: node_modules
           key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
           fail-on-cache-miss: true
+      - uses: actions/cache/restore@v5
+        with:
+          path: .next/cache
+          key: nextjs-${{ github.ref_name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            nextjs-${{ github.ref_name }}-
+            nextjs-main-
       - run: pnpm run build
+      - uses: actions/cache/save@v5
+        with:
+          path: .next/cache
+          key: nextjs-${{ github.ref_name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - uses: actions/cache/save@v5
         with:
           path: .next
@@ -144,7 +155,18 @@ jobs:
           path: .next
           key: next-build-${{ github.sha }}
           fail-on-cache-miss: true
+      - id: playwright-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ hashFiles('**/pnpm-lock.yaml') }}
       - run: pnpm exec playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      - uses: actions/cache/save@v5
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ hashFiles('**/pnpm-lock.yaml') }}
       - run: pnpm run test:e2e
       - uses: actions/upload-artifact@v6
         if: always()

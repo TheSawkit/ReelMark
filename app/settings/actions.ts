@@ -148,7 +148,7 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
             return { error: t.settings.avatar[validation.errorCode], success: false }
         }
 
-        const fileExt = avatarFile.name.split('.').pop()!.toLowerCase()
+        const fileExt = validation.ext
         const fileName = `${user.id}-${Date.now()}.${fileExt}`
 
         const buffer = await avatarFile.arrayBuffer()

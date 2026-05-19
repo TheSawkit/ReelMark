@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
-import HeroSection from "@/components/layout/HeroSection";
-import FeaturesSection from "@/components/layout/FeaturesSection";
-import CTASection from "@/components/layout/CTASection";
+import HeroSection from "@/components/home/HeroSection";
+import FeaturesSection from "@/components/home/FeaturesSection";
+import CTASection from "@/components/home/CTASection";
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -34,10 +34,10 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen">
+    <main className="min-h-screen">
       <HeroSection />
       <FeaturesSection />
       <CTASection />
-    </div>
+    </main>
   );
 }

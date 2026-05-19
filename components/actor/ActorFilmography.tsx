@@ -4,7 +4,7 @@ import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Film, Tv } from "lucide-react"
 import type { ActorFilmographyProps } from "@/types/components"
-import { InfiniteScrollMedia } from "@/components/media/InfiniteScrollMedia"
+import { InfiniteScrollMedia } from "@/components/media/card/InfiniteScrollMedia"
 import { useTranslation } from "@/lib/i18n/context"
 import type { MediaItem } from "@/types/tmdb"
 

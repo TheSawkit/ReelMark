@@ -337,7 +337,7 @@ function PlaylistGrid({ items, mode, pendingRemove, onRemove }: {
                                     'absolute top-2 right-2 z-20',
                                     'w-6 h-6 rounded-full flex items-center justify-center',
                                     'bg-background/75 backdrop-blur-sm border border-white/10 shadow-sm',
-                                    'transition-all duration-150',
+                                    'transition-all duration-(--duration-instant)',
                                     'sm:opacity-0 sm:scale-75 sm:group-hover:opacity-100 sm:group-hover:scale-100',
                                     isRemoving
                                         ? 'opacity-100 scale-100'

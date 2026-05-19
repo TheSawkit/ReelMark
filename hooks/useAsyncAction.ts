@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useAutoResetError } from "@/hooks/useAutoResetError"
 
 interface UseAsyncActionResult {
     loading: boolean
@@ -12,14 +13,8 @@ interface UseAsyncActionResult {
 /** Handles loading/error state and router refresh for async server action calls. */
 export function useAsyncAction(): UseAsyncActionResult {
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(false)
+    const [error, setError] = useAutoResetError()
     const router = useRouter()
-
-    useEffect(() => {
-        if (!error) return
-        const id = setTimeout(() => setError(false), 3000)
-        return () => clearTimeout(id)
-    }, [error])
 
     async function execute<T>(action: () => Promise<T>): Promise<T | undefined> {
         setLoading(true)

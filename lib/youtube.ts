@@ -1,7 +1,7 @@
 const OEMBED_BASE = "https://www.youtube.com/oembed"
 const MAX_CONCURRENT_CHECKS = 5
 
-export async function isYouTubeVideoAvailable(videoKey: string): Promise<boolean> {
+async function isYouTubeVideoAvailable(videoKey: string): Promise<boolean> {
   try {
     const url = `${OEMBED_BASE}?url=https://www.youtube.com/watch?v=${videoKey}&format=json`
     const response = await fetch(url, {

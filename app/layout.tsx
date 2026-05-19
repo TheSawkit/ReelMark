@@ -4,7 +4,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navigation/Navbar";
-import CinemaSpotlightWrapper from "@/components/ui/CinemaSpotlightWrapper";
+import { PageTopGradient } from "@/components/ui/PageTopGradient";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "./providers";
 import { getServerLanguage, getTranslations } from "@/lib/i18n/server";
@@ -98,7 +98,7 @@ export default async function RootLayout({
                         {t.common.skipToMainContent}
                     </a>
                     <Navbar />
-                    <CinemaSpotlightWrapper />
+                    <PageTopGradient />
                     <main id="main-content" className="pt-12" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top))' }}>
                         {children}
                     </main>

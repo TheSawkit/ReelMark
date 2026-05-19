@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Settings, Menu, X } from "lucide-react"
-import { SignoutButton } from "@/components/auth/SignoutButton"
+import { Menu, X } from "lucide-react"
 import { NavLinks } from "@/components/navigation/NavLinks"
+import { UserMenuLinks } from "@/components/navigation/UserMenuLinks"
 import { UserAvatar } from "@/components/shared/UserAvatar"
 import { SearchBar } from "@/components/search/SearchBar"
 import { useTranslation } from "@/lib/i18n/context"
@@ -40,7 +39,7 @@ export function NavbarMobile({ user }: NavbarMobileProps) {
 
             <div
                 className="fixed inset-y-0 left-0 z-50 w-80 bg-surface border-r border-border shadow-navbar overflow-y-auto md:hidden"
-                style={{ animation: "slideInFromLeft var(--duration-base) ease-out" }}
+                style={{ animation: "slideInFromLeft var(--duration-base) ease-out", paddingBottom: "env(safe-area-inset-bottom)" }}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex flex-col h-full">
@@ -71,18 +70,8 @@ export function NavbarMobile({ user }: NavbarMobileProps) {
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-2 mt-4">
-                            <Link
-                                href="/settings"
-                                className="flex items-center gap-2 px-4 py-2 rounded-md text-muted hover:text-text hover:bg-surface-2 transition-colors"
-                                onClick={closeMenu}
-                            >
-                                <Settings className="h-4 w-4" />
-                                <span>{t.navbar.settings}</span>
-                            </Link>
-                            <div className="px-4">
-                                <SignoutButton />
-                            </div>
+                        <div className="mt-4">
+                            <UserMenuLinks username={user.user_metadata.username} onAction={closeMenu} />
                         </div>
                     </div>
 

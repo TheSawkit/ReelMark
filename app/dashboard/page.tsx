@@ -11,34 +11,16 @@ import {
     movieToMediaItem,
     tvShowToMediaItem
 } from "@/lib/tmdb"
-import { MediaSection, LibraryMediaSection } from "@/components/media/MediaSection"
-import { PageLayout, PageHeader } from "@/components/ui/PageLayout"
+import { MediaSection, LibraryMediaSection } from "@/components/media/card/MediaSection"
+import { PageLayout, PageHeader } from "@/components/layout/PageLayout"
 import { getTranslations } from "@/lib/i18n/server"
-import { MediaTypeSwitcher } from "@/components/media/MediaTypeSwitcher"
+import { MediaTypeSwitcher } from "@/components/media/card/MediaTypeSwitcher"
+import { buildPageMetadata } from "@/lib/metadata"
 import type { Movie, TvShow } from "@/types/tmdb"
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations()
-
-  return {
-    title: t.metadata.dashboardTitle,
-    description: t.metadata.dashboardDescription,
-    robots: {
-      index: false,
-      follow: false,
-      googleBot: { index: false, follow: false },
-    },
-    openGraph: {
-      title: t.metadata.dashboardTitle,
-      description: t.metadata.dashboardDescription,
-      type: "website",
-    },
-    twitter: {
-      card: "summary",
-      title: t.metadata.dashboardTitle,
-      description: t.metadata.dashboardDescription,
-    },
-  }
+  return buildPageMetadata(t.metadata.dashboardTitle, t.metadata.dashboardDescription, { isPrivate: true })
 }
 
 type Props = {

@@ -10,6 +10,7 @@ import { useTranslation } from "@/lib/i18n/context"
 import { getLocale } from "@/lib/i18n/utils"
 import { formatDate, formatRuntime } from "@/lib/format"
 import { useDominantColor } from "@/hooks/useDominantColor"
+import { NavbarGradient } from "@/components/ui/NavbarGradient"
 import { mediaHeaderStore } from "@/lib/media-header-store"
 
 /**
@@ -58,16 +59,7 @@ export function MediaBanner({
 
     return (
         <div className="relative w-full -mt-16 min-h-[70vh] md:min-h-[80vh] flex flex-col justify-end pt-20 sm:pt-32 pb-6 sm:pb-12 overflow-hidden" style={{ marginTop: "calc(-4rem - env(safe-area-inset-top))", paddingTop: "calc(5rem + env(safe-area-inset-top))" }}>
-                <div
-                    className="absolute inset-x-0 top-0 pointer-events-none"
-                    style={{
-                        height: "calc(4rem + env(safe-area-inset-top))",
-                        background: dominantColor
-                            ? `linear-gradient(to right, var(--color-surface), ${dominantColor})`
-                            : `linear-gradient(to right, var(--color-surface), var(--color-background))`,
-                        transition: "background 300ms ease-out",
-                    }}
-                />
+                <NavbarGradient color={dominantColor} />
                 <div className="absolute inset-x-0 inset-y-0 -z-10">
                     <Image
                         src={backdropUrl}

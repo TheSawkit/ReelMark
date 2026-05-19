@@ -118,7 +118,7 @@ export function ReviewDialog({
                         <button
                             onClick={handleDelete}
                             disabled={isPending}
-                            className="flex items-center gap-1.5 text-xs text-muted hover:text-red-400 transition-colors disabled:opacity-50 cursor-pointer"
+                            className="flex items-center gap-1.5 text-xs text-muted hover:text-red transition-colors disabled:opacity-50 cursor-pointer"
                         >
                             <Trash2 className="w-3.5 h-3.5" />
                             {t.movie.deleteReview}

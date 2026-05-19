@@ -5,15 +5,7 @@ interface SectionHeadingProps {
   className?: string
 }
 
-/**
- * A section heading with a decorative red accent bar on the left.
- *
- * @param children - Heading text or elements.
- * @param className - Additional classes merged with the base styles.
- *
- * @example
- * <SectionHeading>Cast & Crew</SectionHeading>
- */
+/** Section heading with a decorative primary accent bar on the left. */
 export function SectionHeading({ children, className }: SectionHeadingProps) {
   return (
     <h2 className={cn("text-xl font-bold text-text-main flex items-center gap-3 tracking-tight", className)}>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { searchMulti } from "@/lib/tmdb"
-import { MediaGrid } from "@/components/media/MediaGrid"
+import { MediaGrid } from "@/components/media/card/MediaGrid"
 import { SearchBar } from "@/components/search/SearchBar"
 import { getTranslations } from "@/lib/i18n/server"
 import { Search as SearchIcon } from "lucide-react"
@@ -52,7 +52,7 @@ export default async function SearchResultsPage({ searchParams }: SearchPageProp
                     <MediaGrid items={results} />
                 </div>
             ) : (
-                <div className="mt-24 flex flex-col items-center justify-center py-16 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="mt-24 flex flex-col items-center justify-center py-16 px-4 animate-in fade-in slide-in-from-bottom-4 duration-(--duration-slow)">
                     <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-muted/10 mb-6">
                         <SearchIcon className="w-12 h-12 text-muted/50" />
                     </div>

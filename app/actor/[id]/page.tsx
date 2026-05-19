@@ -4,8 +4,10 @@ import { getActorDetails, getActorMovieCredits, getActorTvCredits } from "@/lib/
 import { ActorBanner } from "@/components/actor/ActorBanner"
 import { ActorBio } from "@/components/actor/ActorBio"
 import { ActorFilmography } from "@/components/actor/ActorFilmography"
-import type { ActorPageProps } from "@/types/pages"
 import { movieCreditToMediaItem, tvCreditToMediaItem } from "@/lib/mappers"
+
+type ActorPageParams = Promise<{ id: string }>
+interface ActorPageProps { params: ActorPageParams }
 import { mergeMediaWithWatchlist } from "@/app/actions/media"
 import { getTranslations } from "@/lib/i18n/server"
 import { BASE_URL } from "@/lib/metadata"

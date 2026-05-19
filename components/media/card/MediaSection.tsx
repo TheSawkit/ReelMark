@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { MediaCard } from "@/components/media/MediaCard"
+import { MediaCard } from "@/components/media/card/MediaCard"
 import { ArrowRight } from "lucide-react"
 import { HorizontalScroll } from "@/components/shared/HorizontalScroll"
 import { useTranslation } from "@/lib/i18n/context"
@@ -102,10 +102,10 @@ function SectionTitle({ title, href }: { title: string; href: string }) {
             href={href}
             className="group/title flex items-center gap-3 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm"
         >
-            <h2 className="text-xl md:text-2xl font-bold group-hover/title:text-gold transition-colors duration-(--duration-medium) ease-[var(--ease-apple)] tracking-tight">
+            <h2 className="text-xl md:text-2xl font-bold group-hover/title:text-gold transition-colors duration-(--duration-medium) ease-apple tracking-tight">
                 {title}
             </h2>
-            <ArrowRight className="w-5 h-5 opacity-0 -translate-x-3 group-hover/title:opacity-100 group-hover/title:translate-x-0 transition-all duration-(--duration-medium) ease-[var(--ease-apple)] text-gold" />
+            <ArrowRight className="w-5 h-5 opacity-0 -translate-x-3 group-hover/title:opacity-100 group-hover/title:translate-x-0 transition-all duration-(--duration-medium) ease-apple text-gold" />
         </Link>
     )
 }

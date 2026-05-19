@@ -1,3 +1,5 @@
+import { MediaSectionsSkeleton } from "@/components/media/card/MediaSectionsSkeleton"
+
 export default function ExplorerLoading() {
     return (
         <div className="container mx-auto py-12 px-6">
@@ -12,19 +14,7 @@ export default function ExplorerLoading() {
                 ))}
             </div>
 
-            {[1, 2, 3].map((section) => (
-                <div key={section} className="mb-12">
-                    <div className="h-8 w-56 rounded bg-surface-2 animate-pulse mb-6" />
-                    <div className="flex gap-4 overflow-hidden">
-                        {Array.from({ length: 8 }).map((_, i) => (
-                            <div
-                                key={i}
-                                className="flex-none w-40 aspect-2/3 rounded-(--radius-cinema) bg-surface-2 animate-pulse"
-                            />
-                        ))}
-                    </div>
-                </div>
-            ))}
+            <MediaSectionsSkeleton sections={3} cardsPerSection={8} />
         </div>
     )
 }

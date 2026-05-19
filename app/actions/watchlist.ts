@@ -2,12 +2,12 @@
 
 import { revalidatePath } from "next/cache"
 import { getAuthenticatedUser, getOptionalUser } from "@/lib/supabase/auth-helpers"
+import { SHARED_REVALIDATE_PATHS } from "@/app/actions/_helpers"
+import { VALID_STATUSES, VALID_MEDIA_TYPES } from "@/lib/validators"
 import type { WatchStatus, WatchlistEntry, MediaType } from "@/types/tmdb"
 
 function revalidateWatchlistPaths() {
-    revalidatePath("/library")
-    revalidatePath("/dashboard")
-    revalidatePath("/")
+    SHARED_REVALIDATE_PATHS.forEach(p => revalidatePath(p))
     revalidatePath("/movie/[id]", "layout")
     revalidatePath("/tv/[id]", "layout")
 }
@@ -19,6 +19,9 @@ export async function addToWatchlist(
     status: WatchStatus,
     mediaType: MediaType = "movie"
 ): Promise<void> {
+    if (!VALID_STATUSES.has(status)) throw new Error("Invalid status")
+    if (!VALID_MEDIA_TYPES.has(mediaType)) throw new Error("Invalid media_type")
+
     const { supabase, userId } = await getAuthenticatedUser()
 
     const { error } = await supabase
@@ -69,7 +72,7 @@ export async function getUserWatchlist(): Promise<WatchlistEntry[]> {
 
     if (error) throw new Error(error.message)
 
-    return entries ?? []
+    return (entries as WatchlistEntry[]) ?? []
 }
 
 export async function getMediaWatchlistEntry(

@@ -43,16 +43,7 @@ export async function getImageLanguageFilter(): Promise<string> {
   return Array.from(languages).join(",")
 }
 
-/**
- * Fetches data from the TMDB API with Bearer auth and automatic locale injection.
- * Responses are cached via Next.js `fetch` revalidation.
- *
- * @param endpoint - TMDB API path (e.g. "/movie/popular").
- * @param params - Additional query string parameters to append.
- * @param revalidate - Cache revalidation interval in seconds (default: 3600).
- * @returns Parsed JSON response typed as `T`.
- * @throws Error if `TMDB_READ_ACCESS_TOKEN` is missing or the response is not OK.
- */
+/** Fetches from TMDB with Bearer auth, locale injection, and Next.js cache revalidation. */
 export async function fetchTMDB<T>(endpoint: string, params: Record<string, string> = {}, revalidate = 3600): Promise<T> {
   if (!TMDB_READ_ACCESS_TOKEN) {
     throw new Error("TMDB_READ_ACCESS_TOKEN is not defined.")
@@ -76,12 +67,7 @@ export async function fetchTMDB<T>(endpoint: string, params: Record<string, stri
   return response.json()
 }
 
-/**
- * Resolves the current user's region from their Supabase profile metadata.
- * Falls back to the server locale's country code, then "US" if unavailable.
- *
- * @returns ISO 3166-1 alpha-2 country code in uppercase (e.g. "FR", "US").
- */
+/** Resolves the user's region from profile metadata, falling back to locale country or "US". */
 export async function getUserRegion(): Promise<string> {
   try {
     const supabase = await createClient()

@@ -498,7 +498,7 @@ export function DataSettings() {
                                     <p className="text-sm font-medium text-text">{td.importing}</p>
                                     <div className="h-2 w-full rounded-full bg-surface-3 overflow-hidden">
                                         <div
-                                            className="h-full rounded-full bg-linear-to-r from-primary to-gold transition-all duration-300"
+                                            className="h-full rounded-full bg-linear-to-r from-primary to-gold transition-all duration-(--duration-base)"
                                             style={{ width: `${Math.round((phase.done / phase.total) * 100)}%` }}
                                         />
                                     </div>

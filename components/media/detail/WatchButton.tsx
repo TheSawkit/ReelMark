@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useOptimistic, useTransition, useEffect } from "react"
+import { useState, useOptimistic, useTransition } from "react"
 import { Eye, Plus, Check, Loader2, XCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { addToWatchlist, removeFromWatchlist } from "@/app/actions/watchlist"
 import { useTranslation } from "@/lib/i18n/context"
-import { ReviewDialog } from "@/components/media/ReviewDialog"
+import { useAutoResetError } from "@/hooks/useAutoResetError"
+import { ReviewDialog } from "@/components/media/reviews/ReviewDialog"
 import type { WatchButtonProps } from "@/types/components"
 
 export function WatchButton({
@@ -22,15 +23,9 @@ export function WatchButton({
 }: WatchButtonProps) {
     const [isPending, startTransition] = useTransition()
     const [active, setActive] = useOptimistic(initialActive)
-    const [error, setError] = useState(false)
+    const [error, setError] = useAutoResetError()
     const [reviewOpen, setReviewOpen] = useState(false)
     const { t } = useTranslation()
-
-    useEffect(() => {
-        if (!error) return
-        const id = setTimeout(() => setError(false), 3000)
-        return () => clearTimeout(id)
-    }, [error])
 
     const isUnreleased = releaseDate ? new Date(releaseDate) > new Date() : false
 

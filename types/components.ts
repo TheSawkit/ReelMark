@@ -102,13 +102,6 @@ export interface HorizontalScrollProps {
   containerClassName?: string
 }
 
-export interface CinemaSpotlightProps {
-  height?: number
-  maxWidth?: number | string
-  intensity?: number
-  position?: string
-}
-
 export interface ActorBannerProps {
   actor: ActorDetails
 }

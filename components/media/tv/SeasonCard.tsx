@@ -4,7 +4,7 @@ import { Calendar } from "lucide-react"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { getImageUrl } from "@/lib/tmdb/images"
-import { SeasonWatchIcon } from "@/components/media/SeasonWatchIcon"
+import { SeasonWatchIcon } from "@/components/media/tv/SeasonWatchIcon"
 import { ProgressBar } from "@/components/shared/ProgressBar"
 import type { Season } from "@/types/tmdb"
 

@@ -1,32 +1,23 @@
 import { createServerClient } from '@supabase/ssr'
 import { createClient as createSupabaseAdminClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import type { Database } from '@/types/database'
 
 export type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 
-/**
- * Creates a Supabase admin client with service_role privileges.
- * FOR SERVER-SIDE USE ONLY — never expose SUPABASE_SERVICE_ROLE_KEY to the client.
- *
- * @returns Supabase client with admin privileges.
- */
+/** Supabase admin client with service_role privileges — server-side only. */
 export function createAdminClient() {
-    return createSupabaseAdminClient(
+    return createSupabaseAdminClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,
     )
 }
 
-/**
- * Creates a Supabase server client for use in server components and route handlers.
- * Reads and writes cookies via the Next.js `cookies()` API.
- *
- * @returns A configured Supabase server client instance.
- */
+/** Supabase server client using Next.js cookies API. */
 export async function createClient() {
   const cookieStore = await cookies()
 
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
