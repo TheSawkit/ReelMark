@@ -5,44 +5,54 @@ import type { MediaItem } from "@/types/tmdb"
 
 /**
  * Fetches live search suggestions from the internal `/api/search` route,
- * debounced by 300ms to reduce API calls while typing.
+ * debounced by 300ms with stale-request cancellation via AbortController.
  * Resets results when the query is shorter than 2 characters.
  *
  * @param query - Current search input value.
- * @returns `{ results, isLoading, isOpen, setIsOpen, setResults }`
- *
- * @example
- * const { results, isLoading, isOpen, setIsOpen } = useSearchSuggestions(query)
+ * @returns `{ results, isLoading, isOpen, setIsOpen }`
  */
 export function useSearchSuggestions(query: string) {
     const [results, setResults] = useState<MediaItem[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
+    const [trackedQuery, setTrackedQuery] = useState(query)
+
+    if (trackedQuery !== query) {
+        setTrackedQuery(query)
+        if (query.trim().length < 2) {
+            setResults([])
+            setIsLoading(false)
+        }
+    }
 
     useEffect(() => {
-        const fetchSuggestions = async () => {
-            if (query.trim().length < 2) {
-                setResults([])
-                return
-            }
+        if (query.trim().length < 2) return
 
+        const controller = new AbortController()
+        const timer = setTimeout(async () => {
             setIsLoading(true)
             try {
-                const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`)
+                const response = await fetch(
+                    `/api/search?query=${encodeURIComponent(query)}`,
+                    { signal: controller.signal },
+                )
                 if (!response.ok) throw new Error(`Search failed: ${response.status}`)
                 const data: { results?: MediaItem[] } = await response.json()
-                setResults(Array.isArray(data.results) ? data.results.slice(0, 6) : [])
+                setResults(Array.isArray(data.results) ? data.results : [])
                 setIsOpen(true)
-            } catch {
+            } catch (err) {
+                if (err instanceof DOMException && err.name === "AbortError") return
                 setResults([])
             } finally {
-                setIsLoading(false)
+                if (!controller.signal.aborted) setIsLoading(false)
             }
-        }
+        }, 300)
 
-        const timer = setTimeout(fetchSuggestions, 300)
-        return () => clearTimeout(timer)
+        return () => {
+            clearTimeout(timer)
+            controller.abort()
+        }
     }, [query])
 
-    return { results, isLoading, isOpen, setIsOpen, setResults }
+    return { results, isLoading, isOpen, setIsOpen }
 }

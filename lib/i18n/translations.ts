@@ -545,6 +545,8 @@ export const translations = {
                 noResults: 'Aucun film trouvé pour cette recherche.',
                 noResultsMessage: 'Désolé, nous n\'avons trouvé aucun résultat.',
                 placeholder: 'Rechercher...',
+                suggestionsLabel: 'Suggestions de recherche',
+                suggestionsCount: '${count} suggestions disponibles',
             },
             categories: {
                 popular: 'Films Populaires',
@@ -1158,6 +1160,8 @@ export const translations = {
                 noResults: 'No movies found for this search.',
                 noResultsMessage: 'Sorry, we didn\'t find any results.',
                 placeholder: 'Search...',
+                suggestionsLabel: 'Search suggestions',
+                suggestionsCount: '${count} suggestions available',
             },
             categories: {
                 popular: 'Popular Movies',

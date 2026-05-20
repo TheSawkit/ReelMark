@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useId } from "react"
 import { Search, X, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
@@ -8,6 +8,7 @@ import { useTranslation } from "@/lib/i18n/context"
 import { useSearchSuggestions } from "@/hooks/useSearchSuggestions"
 import { SearchDropdown } from "./SearchDropdown"
 import { cn } from "@/lib/utils"
+import { getMediaHref } from "@/lib/media"
 
 interface SearchBarProps {
     variant?: "normal" | "compact"
@@ -19,10 +20,23 @@ interface SearchBarProps {
 export function SearchBar({ variant = "normal", onClose, onNavigate, autoFocus = false }: SearchBarProps) {
     const { t } = useTranslation()
     const [query, setQuery] = useState("")
+    const [activeIndex, setActiveIndex] = useState(-1)
     const { results, isLoading, isOpen, setIsOpen } = useSearchSuggestions(query)
+    const [trackedResults, setTrackedResults] = useState(results)
     const dropdownRef = useRef<HTMLDivElement>(null)
     const router = useRouter()
     const isCompact = variant === "compact"
+
+    const reactId = useId()
+    const inputId = `search-input-${reactId}`
+    const listboxId = `search-listbox-${reactId}`
+    const optionId = (index: number) => `search-option-${reactId}-${index}`
+    const expanded = isOpen && results.length > 0
+
+    if (trackedResults !== results) {
+        setTrackedResults(results)
+        setActiveIndex(-1)
+    }
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -37,15 +51,60 @@ export function SearchBar({ variant = "normal", onClose, onNavigate, autoFocus =
 
     const handleSelect = () => {
         setIsOpen(false)
+        setActiveIndex(-1)
         onClose?.()
         onNavigate?.()
     }
 
     const handleSearch = (e?: React.FormEvent) => {
-        if (e) e.preventDefault()
+        e?.preventDefault()
         if (query.trim().length < 2) return
         handleSelect()
         router.push(`/explorer/search?q=${encodeURIComponent(query.trim())}`)
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (!results.length && e.key !== "Escape") return
+
+        switch (e.key) {
+            case "ArrowDown":
+                e.preventDefault()
+                if (!isOpen) setIsOpen(true)
+                setActiveIndex(prev => (prev + 1) % results.length)
+                break
+            case "ArrowUp":
+                e.preventDefault()
+                if (!isOpen) setIsOpen(true)
+                setActiveIndex(prev => (prev - 1 + results.length) % results.length)
+                break
+            case "Home":
+                if (isOpen && results.length > 0) {
+                    e.preventDefault()
+                    setActiveIndex(0)
+                }
+                break
+            case "End":
+                if (isOpen && results.length > 0) {
+                    e.preventDefault()
+                    setActiveIndex(results.length - 1)
+                }
+                break
+            case "Enter":
+                if (activeIndex >= 0 && activeIndex < results.length) {
+                    e.preventDefault()
+                    const item = results[activeIndex]
+                    handleSelect()
+                    router.push(getMediaHref(item))
+                }
+                break
+            case "Escape":
+                if (isOpen) {
+                    e.preventDefault()
+                    setIsOpen(false)
+                    setActiveIndex(-1)
+                }
+                break
+        }
     }
 
     return (
@@ -54,14 +113,19 @@ export function SearchBar({ variant = "normal", onClose, onNavigate, autoFocus =
             ref={dropdownRef}
         >
             <form onSubmit={handleSearch} className="relative group flex items-center" role="search">
-                <label htmlFor={isCompact ? "search-input-compact" : "search-input"} className="sr-only">
+                <label htmlFor={inputId} className="sr-only">
                     {t.pages.search.placeholder}
                 </label>
                 <Input
-                    id={isCompact ? "search-input-compact" : "search-input"}
+                    id={inputId}
                     type="text"
                     placeholder={t.pages.search.placeholder}
                     autoComplete="off"
+                    role="combobox"
+                    aria-expanded={expanded}
+                    aria-controls={listboxId}
+                    aria-autocomplete="list"
+                    aria-activedescendant={activeIndex >= 0 ? optionId(activeIndex) : undefined}
                     className={cn(
                         "transition-all duration-(--duration-base) ease-apple",
                         isCompact
@@ -71,6 +135,7 @@ export function SearchBar({ variant = "normal", onClose, onNavigate, autoFocus =
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => query.length >= 2 && setIsOpen(true)}
+                    onKeyDown={handleKeyDown}
                     autoFocus={autoFocus}
                 />
 
@@ -112,7 +177,11 @@ export function SearchBar({ variant = "normal", onClose, onNavigate, autoFocus =
                 results={results}
                 isOpen={isOpen}
                 isLoading={isLoading}
+                activeIndex={activeIndex}
+                listboxId={listboxId}
+                optionId={optionId}
                 onClose={handleSelect}
+                onActiveChange={setActiveIndex}
             />
         </div>
     )
