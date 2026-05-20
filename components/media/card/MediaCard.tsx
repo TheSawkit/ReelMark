@@ -9,6 +9,7 @@ import { WatchButton } from "@/components/media/detail/WatchButton"
 import { useTranslation } from "@/lib/i18n/context"
 import { getLocale } from "@/lib/i18n/utils"
 import { formatShortDate } from "@/lib/format"
+import { getMediaHref } from "@/lib/media"
 import type { MediaCardProps } from "@/types/components"
 import type { WatchlistEntry } from "@/types/tmdb"
 
@@ -39,7 +40,7 @@ export function MediaCard({ media, className, watchlistEntry, hideRating, tvProg
     const { t, lang } = useTranslation()
     const locale = getLocale(lang)
 
-    const href = media.media_type === "tv" ? `/tv/${media.id}` : `/movie/${media.id}`
+    const href = getMediaHref(media)
     const isWatched = watchlistEntry?.status === "watched"
     const resolvedStatus = media.media_type === "tv"
         ? "to_watch"

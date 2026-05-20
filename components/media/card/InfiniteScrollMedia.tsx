@@ -7,6 +7,7 @@ import { MediaGrid } from "@/components/media/card/MediaGrid"
 import { MediaCardSkeleton } from "@/components/media/card/MediaCardSkeleton"
 import { fetchMoreMedia } from "@/app/actions/media"
 import { useTranslation } from "@/lib/i18n/context"
+import { getMediaKey } from "@/lib/media"
 import type { InfiniteScrollMediaProps } from "@/types/components"
 
 const MAX_RENDERED_ITEMS = 80
@@ -81,8 +82,8 @@ export function InfiniteScrollMedia({ initialItems, category, clientSideData, hi
                 }
 
                 setItems((prev) => {
-                    const existingIds = new Set(prev.map((m) => `${m.media_type}-${m.id}`))
-                    const uniqueItems = newItems.filter((m) => !existingIds.has(`${m.media_type}-${m.id}`))
+                    const existingIds = new Set(prev.map(getMediaKey))
+                    const uniqueItems = newItems.filter((m) => !existingIds.has(getMediaKey(m)))
                     if (uniqueItems.length === 0) {
                         setHasMore(false)
                         return prev

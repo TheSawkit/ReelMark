@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react"
 import { HorizontalScroll } from "@/components/shared/HorizontalScroll"
 import { useTranslation } from "@/lib/i18n/context"
 import { watchlistEntryToMediaItem } from "@/lib/mappers"
+import { getMediaKey } from "@/lib/media"
 import type { MediaSectionProps } from "@/types/components"
 import type { WatchlistEntry } from "@/types/tmdb"
 import { StaggeredItem } from "@/components/ui/StaggeredItem"
@@ -40,7 +41,7 @@ export function MediaSection({ title, items, categoryUrl, hideRating }: MediaSec
         >
             {items.map((media, index) => (
                 <StaggeredItem
-                    key={`${media.media_type}-${media.id}`}
+                    key={getMediaKey(media)}
                     index={index}
                     staggerMs={CARD_ANIMATION_DELAY_MS}
                     className="flex-none w-40 md:w-50 snap-start"
