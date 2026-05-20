@@ -204,12 +204,12 @@ export async function deleteAccount(prevState: unknown, formData: FormData) {
     const confirmation = formData.get('confirmation')
     const password = formData.get('password')
 
-    if (typeof confirmation !== 'string' || confirmation !== 'DELETE') {
+    if (typeof confirmation !== 'string' || confirmation !== t.danger.confirmPlaceholder) {
         return { error: t.settings.dangerZone.incorrectConfirmation, success: false }
     }
 
     if (typeof password !== 'string' || !password) {
-        return { error: t.settings.dangerZone.confirmPassword, success: false }
+        return { error: t.settings.dangerZone.passwordRequired, success: false }
     }
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -218,7 +218,7 @@ export async function deleteAccount(prevState: unknown, formData: FormData) {
     })
 
     if (signInError) {
-        return { error: t.settings.dangerZone.confirmPassword, success: false }
+        return { error: t.settings.dangerZone.incorrectPassword, success: false }
     }
 
     await supabase.from('episode_watches').delete().eq('user_id', user.id)
@@ -235,6 +235,18 @@ export async function deleteAccount(prevState: unknown, formData: FormData) {
     await supabase.from('user_profiles').delete().eq('user_id', user.id)
 
     const adminClient = createAdminClient()
+
+    const { data: avatarFiles } = await adminClient.storage.from('avatars').list('', {
+        limit: 1000,
+        search: user.id,
+    })
+    const userAvatarFiles = (avatarFiles ?? [])
+        .filter(f => f.name.startsWith(`${user.id}-`))
+        .map(f => f.name)
+    if (userAvatarFiles.length > 0) {
+        await adminClient.storage.from('avatars').remove(userAvatarFiles)
+    }
+
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(user.id)
 
     if (deleteError) {

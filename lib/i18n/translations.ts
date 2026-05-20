@@ -179,6 +179,8 @@ export const translations = {
                 confirmDelete: 'Je comprends que mon compte sera supprimé',
                 incorrectConfirmation: 'Texte de confirmation incorrect. Veuillez taper "SUPPRIMER".',
                 confirmPassword: 'Entrez votre mot de passe pour confirmer',
+                passwordRequired: 'Mot de passe requis pour confirmer la suppression',
+                incorrectPassword: 'Mot de passe incorrect',
             },
             social: {
                 title: 'Réseaux sociaux',
@@ -790,6 +792,8 @@ export const translations = {
                 confirmDelete: 'I understand my account will be deleted',
                 incorrectConfirmation: 'Incorrect confirmation text. Please type "DELETE".',
                 confirmPassword: 'Enter your password to confirm',
+                passwordRequired: 'Password required to confirm deletion',
+                incorrectPassword: 'Incorrect password',
             },
             social: {
                 title: 'Social Links',
