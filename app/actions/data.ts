@@ -6,6 +6,36 @@ import { searchMulti } from '@/lib/tmdb/search'
 import { VALID_STATUSES, VALID_MEDIA_TYPES, validateRating } from '@/lib/validators'
 import type { WatchStatus } from '@/types/tmdb'
 
+interface TmdbVerified {
+    type: 'movie' | 'tv'
+    title: string
+    poster_path: string | null
+}
+
+async function verifyTmdbType(id: number, expected: 'movie' | 'tv'): Promise<TmdbVerified | null> {
+    const [movieResult, tvResult] = await Promise.allSettled([
+        fetchTMDB<{ title: string; poster_path: string | null }>(`/movie/${id}`, {}, 86400),
+        fetchTMDB<{ name: string; poster_path: string | null }>(`/tv/${id}`, {}, 86400),
+    ])
+
+    for (const r of [movieResult, tvResult]) {
+        if (r.status === 'rejected' && !((r.reason as Error)?.message ?? '').includes('404')) {
+            throw r.reason
+        }
+    }
+
+    const asMovie = movieResult.status === 'fulfilled'
+        ? { type: 'movie' as const, title: movieResult.value.title, poster_path: movieResult.value.poster_path }
+        : null
+    const asTv = tvResult.status === 'fulfilled'
+        ? { type: 'tv' as const, title: tvResult.value.name, poster_path: tvResult.value.poster_path }
+        : null
+
+    const preferred = expected === 'movie' ? asMovie : asTv
+    const fallback = expected === 'movie' ? asTv : asMovie
+    return preferred ?? fallback ?? null
+}
+
 export interface ExportData {
     version: 1
     exported_at: string
@@ -154,7 +184,13 @@ export async function importBatch(items: ImportItem[]): Promise<ImportBatchResul
                 })
 
                 if (item.tmdbId && Number.isInteger(item.tmdbId) && item.tmdbId > 0) {
-                    return resolve(item.tmdbId, mediaType, fallbackTitle, item.posterPath ?? null)
+                    try {
+                        const verified = await verifyTmdbType(item.tmdbId, mediaType)
+                        if (!verified) return null
+                        return resolve(item.tmdbId, verified.type, verified.title || fallbackTitle, verified.poster_path)
+                    } catch {
+                        return resolve(item.tmdbId, mediaType, fallbackTitle, item.posterPath ?? null)
+                    }
                 }
 
                 if (item.imdbId && /^tt\d+$/.test(item.imdbId)) {

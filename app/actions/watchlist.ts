@@ -17,7 +17,7 @@ export async function addToWatchlist(
     mediaTitle: string,
     posterPath: string | null,
     status: WatchStatus,
-    mediaType: MediaType = "movie"
+    mediaType: MediaType
 ): Promise<void> {
     if (!VALID_STATUSES.has(status)) throw new Error("Invalid status")
     if (!VALID_MEDIA_TYPES.has(mediaType)) throw new Error("Invalid media_type")
@@ -43,7 +43,7 @@ export async function addToWatchlist(
     revalidateWatchlistPaths()
 }
 
-export async function removeFromWatchlist(mediaId: number, mediaType: MediaType = "movie"): Promise<void> {
+export async function removeFromWatchlist(mediaId: number, mediaType: MediaType): Promise<void> {
     const { supabase, userId } = await getAuthenticatedUser()
 
     const { error } = await supabase
@@ -77,7 +77,7 @@ export async function getUserWatchlist(): Promise<WatchlistEntry[]> {
 
 export async function getMediaWatchlistEntry(
     mediaId: number,
-    mediaType: MediaType = "movie"
+    mediaType: MediaType
 ): Promise<WatchlistEntry | null> {
     const { supabase, userId } = await getOptionalUser()
 

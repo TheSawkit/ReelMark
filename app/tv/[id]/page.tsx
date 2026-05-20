@@ -1,4 +1,5 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
+import { fetchTMDB } from "@/lib/tmdb/client"
 import { Suspense } from "react"
 import type { Metadata } from "next"
 import { getImageUrl, getTvShowDetails, getTvShowCredits, getTvShowVideos, getTvShowImages, selectHeroImage, getTvShowWatchProviders } from "@/lib/tmdb"
@@ -42,6 +43,12 @@ export default async function TvShowPage(props: TvPageProps) {
             getTvShowImages(tvId),
         ])
     } catch {
+        let isMovie = false
+        try {
+            await fetchTMDB(`/movie/${tvId}`, {}, 86400)
+            isMovie = true
+        } catch {}
+        if (isMovie) redirect(`/movie/${tvId}`)
         notFound()
     }
 
