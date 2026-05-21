@@ -85,6 +85,11 @@ export interface PublicReview {
   created_at: string
 }
 
+export interface UserReviewsPage {
+  reviews: Review[]
+  nextCursor: string | null
+}
+
 export type PrivacyDefaults = Omit<PrivacySettings, 'user_id'>
 
 export interface FriendEntry {

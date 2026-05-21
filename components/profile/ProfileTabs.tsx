@@ -16,6 +16,8 @@ interface ProfileTabsProps {
     toWatch: WatchlistEntry[]
     watched: WatchlistEntry[]
     reviews: Review[]
+    initialReviewsCursor: string | null
+    profileUserId: string
     playlists: Playlist[]
     friends: FriendEntry[]
     privacy: PrivacySettings
@@ -27,6 +29,8 @@ export function ProfileTabs({
     toWatch,
     watched,
     reviews,
+    initialReviewsCursor,
+    profileUserId,
     playlists,
     friends,
     privacy,
@@ -99,6 +103,8 @@ export function ProfileTabs({
             {activeTab === 'reviews' && (
                 <ReviewsSection
                     reviews={reviews}
+                    initialNextCursor={initialReviewsCursor}
+                    profileUserId={profileUserId}
                     visibility={privacy.reviews_visibility}
                     canView={canView(privacy.reviews_visibility)}
                     isOwnProfile={isOwnProfile}

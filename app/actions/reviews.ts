@@ -7,7 +7,7 @@ import { validateRating } from '@/lib/validators'
 import { revalidateProfile } from '@/app/actions/_helpers'
 import { getTvShowDetails, getSeasonDetails } from '@/lib/tmdb/tv'
 import { MAX_REVIEW_LENGTH } from '@/types/profile'
-import type { Review, PublicReview, ReviewMediaType } from '@/types/profile'
+import type { Review, PublicReview, ReviewMediaType, UserReviewsPage } from '@/types/profile'
 
 function parseRatingRow(data: unknown): { avg: number; count: number } | null {
     const row = (data as Array<{ avg: string | null; count: string }> | null)?.[0] ?? null
@@ -15,21 +15,40 @@ function parseRatingRow(data: unknown): { avg: number; count: number } | null {
     return { avg: Number(row.avg), count: Number(row.count) }
 }
 
-/**
- * Returns all reviews for a given user, newest first.
- */
-export async function getUserReviews(userId: string): Promise<Review[]> {
-    const supabase = await createClient()
+const REVIEWS_PAGE_SIZE = 20
+const REVIEWS_MAX_PAGE_SIZE = 50
 
-    const { data, error } = await supabase
+/**
+ * Returns a page of reviews for a given user, newest first.
+ * Pass nextCursor from the previous page to get the next batch.
+ */
+export async function getUserReviews(
+    userId: string,
+    cursor?: string,
+    limit: number = REVIEWS_PAGE_SIZE,
+): Promise<UserReviewsPage> {
+    const supabase = await createClient()
+    const pageSize = Math.min(Math.max(1, limit), REVIEWS_MAX_PAGE_SIZE)
+
+    let query = supabase
         .from('reviews')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(100)
+        .order('id', { ascending: false })
+        .limit(pageSize + 1)
 
+    if (cursor) query = query.lt('created_at', cursor)
+
+    const { data, error } = await query
     if (error) throw new Error(error.message)
-    return (data as Review[]) ?? []
+
+    const rows = (data as Review[]) ?? []
+    const hasMore = rows.length > pageSize
+    const reviews = hasMore ? rows.slice(0, pageSize) : rows
+    const nextCursor = hasMore ? reviews[reviews.length - 1].created_at : null
+
+    return { reviews, nextCursor }
 }
 
 /**

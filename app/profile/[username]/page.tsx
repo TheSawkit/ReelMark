@@ -50,7 +50,7 @@ export default async function ProfilePage({ params }: Props) {
     const supabase = await createClient()
     const adminClient = createAdminClient()
 
-    const [privacy, reviews, playlists, rawFriends, friendship, watchlistData] = await Promise.all([
+    const [privacy, reviewsPage, playlists, rawFriends, friendship, watchlistData] = await Promise.all([
         getPrivacySettings(profile.user_id),
         getUserReviews(profile.user_id),
         getUserPlaylists(profile.user_id),
@@ -95,7 +95,8 @@ export default async function ProfilePage({ params }: Props) {
         }
     }
 
-    const filteredReviews = canView(privacy.reviews_visibility) ? reviews : []
+    const filteredReviews = canView(privacy.reviews_visibility) ? reviewsPage.reviews : []
+    const initialReviewsCursor = canView(privacy.reviews_visibility) ? reviewsPage.nextCursor : null
     const filteredPlaylists = canView(privacy.playlists_visibility) ? playlists : []
     const filteredFriends = canView(privacy.friends_visibility) ? allFriendEntries : []
 
@@ -123,6 +124,8 @@ export default async function ProfilePage({ params }: Props) {
                 toWatch={toWatch}
                 watched={watched}
                 reviews={filteredReviews}
+                initialReviewsCursor={initialReviewsCursor}
+                profileUserId={profile.user_id}
                 playlists={filteredPlaylists}
                 friends={filteredFriends}
                 privacy={privacy}

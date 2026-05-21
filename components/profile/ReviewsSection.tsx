@@ -2,13 +2,14 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useTransition } from 'react'
-import { Pencil } from 'lucide-react'
+import { useState, useTransition, useRef, useEffect, useCallback } from 'react'
+import { Loader2, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
-import { deleteReview } from '@/app/actions/reviews'
+import { deleteReview, getUserReviews } from '@/app/actions/reviews'
 import { getImageUrl } from '@/lib/tmdb/images'
 import type { Review, PrivacyVisibility } from '@/types/profile'
 import { useTranslation } from '@/lib/i18n/context'
+import { useInView } from '@/hooks/useInView'
 import { PrivacyBlock } from '@/components/profile/PrivacyBlock'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { StarRating } from '@/components/ui/StarRating'
@@ -18,17 +19,46 @@ import { ReviewDialog } from '@/components/media/reviews/ReviewDialog'
 
 interface ReviewsSectionProps {
     reviews: Review[]
+    initialNextCursor: string | null
+    profileUserId: string
     visibility: PrivacyVisibility
     canView: boolean
     isOwnProfile: boolean
 }
 
-export function ReviewsSection({ reviews: initial, visibility, canView, isOwnProfile }: ReviewsSectionProps) {
+export function ReviewsSection({ reviews: initial, initialNextCursor, profileUserId, visibility, canView, isOwnProfile }: ReviewsSectionProps) {
     const { t } = useTranslation()
     const [reviews, setReviews] = useState(initial)
     const [isPending, startTransition] = useTransition()
     const [editingReview, setEditingReview] = useState<Review | null>(null)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
+    const [nextCursor, setNextCursor] = useState(initialNextCursor)
+    const [isLoadingMore, startLoadMoreTransition] = useTransition()
+    const [loadError, setLoadError] = useState<string | null>(null)
+    const loaderRef = useRef<HTMLDivElement | null>(null)
+    const isLoaderVisible = useInView(loaderRef, { rootMargin: '0px 0px 400px 0px' })
+
+    const loadMore = useCallback(() => {
+        if (!nextCursor || isLoadingMore) return
+        startLoadMoreTransition(async () => {
+            setLoadError(null)
+            try {
+                const page = await getUserReviews(profileUserId, nextCursor)
+                setReviews(prev => {
+                    const seen = new Set(prev.map(r => r.id))
+                    return [...prev, ...page.reviews.filter(r => !seen.has(r.id))]
+                })
+                setNextCursor(page.nextCursor)
+            } catch {
+                setLoadError(t.common.actionError)
+            }
+        })
+    }, [nextCursor, isLoadingMore, profileUserId, t, startLoadMoreTransition])
+
+    useEffect(() => {
+        if (isLoaderVisible && nextCursor && !isLoadingMore) loadMore()
+    }, [isLoaderVisible, nextCursor, isLoadingMore, loadMore])
 
     const handleDeleteClick = (reviewId: string) => {
         setConfirmDeleteId(reviewId)
@@ -137,6 +167,18 @@ export function ReviewsSection({ reviews: initial, visibility, canView, isOwnPro
                     </article>
                 ))}
             </div>
+
+            {nextCursor && (
+                <div ref={loaderRef} aria-hidden="true" className="h-px" />
+            )}
+            {isLoadingMore && (
+                <div className="flex justify-center py-4">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted" aria-hidden />
+                </div>
+            )}
+            {loadError && (
+                <p role="alert" className="text-sm text-red-2 text-center py-2">{loadError}</p>
+            )}
 
             {editingReview && (
                 <ReviewDialog
