@@ -55,7 +55,8 @@ export async function getUserReviews(
  * Returns the authenticated user's review for a specific media item, or null if none.
  */
 export async function getMediaReview(mediaId: number, mediaType: ReviewMediaType): Promise<Review | null> {
-    const { supabase, userId } = await getAuthenticatedUser()
+    const { supabase, userId } = await getOptionalUser()
+    if (!userId) return null
 
     const { data } = await supabase
         .from('reviews')

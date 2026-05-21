@@ -12,7 +12,8 @@ import { SectionHeading } from "@/components/ui/SectionHeading"
 import { PublicReviewsSection } from "@/components/media/reviews/PublicReviewsSection"
 import { getMediaWatchlistEntry } from "@/app/actions/watchlist"
 import { getTvShowWatchProgress } from "@/app/actions/episodes"
-import { getShowAverageRating } from "@/app/actions/reviews"
+import { getShowAverageRating, getMediaReview } from "@/app/actions/reviews"
+import { CommunityRatingBadge } from "@/components/media/detail/CommunityRatingBadge"
 import { filterTrailers, buildMediaDetailMetadata } from "@/lib/media-detail"
 import { filterAvailableVideos } from "@/lib/youtube"
 import { getServerLocale, getTranslations } from "@/lib/i18n/server"
@@ -52,12 +53,13 @@ export default async function TvShowPage(props: TvPageProps) {
         notFound()
     }
 
-    const [trailers, watchProviders, watchlistEntry, watchProgress, showRating, t, locale] = await Promise.all([
+    const [trailers, watchProviders, watchlistEntry, watchProgress, showRating, userReview, t, locale] = await Promise.all([
         filterAvailableVideos(filterTrailers(videos)),
         getTvShowWatchProviders(tvId).catch(() => null),
         getMediaWatchlistEntry(tvId, "tv"),
         getTvShowWatchProgress(tvId),
         getShowAverageRating(tvId),
+        getMediaReview(tvId, "tv"),
         getTranslations(),
         getServerLocale(),
     ])
@@ -67,6 +69,8 @@ export default async function TvShowPage(props: TvPageProps) {
     const totalEpisodes = standardSeasons.reduce((sum: number, s: { episode_count: number }) => sum + s.episode_count, 0)
     const totalWatched = Array.from(watchProgress.values()).reduce((sum, count) => sum + count, 0)
     const overallPercent = totalEpisodes > 0 ? Math.round((totalWatched / totalEpisodes) * 100) : 0
+
+    const isWatched = watchlistEntry?.status === "watched"
 
     const banner = (
         <MediaBanner
@@ -79,6 +83,17 @@ export default async function TvShowPage(props: TvPageProps) {
             runtime={tvDetails.episode_run_time?.[0]}
             certification={tvDetails.certification}
             genres={tvDetails.genres}
+            communityBadge={
+                <CommunityRatingBadge
+                    rating={showRating}
+                    isWatched={isWatched}
+                    mediaId={tvDetails.id}
+                    mediaType="tv"
+                    mediaTitle={tvDetails.name}
+                    posterPath={tvDetails.poster_path}
+                    initialReview={userReview}
+                />
+            }
             actions={
                 <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <div className="w-full sm:w-auto">

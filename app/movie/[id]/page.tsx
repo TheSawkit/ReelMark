@@ -8,7 +8,8 @@ import { WatchButton } from "@/components/media/detail/WatchButton"
 import { MediaDetailLayout } from "@/components/media/detail/MediaDetailLayout"
 import { PublicReviewsSection } from "@/components/media/reviews/PublicReviewsSection"
 import { getMediaWatchlistEntry } from "@/app/actions/watchlist"
-import { getAverageRating } from "@/app/actions/reviews"
+import { getAverageRating, getMediaReview } from "@/app/actions/reviews"
+import { CommunityRatingBadge } from "@/components/media/detail/CommunityRatingBadge"
 import { filterTrailers, buildMediaDetailMetadata } from "@/lib/media-detail"
 import { filterAvailableVideos } from "@/lib/youtube"
 import { Eye } from "lucide-react"
@@ -48,11 +49,12 @@ export default async function MoviePage(props: MoviePageProps) {
         notFound()
     }
 
-    const [trailers, watchProviders, watchlistEntry, movieRating, t, locale] = await Promise.all([
+    const [trailers, watchProviders, watchlistEntry, movieRating, userReview, t, locale] = await Promise.all([
         filterAvailableVideos(filterTrailers(videos)),
         getMovieWatchProviders(movieId).catch(() => null),
         getMediaWatchlistEntry(movieId, "movie"),
         getAverageRating(movieId, "movie"),
+        getMediaReview(movieId, "movie"),
         getTranslations(),
         getServerLocale(),
     ])
@@ -71,6 +73,17 @@ export default async function MoviePage(props: MoviePageProps) {
             runtime={movieDetails.runtime}
             certification={movieDetails.certification}
             genres={movieDetails.genres}
+            communityBadge={
+                <CommunityRatingBadge
+                    rating={movieRating}
+                    isWatched={isWatched}
+                    mediaId={movieDetails.id}
+                    mediaType="movie"
+                    mediaTitle={movieDetails.title}
+                    posterPath={movieDetails.poster_path}
+                    initialReview={userReview}
+                />
+            }
             actions={
                 <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     {!isWatched && (

@@ -12,7 +12,6 @@ import { formatDate, formatRuntime } from "@/lib/format"
 import { useDominantColor } from "@/hooks/useDominantColor"
 import { NavbarGradient } from "@/components/ui/NavbarGradient"
 import { mediaHeaderStore } from "@/lib/media-header-store"
-
 /**
  * Large hero banner displaying media details with parallax backdrop.
  * Feeds title and scroll state into mediaHeaderStore for NavbarClient and MediaActionsBar.
@@ -28,6 +27,7 @@ export function MediaBanner({
     certification,
     genres,
     actions,
+    communityBadge,
 }: MediaBannerProps) {
     const { t, lang } = useTranslation()
     const locale = getLocale(lang)
@@ -112,6 +112,8 @@ export function MediaBanner({
                                         {voteAverage && voteAverage > 0 ? voteAverage.toFixed(1) : t.movie.notRated}
                                     </span>
                                 </HeroBadge>
+
+                                {communityBadge}
 
                                 {releaseDate && (
                                     <HeroBadge icon={<Calendar className="h-5 w-5 text-muted" />}>

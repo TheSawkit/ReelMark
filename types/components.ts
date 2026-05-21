@@ -46,6 +46,7 @@ export interface MediaBannerProps {
   certification?: string
   genres?: { id: number; name: string }[]
   actions?: ReactNode
+  communityBadge?: ReactNode
 }
 
 export interface MediaDescriptionProps {
