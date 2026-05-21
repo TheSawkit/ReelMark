@@ -47,7 +47,7 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
               </Field>
               {state?.error && <p role="alert" className="text-sm text-red-2 text-center">{state.error}</p>}
               <Field>
-                <Button type="submit" disabled={isPending}>
+                <Button type="submit" loading={isPending}>
                   {isPending ? t.common.loading : t.auth.updatePassword.button}
                 </Button>
                 <FieldDescription className="text-center">
