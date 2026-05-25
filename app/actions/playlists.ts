@@ -123,6 +123,7 @@ export async function addToPlaylist(
         )
 
     if (error) throw new Error(error.message)
+    await revalidateProfile(supabase)
 }
 
 /**
@@ -152,4 +153,5 @@ export async function removeFromPlaylist(playlistId: string, mediaId: number, me
         .eq('media_type', mediaType)
 
     if (error) throw new Error(error.message)
+    await revalidateProfile(supabase)
 }

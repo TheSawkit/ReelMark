@@ -83,7 +83,7 @@ function PlaylistCard({ playlist, isOwn, onDelete, onUpdate }: {
     return (
         <>
             <div
-                className="group relative h-44 overflow-hidden rounded-xl cursor-pointer bg-surface border border-border-subtle"
+                className="group relative min-h-44 flex flex-col overflow-hidden rounded-xl cursor-pointer bg-surface border border-border-subtle"
                 onClick={openViewDialog}
                 role="button"
                 aria-label={t.profile.viewPlaylist}
@@ -94,15 +94,15 @@ function PlaylistCard({ playlist, isOwn, onDelete, onUpdate }: {
                         alt=""
                         fill
                         sizes="100vw"
-                        className="object-cover scale-125 blur-xl opacity-60 pointer-events-none"
+                        className="object-cover scale-125 blur-xl opacity-80 pointer-events-none"
                     />
                 )}
                 <div className="absolute inset-0 bg-linear-to-r from-black/90 via-black/60 to-black/10" />
                 <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
 
-                <div className="relative z-10 h-full flex items-center pl-5 pr-20 py-4 gap-6">
-                    <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
-                        <h3 className="font-display text-3xl font-normal leading-none uppercase tracking-wide text-white truncate">
+                <div className="relative z-10 flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 py-4 gap-3 sm:gap-6">
+                    <div className="min-w-0 sm:flex-none sm:max-w-60 flex flex-col justify-center gap-1 max-sm:pr-14">
+                        <h3 className="font-display text-2xl sm:text-3xl font-normal leading-none uppercase tracking-wide text-white truncate">
                             {playlist.name}
                         </h3>
                         {playlist.description && (
@@ -126,7 +126,7 @@ function PlaylistCard({ playlist, isOwn, onDelete, onUpdate }: {
                                             'border-2 border-black shadow-card',
                                             'transition-transform duration-(--duration-base) ease-out',
                                             'group-hover:-translate-y-1',
-                                            i > 0 && '-ml-[18px]',
+                                            i > 0 && '-ml-4.5',
                                         )}
                                         style={{ zIndex: previewItems.length - i, transitionDelay: `${i * 30}ms` }}
                                     >
@@ -147,7 +147,7 @@ function PlaylistCard({ playlist, isOwn, onDelete, onUpdate }: {
                                 ))}
                                 {items.length > 4 && (
                                     <div
-                                        className="relative w-14 aspect-2/3 rounded-poster bg-surface-2/70 border-2 border-black -ml-[18px] shrink-0 flex items-center justify-center"
+                                        className="relative w-14 aspect-2/3 rounded-poster bg-surface-2/70 border-2 border-black -ml-4.5 shrink-0 flex items-center justify-center"
                                         style={{ zIndex: 0 }}
                                     >
                                         <span className="text-xs text-white/50 font-medium">+{items.length - 4}</span>

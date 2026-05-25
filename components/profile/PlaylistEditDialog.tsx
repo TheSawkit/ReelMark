@@ -8,6 +8,8 @@ import { toast } from 'sonner'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { addToPlaylist, removeFromPlaylist, updatePlaylist } from '@/app/actions/playlists'
 import { getImageUrl } from '@/lib/tmdb/images'
+import { getMediaKey } from '@/lib/media'
+import { useSearchSuggestions } from '@/hooks/useSearchSuggestions'
 import type { Playlist, PlaylistItem } from '@/types/profile'
 import type { MediaItem } from '@/types/tmdb'
 import { useTranslation } from '@/lib/i18n/context'
@@ -38,8 +40,7 @@ export function PlaylistEditDialog({
 }: PlaylistEditDialogProps) {
     const { t } = useTranslation()
     const [query, setQuery] = useState('')
-    const [searchResults, setSearchResults] = useState<MediaItem[]>([])
-    const [isSearching, setIsSearching] = useState(false)
+    const { results: searchResults, isLoading: isSearching } = useSearchSuggestions(query)
     const [pendingAdd, setPendingAdd] = useState<string | null>(null)
     const [pendingRemove, setPendingRemove] = useState<string | null>(null)
 
@@ -50,7 +51,7 @@ export function PlaylistEditDialog({
     const inputRef = useRef<HTMLInputElement>(null)
 
     const items = playlist.items ?? []
-    const inPlaylist = new Set(items.map(i => `${i.media_id}:${i.media_type}`))
+    const inPlaylist = new Set(items.map(i => getMediaKey({ id: i.media_id, media_type: i.media_type })))
     const isSearchMode = mode === 'edit' && query.trim().length >= 2
     const hasAnyPending = pendingAdd !== null || pendingRemove !== null
     const metaChanged = editName.trim() !== playlist.name || (editDesc.trim() || null) !== playlist.description
@@ -70,27 +71,6 @@ export function PlaylistEditDialog({
         if (open) reset()
     }, [open, playlist.name, playlist.description])
 
-    useEffect(() => {
-        const search = async () => {
-            if (!isSearchMode) {
-                setSearchResults([])
-                return
-            }
-            setIsSearching(true)
-            try {
-                const res = await fetch(`/api/search?query=${encodeURIComponent(query.trim())}`)
-                const data: { results?: MediaItem[] } = await res.json()
-                setSearchResults(Array.isArray(data.results) ? data.results.slice(0, 10) : [])
-            } catch {
-                setSearchResults([])
-            } finally {
-                setIsSearching(false)
-            }
-        }
-        const timer = setTimeout(search, 300)
-        return () => clearTimeout(timer)
-    }, [query, isSearchMode])
-
     const handleSaveMeta = async () => {
         if (!editName.trim() || !metaChanged || isSavingMeta) return
         setIsSavingMeta(true)
@@ -105,7 +85,7 @@ export function PlaylistEditDialog({
     }
 
     const handleAdd = async (item: MediaItem) => {
-        const key = `${item.id}:${item.media_type}`
+        const key = getMediaKey(item)
         if (inPlaylist.has(key) || pendingAdd === key) return
         setPendingAdd(key)
         try {
@@ -128,7 +108,7 @@ export function PlaylistEditDialog({
     }
 
     const handleRemove = async (item: PlaylistItem) => {
-        const key = `${item.media_id}:${item.media_type}`
+        const key = getMediaKey({ id: item.media_id, media_type: item.media_type })
         if (pendingRemove === key) return
         setPendingRemove(key)
         try {
@@ -144,7 +124,7 @@ export function PlaylistEditDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className="max-w-2xl max-h-[85dvh] flex flex-col gap-0 p-0 overflow-hidden"
+                className="max-w-2xl h-[85dvh] flex flex-col gap-0 p-0 overflow-hidden"
                 onInteractOutside={(e) => { if (hasAnyPending || isSavingMeta) e.preventDefault() }}
             >
                 <div className="shrink-0 px-5 pt-5 pb-4 border-b border-border-subtle space-y-3">
@@ -236,9 +216,10 @@ export function PlaylistEditDialog({
 
                 <div className="flex-1 overflow-y-auto min-h-0">
                     {isSearchMode ? (
-                        <SearchGrid
+                        <SearchResultList
                             results={searchResults}
                             query={query}
+                            isLoading={isSearching}
                             inPlaylist={inPlaylist}
                             pendingAdd={pendingAdd}
                             onAdd={handleAdd}
@@ -267,12 +248,14 @@ const CARD_BASE = cn(
 const HOVER_OVERLAY = cn(
     'absolute inset-0 bg-linear-to-t from-black/90 via-black/60 to-transparent',
     'transition-opacity duration-(--duration-base) opacity-0 group-hover:opacity-100',
+    'pointer-events-none',
 )
 
 const HOVER_TITLE = cn(
     'absolute inset-x-0 bottom-0 p-3 z-10',
     'translate-y-3 opacity-0 transition-all duration-(--duration-base)',
     'group-hover:translate-y-0 group-hover:opacity-100',
+    'pointer-events-none',
 )
 
 function PlaylistGrid({ items, mode, pendingRemove, onRemove }: {
@@ -285,7 +268,7 @@ function PlaylistGrid({ items, mode, pendingRemove, onRemove }: {
 
     if (items.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[240px] gap-4 px-8 text-center py-10">
+            <div className="flex flex-col items-center justify-center min-h-60 gap-4 px-8 text-center py-10">
                 <div className="w-16 h-16 rounded-2xl bg-surface-2 flex items-center justify-center">
                     <ListVideo className="h-8 w-8 text-muted opacity-40" />
                 </div>
@@ -302,7 +285,7 @@ function PlaylistGrid({ items, mode, pendingRemove, onRemove }: {
     return (
         <div className="p-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-5">
             {items.map((item) => {
-                const key = `${item.media_id}:${item.media_type}`
+                const key = getMediaKey({ id: item.media_id, media_type: item.media_type })
                 const isRemoving = pendingRemove === key
                 return (
                     <div key={item.id} className={CARD_BASE}>
@@ -357,9 +340,10 @@ function PlaylistGrid({ items, mode, pendingRemove, onRemove }: {
     )
 }
 
-function SearchGrid({ results, query, inPlaylist, pendingAdd, onAdd }: {
+function SearchResultList({ results, query, isLoading, inPlaylist, pendingAdd, onAdd }: {
     results: MediaItem[]
     query: string
+    isLoading: boolean
     inPlaylist: Set<string>
     pendingAdd: string | null
     onAdd: (item: MediaItem) => void
@@ -367,69 +351,66 @@ function SearchGrid({ results, query, inPlaylist, pendingAdd, onAdd }: {
     const { t } = useTranslation()
 
     if (results.length === 0) {
+        if (isLoading) return (
+            <div className="flex items-center justify-center min-h-32 py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-muted" />
+            </div>
+        )
         return (
-            <div className="flex flex-col items-center justify-center min-h-[200px] gap-2 text-center px-6 py-8">
+            <div className="flex flex-col items-center justify-center min-h-32 gap-1.5 text-center px-6 py-6">
                 <p className="text-sm font-medium text-text">{t.profile.noSearchResults}</p>
-                {query.trim() && (
-                    <p className="text-xs text-muted">« {query.trim()} »</p>
-                )}
+                {query.trim() && <p className="text-xs text-muted">« {query.trim()} »</p>}
             </div>
         )
     }
 
     return (
-        <div className="p-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-5">
+        <ul className="p-2 list-none">
             {results.map((item) => {
-                const key = `${item.id}:${item.media_type}`
+                const key = getMediaKey(item)
                 const added = inPlaylist.has(key)
                 const pending = pendingAdd === key
                 return (
-                    <div
-                        key={key}
-                        onClick={() => !added && !pending && onAdd(item)}
-                        className={cn(
-                            CARD_BASE,
-                            added ? 'opacity-50 cursor-default pointer-events-none' : 'cursor-pointer',
-                        )}
-                    >
-                        <div className="relative aspect-2/3 w-full overflow-hidden rounded-poster">
-                            {item.poster_path ? (
-                                <Image
-                                    src={getImageUrl(item.poster_path, 'w342')}
-                                    alt={item.title}
-                                    fill
-                                    sizes="(max-width: 640px) 45vw, (max-width: 768px) 30vw, 22vw"
-                                    className="object-cover transition-transform duration-(--duration-base) ease-out group-hover:scale-105"
-                                />
-                            ) : (
-                                <div className="w-full h-full bg-surface-3" />
+                    <li key={key} role="presentation">
+                        <button
+                            type="button"
+                            disabled={added || pending}
+                            onClick={() => onAdd(item)}
+                            className={cn(
+                                "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl",
+                                "transition-colors duration-(--duration-fast) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                                added ? "opacity-60 cursor-default" : "hover:bg-surface-2 cursor-pointer",
                             )}
-                            <div className={HOVER_OVERLAY} />
-                            <div className={HOVER_TITLE}>
-                                <p className="text-sm font-bold text-white leading-tight line-clamp-2">
-                                    {item.title}
-                                </p>
-                            </div>
-
-                            <div className="absolute top-2 right-2 z-20">
-                                {pending ? (
-                                    <div className="w-7 h-7 rounded-full bg-background/75 backdrop-blur-sm border border-white/10 flex items-center justify-center">
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
-                                    </div>
-                                ) : added ? (
-                                    <div className="w-7 h-7 rounded-full bg-primary/90 backdrop-blur-sm border border-primary/50 flex items-center justify-center">
-                                        <Check className="h-3.5 w-3.5 text-white" />
-                                    </div>
-                                ) : (
-                                    <div className="w-7 h-7 rounded-full bg-background/75 backdrop-blur-sm border border-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span className="text-white text-sm leading-none font-light">+</span>
-                                    </div>
+                        >
+                            <div className="relative w-9 h-14 shrink-0 rounded-poster overflow-hidden bg-surface-3">
+                                {item.poster_path && (
+                                    <Image
+                                        src={getImageUrl(item.poster_path, "w92")}
+                                        alt={item.title}
+                                        fill
+                                        className="object-cover"
+                                    />
                                 )}
                             </div>
-                        </div>
-                    </div>
+                            <div className="flex flex-col min-w-0 flex-1 text-left">
+                                <span className="text-sm font-semibold text-text truncate">
+                                    {item.title}
+                                </span>
+                                <span className="text-xs text-muted">
+                                    {item.release_date ? new Date(item.release_date).getFullYear() : "—"}
+                                </span>
+                            </div>
+                            <div className="shrink-0 w-5 flex items-center justify-center">
+                                {pending ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted" />
+                                ) : added ? (
+                                    <Check className="h-3.5 w-3.5 text-primary" />
+                                ) : null}
+                            </div>
+                        </button>
+                    </li>
                 )
             })}
-        </div>
+        </ul>
     )
 }

@@ -28,9 +28,11 @@ export function useSearchSuggestions(query: string) {
     useEffect(() => {
         if (query.trim().length < 2) return
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsLoading(true)
+
         const controller = new AbortController()
         const timer = setTimeout(async () => {
-            setIsLoading(true)
             try {
                 const response = await fetch(
                     `/api/search?query=${encodeURIComponent(query)}`,
