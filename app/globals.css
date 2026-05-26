@@ -162,8 +162,13 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: none;
   text-rendering: optimizeLegibility;
   overflow-x: clip;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 body {
