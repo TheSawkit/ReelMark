@@ -1,9 +1,22 @@
+import { MAX_REVIEW_LENGTH } from '@/types/profile'
+
 export const VALID_STATUSES = new Set<string>(['watched', 'to_watch'])
 export const VALID_MEDIA_TYPES = new Set<string>(['movie', 'tv'])
 
 export function validateRating(rating: unknown): number | null {
     if (typeof rating !== 'number' || !Number.isInteger(rating) || rating < 1 || rating > 10) return null
     return rating
+}
+
+const CONTROL_CHARS_REGEX = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g
+
+export function validateReviewContent(content: unknown): string | null {
+    if (content === null || content === undefined) return null
+    if (typeof content !== 'string') return null
+    const cleaned = content.replace(CONTROL_CHARS_REGEX, '').trim()
+    if (!cleaned) return null
+    if (cleaned.length > MAX_REVIEW_LENGTH) return null
+    return cleaned
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

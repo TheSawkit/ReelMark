@@ -71,12 +71,7 @@ export default async function PlaylistPage({ params }: Props) {
             />
             <PageLayout className="pt-8 md:pt-12">
                 {items.length > 0 ? (
-                    <>
-                        <p className="text-muted text-sm mb-4 md:mb-6">
-                            {items.length} {t.profile.items}
-                        </p>
-                        <MediaGrid items={items} hideRating />
-                    </>
+                    <MediaGrid items={items} hideRating />
                 ) : (
                     <EmptyState message={t.profile.noPlaylistsYet} />
                 )}

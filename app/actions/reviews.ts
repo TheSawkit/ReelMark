@@ -3,7 +3,7 @@
 import { getAuthenticatedUser, getOptionalUser } from '@/lib/supabase/auth-helpers'
 import { createClient } from '@/lib/supabase/server'
 import { getTranslations } from '@/lib/i18n/server'
-import { validateRating } from '@/lib/validators'
+import { validateRating, validateReviewContent } from '@/lib/validators'
 import { revalidateProfile } from '@/app/actions/_helpers'
 import { getTvShowDetails, getSeasonDetails } from '@/lib/tmdb/tv'
 import { MAX_REVIEW_LENGTH } from '@/types/profile'
@@ -181,16 +181,17 @@ export async function upsertReview(
     if (rating !== null && validateRating(rating) === null) {
         throw new Error(t.profile.errors.ratingInvalid)
     }
-    if (content && content.length > MAX_REVIEW_LENGTH) {
+    if (content !== null && content.length > MAX_REVIEW_LENGTH) {
         throw new Error(t.profile.errors.reviewTooLong)
     }
+    const cleanedContent = validateReviewContent(content)
 
     const { supabase, userId } = await getAuthenticatedUser()
 
     const { error } = await supabase
         .from('reviews')
         .upsert(
-            { user_id: userId, media_id: mediaId, media_type: mediaType, media_title: mediaTitle, poster_path: posterPath, rating, content, updated_at: new Date().toISOString() },
+            { user_id: userId, media_id: mediaId, media_type: mediaType, media_title: mediaTitle, poster_path: posterPath, rating, content: cleanedContent, updated_at: new Date().toISOString() },
             { onConflict: 'user_id,media_id,media_type' }
         )
 

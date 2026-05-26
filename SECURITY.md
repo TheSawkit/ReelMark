@@ -92,6 +92,12 @@ If you're contributing to ReelMark:
 
 ---
 
+## Review Content Policy
+
+Reviews are stored and rendered as **plain text only**. No HTML, Markdown, or rich-text rendering is performed. Content is sanitized server-side via `validateReviewContent` (`lib/validators.ts`) before persistence: control characters stripped, length capped, whitespace trimmed. React's default JSX escaping prevents XSS at the render layer. No HTML sanitization library (DOMPurify, sanitize-html) is required as long as this policy holds — any future HTML/Markdown rendering must add a sanitization step.
+
+---
+
 ## Sensitive Data
 
 ReelMark handles the following sensitive information:
@@ -133,5 +139,5 @@ If you have general security questions about ReelMark, feel free to:
 
 ---
 
-**Last Updated**: 2026-05-12  
+**Last Updated**: 2026-05-26
 **Maintainer**: [SAWKIT](https://github.com/TheSawkit)

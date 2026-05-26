@@ -7,7 +7,9 @@ import {
     validateLanguage,
     validateAvatarFile,
     sanitizeRedirectPath,
+    validateReviewContent,
 } from "@/lib/validators"
+import { MAX_REVIEW_LENGTH } from "@/types/profile"
 
 describe("validateEmail", () => {
     it("accepts valid email addresses", () => {
@@ -141,6 +143,49 @@ describe("validateAvatarFile", () => {
     it("rejects unsupported MIME types", () => {
         const file = makeFile("avatar.jpg", "image/tiff", 1024)
         expect(validateAvatarFile(file).valid).toBe(false)
+    })
+})
+
+describe("validateReviewContent", () => {
+    it("returns null for null, undefined, and non-string", () => {
+        expect(validateReviewContent(null)).toBeNull()
+        expect(validateReviewContent(undefined)).toBeNull()
+        expect(validateReviewContent(123)).toBeNull()
+        expect(validateReviewContent([])).toBeNull()
+    })
+
+    it("returns null for empty or whitespace-only strings", () => {
+        expect(validateReviewContent("")).toBeNull()
+        expect(validateReviewContent("   ")).toBeNull()
+        expect(validateReviewContent("\t\n")).toBeNull()
+    })
+
+    it("trims surrounding whitespace", () => {
+        expect(validateReviewContent("  Hello  ")).toBe("Hello")
+    })
+
+    it("passes normal text through unchanged", () => {
+        expect(validateReviewContent("Hello world")).toBe("Hello world")
+    })
+
+    it("preserves newlines and tabs", () => {
+        expect(validateReviewContent("Hello\nworld")).toBe("Hello\nworld")
+        expect(validateReviewContent("col1\tcol2")).toBe("col1\tcol2")
+    })
+
+    it("strips control characters", () => {
+        expect(validateReviewContent("Hello\x00world")).toBe("Helloworld")
+        expect(validateReviewContent("A\x01B\x1FC")).toBe("ABC")
+        expect(validateReviewContent("test\x7Fend")).toBe("testend")
+    })
+
+    it("returns null when content exceeds MAX_REVIEW_LENGTH after cleaning", () => {
+        expect(validateReviewContent("x".repeat(MAX_REVIEW_LENGTH + 1))).toBeNull()
+    })
+
+    it("accepts content exactly at MAX_REVIEW_LENGTH", () => {
+        const content = "x".repeat(MAX_REVIEW_LENGTH)
+        expect(validateReviewContent(content)).toBe(content)
     })
 })
 

@@ -18,9 +18,10 @@ setup("authenticate", async ({ page }) => {
         return
     }
 
+    await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto("/login")
-    await page.getByRole("textbox", { name: /email/i }).fill(email)
-    await page.getByLabel(/password/i).fill(password)
+    await page.locator('#email').fill(email)
+    await page.locator('#password').fill(password)
     await page.getByRole("button", { name: /connexion|login|se connecter/i }).click()
 
     const navigated = await page.waitForURL("/dashboard", { timeout: 15000 })
