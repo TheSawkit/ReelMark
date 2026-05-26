@@ -9,16 +9,17 @@ import { Input } from '@/components/ui/input'
 import { createPlaylist, deletePlaylist } from '@/app/actions/playlists'
 import { getImageUrl } from '@/lib/tmdb/images'
 import { cn } from '@/lib/utils'
+import { VISIBILITY_ICON } from '@/lib/visibility-ui'
+import { BlurredPosterBackdrop } from '@/components/media/BlurredPosterBackdrop'
 import type { Playlist, PlaylistItem, PrivacyVisibility } from '@/types/profile'
 import { useTranslation } from '@/lib/i18n/context'
-import { PrivacyBlock } from '@/components/profile/PrivacyBlock'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PlaylistEditDialog } from '@/components/profile/PlaylistEditDialog'
+import { VisibilitySelector } from '@/components/profile/VisibilitySelector'
 
 interface PlaylistsSectionProps {
     playlists: Playlist[]
-    visibility: PrivacyVisibility
-    canView: boolean
+    defaultVisibility?: PrivacyVisibility
     isOwnProfile: boolean
 }
 
@@ -26,7 +27,7 @@ function PlaylistCard({ playlist, isOwn, onDelete, onUpdate }: {
     playlist: Playlist
     isOwn: boolean
     onDelete: (id: string) => void
-    onUpdate: (id: string, patch: Partial<Pick<Playlist, 'items' | 'name' | 'description'>>) => void
+    onUpdate: (id: string, patch: Partial<Pick<Playlist, 'items' | 'name' | 'description' | 'visibility'>>) => void
 }) {
     const { t } = useTranslation()
     const [isPending, startTransition] = useTransition()
@@ -37,6 +38,7 @@ function PlaylistCard({ playlist, isOwn, onDelete, onUpdate }: {
     const items = playlist.items ?? []
     const previewItems = items.slice(0, 4)
     const backgroundPoster = items[0]?.poster_path
+    const VisIcon = VISIBILITY_ICON[playlist.visibility]
 
     const openViewDialog = () => {
         setDialogMode('view')
@@ -80,6 +82,10 @@ function PlaylistCard({ playlist, isOwn, onDelete, onUpdate }: {
         onUpdate(playlist.id, { name, description })
     }
 
+    const handleUpdateVisibility = (visibility: PrivacyVisibility) => {
+        onUpdate(playlist.id, { visibility })
+    }
+
     return (
         <>
             <div
@@ -88,17 +94,7 @@ function PlaylistCard({ playlist, isOwn, onDelete, onUpdate }: {
                 role="button"
                 aria-label={t.profile.viewPlaylist}
             >
-                {backgroundPoster && (
-                    <Image
-                        src={getImageUrl(backgroundPoster, 'w342')}
-                        alt=""
-                        fill
-                        sizes="100vw"
-                        className="object-cover scale-125 blur-xl opacity-80 pointer-events-none"
-                    />
-                )}
-                <div className="absolute inset-0 bg-linear-to-r from-black/90 via-black/60 to-black/10" />
-                <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
+                <BlurredPosterBackdrop posterPath={backgroundPoster} variant="card" />
 
                 <div className="relative z-10 flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 py-4 gap-3 sm:gap-6">
                     <div className="min-w-0 sm:flex-none sm:max-w-60 flex flex-col justify-center gap-1 max-sm:pr-14">
@@ -110,9 +106,16 @@ function PlaylistCard({ playlist, isOwn, onDelete, onUpdate }: {
                                 {playlist.description}
                             </p>
                         )}
-                        <p className="text-xs text-white/35 mt-0.5">
-                            {items.length} {t.profile.items}
-                        </p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <p className="text-xs text-white/35">
+                                {items.length} {t.profile.items}
+                            </p>
+                            {isOwn && (
+                                <span className="flex items-center gap-1 text-white/30">
+                                    <VisIcon className="h-3 w-3" />
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     <div className="flex items-center shrink-0">
@@ -215,35 +218,42 @@ function PlaylistCard({ playlist, isOwn, onDelete, onUpdate }: {
                 onAddItem={handleAddItem}
                 onRemoveItem={handleRemoveItem}
                 onUpdateMeta={isOwn ? handleUpdateMeta : undefined}
+                onUpdateVisibility={isOwn ? handleUpdateVisibility : undefined}
                 onSwitchToEdit={isOwn ? switchToEditMode : undefined}
             />
         </>
     )
 }
 
-function CreatePlaylistForm({ onCreate }: { onCreate: (p: Playlist) => void }) {
+function CreatePlaylistForm({ onCreate, defaultVisibility }: {
+    onCreate: (p: Playlist) => void
+    defaultVisibility: PrivacyVisibility
+}) {
     const { t } = useTranslation()
     const [open, setOpen] = useState(false)
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
+    const [visibility, setVisibility] = useState<PrivacyVisibility>(defaultVisibility)
     const [isPending, startTransition] = useTransition()
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (!name.trim()) return
         startTransition(async () => {
-            await createPlaylist(name.trim(), description.trim() || null)
+            await createPlaylist(name.trim(), description.trim() || null, visibility)
             onCreate({
                 id: crypto.randomUUID(),
                 user_id: '',
                 name: name.trim(),
                 description: description.trim() || null,
+                visibility,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
                 items: [],
             })
             setName('')
             setDescription('')
+            setVisibility(defaultVisibility)
             setOpen(false)
         })
     }
@@ -271,6 +281,7 @@ function CreatePlaylistForm({ onCreate }: { onCreate: (p: Playlist) => void }) {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
             />
+            <VisibilitySelector value={visibility} onChange={setVisibility} name="new-playlist-visibility" />
             <div className="flex gap-2">
                 <Button type="submit" size="sm" disabled={isPending || !name.trim()}>
                     {t.profile.createPlaylist}
@@ -283,7 +294,7 @@ function CreatePlaylistForm({ onCreate }: { onCreate: (p: Playlist) => void }) {
     )
 }
 
-export function PlaylistsSection({ playlists: initial, visibility, canView, isOwnProfile }: PlaylistsSectionProps) {
+export function PlaylistsSection({ playlists: initial, defaultVisibility = 'private', isOwnProfile }: PlaylistsSectionProps) {
     const { t } = useTranslation()
     const [playlists, setPlaylists] = useState(initial)
 
@@ -291,16 +302,17 @@ export function PlaylistsSection({ playlists: initial, visibility, canView, isOw
         setPlaylists(prev => prev.filter(p => p.id !== id))
     }
 
-    const handleUpdate = (id: string, patch: Partial<Pick<Playlist, 'items' | 'name' | 'description'>>) => {
+    const handleUpdate = (id: string, patch: Partial<Pick<Playlist, 'items' | 'name' | 'description' | 'visibility'>>) => {
         setPlaylists(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p))
     }
-
-    if (!canView) return <PrivacyBlock visibility={visibility} />
 
     return (
         <div className="space-y-3">
             {isOwnProfile && (
-                <CreatePlaylistForm onCreate={(p) => setPlaylists(prev => [p, ...prev])} />
+                <CreatePlaylistForm
+                    onCreate={(p) => setPlaylists(prev => [p, ...prev])}
+                    defaultVisibility={defaultVisibility}
+                />
             )}
             {playlists.length === 0 && (
                 <EmptyState message={t.profile.noPlaylists} />

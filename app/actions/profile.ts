@@ -6,16 +6,8 @@ import { createClient } from '@/lib/supabase/server'
 import { formStr } from '@/lib/validators'
 import { getTranslations } from '@/lib/i18n/server'
 import { revalidateProfile } from '@/app/actions/_helpers'
-import type { PrivacySettings, PrivacyDefaults, PrivacyVisibility, UserProfile } from '@/types/profile'
-
-const VALID_VISIBILITY = new Set<PrivacyVisibility>(['public', 'friends', 'private'])
-
-function toVisibility(value: FormDataEntryValue | null): PrivacyVisibility {
-    if (typeof value === 'string' && VALID_VISIBILITY.has(value as PrivacyVisibility)) {
-        return value as PrivacyVisibility
-    }
-    return 'public'
-}
+import { parseVisibility } from '@/lib/privacy'
+import type { PrivacySettings, PrivacyDefaults, UserProfile } from '@/types/profile'
 
 /**
  * Returns the public profile for a given username (case-insensitive), or null if not found.
@@ -101,11 +93,11 @@ export async function updatePrivacySettings(prevState: unknown, formData: FormDa
 
     const settings = {
         user_id: userId,
-        watchlist_visibility: toVisibility(formData.get('watchlist_visibility')),
-        watched_visibility: toVisibility(formData.get('watched_visibility')),
-        reviews_visibility: toVisibility(formData.get('reviews_visibility')),
-        playlists_visibility: toVisibility(formData.get('playlists_visibility')),
-        friends_visibility: toVisibility(formData.get('friends_visibility')),
+        watchlist_visibility: parseVisibility(formData.get('watchlist_visibility'), 'public'),
+        watched_visibility: parseVisibility(formData.get('watched_visibility'), 'public'),
+        reviews_visibility: parseVisibility(formData.get('reviews_visibility'), 'public'),
+        playlists_visibility: parseVisibility(formData.get('playlists_visibility'), 'public'),
+        friends_visibility: parseVisibility(formData.get('friends_visibility'), 'public'),
     }
 
     const { error } = await supabase.from('privacy_settings').upsert(settings)

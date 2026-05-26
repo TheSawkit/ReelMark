@@ -97,7 +97,6 @@ export default async function ProfilePage({ params }: Props) {
 
     const filteredReviews = canView(privacy.reviews_visibility) ? reviewsPage.reviews : []
     const initialReviewsCursor = canView(privacy.reviews_visibility) ? reviewsPage.nextCursor : null
-    const filteredPlaylists = canView(privacy.playlists_visibility) ? playlists : []
     const filteredFriends = canView(privacy.friends_visibility) ? allFriendEntries : []
 
     const ownerAuth = await adminClient.auth.admin.getUserById(profile.user_id)
@@ -126,7 +125,7 @@ export default async function ProfilePage({ params }: Props) {
                 reviews={filteredReviews}
                 initialReviewsCursor={initialReviewsCursor}
                 profileUserId={profile.user_id}
-                playlists={filteredPlaylists}
+                playlists={playlists}
                 friends={filteredFriends}
                 privacy={privacy}
                 isOwnProfile={isOwnProfile}

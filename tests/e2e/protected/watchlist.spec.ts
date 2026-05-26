@@ -25,6 +25,14 @@ test.describe("Watchlist", () => {
         await page.goto(`/movie/${MOVIE_ID}`)
         await expect(page.getByRole("heading", { level: 1 })).toContainText(MOVIE_TITLE, { timeout: 10000 })
 
+        // If movie is in "watched" state, clicking it falls back to "to_watch" (fallbackStatus="to_watch")
+        const watchedActiveBtn = page.locator("button").filter({ hasText: /^vu$|^watched$/i }).first()
+        if (await watchedActiveBtn.isVisible()) {
+            await clickAndWaitForAction(page, watchedActiveBtn)
+            await expect(page.locator("button").filter({ hasText: /^ajouté$|^added$/i }).first()).toBeVisible({ timeout: 5000 })
+        }
+
+        // If movie is in "to_watch" state, remove it entirely
         const addedBtn = page.locator("button").filter({ hasText: /^ajouté$|^added$/i }).first()
         if (await addedBtn.isVisible()) {
             await clickAndWaitForAction(page, addedBtn)

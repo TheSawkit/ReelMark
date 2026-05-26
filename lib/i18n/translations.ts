@@ -351,6 +351,16 @@ export const translations = {
             viewPlaylist: 'Voir la playlist',
             savePlaylistMeta: 'Enregistrer',
             errorSavePlaylistMeta: 'Impossible de sauvegarder — réessaie',
+            playlistVisibility: 'Visibilité',
+            copyPublicLink: 'Copier le lien public',
+            linkCopied: 'Lien copié',
+            viewProfile: 'Voir le profil',
+            sharePlaylist: 'Partager',
+            visibility: {
+                public: 'Public',
+                friends: 'Amis uniquement',
+                private: 'Privée',
+            },
             profileNav: 'Sections du profil',
             errors: {
                 ratingInvalid: 'La note doit être un entier entre 1 et 10',
@@ -358,6 +368,7 @@ export const translations = {
                 playlistNameInvalid: 'Le nom doit faire entre 1 et 100 caractères',
                 descriptionTooLong: 'La description dépasse 500 caractères',
                 playlistNotFound: 'Playlist introuvable',
+                invalidVisibility: 'Visibilité invalide',
             },
         },
         auth: {
@@ -597,6 +608,7 @@ export const translations = {
             landingTitle: 'ReelMark — Votre suivi de films et séries',
             landingDescription: 'Suivez, organisez et découvrez tous les films et séries que vous avez regardés ou voulez regarder.',
             profileDescription: 'Découvrez le profil de @${username} sur ReelMark — watchlist, avis et plus.',
+            playlistDescription: 'Playlist de @${owner} sur ReelMark',
             authErrorTitle: 'Erreur d\'authentification',
             authErrorDescription: 'Une erreur est survenue lors de la connexion. Retournez à la page de connexion pour réessayer.',
             categories: {
@@ -966,6 +978,16 @@ export const translations = {
             viewPlaylist: 'View playlist',
             savePlaylistMeta: 'Save',
             errorSavePlaylistMeta: 'Could not save — try again',
+            playlistVisibility: 'Visibility',
+            copyPublicLink: 'Copy public link',
+            linkCopied: 'Link copied',
+            viewProfile: 'View profile',
+            sharePlaylist: 'Share',
+            visibility: {
+                public: 'Public',
+                friends: 'Friends only',
+                private: 'Private',
+            },
             profileNav: 'Profile sections',
             errors: {
                 ratingInvalid: 'Rating must be an integer between 1 and 10',
@@ -973,6 +995,7 @@ export const translations = {
                 playlistNameInvalid: 'Playlist name must be 1–100 characters',
                 descriptionTooLong: 'Description must be 500 characters or less',
                 playlistNotFound: 'Playlist not found',
+                invalidVisibility: 'Invalid visibility value',
             },
         },
         auth: {
@@ -1212,6 +1235,7 @@ export const translations = {
             landingTitle: 'ReelMark — Your personal movie & TV tracker',
             landingDescription: 'Track, organize and discover all the movies and TV shows you have watched or want to watch.',
             profileDescription: 'Discover @${username}\'s profile on ReelMark — watchlist, reviews and more.',
+            playlistDescription: 'Playlist by @${owner} on ReelMark',
             authErrorTitle: 'Authentication error',
             authErrorDescription: 'An error occurred during login. Go back to the login page to try again.',
             categories: {

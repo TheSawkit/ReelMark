@@ -46,6 +46,7 @@ export interface Playlist {
   user_id: string
   name: string
   description: string | null
+  visibility: PrivacyVisibility
   created_at: string
   updated_at: string
   items?: PlaylistItem[]

@@ -1,4 +1,5 @@
 import type { MediaItem, ActorMovieCredit, ActorTvCredit, WatchlistEntry } from "@/types/tmdb"
+import type { PlaylistItem } from "@/types/profile"
 
 /**
  * Converts a watchlist entry into a minimal `MediaItem` for display in media card grids.
@@ -67,5 +68,27 @@ export function tvCreditToMediaItem(credit: ActorTvCredit): MediaItem {
         vote_count: 0,
         popularity: credit.popularity,
         character: credit.character || undefined,
+    }
+}
+
+/**
+ * Converts a playlist item into a minimal `MediaItem` for display in media grids.
+ *
+ * @param item - PlaylistItem from the database.
+ * @returns Normalized `MediaItem` usable by `MediaCard` and related components.
+ */
+export function playlistItemToMediaItem(item: PlaylistItem): MediaItem {
+    return {
+        id: item.media_id,
+        media_type: item.media_type,
+        title: item.media_title,
+        original_title: item.media_title,
+        overview: "",
+        poster_path: item.poster_path,
+        backdrop_path: null,
+        release_date: "",
+        vote_average: 0,
+        vote_count: 0,
+        popularity: 0,
     }
 }

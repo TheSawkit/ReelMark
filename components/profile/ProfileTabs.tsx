@@ -9,6 +9,7 @@ import { FriendsSection } from './FriendsSection'
 import type { WatchlistEntry } from '@/types/tmdb'
 import type { PrivacySettings, Review, Playlist, FriendEntry } from '@/types/profile'
 import { useTranslation } from '@/lib/i18n/context'
+import { canViewWithVisibility } from '@/lib/privacy'
 
 type ProfileTab = 'watchlist' | 'watched' | 'reviews' | 'playlists' | 'friends'
 
@@ -40,12 +41,7 @@ export function ProfileTabs({
     const { t } = useTranslation()
     const [activeTab, setActiveTab] = useState<ProfileTab>('watchlist')
 
-    function canView(visibility: string): boolean {
-        if (isOwnProfile) return true
-        if (visibility === 'public') return true
-        if (visibility === 'friends' && isFriend) return true
-        return false
-    }
+    const viewCtx = { isOwn: isOwnProfile, isFriend }
 
     const TABS: Array<{ id: ProfileTab; label: string; count: number | null }> = [
         { id: 'watchlist', label: t.profile.tabs.watchlist, count: toWatch.length },
@@ -86,7 +82,7 @@ export function ProfileTabs({
                 <WatchlistSection
                     entries={toWatch}
                     visibility={privacy.watchlist_visibility}
-                    canView={canView(privacy.watchlist_visibility)}
+                    canView={canViewWithVisibility(privacy.watchlist_visibility, viewCtx)}
                     isOwnProfile={isOwnProfile}
                     sectionKey="profile-watchlist"
                 />
@@ -95,7 +91,7 @@ export function ProfileTabs({
                 <WatchlistSection
                     entries={watched}
                     visibility={privacy.watched_visibility}
-                    canView={canView(privacy.watched_visibility)}
+                    canView={canViewWithVisibility(privacy.watched_visibility, viewCtx)}
                     isOwnProfile={isOwnProfile}
                     sectionKey="profile-watched"
                 />
@@ -106,15 +102,14 @@ export function ProfileTabs({
                     initialNextCursor={initialReviewsCursor}
                     profileUserId={profileUserId}
                     visibility={privacy.reviews_visibility}
-                    canView={canView(privacy.reviews_visibility)}
+                    canView={canViewWithVisibility(privacy.reviews_visibility, viewCtx)}
                     isOwnProfile={isOwnProfile}
                 />
             )}
             {activeTab === 'playlists' && (
                 <PlaylistsSection
                     playlists={playlists}
-                    visibility={privacy.playlists_visibility}
-                    canView={canView(privacy.playlists_visibility)}
+                    defaultVisibility={privacy.playlists_visibility}
                     isOwnProfile={isOwnProfile}
                 />
             )}
@@ -122,7 +117,7 @@ export function ProfileTabs({
                 <FriendsSection
                     friends={friends}
                     visibility={privacy.friends_visibility}
-                    canView={canView(privacy.friends_visibility)}
+                    canView={canViewWithVisibility(privacy.friends_visibility, viewCtx)}
                 />
             )}
         </div>

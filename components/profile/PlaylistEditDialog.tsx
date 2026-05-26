@@ -3,17 +3,19 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-import { Search, Loader2, ListVideo, Check, X, Save, Pencil } from 'lucide-react'
+import { Search, Loader2, ListVideo, Check, X, Save, Pencil, Link2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { addToPlaylist, removeFromPlaylist, updatePlaylist } from '@/app/actions/playlists'
+import { addToPlaylist, removeFromPlaylist, updatePlaylist, updatePlaylistVisibility } from '@/app/actions/playlists'
 import { getImageUrl } from '@/lib/tmdb/images'
 import { getMediaKey } from '@/lib/media'
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions'
-import type { Playlist, PlaylistItem } from '@/types/profile'
+import type { Playlist, PlaylistItem, PrivacyVisibility } from '@/types/profile'
 import type { MediaItem } from '@/types/tmdb'
 import { useTranslation } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
+import { VisibilitySelector } from '@/components/profile/VisibilitySelector'
+import { BASE_URL } from '@/lib/metadata'
 
 type DialogMode = 'edit' | 'view'
 
@@ -25,6 +27,7 @@ interface PlaylistEditDialogProps {
     onAddItem: (item: PlaylistItem) => void
     onRemoveItem: (mediaId: number, mediaType: 'movie' | 'tv') => void
     onUpdateMeta?: (name: string, description: string | null) => void
+    onUpdateVisibility?: (visibility: PrivacyVisibility) => void
     onSwitchToEdit?: () => void
 }
 
@@ -36,6 +39,7 @@ export function PlaylistEditDialog({
     onAddItem,
     onRemoveItem,
     onUpdateMeta,
+    onUpdateVisibility,
     onSwitchToEdit,
 }: PlaylistEditDialogProps) {
     const { t } = useTranslation()
@@ -46,6 +50,7 @@ export function PlaylistEditDialog({
 
     const [editName, setEditName] = useState(playlist.name)
     const [editDesc, setEditDesc] = useState(playlist.description ?? '')
+    const [currentVisibility, setCurrentVisibility] = useState<PrivacyVisibility>(playlist.visibility)
     const [isSavingMeta, setIsSavingMeta] = useState(false)
     const nameRef = useRef<HTMLInputElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
@@ -57,19 +62,8 @@ export function PlaylistEditDialog({
     const metaChanged = editName.trim() !== playlist.name || (editDesc.trim() || null) !== playlist.description
 
     useEffect(() => {
-        const focus = () => {
-            if (mode === 'edit') inputRef.current?.focus()
-        }
-        if (open) focus()
+        if (open && mode === 'edit') inputRef.current?.focus()
     }, [open, mode])
-
-    useEffect(() => {
-        const reset = () => {
-            setEditName(playlist.name)
-            setEditDesc(playlist.description ?? '')
-        }
-        if (open) reset()
-    }, [open, playlist.name, playlist.description])
 
     const handleSaveMeta = async () => {
         if (!editName.trim() || !metaChanged || isSavingMeta) return
@@ -82,6 +76,25 @@ export function PlaylistEditDialog({
         } finally {
             setIsSavingMeta(false)
         }
+    }
+
+    const handleSaveVisibility = async (v: PrivacyVisibility) => {
+        const prev = currentVisibility
+        setCurrentVisibility(v)
+        onUpdateVisibility?.(v)
+        try {
+            await updatePlaylistVisibility(playlist.id, v)
+        } catch {
+            setCurrentVisibility(prev)
+            onUpdateVisibility?.(prev)
+            toast.error(t.profile.errorSavePlaylistMeta)
+        }
+    }
+
+    const handleCopyLink = () => {
+        navigator.clipboard.writeText(`${BASE_URL}/playlist/${playlist.id}`)
+            .then(() => toast.success(t.profile.linkCopied))
+            .catch(() => toast.error(t.common.actionError))
     }
 
     const handleAdd = async (item: MediaItem) => {
@@ -182,11 +195,28 @@ export function PlaylistEditDialog({
                                     }
                                 </button>
                             )}
+                            {mode === 'edit' && currentVisibility === 'public' && (
+                                <button
+                                    onClick={handleCopyLink}
+                                    className="flex items-center gap-1 text-xs text-muted hover:text-text transition-colors"
+                                    aria-label={t.profile.copyPublicLink}
+                                >
+                                    <Link2 className="h-3.5 w-3.5" />
+                                </button>
+                            )}
                             <span className="text-xs text-muted whitespace-nowrap">
                                 {items.length} {t.profile.items}
                             </span>
                         </div>
                     </div>
+
+                    {mode === 'edit' && onUpdateVisibility && (
+                        <VisibilitySelector
+                            value={currentVisibility}
+                            onChange={handleSaveVisibility}
+                            name={`playlist-visibility-${playlist.id}`}
+                        />
+                    )}
 
                     {mode === 'edit' && (
                         <div className="relative">
