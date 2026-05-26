@@ -43,12 +43,16 @@ export default async function TvShowPage(props: TvPageProps) {
             getTvShowVideos(tvId),
             getTvShowImages(tvId),
         ])
-    } catch {
+    } catch (error) {
+        if (!(error instanceof Error && error.message.includes('404'))) throw error
+
         let isMovie = false
         try {
             await fetchTMDB(`/movie/${tvId}`, {}, 86400)
             isMovie = true
-        } catch {}
+        } catch (probeError) {
+            if (!(probeError instanceof Error && probeError.message.includes('404'))) throw probeError
+        }
         if (isMovie) redirect(`/movie/${tvId}`)
         notFound()
     }

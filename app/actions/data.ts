@@ -12,28 +12,24 @@ interface TmdbVerified {
     poster_path: string | null
 }
 
-async function verifyTmdbType(id: number, expected: 'movie' | 'tv'): Promise<TmdbVerified | null> {
-    const [movieResult, tvResult] = await Promise.allSettled([
-        fetchTMDB<{ title: string; poster_path: string | null }>(`/movie/${id}`, {}, 86400),
-        fetchTMDB<{ name: string; poster_path: string | null }>(`/tv/${id}`, {}, 86400),
-    ])
-
-    for (const r of [movieResult, tvResult]) {
-        if (r.status === 'rejected' && !((r.reason as Error)?.message ?? '').includes('404')) {
-            throw r.reason
+async function fetchTmdbForType(id: number, type: 'movie' | 'tv'): Promise<TmdbVerified | null> {
+    try {
+        if (type === 'movie') {
+            const data = await fetchTMDB<{ title: string; poster_path: string | null }>(`/movie/${id}`, {}, 86400)
+            return { type: 'movie', title: data.title, poster_path: data.poster_path }
         }
+        const data = await fetchTMDB<{ name: string; poster_path: string | null }>(`/tv/${id}`, {}, 86400)
+        return { type: 'tv', title: data.name, poster_path: data.poster_path }
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('404')) return null
+        throw error
     }
+}
 
-    const asMovie = movieResult.status === 'fulfilled'
-        ? { type: 'movie' as const, title: movieResult.value.title, poster_path: movieResult.value.poster_path }
-        : null
-    const asTv = tvResult.status === 'fulfilled'
-        ? { type: 'tv' as const, title: tvResult.value.name, poster_path: tvResult.value.poster_path }
-        : null
-
-    const preferred = expected === 'movie' ? asMovie : asTv
-    const fallback = expected === 'movie' ? asTv : asMovie
-    return preferred ?? fallback ?? null
+async function verifyTmdbType(id: number, expected: 'movie' | 'tv'): Promise<TmdbVerified | null> {
+    const primary = await fetchTmdbForType(id, expected)
+    if (primary) return primary
+    return fetchTmdbForType(id, expected === 'movie' ? 'tv' : 'movie')
 }
 
 export interface ExportData {
