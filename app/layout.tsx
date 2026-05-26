@@ -10,6 +10,7 @@ import { Providers } from "./providers";
 import { getServerLanguage, getTranslations } from "@/lib/i18n/server";
 import { BASE_URL } from "@/lib/metadata";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
+import { PreventImageContextMenu } from "@/components/shared/PreventImageContextMenu";
 
 const sans = Inter({
     subsets: ["latin"],
@@ -93,6 +94,7 @@ export default async function RootLayout({
             <body className={`${sans.variable} ${display.variable} antialiased bg-background text-text`}>
                 <Analytics />
                 <SpeedInsights />
+                <PreventImageContextMenu />
                 <Providers initialLang={lang}>
                     <ScrollToTop />
                     <a
