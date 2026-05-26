@@ -194,6 +194,16 @@ body {
   color: var(--color-text);
 }
 
+a,
+button,
+[role="button"],
+input,
+select,
+textarea,
+label {
+  touch-action: manipulation;
+}
+
 @media (prefers-reduced-motion: reduce) {
 
   *,
