@@ -53,7 +53,7 @@ export function MediaCard({ media, className, watchlistEntry, hideRating, tvProg
         <Link
             href={href}
             className={cn(
-                "group relative rounded-poster bg-surface border border-card-border block focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12",
+                "group relative rounded-poster overflow-hidden bg-surface border border-card-border block focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12",
                 "transition-[transform,box-shadow,border-color] duration-(--duration-medium) ease-apple will-change-transform",
                 "hover:scale-[1.03] hover:border-gold/40 hover:shadow-poster hover:z-10",
                 className

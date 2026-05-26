@@ -356,6 +356,7 @@ export const translations = {
             linkCopied: 'Lien copié',
             viewProfile: 'Voir le profil',
             sharePlaylist: 'Partager',
+            unknownUser: 'utilisateur inconnu',
             visibility: {
                 public: 'Public',
                 friends: 'Amis uniquement',
@@ -983,6 +984,7 @@ export const translations = {
             linkCopied: 'Link copied',
             viewProfile: 'View profile',
             sharePlaylist: 'Share',
+            unknownUser: 'unknown user',
             visibility: {
                 public: 'Public',
                 friends: 'Friends only',

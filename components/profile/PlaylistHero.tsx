@@ -41,9 +41,9 @@ export function PlaylistHero({ playlist, ownerUsername, ownerAvatarUrl }: Playli
                         {ownerUsername && (
                             <Link
                                 href={`/profile/${ownerUsername}`}
-                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-glass-bg-hover backdrop-blur-2xl backdrop-saturate-150 border border-glass-border-hover shadow-card-sm text-sm text-white/70 hover:text-white hover:bg-white/15 transition-colors"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-glass-bg-hover backdrop-blur-2xl backdrop-saturate-150 border border-glass-border-hover shadow-card-sm text-sm text-muted hover:text-text hover:bg-glass-bg-hover transition-colors"
                             >
-                                <span className="relative h-5 w-5 shrink-0 overflow-hidden rounded-full border border-white/20 bg-surface-3">
+                                <span className="relative h-5 w-5 shrink-0 overflow-hidden rounded-full border border-border bg-surface-3">
                                     {ownerAvatarUrl ? (
                                         <Image src={ownerAvatarUrl} alt={ownerUsername} fill sizes="20px" className="object-cover" />
                                     ) : (
@@ -57,24 +57,24 @@ export function PlaylistHero({ playlist, ownerUsername, ownerAvatarUrl }: Playli
                         )}
                     </div>
 
-                    <h1 className="font-display text-3xl sm:text-4xl lg:text-6xl font-normal uppercase tracking-wide leading-none text-white">
+                    <h1 className="font-display text-3xl sm:text-4xl lg:text-6xl font-normal uppercase tracking-wide leading-none text-text">
                         {playlist.name}
                     </h1>
 
                     {playlist.description && (
-                        <p className="text-white/55 text-sm md:text-lg max-w-xl leading-relaxed line-clamp-3">
+                        <p className="text-muted text-sm md:text-lg max-w-xl leading-relaxed line-clamp-3">
                             {playlist.description}
                         </p>
                     )}
 
                     <div className="flex flex-wrap gap-2 md:gap-3 pt-2 md:pt-1">
                         {ownerUsername && (
-                            <Button asChild size="sm" variant="outline" className="bg-glass-bg-hover backdrop-blur-2xl border-glass-border-hover text-white hover:bg-glass-bg-hover hover:text-white">
+                            <Button asChild size="sm" variant="outline" className="bg-glass-bg-hover backdrop-blur-2xl border-glass-border-hover text-text hover:bg-glass-bg-hover hover:text-text">
                                 <Link href={`/profile/${ownerUsername}`}>{t.profile.viewProfile}</Link>
                             </Button>
                         )}
                         {playlist.visibility === 'public' && (
-                            <Button size="sm" variant="ghost" onClick={handleShare} className="text-white/70 hover:text-white hover:bg-glass-bg-hover">
+                            <Button size="sm" variant="ghost" onClick={handleShare} className="text-muted hover:text-text hover:bg-glass-bg-hover">
                                 {t.profile.sharePlaylist}
                             </Button>
                         )}
@@ -88,7 +88,7 @@ export function PlaylistHero({ playlist, ownerUsername, ownerAvatarUrl }: Playli
                                 key={item.id}
                                 className={cn(
                                     'relative w-20 lg:w-24 aspect-2/3 rounded-poster overflow-hidden shrink-0',
-                                    'border-2 border-black shadow-card',
+                                    'border-2 border-background shadow-card',
                                     'transition-transform duration-(--duration-base) ease-apple',
                                     'group-hover:-translate-y-2',
                                     i > 0 && '-ml-6',

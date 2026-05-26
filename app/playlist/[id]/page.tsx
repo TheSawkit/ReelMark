@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 
     const { playlist, ownerUsername } = result
-    const owner = ownerUsername ?? 'unknown'
+    const owner = ownerUsername ?? t.profile.unknownUser
     const description = t.metadata.playlistDescription.replace('${owner}', owner)
     const posterPath = playlist.items?.[0]?.poster_path
     const ogImage = posterPath ? getImageUrl(posterPath, 'w342') : undefined
