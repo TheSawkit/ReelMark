@@ -29,7 +29,7 @@ export function PlaylistHero({ playlist, ownerUsername, ownerAvatarUrl }: Playli
     }
 
     return (
-        <section className="relative -mt-16 overflow-hidden min-h-[50vh] md:min-h-[55vh] flex flex-col justify-end">
+        <section className="relative -mt-16 overflow-hidden min-h-[20vh] md:min-h-[50vh] flex flex-col justify-end">
             <BlurredPosterBackdrop posterPath={backgroundPoster} variant="banner" />
 
             <div
