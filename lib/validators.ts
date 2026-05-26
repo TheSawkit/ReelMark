@@ -56,6 +56,14 @@ export function validateUsername(username: unknown): string | null {
     return username.trim()
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export function validateUUID(value: unknown): string | null {
+    if (typeof value !== 'string') return null
+    if (!UUID_REGEX.test(value)) return null
+    return value
+}
+
 export function validateRegion(region: unknown): Region | null {
     if (typeof region !== 'string') return null
     const upper = region.toUpperCase() as Region

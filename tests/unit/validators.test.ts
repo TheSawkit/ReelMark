@@ -3,6 +3,7 @@ import {
     validateEmail,
     validatePassword,
     validateUsername,
+    validateUUID,
     validateRegion,
     validateLanguage,
     validateAvatarFile,
@@ -206,5 +207,27 @@ describe("sanitizeRedirectPath", () => {
 
     it("rejects paths that do not start with /", () => {
         expect(sanitizeRedirectPath("evil.com", "/")).toBe("/")
+    })
+})
+
+describe("validateUUID", () => {
+    it("accepts valid UUIDs (lower and upper case)", () => {
+        expect(validateUUID("550e8400-e29b-41d4-a716-446655440000")).toBe("550e8400-e29b-41d4-a716-446655440000")
+        expect(validateUUID("550E8400-E29B-41D4-A716-446655440000")).toBe("550E8400-E29B-41D4-A716-446655440000")
+    })
+
+    it("rejects malformed strings", () => {
+        expect(validateUUID("")).toBeNull()
+        expect(validateUUID("not-a-uuid")).toBeNull()
+        expect(validateUUID("550e8400-e29b-41d4-a716")).toBeNull()
+        expect(validateUUID("550e8400-e29b-41d4-a716-44665544000g")).toBeNull()
+        expect(validateUUID("550e8400e29b41d4a716446655440000")).toBeNull()
+    })
+
+    it("rejects non-string input", () => {
+        expect(validateUUID(null)).toBeNull()
+        expect(validateUUID(undefined)).toBeNull()
+        expect(validateUUID(123)).toBeNull()
+        expect(validateUUID({})).toBeNull()
     })
 })

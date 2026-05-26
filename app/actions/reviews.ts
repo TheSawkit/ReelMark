@@ -3,7 +3,7 @@
 import { getAuthenticatedUser, getOptionalUser } from '@/lib/supabase/auth-helpers'
 import { createClient } from '@/lib/supabase/server'
 import { getTranslations } from '@/lib/i18n/server'
-import { validateRating, validateReviewContent } from '@/lib/validators'
+import { validateRating, validateReviewContent, validateUUID } from '@/lib/validators'
 import { revalidateProfile } from '@/app/actions/_helpers'
 import { getTvShowDetails, getSeasonDetails } from '@/lib/tmdb/tv'
 import { MAX_REVIEW_LENGTH } from '@/types/profile'
@@ -203,6 +203,8 @@ export async function upsertReview(
  * Deletes a review owned by the authenticated user.
  */
 export async function deleteReview(reviewId: string): Promise<void> {
+    if (validateUUID(reviewId) === null) throw new Error('Invalid review ID')
+
     const { supabase, userId } = await getAuthenticatedUser()
 
     const { error } = await supabase
