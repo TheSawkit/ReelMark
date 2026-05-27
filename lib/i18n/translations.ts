@@ -579,6 +579,11 @@ export const translations = {
                 alreadyHave: 'J\'ai déjà un compte',
             },
         },
+        offline: {
+            title: 'Vous êtes hors ligne',
+            description: 'Vérifiez votre connexion et réessayez.',
+            retry: 'Réessayer',
+        },
         danger: {
             warning: '⚠️ Avertissement important',
             allDataWillBeDeleted: 'Toutes vos données seront supprimées définitivement',
@@ -1206,6 +1211,11 @@ export const translations = {
                 button: 'Create a free account',
                 alreadyHave: 'I already have an account',
             },
+        },
+        offline: {
+            title: 'You are offline',
+            description: 'You are currently offline. Please check your connection and try again.',
+            retry: 'Retry',
         },
         danger: {
             warning: '⚠️ Important warning',

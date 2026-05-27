@@ -19,8 +19,8 @@ import { buildPageMetadata } from "@/lib/metadata"
 import type { Movie, TvShow } from "@/types/tmdb"
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations()
-  return buildPageMetadata(t.metadata.dashboardTitle, t.metadata.dashboardDescription, { isPrivate: true })
+    const t = await getTranslations()
+    return buildPageMetadata(t.metadata.dashboardTitle, t.metadata.dashboardDescription, { isPrivate: true })
 }
 
 type Props = {
