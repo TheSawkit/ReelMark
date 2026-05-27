@@ -124,8 +124,7 @@ function parseLetterboxd(text: string): ImportItem[] {
     const ratingIdx = headers.indexOf('rating')
     const watchedDateIdx = headers.indexOf('watched date')
     if (nameIdx === -1) return []
-    // watchlist.csv has no "watched date" AND no "rating" — rated/diary items are always watched
-    const isWatchlist = watchedDateIdx === -1 && ratingIdx === -1
+    const isWatchlistCsv = watchedDateIdx === -1 && ratingIdx === -1
     return lines.slice(1).flatMap(line => {
         const cols = parseCSVLine(line)
         const title = cols[nameIdx]?.replace(/^"|"$/g, '') ?? ''
@@ -133,13 +132,10 @@ function parseLetterboxd(text: string): ImportItem[] {
         const year = yearIdx !== -1 ? (parseInt(cols[yearIdx] ?? '') || null) : null
         const rawRating = ratingIdx !== -1 ? parseFloat(cols[ratingIdx] ?? '') : NaN
         const rating = !isNaN(rawRating) && rawRating > 0 ? Math.min(10, Math.round(rawRating * 2)) : null
-        return [{ title, year, status: (isWatchlist ? 'to_watch' : 'watched') as WatchStatus, rating, mediaType: 'movie' as const }]
+        return [{ title, year, status: (isWatchlistCsv ? 'to_watch' : 'watched') as WatchStatus, rating, mediaType: 'movie' as const }]
     })
 }
 
-// TV Time — Refract Chrome extension format (tvtime-movies-*.json / tvtime-series-*.json)
-// movies: [{ title, year, is_watched, id: { tvdb, imdb } }]
-// series: [{ title, status, seasons: [{ number, episodes: [{ is_watched }] }] }]
 function parseTvTimeRefract(arr: unknown[]): ImportItem[] {
     const items: ImportItem[] = []
     for (const entry of arr) {
@@ -152,17 +148,14 @@ function parseTvTimeRefract(arr: unknown[]): ImportItem[] {
         const ids = e.id as Record<string, unknown> | undefined
 
         if (Array.isArray(e.seasons)) {
-            // Series entry — "up_to_date" means fully watched
             const tvStatus = typeof e.status === 'string' ? e.status : ''
             const status: WatchStatus = tvStatus === 'up_to_date' ? 'watched' : 'to_watch'
             const tvdbId = typeof ids?.tvdb === 'number' ? ids.tvdb : null
-            // Series have no year field — extract from title like "Show Name (2000)"
             const yearInTitle = title.match(/^(.+?)\s*\((\d{4})\)\s*$/)
             const cleanTitle = yearInTitle ? yearInTitle[1].trim() : title
             const seriesYear = yearInTitle ? parseInt(yearInTitle[2]) : year
             items.push({ title: cleanTitle, year: seriesYear, status, mediaType: 'tv', tvdbId })
         } else if ('is_watched' in e) {
-            // Movie entry
             const status: WatchStatus = e.is_watched === true ? 'watched' : 'to_watch'
             const imdbId = typeof ids?.imdb === 'string' && ids.imdb ? ids.imdb : null
             items.push({ title, year, status, mediaType: 'movie', imdbId })
@@ -171,7 +164,6 @@ function parseTvTimeRefract(arr: unknown[]): ImportItem[] {
     return items
 }
 
-// TV Time — GDPR export (2023+): { data: { objects: [{ meta: { name, first_release_date } }] } }
 function parseTvTimeGDPR(obj: Record<string, unknown>): ImportItem[] {
     const objects = (obj.data as Record<string, unknown> | undefined)?.objects
     if (!Array.isArray(objects)) return []
@@ -198,7 +190,6 @@ function parseTvTimeJSON(obj: unknown): ImportItem[] {
     return []
 }
 
-// TV Time — legacy CSV format (GDPR export, pre-2023): followed_tv_show.csv or seen_episode.csv
 function parseTvTimeCSV(text: string): ImportItem[] {
     const lines = text.replace(/\r/g, '').split('\n').filter(Boolean)
     if (lines.length < 2) return []
@@ -221,10 +212,6 @@ function parseTvTimeCSV(text: string): ImportItem[] {
     return items
 }
 
-// Trakt — flat array format per file:
-//   movies/watched.json  → [{ movie: { title, year, ids: { tmdb } }, last_watched_at }]
-//   shows/watched.json   → [{ show: { title, year, ids: { tmdb } }, last_watched_at, seasons: [] }]
-//   watchlist.json       → [{ type: "movie"|"show", movie|show: {...}, listed_at }]
 function parseTrakt(parsed: unknown): ImportItem[] {
     if (!Array.isArray(parsed)) return []
     const items: ImportItem[] = []

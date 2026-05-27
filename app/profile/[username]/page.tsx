@@ -12,6 +12,7 @@ import { getUserPlaylists } from '@/app/actions/playlists'
 import { getFriends, getFriendshipStatus } from '@/app/actions/friends'
 import type { WatchlistEntry } from '@/types/tmdb'
 import type { FriendEntry } from '@/types/profile'
+import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns'
 
 interface Props {
     params: Promise<{ username: string }>
@@ -40,9 +41,11 @@ export async function generateMetadata({ params }: Props): Promise<import("next"
 
 export default async function ProfilePage({ params }: Props) {
     const { username } = await params
-    const currentUser = await requireAuth()
 
-    const profile = await getProfileByUsername(username)
+    const [currentUser, profile] = await Promise.all([
+        requireAuth(),
+        getProfileByUsername(username),
+    ])
     if (!profile) notFound()
 
     const isOwnProfile = currentUser.id === profile.user_id
@@ -50,13 +53,14 @@ export default async function ProfilePage({ params }: Props) {
     const supabase = await createClient()
     const adminClient = createAdminClient()
 
-    const [privacy, reviewsPage, playlists, rawFriends, friendship, watchlistData] = await Promise.all([
+    const [privacy, reviewsPage, playlists, rawFriends, friendship, watchlistData, ownerAuth] = await Promise.all([
         getPrivacySettings(profile.user_id),
         getUserReviews(profile.user_id),
         getUserPlaylists(profile.user_id),
         getFriends(profile.user_id),
         isOwnProfile ? Promise.resolve(null) : getFriendshipStatus(profile.user_id),
-        supabase.from('watchlist').select('*').eq('user_id', profile.user_id).order('created_at', { ascending: false }).limit(1000),
+        supabase.from('watchlist').select(WATCHLIST_COLUMNS).eq('user_id', profile.user_id).order('created_at', { ascending: false }).limit(1000),
+        adminClient.auth.admin.getUserById(profile.user_id),
     ])
 
     const watchlist = (watchlistData.data ?? []) as WatchlistEntry[]
@@ -99,7 +103,6 @@ export default async function ProfilePage({ params }: Props) {
     const initialReviewsCursor = canView(privacy.reviews_visibility) ? reviewsPage.nextCursor : null
     const filteredFriends = canView(privacy.friends_visibility) ? allFriendEntries : []
 
-    const ownerAuth = await adminClient.auth.admin.getUserById(profile.user_id)
     const ownerMeta = ownerAuth.data.user?.user_metadata
     const avatarUrl = typeof ownerMeta?.avatar_url === 'string' ? ownerMeta.avatar_url : undefined
     const fullName = typeof ownerMeta?.full_name === 'string' ? ownerMeta.full_name : undefined

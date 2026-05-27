@@ -64,6 +64,7 @@ export function NavbarMobile({ user }: NavbarMobileProps) {
                                 email={user.user_metadata.email}
                                 size={64}
                                 className="rounded-full object-cover"
+                                loading="eager"
                             />
                             <div>
                                 <p className="text-sm font-medium text-text">

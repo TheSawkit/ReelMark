@@ -97,7 +97,7 @@ export function LibraryTabs({ toWatch, watched, tvProgress = {} }: LibraryTabsPr
                         className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6"
                         style={{ animation: "scaleIn var(--duration-base) ease-out forwards", opacity: 0 }}
                     >
-                        {current.items.slice(0, visibleCount).map((entry) => {
+                        {current.items.slice(0, visibleCount).map((entry, index) => {
                             const mediaItem = watchlistEntryToMediaItem(entry)
                             const progress = entry.media_type === "tv"
                                 ? tvProgress[entry.media_id]
@@ -108,6 +108,7 @@ export function LibraryTabs({ toWatch, watched, tvProgress = {} }: LibraryTabsPr
                                     media={mediaItem}
                                     watchlistEntry={entry}
                                     hideRating
+                                    priority={index < 6}
                                     tvProgress={progress}
                                 />
                             )

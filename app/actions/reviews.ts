@@ -8,6 +8,7 @@ import { revalidateProfile } from '@/app/actions/_helpers'
 import { getTvShowDetails, getSeasonDetails } from '@/lib/tmdb/tv'
 import { MAX_REVIEW_LENGTH } from '@/types/profile'
 import type { Review, PublicReview, ReviewMediaType, UserReviewsPage } from '@/types/profile'
+import { REVIEW_COLUMNS } from '@/lib/supabase/columns'
 
 function parseRatingRow(data: unknown): { avg: number; count: number } | null {
     const row = (data as Array<{ avg: string | null; count: string }> | null)?.[0] ?? null
@@ -32,7 +33,7 @@ export async function getUserReviews(
 
     let query = supabase
         .from('reviews')
-        .select('*')
+        .select(REVIEW_COLUMNS)
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
@@ -60,11 +61,11 @@ export async function getMediaReview(mediaId: number, mediaType: ReviewMediaType
 
     const { data } = await supabase
         .from('reviews')
-        .select('*')
+        .select(REVIEW_COLUMNS)
         .eq('user_id', userId)
         .eq('media_id', mediaId)
         .eq('media_type', mediaType)
-        .single()
+        .maybeSingle()
 
     return (data as Review) ?? null
 }

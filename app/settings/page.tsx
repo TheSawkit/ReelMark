@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { SettingsContent } from '@/components/settings/SettingsContent'
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout'
 import { getTranslations } from '@/lib/i18n/server'
+import { USER_PROFILE_COLUMNS, PRIVACY_COLUMNS } from '@/lib/supabase/columns'
 import type { UserProfile, PrivacySettings } from '@/types/profile'
 
 export async function generateMetadata() {
@@ -23,8 +24,8 @@ export default async function SettingsPage() {
     const supabase = await createClient()
 
     const [profileResult, privacyResult] = await Promise.all([
-        supabase.from('user_profiles').select('*').eq('user_id', user.id).single(),
-        supabase.from('privacy_settings').select('*').eq('user_id', user.id).single(),
+        supabase.from('user_profiles').select(USER_PROFILE_COLUMNS).eq('user_id', user.id).maybeSingle(),
+        supabase.from('privacy_settings').select(PRIVACY_COLUMNS).eq('user_id', user.id).maybeSingle(),
     ])
 
     const userProfile = (profileResult.data as UserProfile | null) ?? null

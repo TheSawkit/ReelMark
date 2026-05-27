@@ -108,7 +108,7 @@ export default async function TvShowPage(props: TvPageProps) {
                             posterPath={tvDetails.poster_path}
                             status={watchlistEntry?.status === "watched" ? "watched" : "to_watch"}
                             variant="full"
-                            initialActive={!!watchlistEntry}
+                            initialIsActive={!!watchlistEntry}
                             releaseDate={tvDetails.first_air_date}
                         />
                     </div>
@@ -141,7 +141,7 @@ export default async function TvShowPage(props: TvPageProps) {
             posterPath={tvDetails.poster_path}
             status={watchlistEntry?.status === "watched" ? "watched" : "to_watch"}
             variant="responsive"
-            initialActive={!!watchlistEntry}
+            initialIsActive={!!watchlistEntry}
             releaseDate={tvDetails.first_air_date}
         />
     )

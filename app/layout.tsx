@@ -82,7 +82,7 @@ export default async function RootLayout({
     const t = await getTranslations();
 
     return (
-        <html lang={lang} suppressHydrationWarning>
+        <html lang={lang} suppressHydrationWarning data-scroll-behavior="smooth">
             <head>
                 <link rel="dns-prefetch" href="https://image.tmdb.org" />
                 <script

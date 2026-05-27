@@ -67,7 +67,7 @@ export interface WatchButtonProps {
   mediaType: MediaType
   posterPath: string | null
   status: WatchStatus
-  initialActive?: boolean
+  initialIsActive?: boolean
   fallbackStatus?: WatchStatus
   variant?: "icon" | "full" | "responsive"
   onDark?: boolean

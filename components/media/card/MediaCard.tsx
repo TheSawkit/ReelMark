@@ -152,7 +152,7 @@ export function MediaCard({ media, className, watchlistEntry, hideRating, tvProg
                         mediaType={watchlistEntry?.media_type ?? media.media_type}
                         posterPath={watchlistEntry?.poster_path ?? media.poster_path}
                         status={resolvedStatus}
-                        initialActive={!!watchlistEntry || !!media.watchlistEntry}
+                        initialIsActive={!!watchlistEntry || !!media.watchlistEntry}
                         fallbackStatus={resolvedFallback}
                         variant="full"
                         onDark

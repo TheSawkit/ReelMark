@@ -5,11 +5,11 @@ import { getAuthenticatedUser, getOptionalUser } from "@/lib/supabase/auth-helpe
 import { SHARED_REVALIDATE_PATHS } from "@/app/actions/_helpers"
 import { VALID_STATUSES, VALID_MEDIA_TYPES } from "@/lib/validators"
 import type { WatchStatus, WatchlistEntry, MediaType } from "@/types/tmdb"
+import { WATCHLIST_COLUMNS } from "@/lib/supabase/columns"
 
-function revalidateWatchlistPaths() {
+function revalidateWatchlistPaths(mediaType: MediaType) {
     SHARED_REVALIDATE_PATHS.forEach(p => revalidatePath(p))
-    revalidatePath("/movie/[id]", "layout")
-    revalidatePath("/tv/[id]", "layout")
+    revalidatePath(mediaType === "movie" ? "/movie/[id]" : "/tv/[id]", "layout")
 }
 
 export async function addToWatchlist(
@@ -40,7 +40,7 @@ export async function addToWatchlist(
 
     if (error) throw new Error(error.message)
 
-    revalidateWatchlistPaths()
+    revalidateWatchlistPaths(mediaType)
 }
 
 export async function removeFromWatchlist(mediaId: number, mediaType: MediaType): Promise<void> {
@@ -55,7 +55,7 @@ export async function removeFromWatchlist(mediaId: number, mediaType: MediaType)
 
     if (error) throw new Error(error.message)
 
-    revalidateWatchlistPaths()
+    revalidateWatchlistPaths(mediaType)
 }
 
 export async function getUserWatchlist(): Promise<WatchlistEntry[]> {
@@ -65,7 +65,7 @@ export async function getUserWatchlist(): Promise<WatchlistEntry[]> {
 
     const { data: entries, error } = await supabase
         .from("watchlist")
-        .select("*")
+        .select(WATCHLIST_COLUMNS)
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(1000)
@@ -85,11 +85,11 @@ export async function getMediaWatchlistEntry(
 
     const { data: entry } = await supabase
         .from("watchlist")
-        .select("*")
+        .select(WATCHLIST_COLUMNS)
         .eq("user_id", userId)
         .eq("media_id", mediaId)
         .eq("media_type", mediaType)
-        .single()
+        .maybeSingle()
 
     return entry as WatchlistEntry ?? null
 }
@@ -101,7 +101,7 @@ export async function getMediaWatchlistEntries(mediaIds: number[]): Promise<Watc
 
     const { data: entries, error } = await supabase
         .from("watchlist")
-        .select("*")
+        .select(WATCHLIST_COLUMNS)
         .eq("user_id", userId)
         .in("media_id", mediaIds)
 

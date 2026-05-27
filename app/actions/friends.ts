@@ -1,6 +1,7 @@
 'use server'
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers'
+import { FRIENDSHIP_COLUMNS } from '@/lib/supabase/columns'
 import type { Friendship } from '@/types/profile'
 
 /**
@@ -14,7 +15,7 @@ export async function getFriends(userId: string): Promise<Friendship[]> {
 
     const { data, error } = await supabase
         .from('friendships')
-        .select('*')
+        .select(FRIENDSHIP_COLUMNS)
         .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
         .eq('status', 'accepted')
         .limit(100)
@@ -33,7 +34,7 @@ export async function getPendingRequests(): Promise<Friendship[]> {
 
     const { data, error } = await supabase
         .from('friendships')
-        .select('*')
+        .select(FRIENDSHIP_COLUMNS)
         .eq('addressee_id', userId)
         .eq('status', 'pending')
         .limit(100)
@@ -53,12 +54,12 @@ export async function getFriendshipStatus(targetUserId: string): Promise<Friends
 
     const { data } = await supabase
         .from('friendships')
-        .select('*')
+        .select(FRIENDSHIP_COLUMNS)
         .or(
             `and(requester_id.eq.${userId},addressee_id.eq.${targetUserId}),` +
             `and(requester_id.eq.${targetUserId},addressee_id.eq.${userId})`
         )
-        .single()
+        .maybeSingle()
 
     return (data as Friendship) ?? null
 }

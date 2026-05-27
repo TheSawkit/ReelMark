@@ -7,6 +7,7 @@ import { formStr } from '@/lib/validators'
 import { getTranslations } from '@/lib/i18n/server'
 import { revalidateProfile } from '@/app/actions/_helpers'
 import { parseVisibility } from '@/lib/privacy'
+import { USER_PROFILE_COLUMNS, PRIVACY_COLUMNS } from '@/lib/supabase/columns'
 import type { PrivacySettings, PrivacyDefaults, UserProfile } from '@/types/profile'
 
 /**
@@ -20,9 +21,9 @@ export async function getProfileByUsername(username: string): Promise<UserProfil
 
     const { data } = await supabase
         .from('user_profiles')
-        .select('*')
+        .select(USER_PROFILE_COLUMNS)
         .ilike('username', username)
-        .single()
+        .maybeSingle()
 
     return data ?? null
 }
@@ -73,9 +74,9 @@ export async function getPrivacySettings(userId: string): Promise<PrivacySetting
 
     const { data } = await supabase
         .from('privacy_settings')
-        .select('*')
+        .select(PRIVACY_COLUMNS)
         .eq('user_id', userId)
-        .single()
+        .maybeSingle()
 
     const fallback: PrivacyDefaults = {
         watchlist_visibility: 'public',

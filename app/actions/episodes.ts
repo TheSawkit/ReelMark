@@ -23,13 +23,30 @@ async function syncTvShowWatchlistStatus(
     userId: string,
     tvId: number
 ) {
-    let details
-    try {
-        details = await getCachedTvShowDetails(tvId)
-    } catch (error) {
-        console.warn("[episodes] Sync watchlist status failed for tvId:", tvId, error instanceof Error ? error.message : "unknown")
+    const detailsPromise = getCachedTvShowDetails(tvId).then(
+        d => ({ ok: true as const, data: d }),
+        e => ({ ok: false as const, error: e }),
+    )
+    const countPromise = supabase
+        .from("episode_watches")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("tv_id", tvId)
+    const entryPromise = supabase
+        .from("watchlist")
+        .select("status")
+        .eq("user_id", userId)
+        .eq("media_id", tvId)
+        .eq("media_type", "tv")
+        .maybeSingle()
+
+    const [detailsResult, { count }, { data: entry }] = await Promise.all([detailsPromise, countPromise, entryPromise])
+
+    if (!detailsResult.ok) {
+        console.warn("[episodes] Sync watchlist status failed for tvId:", tvId, detailsResult.error instanceof Error ? detailsResult.error.message : "unknown")
         return
     }
+    const details = detailsResult.data
 
     const totalEpisodes = (details.seasons ?? [])
         .filter((s: { season_number: number }) => s.season_number > 0)
@@ -37,22 +54,8 @@ async function syncTvShowWatchlistStatus(
 
     if (totalEpisodes === 0) return
 
-    const { count } = await supabase
-        .from("episode_watches")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId)
-        .eq("tv_id", tvId)
-
     const watchedCount = count ?? 0
     const allWatched = watchedCount >= totalEpisodes
-
-    const { data: entry } = await supabase
-        .from("watchlist")
-        .select("status")
-        .eq("user_id", userId)
-        .eq("media_id", tvId)
-        .eq("media_type", "tv")
-        .single()
 
     const newStatus = allWatched ? "watched" : "to_watch"
 
@@ -102,7 +105,7 @@ export async function toggleEpisodeWatch(
         .eq("tv_id", tvId)
         .eq("season_number", seasonNumber)
         .eq("episode_number", episodeNumber)
-        .single()
+        .maybeSingle()
 
     let result: boolean
 

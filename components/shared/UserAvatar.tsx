@@ -8,6 +8,7 @@ interface UserAvatarProps {
   email?: string
   size?: number
   className?: string
+  loading?: 'lazy' | 'eager'
 }
 
 export function UserAvatar({
@@ -16,6 +17,7 @@ export function UserAvatar({
   email,
   size = 128,
   className,
+  loading = 'lazy',
 }: UserAvatarProps) {
   const { t } = useTranslation()
   const goldColor = "d6b25e"
@@ -34,6 +36,8 @@ export function UserAvatar({
       height={size}
       className={className}
       unoptimized
+      loading={loading}
+      priority={loading === 'eager'}
     />
   )
 }

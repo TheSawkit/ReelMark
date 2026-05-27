@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import { Trash2 } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { StarRating } from "@/components/ui/StarRating"
 import { Button } from "@/components/ui/button"
 import { upsertReview, deleteReview } from "@/app/actions/reviews"
@@ -77,7 +77,9 @@ export function ReviewDialog({
                     <DialogTitle>
                         {mediaType === "episode" ? t.movie.rateEpisode : mediaType === "tv" ? t.movie.rateTvShow : t.movie.rateMovie}
                     </DialogTitle>
-                    <p className="text-sm text-muted mt-0.5 line-clamp-1">{mediaTitle}</p>
+                    <DialogDescription>
+                        {mediaTitle}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="px-5 py-5 space-y-5">

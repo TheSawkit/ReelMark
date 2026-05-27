@@ -96,6 +96,7 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
                                                     email={user.user_metadata.email}
                                                     size={128}
                                                     className="select-none"
+                                                    loading="eager"
                                                 />
                                             </Button>
                                         </DropdownMenuTrigger>

@@ -25,19 +25,19 @@ const FUSE_OPTIONS: IFuseOptions<MediaItem> = {
 type Tier1Hit = { item: MediaItem; priority: number; popularity: number }
 
 function tier1Exact(query: string, items: MediaItem[]): Tier1Hit[] {
-    const q = normalize(query)
-    if (!q) return []
+    const normalizedQuery = normalize(query)
+    if (!normalizedQuery) return []
     return items
         .map((item): Tier1Hit | null => {
-            const t = normalize(item.title)
-            const o = normalize(item.original_title)
+            const normalizedTitle = normalize(item.title)
+            const normalizedOriginal = normalize(item.original_title)
             let priority = 0
-            if (t === q || o === q) priority = 3
-            else if (t.startsWith(q) || o.startsWith(q)) priority = 2
-            else if (t.includes(q) || o.includes(q)) priority = 1
+            if (normalizedTitle === normalizedQuery || normalizedOriginal === normalizedQuery) priority = 3
+            else if (normalizedTitle.startsWith(normalizedQuery) || normalizedOriginal.startsWith(normalizedQuery)) priority = 2
+            else if (normalizedTitle.includes(normalizedQuery) || normalizedOriginal.includes(normalizedQuery)) priority = 1
             return priority > 0 ? { item, priority, popularity: item.popularity ?? 0 } : null
         })
-        .filter((h): h is Tier1Hit => h !== null)
+        .filter((hit): hit is Tier1Hit => hit !== null)
         .sort((a, b) => b.priority - a.priority || b.popularity - a.popularity)
 }
 

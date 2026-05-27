@@ -15,21 +15,21 @@ export function WatchButton({
     mediaType,
     posterPath,
     status,
-    initialActive = false,
+    initialIsActive = false,
     variant = "icon",
     onDark = false,
     fallbackStatus,
     releaseDate,
 }: WatchButtonProps) {
     const [isPending, startTransition] = useTransition()
-    const [active, setActive] = useOptimistic(initialActive)
+    const [isActive, setIsActive] = useOptimistic(initialIsActive)
     const [error, setError] = useAutoResetError()
     const [reviewOpen, setReviewOpen] = useState(false)
     const { t } = useTranslation()
 
     const isUnreleased = releaseDate ? new Date(releaseDate) > new Date() : false
 
-    if (status === "watched" && isUnreleased && !active) {
+    if (status === "watched" && isUnreleased && !isActive) {
         return null
     }
 
@@ -49,10 +49,10 @@ export function WatchButton({
         e.stopPropagation()
 
         startTransition(async () => {
-            const wasActive = active
-            setActive(!active)
+            const previousIsActive = isActive
+            setIsActive(!isActive)
             try {
-                if (wasActive) {
+                if (previousIsActive) {
                     if (fallbackStatus) {
                         await addToWatchlist(mediaId, mediaTitle, posterPath, fallbackStatus, mediaType)
                     } else {
@@ -68,7 +68,7 @@ export function WatchButton({
         })
     }
 
-    const Icon = isPending ? Loader2 : error ? XCircle : active ? Check : status === "watched" ? Eye : Plus
+    const Icon = isPending ? Loader2 : error ? XCircle : isActive ? Check : status === "watched" ? Eye : Plus
 
     if (variant === "responsive") {
         return (
@@ -83,7 +83,7 @@ export function WatchButton({
                         "flex items-center justify-center gap-2 shrink-0",
                         "backdrop-blur-2xl border text-sm font-semibold",
                         "transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-                        active
+                        isActive
                             ? "bg-primary/50 text-white border-white/10 shadow-glow-red"
                             : "bg-white/15 text-text border-white/10 hover:bg-white/25 hover:text-text shadow-card-sm"
                     )}
@@ -92,7 +92,7 @@ export function WatchButton({
                     <span className="hidden md:inline">
                         {error
                             ? t.common.actionError
-                            : active
+                            : isActive
                                 ? status === "watched" ? t.movie.watched : t.movie.added
                                 : status === "watched" ? t.movie.markAsWatched : t.movie.addToList}
                     </span>
@@ -110,7 +110,7 @@ export function WatchButton({
                     disabled={isPending}
                     className={cn(
                         "flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11 w-full shrink-0",
-                        active
+                        isActive
                             ? "bg-primary/50 backdrop-blur-2xl text-white border-white/10 shadow-glow-red"
                             : onDark
                                 ? "bg-white/15 backdrop-blur-2xl text-white/90 border-white/10 hover:bg-white/25 hover:text-white shadow-card-sm"
@@ -120,7 +120,7 @@ export function WatchButton({
                     <Icon className={cn("h-4 w-4", isPending && "animate-spin")} />
                     {error
                         ? t.common.actionError
-                        : active
+                        : isActive
                             ? status === "watched"
                                 ? t.movie.watched
                                 : t.movie.added
@@ -143,7 +143,7 @@ export function WatchButton({
                 className={cn(
                     "h-12 w-12 rounded-full backdrop-blur-2xl border",
                     "flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-                    active
+                    isActive
                         ? "bg-primary/40 text-white border-border/10 border-t-border/20 shadow-glow-red"
                         : "bg-surface/20 text-muted border-border/10 border-t-border/20 hover:text-text hover:bg-surface-2/20 shadow-card-sm hover:border-border"
                 )}

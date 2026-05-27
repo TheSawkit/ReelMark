@@ -99,7 +99,7 @@ export default async function MoviePage(props: MoviePageProps) {
                                 posterPath={movieDetails.poster_path}
                                 status="to_watch"
                                 variant="full"
-                                initialActive={watchlistEntry?.status === "to_watch"}
+                                initialIsActive={watchlistEntry?.status === "to_watch"}
                             />
                         </div>
                     )}
@@ -111,7 +111,7 @@ export default async function MoviePage(props: MoviePageProps) {
                             posterPath={movieDetails.poster_path}
                             status="watched"
                             variant="full"
-                            initialActive={isWatched}
+                            initialIsActive={isWatched}
                             fallbackStatus="to_watch"
                             releaseDate={movieDetails.release_date}
                         />
@@ -139,7 +139,7 @@ export default async function MoviePage(props: MoviePageProps) {
                     posterPath={movieDetails.poster_path}
                     status="to_watch"
                     variant="responsive"
-                    initialActive={watchlistEntry?.status === "to_watch"}
+                    initialIsActive={watchlistEntry?.status === "to_watch"}
                 />
             )}
             <WatchButton
@@ -149,7 +149,7 @@ export default async function MoviePage(props: MoviePageProps) {
                 posterPath={movieDetails.poster_path}
                 status="watched"
                 variant="responsive"
-                initialActive={isWatched}
+                initialIsActive={isWatched}
                 fallbackStatus="to_watch"
                 releaseDate={movieDetails.release_date}
             />

@@ -67,7 +67,7 @@ export function MediaBanner({
                         fill
                         style={{ paddingTop: "calc(4rem + env(safe-area-inset-top))" }}
                         className="pt-20 object-cover object-top"
-                        priority
+                        priority={'eager'}
                         sizes="100vw"
                     />
                     <div className="absolute inset-0 bg-linear-to-t from-app-bg via-app-bg/40 to-transparent" />
@@ -92,6 +92,7 @@ export function MediaBanner({
                                 fill
                                 className="object-cover"
                                 sizes="(max-width: 768px) 128px, 224px"
+                                priority={'eager'}
                             />
                         </div>
 

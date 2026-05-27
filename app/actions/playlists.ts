@@ -47,13 +47,13 @@ export async function getPlaylistById(id: string): Promise<{
         .from('playlists')
         .select('*, items:playlist_items(*)')
         .eq('id', id)
-        .single()
+        .maybeSingle()
 
     if (!data) return null
 
     const adminClient = createAdminClient()
     const [profileResult, ownerAuth] = await Promise.all([
-        supabase.from('user_profiles').select('username').eq('user_id', data.user_id).single(),
+        supabase.from('user_profiles').select('username').eq('user_id', data.user_id).maybeSingle(),
         adminClient.auth.admin.getUserById(data.user_id),
     ])
 
@@ -97,7 +97,7 @@ export async function createPlaylist(
             .from('privacy_settings')
             .select('playlists_visibility')
             .eq('user_id', userId)
-            .single()
+            .maybeSingle()
         resolvedVisibility = parseVisibility(privacyData?.playlists_visibility, 'private')
     }
 
@@ -211,7 +211,7 @@ export async function addToPlaylist(
         .from('playlists')
         .select('user_id')
         .eq('id', playlistId)
-        .single()
+        .maybeSingle()
 
     if (!playlist || playlist.user_id !== userId) throw new Error(t.profile.errors.playlistNotFound)
 
@@ -241,7 +241,7 @@ export async function removeFromPlaylist(playlistId: string, mediaId: number, me
         .from('playlists')
         .select('user_id')
         .eq('id', playlistId)
-        .single()
+        .maybeSingle()
 
     if (!playlist || playlist.user_id !== userId) throw new Error(t.profile.errors.playlistNotFound)
 

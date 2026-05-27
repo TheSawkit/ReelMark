@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { Search, Loader2, ListVideo, Check, X, Save, Pencil, Link2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription } from '@/components/ui/dialog'
 import { addToPlaylist, removeFromPlaylist, updatePlaylist, updatePlaylistVisibility } from '@/app/actions/playlists'
 import { getImageUrl } from '@/lib/tmdb/images'
 import { getMediaKey } from '@/lib/media'
@@ -140,6 +140,11 @@ export function PlaylistEditDialog({
                 className="max-w-2xl h-[85dvh] flex flex-col gap-0 p-0 overflow-hidden"
                 onInteractOutside={(e) => { if (hasAnyPending || isSavingMeta) e.preventDefault() }}
             >
+                <div className="sr-only">
+                    <DialogDescription>
+                        {mode === 'edit' ? t.profile.editPlaylist : t.profile.viewPlaylist}
+                    </DialogDescription>
+                </div>
                 <div className="shrink-0 px-5 pt-5 pb-4 border-b border-border-subtle space-y-3">
                     {mode === 'view' && onSwitchToEdit && (
                         <button
