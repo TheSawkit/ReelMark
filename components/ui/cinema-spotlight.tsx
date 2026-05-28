@@ -1,28 +1,32 @@
 interface CinemaSpotlightProps {
-  height?: number
-  maxWidth?: number | string
-  intensity?: number
-  position?: string
+  height?: number;
+  maxWidth?: number | string;
+  intensity?: number;
+  position?: string;
 }
 
 export default function CinemaSpotlight({
   height = 600,
   maxWidth,
   intensity = 0.35,
-  position = "top-0",
+  position = 'top-0',
 }: CinemaSpotlightProps) {
   const maxWidthValue = maxWidth
-    ? typeof maxWidth === "number"
+    ? typeof maxWidth === 'number'
       ? `${maxWidth}px`
       : maxWidth
-    : "100%"
+    : '100%';
 
-  const r = "var(--color-red-rgb)"
+  const r = 'var(--color-red-rgb)';
 
   return (
     <div
       className={`absolute ${position} inset-x-0 pointer-events-none -z-10`}
-      style={{ height: `${height}px`, maxWidth: maxWidthValue, margin: "0 auto" }}
+      style={{
+        height: `${height}px`,
+        maxWidth: maxWidthValue,
+        margin: '0 auto',
+      }}
       aria-hidden="true"
     >
       <div
@@ -31,7 +35,7 @@ export default function CinemaSpotlight({
           background: [
             `radial-gradient(ellipse 60% 45% at 50% 0%, rgb(${r} / ${intensity}) 0%, transparent 70%)`,
             `radial-gradient(ellipse 90% 30% at 50% 0%, rgb(${r} / ${intensity * 0.3}) 0%, transparent 60%)`,
-          ].join(", "),
+          ].join(', '),
         }}
       />
 
@@ -52,9 +56,9 @@ export default function CinemaSpotlight({
       <div
         className="absolute bottom-0 inset-x-0 h-1/3"
         style={{
-          background: "linear-gradient(to bottom, transparent, var(--bg))",
+          background: 'linear-gradient(to bottom, transparent, var(--bg))',
         }}
       />
     </div>
-  )
+  );
 }

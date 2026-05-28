@@ -80,6 +80,25 @@ jobs:
           fail-on-cache-miss: true
       - run: pnpm run lint
 
+  prettier:
+    name: Vérifier le formatage du code
+    needs: setup
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: actions/cache/restore@v5
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+          fail-on-cache-miss: true
+      - run: npm run format:check
+
   unit-tests:
     name: Unit tests
     needs: setup

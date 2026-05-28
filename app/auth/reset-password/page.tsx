@@ -1,9 +1,9 @@
-import type { Metadata } from 'next'
-import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm'
-import { getTranslations } from '@/lib/i18n/server'
+import type { Metadata } from 'next';
+import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm';
+import { getTranslations } from '@/lib/i18n/server';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations()
+  const t = await getTranslations();
   return {
     title: t.auth.resetPassword.metaTitle,
     description: t.auth.resetPassword.metaDescription,
@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
       follow: false,
       googleBot: { index: false, follow: false },
     },
-  }
+  };
 }
 
 export default async function ResetPasswordPage() {
@@ -22,6 +22,5 @@ export default async function ResetPasswordPage() {
         <ResetPasswordForm />
       </div>
     </div>
-  )
+  );
 }
-

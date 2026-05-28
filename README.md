@@ -19,31 +19,31 @@
 
 ### ✨ Features
 
-| | Feature | Description |
-|---|---|---|
-| 🎞️ | **Personal tracking** | Complete history of your movies, shows, and episodes across every season |
-| 📺 | **Episode-level tracking** | Track every episode — never ask "did we watch this one?" again |
-| 🔍 | **Smart exploration** | Browse 700k+ titles from the TMDB catalog with intelligent regional filtering |
-| ⭐ | **Ratings & reviews** | Rate on a 1–10 scale and write reviews visible on your public profile |
-| 📁 | **Playlists** | Create themed collections and share them publicly |
-| 👥 | **Friends & community** | Send friend requests, follow friends' watchlists and reviews |
-| 🎭 | **Actor profiles** | Full filmographies, biographies, and credits for every actor |
-| 📱 | **Installable PWA** | Works on iPhone, Android, Mac, Windows, and Linux — no app store required |
-| 🌍 | **Native bilingualism** | Instant EN/FR switching with server-side language detection |
-| 🔒 | **Privacy controls** | Per-section visibility: public, friends only, or private |
+|     | Feature                    | Description                                                                   |
+| --- | -------------------------- | ----------------------------------------------------------------------------- |
+| 🎞️  | **Personal tracking**      | Complete history of your movies, shows, and episodes across every season      |
+| 📺  | **Episode-level tracking** | Track every episode — never ask "did we watch this one?" again                |
+| 🔍  | **Smart exploration**      | Browse 700k+ titles from the TMDB catalog with intelligent regional filtering |
+| ⭐  | **Ratings & reviews**      | Rate on a 1–10 scale and write reviews visible on your public profile         |
+| 📁  | **Playlists**              | Create themed collections and share them publicly                             |
+| 👥  | **Friends & community**    | Send friend requests, follow friends' watchlists and reviews                  |
+| 🎭  | **Actor profiles**         | Full filmographies, biographies, and credits for every actor                  |
+| 📱  | **Installable PWA**        | Works on iPhone, Android, Mac, Windows, and Linux — no app store required     |
+| 🌍  | **Native bilingualism**    | Instant EN/FR switching with server-side language detection                   |
+| 🔒  | **Privacy controls**       | Per-section visibility: public, friends only, or private                      |
 
 ---
 
 ### 🛠️ Tech Stack
 
-| Layer | Technology |
-|:---|:---|
-| **Frontend** | Next.js 16.2.6 (App Router) + React 19 |
-| **Styling** | Tailwind CSS 4 (token-based design system) |
-| **Auth & DB** | Supabase (PostgreSQL + RLS) |
-| **Media data** | TMDB API |
-| **Streaming** | Watchmode API |
-| **PWA** | Serwist (Service Worker + precaching) |
+| Layer          | Technology                                 |
+| :------------- | :----------------------------------------- |
+| **Frontend**   | Next.js 16.2.6 (App Router) + React 19     |
+| **Styling**    | Tailwind CSS 4 (token-based design system) |
+| **Auth & DB**  | Supabase (PostgreSQL + RLS)                |
+| **Media data** | TMDB API                                   |
+| **Streaming**  | Watchmode API                              |
+| **PWA**        | Serwist (Service Worker + precaching)      |
 
 ---
 
@@ -131,16 +131,16 @@ watchlist/
 
 ### 📦 Available Scripts
 
-| Command | Description |
-|:---|:---|
-| `pnpm dev` | Start dev server with Turbopack |
-| `pnpm build` | Production build |
-| `pnpm start` | Start production server |
-| `pnpm lint` | Run ESLint |
-| `pnpm test` | Unit tests (Vitest) |
-| `pnpm test:watch` | Unit tests in watch mode |
-| `pnpm test:e2e` | E2E tests (Playwright) |
-| `pnpm test:e2e:ui` | E2E tests with Playwright UI |
+| Command            | Description                     |
+| :----------------- | :------------------------------ |
+| `pnpm dev`         | Start dev server with Turbopack |
+| `pnpm build`       | Production build                |
+| `pnpm start`       | Start production server         |
+| `pnpm lint`        | Run ESLint                      |
+| `pnpm test`        | Unit tests (Vitest)             |
+| `pnpm test:watch`  | Unit tests in watch mode        |
+| `pnpm test:e2e`    | E2E tests (Playwright)          |
+| `pnpm test:e2e:ui` | E2E tests with Playwright UI    |
 
 ---
 
@@ -150,31 +150,31 @@ watchlist/
 
 ### ✨ Fonctionnalités
 
-| | Fonctionnalité | Description |
-|---|---|---|
-| 🎞️ | **Suivi personnel** | Historique complet de tes films, séries et épisodes, saison par saison |
-| 📺 | **Suivi par épisode** | Suis ta progression réelle — plus jamais "on en était où ?" |
-| 🔍 | **Exploration intelligente** | 700k+ titres du catalogue TMDB avec filtrage régional pertinent |
-| ⭐ | **Notes et avis** | Note de 1 à 10 et écris des critiques visibles sur ton profil public |
-| 📁 | **Playlists** | Crée des collections thématiques et partage-les |
-| 👥 | **Amis & communauté** | Envoie des demandes d'amis, suis les listes et critiques de tes amis |
-| 🎭 | **Profils d'acteurs** | Filmographies complètes, biographies et crédits pour chaque acteur |
-| 📱 | **PWA installable** | Fonctionne sur iPhone, Android, Mac, Windows et Linux — aucun store requis |
-| 🌍 | **Bilingue natif** | Bascule EN/FR instantanée avec détection de langue côté serveur |
-| 🔒 | **Contrôle de confidentialité** | Visibilité par section : public, amis uniquement, ou privé |
+|     | Fonctionnalité                  | Description                                                                |
+| --- | ------------------------------- | -------------------------------------------------------------------------- |
+| 🎞️  | **Suivi personnel**             | Historique complet de tes films, séries et épisodes, saison par saison     |
+| 📺  | **Suivi par épisode**           | Suis ta progression réelle — plus jamais "on en était où ?"                |
+| 🔍  | **Exploration intelligente**    | 700k+ titres du catalogue TMDB avec filtrage régional pertinent            |
+| ⭐  | **Notes et avis**               | Note de 1 à 10 et écris des critiques visibles sur ton profil public       |
+| 📁  | **Playlists**                   | Crée des collections thématiques et partage-les                            |
+| 👥  | **Amis & communauté**           | Envoie des demandes d'amis, suis les listes et critiques de tes amis       |
+| 🎭  | **Profils d'acteurs**           | Filmographies complètes, biographies et crédits pour chaque acteur         |
+| 📱  | **PWA installable**             | Fonctionne sur iPhone, Android, Mac, Windows et Linux — aucun store requis |
+| 🌍  | **Bilingue natif**              | Bascule EN/FR instantanée avec détection de langue côté serveur            |
+| 🔒  | **Contrôle de confidentialité** | Visibilité par section : public, amis uniquement, ou privé                 |
 
 ---
 
 ### 🛠️ Stack technique
 
-| Couche | Technologie |
-|:---|:---|
-| **Frontend** | Next.js 16.2.6 (App Router) + React 19 |
-| **Styles** | Tailwind CSS 4 (système de tokens) |
-| **Auth & DB** | Supabase (PostgreSQL + RLS) |
-| **Données média** | TMDB API |
-| **Streaming** | Watchmode API |
-| **PWA** | Serwist (Service Worker + précaching) |
+| Couche            | Technologie                            |
+| :---------------- | :------------------------------------- |
+| **Frontend**      | Next.js 16.2.6 (App Router) + React 19 |
+| **Styles**        | Tailwind CSS 4 (système de tokens)     |
+| **Auth & DB**     | Supabase (PostgreSQL + RLS)            |
+| **Données média** | TMDB API                               |
+| **Streaming**     | Watchmode API                          |
+| **PWA**           | Serwist (Service Worker + précaching)  |
 
 ---
 

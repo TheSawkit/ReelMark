@@ -1,19 +1,23 @@
-import Link from "next/link"
-import type { Metadata } from "next"
-import { Button } from "@/components/ui/button"
-import { getTranslations } from "@/lib/i18n/server"
+import Link from 'next/link';
+import type { Metadata } from 'next';
+import { Button } from '@/components/ui/button';
+import { getTranslations } from '@/lib/i18n/server';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const t = await getTranslations()
-    return {
-        title: t.metadata.authErrorTitle,
-        description: t.metadata.authErrorDescription,
-        robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
-    }
+  const t = await getTranslations();
+  return {
+    title: t.metadata.authErrorTitle,
+    description: t.metadata.authErrorDescription,
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: { index: false, follow: false },
+    },
+  };
 }
 
 export default async function AuthErrorPage() {
-  const t = await getTranslations()
+  const t = await getTranslations();
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-6 text-center">
@@ -32,5 +36,5 @@ export default async function AuthErrorPage() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

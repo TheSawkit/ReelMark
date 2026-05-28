@@ -10,10 +10,10 @@ ReelMark is a privacy-first media tracking application built with **Next.js**, *
 
 Security updates and patches are provided for the following versions:
 
-| Version | Supported          | Notes |
-| ------- | ------------------ | --- |
+| Version | Supported          | Notes                                 |
+| ------- | ------------------ | ------------------------------------- |
 | 1.x     | :white_check_mark: | Current version — actively maintained |
-| 0.x     | :x:                | Pre-release — no longer supported |
+| 0.x     | :x:                | Pre-release — no longer supported     |
 
 ---
 
@@ -66,13 +66,13 @@ For now, please reach out through the GitHub repository or contact the maintaine
 
 ReelMark uses the following key dependencies (see `package.json` for complete list):
 
-| Package | Version | Purpose |
-| --- | --- | --- |
-| Next.js | 16.2.6 | React framework |
-| TypeScript | 5.9 | Type safety |
-| Supabase | Latest | Auth & database |
-| React | 19 | UI library |
-| Tailwind CSS | 4 | Styling |
+| Package      | Version | Purpose         |
+| ------------ | ------- | --------------- |
+| Next.js      | 16.2.6  | React framework |
+| TypeScript   | 5.9     | Type safety     |
+| Supabase     | Latest  | Auth & database |
+| React        | 19      | UI library      |
+| Tailwind CSS | 4       | Styling         |
 
 **Dependency Scanning**: We use Dependabot to monitor and alert on security vulnerabilities in dependencies. All critical and high-severity alerts are addressed promptly.
 
@@ -133,6 +133,7 @@ In case of a confirmed security incident:
 ## Questions or Concerns?
 
 If you have general security questions about ReelMark, feel free to:
+
 - Open a discussion in the GitHub repository
 - Review our source code for transparency
 - Check the [project README](./README.md) for architecture details

@@ -1,14 +1,14 @@
-"use client"
+'use client';
 
-import Image from "next/image"
-import { useTranslation } from "@/lib/i18n/context"
+import Image from 'next/image';
+import { useTranslation } from '@/lib/i18n/context';
 interface UserAvatarProps {
-  picture?: string
-  fullName?: string
-  email?: string
-  size?: number
-  className?: string
-  loading?: 'lazy' | 'eager'
+  picture?: string;
+  fullName?: string;
+  email?: string;
+  size?: number;
+  className?: string;
+  loading?: 'lazy' | 'eager';
 }
 
 export function UserAvatar({
@@ -19,14 +19,14 @@ export function UserAvatar({
   className,
   loading = 'lazy',
 }: UserAvatarProps) {
-  const { t } = useTranslation()
-  const goldColor = "d6b25e"
+  const { t } = useTranslation();
+  const goldColor = 'd6b25e';
 
   const avatarUrl = picture
     ? picture
     : `https://api.dicebear.com/9.x/initials/svg?seed=${
-        fullName || email?.split("@")[0] || "user"
-      }&size=${size}&backgroundType=gradientLinear&backgroundColor=${goldColor}&fontWeight=600&fontFamily=Tahoma&chars=1`
+        fullName || email?.split('@')[0] || 'user'
+      }&size=${size}&backgroundType=gradientLinear&backgroundColor=${goldColor}&fontWeight=600&fontFamily=Tahoma&chars=1`;
 
   return (
     <Image
@@ -39,5 +39,5 @@ export function UserAvatar({
       loading={loading}
       priority={loading === 'eager'}
     />
-  )
+  );
 }

@@ -4,450 +4,457 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[]
+  | Json[];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
-  }
+    PostgrestVersion: '14.1';
+  };
   public: {
     Tables: {
       episode_watches: {
         Row: {
-          episode_number: number
-          id: string
-          season_number: number
-          tv_id: number
-          user_id: string
-          watched_at: string | null
-        }
+          episode_number: number;
+          id: string;
+          season_number: number;
+          tv_id: number;
+          user_id: string;
+          watched_at: string | null;
+        };
         Insert: {
-          episode_number: number
-          id?: string
-          season_number: number
-          tv_id: number
-          user_id: string
-          watched_at?: string | null
-        }
+          episode_number: number;
+          id?: string;
+          season_number: number;
+          tv_id: number;
+          user_id: string;
+          watched_at?: string | null;
+        };
         Update: {
-          episode_number?: number
-          id?: string
-          season_number?: number
-          tv_id?: number
-          user_id?: string
-          watched_at?: string | null
-        }
-        Relationships: []
-      }
+          episode_number?: number;
+          id?: string;
+          season_number?: number;
+          tv_id?: number;
+          user_id?: string;
+          watched_at?: string | null;
+        };
+        Relationships: [];
+      };
       friendships: {
         Row: {
-          addressee_id: string
-          created_at: string
-          id: string
-          requester_id: string
-          status: string
-          updated_at: string
-        }
+          addressee_id: string;
+          created_at: string;
+          id: string;
+          requester_id: string;
+          status: string;
+          updated_at: string;
+        };
         Insert: {
-          addressee_id: string
-          created_at?: string
-          id?: string
-          requester_id: string
-          status?: string
-          updated_at?: string
-        }
+          addressee_id: string;
+          created_at?: string;
+          id?: string;
+          requester_id: string;
+          status?: string;
+          updated_at?: string;
+        };
         Update: {
-          addressee_id?: string
-          created_at?: string
-          id?: string
-          requester_id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          addressee_id?: string;
+          created_at?: string;
+          id?: string;
+          requester_id?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       playlist_items: {
         Row: {
-          added_at: string
-          id: string
-          media_id: number
-          media_title: string
-          media_type: string
-          playlist_id: string
-          poster_path: string | null
-        }
+          added_at: string;
+          id: string;
+          media_id: number;
+          media_title: string;
+          media_type: string;
+          playlist_id: string;
+          poster_path: string | null;
+        };
         Insert: {
-          added_at?: string
-          id?: string
-          media_id: number
-          media_title: string
-          media_type: string
-          playlist_id: string
-          poster_path?: string | null
-        }
+          added_at?: string;
+          id?: string;
+          media_id: number;
+          media_title: string;
+          media_type: string;
+          playlist_id: string;
+          poster_path?: string | null;
+        };
         Update: {
-          added_at?: string
-          id?: string
-          media_id?: number
-          media_title?: string
-          media_type?: string
-          playlist_id?: string
-          poster_path?: string | null
-        }
+          added_at?: string;
+          id?: string;
+          media_id?: number;
+          media_title?: string;
+          media_type?: string;
+          playlist_id?: string;
+          poster_path?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "playlist_items_playlist_id_fkey"
-            columns: ["playlist_id"]
-            isOneToOne: false
-            referencedRelation: "playlists"
-            referencedColumns: ["id"]
+            foreignKeyName: 'playlist_items_playlist_id_fkey';
+            columns: ['playlist_id'];
+            isOneToOne: false;
+            referencedRelation: 'playlists';
+            referencedColumns: ['id'];
           },
-        ]
-      }
+        ];
+      };
       playlists: {
         Row: {
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          updated_at: string
-          user_id: string
-          visibility: string
-        }
+          created_at: string;
+          description: string | null;
+          id: string;
+          name: string;
+          updated_at: string;
+          user_id: string;
+          visibility: string;
+        };
         Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-          user_id: string
-          visibility?: string
-        }
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name: string;
+          updated_at?: string;
+          user_id: string;
+          visibility?: string;
+        };
         Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          updated_at?: string
-          user_id?: string
-          visibility?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+          user_id?: string;
+          visibility?: string;
+        };
+        Relationships: [];
+      };
       privacy_settings: {
         Row: {
-          friends_visibility: string
-          playlists_visibility: string
-          reviews_visibility: string
-          user_id: string
-          watched_visibility: string
-          watchlist_visibility: string
-        }
+          friends_visibility: string;
+          playlists_visibility: string;
+          reviews_visibility: string;
+          user_id: string;
+          watched_visibility: string;
+          watchlist_visibility: string;
+        };
         Insert: {
-          friends_visibility?: string
-          playlists_visibility?: string
-          reviews_visibility?: string
-          user_id: string
-          watched_visibility?: string
-          watchlist_visibility?: string
-        }
+          friends_visibility?: string;
+          playlists_visibility?: string;
+          reviews_visibility?: string;
+          user_id: string;
+          watched_visibility?: string;
+          watchlist_visibility?: string;
+        };
         Update: {
-          friends_visibility?: string
-          playlists_visibility?: string
-          reviews_visibility?: string
-          user_id?: string
-          watched_visibility?: string
-          watchlist_visibility?: string
-        }
-        Relationships: []
-      }
+          friends_visibility?: string;
+          playlists_visibility?: string;
+          reviews_visibility?: string;
+          user_id?: string;
+          watched_visibility?: string;
+          watchlist_visibility?: string;
+        };
+        Relationships: [];
+      };
       reviews: {
         Row: {
-          content: string | null
-          created_at: string
-          id: string
-          media_id: number
-          media_title: string
-          media_type: string
-          poster_path: string | null
-          rating: number | null
-          updated_at: string
-          user_id: string
-        }
+          content: string | null;
+          created_at: string;
+          id: string;
+          media_id: number;
+          media_title: string;
+          media_type: string;
+          poster_path: string | null;
+          rating: number | null;
+          updated_at: string;
+          user_id: string;
+        };
         Insert: {
-          content?: string | null
-          created_at?: string
-          id?: string
-          media_id: number
-          media_title: string
-          media_type: string
-          poster_path?: string | null
-          rating?: number | null
-          updated_at?: string
-          user_id: string
-        }
+          content?: string | null;
+          created_at?: string;
+          id?: string;
+          media_id: number;
+          media_title: string;
+          media_type: string;
+          poster_path?: string | null;
+          rating?: number | null;
+          updated_at?: string;
+          user_id: string;
+        };
         Update: {
-          content?: string | null
-          created_at?: string
-          id?: string
-          media_id?: number
-          media_title?: string
-          media_type?: string
-          poster_path?: string | null
-          rating?: number | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+          content?: string | null;
+          created_at?: string;
+          id?: string;
+          media_id?: number;
+          media_title?: string;
+          media_type?: string;
+          poster_path?: string | null;
+          rating?: number | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       user_profiles: {
         Row: {
-          bio: string | null
-          created_at: string
-          instagram: string | null
-          letterboxd: string | null
-          tiktok: string | null
-          twitter: string | null
-          updated_at: string
-          user_id: string
-          username: string
-          website: string | null
-        }
+          bio: string | null;
+          created_at: string;
+          instagram: string | null;
+          letterboxd: string | null;
+          tiktok: string | null;
+          twitter: string | null;
+          updated_at: string;
+          user_id: string;
+          username: string;
+          website: string | null;
+        };
         Insert: {
-          bio?: string | null
-          created_at?: string
-          instagram?: string | null
-          letterboxd?: string | null
-          tiktok?: string | null
-          twitter?: string | null
-          updated_at?: string
-          user_id: string
-          username: string
-          website?: string | null
-        }
+          bio?: string | null;
+          created_at?: string;
+          instagram?: string | null;
+          letterboxd?: string | null;
+          tiktok?: string | null;
+          twitter?: string | null;
+          updated_at?: string;
+          user_id: string;
+          username: string;
+          website?: string | null;
+        };
         Update: {
-          bio?: string | null
-          created_at?: string
-          instagram?: string | null
-          letterboxd?: string | null
-          tiktok?: string | null
-          twitter?: string | null
-          updated_at?: string
-          user_id?: string
-          username?: string
-          website?: string | null
-        }
-        Relationships: []
-      }
+          bio?: string | null;
+          created_at?: string;
+          instagram?: string | null;
+          letterboxd?: string | null;
+          tiktok?: string | null;
+          twitter?: string | null;
+          updated_at?: string;
+          user_id?: string;
+          username?: string;
+          website?: string | null;
+        };
+        Relationships: [];
+      };
       watchlist: {
         Row: {
-          created_at: string | null
-          id: string
-          media_id: number
-          media_title: string
-          media_type: string
-          poster_path: string | null
-          status: string
-          user_id: string
-        }
+          created_at: string | null;
+          id: string;
+          media_id: number;
+          media_title: string;
+          media_type: string;
+          poster_path: string | null;
+          status: string;
+          user_id: string;
+        };
         Insert: {
-          created_at?: string | null
-          id?: string
-          media_id: number
-          media_title: string
-          media_type?: string
-          poster_path?: string | null
-          status: string
-          user_id: string
-        }
+          created_at?: string | null;
+          id?: string;
+          media_id: number;
+          media_title: string;
+          media_type?: string;
+          poster_path?: string | null;
+          status: string;
+          user_id: string;
+        };
         Update: {
-          created_at?: string | null
-          id?: string
-          media_id?: number
-          media_title?: string
-          media_type?: string
-          poster_path?: string | null
-          status?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-    }
+          created_at?: string | null;
+          id?: string;
+          media_id?: number;
+          media_title?: string;
+          media_type?: string;
+          poster_path?: string | null;
+          status?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
       get_episodes_rating: {
-        Args: { p_episode_ids: number[] }
+        Args: { p_episode_ids: number[] };
         Returns: {
-          avg: number
-          count: number
-        }[]
-      }
+          avg: number;
+          count: number;
+        }[];
+      };
       get_media_rating: {
-        Args: { p_media_id: number; p_media_type: string }
+        Args: { p_media_id: number; p_media_type: string };
         Returns: {
-          avg: number
-          count: number
-        }[]
-      }
+          avg: number;
+          count: number;
+        }[];
+      };
       get_public_episode_reviews: {
-        Args: { p_episode_ids: number[]; p_viewer_id?: string }
+        Args: { p_episode_ids: number[]; p_viewer_id?: string };
         Returns: {
-          avatar_url: string
-          content: string
-          created_at: string
-          id: string
-          media_id: number
-          rating: number
-          user_id: string
-          username: string
-        }[]
-      }
+          avatar_url: string;
+          content: string;
+          created_at: string;
+          id: string;
+          media_id: number;
+          rating: number;
+          user_id: string;
+          username: string;
+        }[];
+      };
       get_public_reviews: {
-        Args: { p_media_id: number; p_media_type: string; p_viewer_id?: string }
+        Args: {
+          p_media_id: number;
+          p_media_type: string;
+          p_viewer_id?: string;
+        };
         Returns: {
-          avatar_url: string
-          content: string
-          created_at: string
-          id: string
-          media_id: number
-          rating: number
-          user_id: string
-          username: string
-        }[]
-      }
-    }
+          avatar_url: string;
+          content: string;
+          created_at: string;
+          id: string;
+          media_id: number;
+          rating: number;
+          user_id: string;
+          username: string;
+        }[];
+      };
+    };
     Enums: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<
+  keyof Database,
+  'public'
+>];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+      Row: infer R;
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+      Insert: infer I;
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+      Update: infer U;
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+    | keyof DefaultSchema['Enums']
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof DefaultSchema['CompositeTypes']
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+    : never;
 
 export const Constants = {
   public: {
     Enums: {},
   },
-} as const
+} as const;

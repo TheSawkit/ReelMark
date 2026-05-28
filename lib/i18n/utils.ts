@@ -1,4 +1,4 @@
-import type { Language } from './translations'
+import type { Language } from './translations';
 
 /**
  * Converts an app language code to a BCP 47 locale string.
@@ -7,5 +7,5 @@ import type { Language } from './translations'
  * @returns BCP 47 locale string ("fr-FR" or "en-US").
  */
 export function getLocale(lang: Language): string {
-    return lang === 'fr' ? 'fr-FR' : 'en-US'
+  return lang === 'fr' ? 'fr-FR' : 'en-US';
 }

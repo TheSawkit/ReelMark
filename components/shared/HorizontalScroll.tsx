@@ -1,27 +1,33 @@
-"use client"
+'use client';
 
-import { useRef, useCallback } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useTranslation } from "@/lib/i18n/context"
-import type { HorizontalScrollProps } from "@/types/components"
+import { useRef, useCallback } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n/context';
+import type { HorizontalScrollProps } from '@/types/components';
 
 export function HorizontalScroll({
   children,
   title,
   scrollAmount = 500,
-  className = "",
-  containerClassName = "",
+  className = '',
+  containerClassName = '',
 }: HorizontalScrollProps) {
-  const { t } = useTranslation()
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const scroll = useCallback((direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
-      const amount = direction === 'left' ? -scrollAmount : scrollAmount
-      scrollContainerRef.current.scrollBy({ left: amount, behavior: 'smooth' })
-    }
-  }, [scrollAmount])
+  const scroll = useCallback(
+    (direction: 'left' | 'right') => {
+      if (scrollContainerRef.current) {
+        const amount = direction === 'left' ? -scrollAmount : scrollAmount;
+        scrollContainerRef.current.scrollBy({
+          left: amount,
+          behavior: 'smooth',
+        });
+      }
+    },
+    [scrollAmount]
+  );
 
   return (
     <div className={`group/section ${className}`}>
@@ -58,5 +64,5 @@ export function HorizontalScroll({
         {children}
       </div>
     </div>
-  )
+  );
 }

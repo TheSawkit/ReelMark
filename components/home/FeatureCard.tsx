@@ -1,5 +1,5 @@
-import { Card, CardContent } from "@/components/ui/card";
-import type { FeatureCardProps } from "@/types/components";
+import { Card, CardContent } from '@/components/ui/card';
+import type { FeatureCardProps } from '@/types/components';
 
 export default function FeatureCard({
   icon,
@@ -18,4 +18,3 @@ export default function FeatureCard({
     </Card>
   );
 }
-
