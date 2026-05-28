@@ -3,10 +3,10 @@
 import { ErrorCard } from '@/components/ui/ErrorCard';
 
 export default function SeasonError({
-    reset,
+	reset,
 }: {
-    error: Error & { digest?: string };
-    reset: () => void;
+	error: Error & { digest?: string };
+	reset: () => void;
 }) {
-    return <ErrorCard reset={reset} backHref={null} />;
+	return <ErrorCard reset={reset} backHref={null} />;
 }

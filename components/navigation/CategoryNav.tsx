@@ -6,80 +6,83 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/context';
 
 export function CategoryNav() {
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const type = searchParams.get('type') || 'movie';
-    const { t } = useTranslation();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const type = searchParams.get('type') || 'movie';
+	const { t } = useTranslation();
 
-    const isTvPath = pathname.includes('tv-') || type === 'tv';
-    const activeDomain = isTvPath ? 'tv' : 'movie';
+	const isTvPath = pathname.includes('tv-') || type === 'tv';
+	const activeDomain = isTvPath ? 'tv' : 'movie';
 
-    const categories =
-        activeDomain === 'movie'
-            ? [
-                  { name: t.explorer.trending, href: '/explorer/trending' },
-                  {
-                      name: t.explorer.nowPlaying,
-                      href: '/explorer/now-playing',
-                  },
-                  { name: t.explorer.popular, href: '/explorer/popular' },
-                  { name: t.explorer.topRated, href: '/explorer/top-rated' },
-                  { name: t.explorer.upcoming, href: '/explorer/upcoming' },
-              ]
-            : [
-                  {
-                      name: t.explorer.tvTrending,
-                      href: '/explorer/tv-trending',
-                  },
-                  { name: t.explorer.tvPopular, href: '/explorer/tv-popular' },
-                  {
-                      name: t.explorer.tvTopRated,
-                      href: '/explorer/tv-top-rated',
-                  },
-                  {
-                      name: t.explorer.tvAiringToday,
-                      href: '/explorer/tv-airing-today',
-                  },
-                  {
-                      name: t.explorer.tvOnTheAir,
-                      href: '/explorer/tv-on-the-air',
-                  },
-              ];
+	const categories =
+		activeDomain === 'movie'
+			? [
+					{ name: t.explorer.trending, href: '/explorer/trending' },
+					{
+						name: t.explorer.nowPlaying,
+						href: '/explorer/now-playing',
+					},
+					{ name: t.explorer.popular, href: '/explorer/popular' },
+					{ name: t.explorer.topRated, href: '/explorer/top-rated' },
+					{ name: t.explorer.upcoming, href: '/explorer/upcoming' },
+				]
+			: [
+					{
+						name: t.explorer.tvTrending,
+						href: '/explorer/tv-trending',
+					},
+					{
+						name: t.explorer.tvPopular,
+						href: '/explorer/tv-popular',
+					},
+					{
+						name: t.explorer.tvTopRated,
+						href: '/explorer/tv-top-rated',
+					},
+					{
+						name: t.explorer.tvAiringToday,
+						href: '/explorer/tv-airing-today',
+					},
+					{
+						name: t.explorer.tvOnTheAir,
+						href: '/explorer/tv-on-the-air',
+					},
+				];
 
-    return (
-        <div className="relative mb-8">
-            <div className="absolute right-0 top-0 bottom-2 w-12 bg-linear-to-l from-background to-transparent pointer-events-none z-10 md:hidden" />
-            <div className="flex overflow-x-scroll overflow-y-visible pb-2 gap-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                <Link
-                    href={`/explorer?type=${activeDomain}`}
-                    aria-current={pathname === '/explorer' ? 'page' : undefined}
-                    className={cn(
-                        'px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple',
-                        pathname === '/explorer'
-                            ? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
-                            : 'bg-glass-bg backdrop-blur-md border border-glass-border text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
-                    )}
-                >
-                    {t.explorer.overview}
-                </Link>
-                {categories.map((category) => (
-                    <Link
-                        key={category.href}
-                        href={category.href}
-                        aria-current={
-                            pathname === category.href ? 'page' : undefined
-                        }
-                        className={cn(
-                            'px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple',
-                            pathname === category.href
-                                ? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
-                                : 'bg-glass-bg backdrop-blur-md border border-glass-border text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
-                        )}
-                    >
-                        {category.name}
-                    </Link>
-                ))}
-            </div>
-        </div>
-    );
+	return (
+		<div className="relative mb-8">
+			<div className="absolute right-0 top-0 bottom-2 w-12 bg-linear-to-l from-background to-transparent pointer-events-none z-10 md:hidden" />
+			<div className="flex overflow-x-scroll overflow-y-visible pb-2 gap-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+				<Link
+					href={`/explorer?type=${activeDomain}`}
+					aria-current={pathname === '/explorer' ? 'page' : undefined}
+					className={cn(
+						'px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple',
+						pathname === '/explorer'
+							? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
+							: 'bg-glass-bg backdrop-blur-md border border-glass-border text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
+					)}
+				>
+					{t.explorer.overview}
+				</Link>
+				{categories.map((category) => (
+					<Link
+						key={category.href}
+						href={category.href}
+						aria-current={
+							pathname === category.href ? 'page' : undefined
+						}
+						className={cn(
+							'px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple',
+							pathname === category.href
+								? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
+								: 'bg-glass-bg backdrop-blur-md border border-glass-border text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
+						)}
+					>
+						{category.name}
+					</Link>
+				))}
+			</div>
+		</div>
+	);
 }

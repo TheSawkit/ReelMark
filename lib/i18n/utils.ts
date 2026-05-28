@@ -7,5 +7,5 @@ import type { Language } from './translations';
  * @returns BCP 47 locale string ("fr-FR" or "en-US").
  */
 export function getLocale(lang: Language): string {
-    return lang === 'fr' ? 'fr-FR' : 'en-US';
+	return lang === 'fr' ? 'fr-FR' : 'en-US';
 }

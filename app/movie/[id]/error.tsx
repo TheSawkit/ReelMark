@@ -3,10 +3,10 @@
 import { ErrorCard } from '@/components/ui/ErrorCard';
 
 export default function MovieError({
-    reset,
+	reset,
 }: {
-    error: Error & { digest?: string };
-    reset: () => void;
+	error: Error & { digest?: string };
+	reset: () => void;
 }) {
-    return <ErrorCard reset={reset} />;
+	return <ErrorCard reset={reset} />;
 }

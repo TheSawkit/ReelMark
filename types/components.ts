@@ -1,124 +1,124 @@
 import type { ReactNode } from 'react';
 import type {
-    MediaItem,
-    MediaType,
-    Cast,
-    Video,
-    ActorDetails,
-    WatchStatus,
+	MediaItem,
+	MediaType,
+	Cast,
+	Video,
+	ActorDetails,
+	WatchStatus,
 } from '@/types/tmdb';
 
 export interface FeatureCardProps {
-    icon: ReactNode;
-    title: string;
-    description: string;
+	icon: ReactNode;
+	title: string;
+	description: string;
 }
 
 export interface MediaGridProps {
-    items: MediaItem[];
-    hideRating?: boolean;
-    showWatchlistMeta?: boolean;
+	items: MediaItem[];
+	hideRating?: boolean;
+	showWatchlistMeta?: boolean;
 }
 
 export interface MediaCardProps {
-    media: MediaItem;
-    className?: string;
-    hideRating?: boolean;
+	media: MediaItem;
+	className?: string;
+	hideRating?: boolean;
 }
 
 export interface MediaSectionProps {
-    title: string;
-    items: MediaItem[];
-    categoryUrl: string;
-    hideRating?: boolean;
+	title: string;
+	items: MediaItem[];
+	categoryUrl: string;
+	hideRating?: boolean;
 }
 
 export interface InfiniteScrollMediaProps {
-    initialItems: MediaItem[];
-    category: string;
-    mediaType?: MediaType;
-    clientSideData?: MediaItem[];
-    hideRating?: boolean;
-    showWatchlistMeta?: boolean;
+	initialItems: MediaItem[];
+	category: string;
+	mediaType?: MediaType;
+	clientSideData?: MediaItem[];
+	hideRating?: boolean;
+	showWatchlistMeta?: boolean;
 }
 
 export interface MediaBannerProps {
-    title: string;
-    tagline?: string;
-    backdropUrl: string;
-    posterPath: string | null;
-    voteAverage?: number;
-    releaseDate?: string;
-    runtime?: number;
-    certification?: string;
-    genres?: { id: number; name: string }[];
-    actions?: ReactNode;
-    communityBadge?: ReactNode;
+	title: string;
+	tagline?: string;
+	backdropUrl: string;
+	posterPath: string | null;
+	voteAverage?: number;
+	releaseDate?: string;
+	runtime?: number;
+	certification?: string;
+	genres?: { id: number; name: string }[];
+	actions?: ReactNode;
+	communityBadge?: ReactNode;
 }
 
 export interface MediaDescriptionProps {
-    description: string;
+	description: string;
 }
 
 export interface MediaTrailersProps {
-    trailers: Video[];
+	trailers: Video[];
 }
 
 export interface MediaCastProps {
-    cast: Cast[];
+	cast: Cast[];
 }
 
 export interface WatchButtonProps {
-    mediaId: number;
-    mediaTitle: string;
-    mediaType: MediaType;
-    posterPath: string | null;
-    status: WatchStatus;
-    initialIsActive?: boolean;
-    fallbackStatus?: WatchStatus;
-    variant?: 'icon' | 'full' | 'responsive';
-    onDark?: boolean;
-    releaseDate?: string;
+	mediaId: number;
+	mediaTitle: string;
+	mediaType: MediaType;
+	posterPath: string | null;
+	status: WatchStatus;
+	initialIsActive?: boolean;
+	fallbackStatus?: WatchStatus;
+	variant?: 'icon' | 'full' | 'responsive';
+	onDark?: boolean;
+	releaseDate?: string;
 }
 
 export interface NavbarUser {
-    email?: string;
-    user_metadata: {
-        full_name?: string;
-        username?: string;
-        picture?: string;
-        avatar_url?: string;
-        email?: string;
-    };
+	email?: string;
+	user_metadata: {
+		full_name?: string;
+		username?: string;
+		picture?: string;
+		avatar_url?: string;
+		email?: string;
+	};
 }
 
 export interface NavbarMobileProps {
-    user: NavbarUser;
+	user: NavbarUser;
 }
 
 export interface NavLinksProps {
-    orientation?: 'horizontal' | 'vertical';
-    className?: string;
-    onLinkClick?: () => void;
+	orientation?: 'horizontal' | 'vertical';
+	className?: string;
+	onLinkClick?: () => void;
 }
 
 export interface HorizontalScrollProps {
-    children: ReactNode;
-    title?: ReactNode;
-    scrollAmount?: number;
-    className?: string;
-    containerClassName?: string;
+	children: ReactNode;
+	title?: ReactNode;
+	scrollAmount?: number;
+	className?: string;
+	containerClassName?: string;
 }
 
 export interface ActorBannerProps {
-    actor: ActorDetails;
+	actor: ActorDetails;
 }
 
 export interface ActorBioProps {
-    biography: string;
+	biography: string;
 }
 
 export interface ActorFilmographyProps {
-    movies: MediaItem[];
-    tvShows: MediaItem[];
+	movies: MediaItem[];
+	tvShows: MediaItem[];
 }
