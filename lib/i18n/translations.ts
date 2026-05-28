@@ -312,6 +312,12 @@ export const translations = {
             rejectRequest: 'Refuser',
             removeFriend: 'Retirer de mes amis',
             friendSince: 'Amis depuis',
+            pendingInvitations: 'Invitations en attente',
+            pendingInvitationsAria: 'Voir les invitations en attente',
+            requestSentToast: 'Invitation envoyée',
+            requestAcceptedToast: 'Invitation acceptée',
+            requestRejectedToast: 'Invitation refusée',
+            friendRemovedToast: 'Ami retiré',
             tabs: {
                 watchlist: 'Watchlist',
                 watched: 'Vus',
@@ -370,6 +376,8 @@ export const translations = {
                 descriptionTooLong: 'La description dépasse 500 caractères',
                 playlistNotFound: 'Playlist introuvable',
                 invalidVisibility: 'Visibilité invalide',
+                selfRequest: 'Tu ne peux pas t\'inviter toi-même',
+                duplicateRequest: 'Une demande existe déjà avec cet utilisateur',
             },
         },
         auth: {
@@ -945,6 +953,12 @@ export const translations = {
             rejectRequest: 'Decline',
             removeFriend: 'Remove friend',
             friendSince: 'Friends since',
+            pendingInvitations: 'Pending invitations',
+            pendingInvitationsAria: 'View pending invitations',
+            requestSentToast: 'Invitation sent',
+            requestAcceptedToast: 'Invitation accepted',
+            requestRejectedToast: 'Invitation declined',
+            friendRemovedToast: 'Friend removed',
             tabs: {
                 watchlist: 'Watchlist',
                 watched: 'Watched',
@@ -1003,6 +1017,8 @@ export const translations = {
                 descriptionTooLong: 'Description must be 500 characters or less',
                 playlistNotFound: 'Playlist not found',
                 invalidVisibility: 'Invalid visibility value',
+                selfRequest: 'You cannot send an invitation to yourself',
+                duplicateRequest: 'A friend request already exists with this user',
             },
         },
         auth: {

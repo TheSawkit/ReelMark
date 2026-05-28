@@ -6,8 +6,9 @@ import { WatchlistSection } from './WatchlistSection'
 import { ReviewsSection } from './ReviewsSection'
 import { PlaylistsSection } from './PlaylistsSection'
 import { FriendsSection } from './FriendsSection'
+import { PendingInvitations } from './PendingInvitations'
 import type { WatchlistEntry } from '@/types/tmdb'
-import type { PrivacySettings, Review, Playlist, FriendEntry } from '@/types/profile'
+import type { PrivacySettings, Review, Playlist, FriendEntry, PendingRequestEntry } from '@/types/profile'
 import { useTranslation } from '@/lib/i18n/context'
 import { canViewWithVisibility } from '@/lib/privacy'
 
@@ -21,6 +22,7 @@ interface ProfileTabsProps {
     profileUserId: string
     playlists: Playlist[]
     friends: FriendEntry[]
+    pendingRequests: PendingRequestEntry[]
     privacy: PrivacySettings
     isOwnProfile: boolean
     isFriend: boolean
@@ -34,12 +36,14 @@ export function ProfileTabs({
     profileUserId,
     playlists,
     friends,
+    pendingRequests,
     privacy,
     isOwnProfile,
     isFriend,
 }: ProfileTabsProps) {
     const { t } = useTranslation()
     const [activeTab, setActiveTab] = useState<ProfileTab>('watchlist')
+    const [pendingCount, setPendingCount] = useState(pendingRequests.length)
 
     const viewCtx = { isOwn: isOwnProfile, isFriend }
 
@@ -72,6 +76,14 @@ export function ProfileTabs({
                         {tab.count !== null && tab.count > 0 && (
                             <span className="text-xs bg-surface-2 text-muted px-1.5 py-0.5 rounded-full">
                                 {tab.count}
+                            </span>
+                        )}
+                        {tab.id === 'friends' && isOwnProfile && pendingCount > 0 && (
+                            <span
+                                className="text-xs bg-red text-white px-1.5 py-0.5 rounded-full font-medium"
+                                aria-label={t.profile.pendingInvitationsAria}
+                            >
+                                {pendingCount}
                             </span>
                         )}
                     </button>
@@ -114,11 +126,16 @@ export function ProfileTabs({
                 />
             )}
             {activeTab === 'friends' && (
-                <FriendsSection
-                    friends={friends}
-                    visibility={privacy.friends_visibility}
-                    canView={canViewWithVisibility(privacy.friends_visibility, viewCtx)}
-                />
+                <div className="space-y-6">
+                    {isOwnProfile && pendingCount > 0 && (
+                        <PendingInvitations requests={pendingRequests} onCountChange={setPendingCount} />
+                    )}
+                    <FriendsSection
+                        friends={friends}
+                        visibility={privacy.friends_visibility}
+                        canView={canViewWithVisibility(privacy.friends_visibility, viewCtx)}
+                    />
+                </div>
             )}
         </div>
     )

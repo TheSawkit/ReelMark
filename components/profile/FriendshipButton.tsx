@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { UserPlus, UserCheck, Clock, UserMinus } from 'lucide-react'
 import {
@@ -25,39 +26,68 @@ export function FriendshipButton({ targetUserId, currentUserId, friendship }: Fr
 
     const handleSendRequest = () => {
         startTransition(async () => {
-            await sendFriendRequest(targetUserId)
-            setLocalFriendship({
-                id: crypto.randomUUID(),
-                requester_id: currentUserId,
-                addressee_id: targetUserId,
-                status: 'pending',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-            })
+            try {
+                await sendFriendRequest(targetUserId)
+                setLocalFriendship({
+                    id: crypto.randomUUID(),
+                    requester_id: currentUserId,
+                    addressee_id: targetUserId,
+                    status: 'pending',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                })
+                toast.success(t.profile.requestSentToast)
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : ''
+                if (msg === 'SELF_REQUEST') toast.error(t.profile.errors.selfRequest)
+                else if (msg === 'DUPLICATE_REQUEST') toast.error(t.profile.errors.duplicateRequest)
+                else toast.error(t.common.actionError)
+            }
         })
     }
 
     const handleAccept = () => {
         if (!localFriendship) return
+        const snapshot = localFriendship
         startTransition(async () => {
-            await acceptFriendRequest(localFriendship.id)
-            setLocalFriendship({ ...localFriendship, status: 'accepted' })
+            try {
+                await acceptFriendRequest(localFriendship.id)
+                setLocalFriendship({ ...localFriendship, status: 'accepted' })
+                toast.success(t.profile.requestAcceptedToast)
+            } catch {
+                setLocalFriendship(snapshot)
+                toast.error(t.common.actionError)
+            }
         })
     }
 
     const handleReject = () => {
         if (!localFriendship) return
+        const snapshot = localFriendship
         startTransition(async () => {
-            await rejectFriendRequest(localFriendship.id)
-            setLocalFriendship(null)
+            try {
+                await rejectFriendRequest(localFriendship.id)
+                setLocalFriendship(null)
+                toast.success(t.profile.requestRejectedToast)
+            } catch {
+                setLocalFriendship(snapshot)
+                toast.error(t.common.actionError)
+            }
         })
     }
 
     const handleRemove = () => {
         if (!localFriendship) return
+        const snapshot = localFriendship
         startTransition(async () => {
-            await removeFriend(localFriendship.id)
-            setLocalFriendship(null)
+            try {
+                await removeFriend(localFriendship.id)
+                setLocalFriendship(null)
+                toast.success(t.profile.friendRemovedToast)
+            } catch {
+                setLocalFriendship(snapshot)
+                toast.error(t.common.actionError)
+            }
         })
     }
 

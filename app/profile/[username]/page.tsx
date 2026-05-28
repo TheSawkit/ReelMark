@@ -9,7 +9,7 @@ import { FriendshipButton } from '@/components/profile/FriendshipButton'
 import { getProfileByUsername, getPrivacySettings } from '@/app/actions/profile'
 import { getUserReviews } from '@/app/actions/reviews'
 import { getUserPlaylists } from '@/app/actions/playlists'
-import { getFriends, getFriendshipStatus } from '@/app/actions/friends'
+import { getFriends, getFriendshipStatus, getPendingRequestsWithProfiles } from '@/app/actions/friends'
 import type { WatchlistEntry } from '@/types/tmdb'
 import type { FriendEntry } from '@/types/profile'
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns'
@@ -53,7 +53,7 @@ export default async function ProfilePage({ params }: Props) {
     const supabase = await createClient()
     const adminClient = createAdminClient()
 
-    const [privacy, reviewsPage, playlists, rawFriends, friendship, watchlistData, ownerAuth] = await Promise.all([
+    const [privacy, reviewsPage, playlists, rawFriends, friendship, watchlistData, ownerAuth, pendingRequests] = await Promise.all([
         getPrivacySettings(profile.user_id),
         getUserReviews(profile.user_id),
         getUserPlaylists(profile.user_id),
@@ -61,6 +61,7 @@ export default async function ProfilePage({ params }: Props) {
         isOwnProfile ? Promise.resolve(null) : getFriendshipStatus(profile.user_id),
         supabase.from('watchlist').select(WATCHLIST_COLUMNS).eq('user_id', profile.user_id).order('created_at', { ascending: false }).limit(1000),
         adminClient.auth.admin.getUserById(profile.user_id),
+        isOwnProfile ? getPendingRequestsWithProfiles() : Promise.resolve([]),
     ])
 
     const watchlist = (watchlistData.data ?? []) as WatchlistEntry[]
@@ -130,6 +131,7 @@ export default async function ProfilePage({ params }: Props) {
                 profileUserId={profile.user_id}
                 playlists={playlists}
                 friends={filteredFriends}
+                pendingRequests={pendingRequests}
                 privacy={privacy}
                 isOwnProfile={isOwnProfile}
                 isFriend={isFriend}

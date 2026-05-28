@@ -99,3 +99,5 @@ export interface FriendEntry {
   avatarUrl?: string
   fullName?: string
 }
+
+export type PendingRequestEntry = FriendEntry
