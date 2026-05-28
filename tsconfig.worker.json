@@ -1,9 +1,9 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "lib": ["webworker", "webworker.iterable", "esnext"],
-    "target": "ES2017"
-  },
-  "include": ["app/service-worker.ts"],
-  "exclude": []
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "lib": ["webworker", "webworker.iterable", "esnext"],
+        "target": "ES2017"
+    },
+    "include": ["app/service-worker.ts"],
+    "exclude": []
 }

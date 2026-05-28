@@ -2,21 +2,21 @@ import type { MediaItem, Movie, TvShow } from '@/types/tmdb';
 import { fetchTMDB } from './client';
 
 interface TMDBMultiResult {
-  id: number;
-  media_type: 'movie' | 'tv' | 'person';
-  title?: string;
-  original_title?: string;
-  release_date?: string;
-  name?: string;
-  original_name?: string;
-  first_air_date?: string;
-  overview: string;
-  poster_path: string | null;
-  backdrop_path: string | null;
-  vote_average: number;
-  vote_count: number;
-  popularity: number;
-  genre_ids?: number[];
+    id: number;
+    media_type: 'movie' | 'tv' | 'person';
+    title?: string;
+    original_title?: string;
+    release_date?: string;
+    name?: string;
+    original_name?: string;
+    first_air_date?: string;
+    overview: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+    vote_average: number;
+    vote_count: number;
+    popularity: number;
+    genre_ids?: number[];
 }
 
 /**
@@ -28,17 +28,19 @@ interface TMDBMultiResult {
  * @returns Filtered and normalized list of matching movies and TV shows.
  */
 export async function searchMulti(
-  query: string,
-  page: number = 1
+    query: string,
+    page: number = 1
 ): Promise<MediaItem[]> {
-  const { results } = await fetchTMDB<{ results: TMDBMultiResult[] }>(
-    '/search/multi',
-    { query, page: page.toString() }
-  );
+    const { results } = await fetchTMDB<{ results: TMDBMultiResult[] }>(
+        '/search/multi',
+        { query, page: page.toString() }
+    );
 
-  return results
-    .filter((item) => item.media_type === 'movie' || item.media_type === 'tv')
-    .map(tmdbMultiResultToMediaItem);
+    return results
+        .filter(
+            (item) => item.media_type === 'movie' || item.media_type === 'tv'
+        )
+        .map(tmdbMultiResultToMediaItem);
 }
 
 /**
@@ -48,20 +50,20 @@ export async function searchMulti(
  * @returns Normalized `MediaItem` with `media_type: "movie"`.
  */
 export function movieToMediaItem(movie: Movie): MediaItem {
-  return {
-    id: movie.id,
-    media_type: 'movie',
-    title: movie.title,
-    original_title: movie.original_title,
-    overview: movie.overview,
-    poster_path: movie.poster_path,
-    backdrop_path: movie.backdrop_path,
-    release_date: movie.release_date,
-    vote_average: movie.vote_average,
-    vote_count: movie.vote_count,
-    popularity: movie.popularity,
-    genre_ids: movie.genre_ids,
-  };
+    return {
+        id: movie.id,
+        media_type: 'movie',
+        title: movie.title,
+        original_title: movie.original_title,
+        overview: movie.overview,
+        poster_path: movie.poster_path,
+        backdrop_path: movie.backdrop_path,
+        release_date: movie.release_date,
+        vote_average: movie.vote_average,
+        vote_count: movie.vote_count,
+        popularity: movie.popularity,
+        genre_ids: movie.genre_ids,
+    };
 }
 
 /**
@@ -71,42 +73,42 @@ export function movieToMediaItem(movie: Movie): MediaItem {
  * @returns Normalized `MediaItem` with `media_type: "tv"`.
  */
 export function tvShowToMediaItem(tvShow: TvShow): MediaItem {
-  return {
-    id: tvShow.id,
-    media_type: 'tv',
-    title: tvShow.name,
-    original_title: tvShow.original_name,
-    overview: tvShow.overview,
-    poster_path: tvShow.poster_path,
-    backdrop_path: tvShow.backdrop_path,
-    release_date: tvShow.first_air_date,
-    vote_average: tvShow.vote_average,
-    vote_count: tvShow.vote_count,
-    popularity: tvShow.popularity,
-    genre_ids: tvShow.genre_ids,
-  };
+    return {
+        id: tvShow.id,
+        media_type: 'tv',
+        title: tvShow.name,
+        original_title: tvShow.original_name,
+        overview: tvShow.overview,
+        poster_path: tvShow.poster_path,
+        backdrop_path: tvShow.backdrop_path,
+        release_date: tvShow.first_air_date,
+        vote_average: tvShow.vote_average,
+        vote_count: tvShow.vote_count,
+        popularity: tvShow.popularity,
+        genre_ids: tvShow.genre_ids,
+    };
 }
 
 function tmdbMultiResultToMediaItem(result: TMDBMultiResult): MediaItem {
-  const isMovie = result.media_type === 'movie';
-  return {
-    id: result.id,
-    media_type: isMovie ? 'movie' : 'tv',
-    title: isMovie
-      ? (result.title ?? result.name ?? '')
-      : (result.name ?? result.title ?? ''),
-    original_title: isMovie
-      ? (result.original_title ?? result.title ?? '')
-      : (result.original_name ?? result.name ?? ''),
-    overview: result.overview,
-    poster_path: result.poster_path,
-    backdrop_path: result.backdrop_path,
-    release_date: isMovie
-      ? (result.release_date ?? '')
-      : (result.first_air_date ?? ''),
-    vote_average: result.vote_average,
-    vote_count: result.vote_count,
-    popularity: result.popularity,
-    genre_ids: result.genre_ids,
-  };
+    const isMovie = result.media_type === 'movie';
+    return {
+        id: result.id,
+        media_type: isMovie ? 'movie' : 'tv',
+        title: isMovie
+            ? (result.title ?? result.name ?? '')
+            : (result.name ?? result.title ?? ''),
+        original_title: isMovie
+            ? (result.original_title ?? result.title ?? '')
+            : (result.original_name ?? result.name ?? ''),
+        overview: result.overview,
+        poster_path: result.poster_path,
+        backdrop_path: result.backdrop_path,
+        release_date: isMovie
+            ? (result.release_date ?? '')
+            : (result.first_air_date ?? ''),
+        vote_average: result.vote_average,
+        vote_count: result.vote_count,
+        popularity: result.popularity,
+        genre_ids: result.genre_ids,
+    };
 }

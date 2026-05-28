@@ -13,28 +13,28 @@ const getSnapshot = () => state;
 const getServerSnapshot = () => SERVER_SNAPSHOT;
 
 export const mediaHeaderStore = {
-  setMedia: (title: string | null) => {
-    state = { title, scrolled: false };
-    notify();
-  },
-  setScrolled: (scrolled: boolean) => {
-    if (state.scrolled === scrolled) return;
-    state = { ...state, scrolled };
-    notify();
-  },
-  clear: () => {
-    state = { title: null, scrolled: false };
-    notify();
-  },
+    setMedia: (title: string | null) => {
+        state = { title, scrolled: false };
+        notify();
+    },
+    setScrolled: (scrolled: boolean) => {
+        if (state.scrolled === scrolled) return;
+        state = { ...state, scrolled };
+        notify();
+    },
+    clear: () => {
+        state = { title: null, scrolled: false };
+        notify();
+    },
 };
 
 export function useMediaHeader() {
-  return useSyncExternalStore(
-    (l) => {
-      listeners.add(l);
-      return () => listeners.delete(l);
-    },
-    getSnapshot,
-    getServerSnapshot
-  );
+    return useSyncExternalStore(
+        (l) => {
+            listeners.add(l);
+            return () => listeners.delete(l);
+        },
+        getSnapshot,
+        getServerSnapshot
+    );
 }

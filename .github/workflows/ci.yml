@@ -1,195 +1,195 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
 
 permissions:
-  contents: read
+    contents: read
 
 env:
-  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-  TMDB_READ_ACCESS_TOKEN: ${{ secrets.TMDB_READ_ACCESS_TOKEN }}
-  NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
-  WATCHMODE_API_KEY: ${{ secrets.WATCHMODE_API_KEY }}
-  TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-  TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+    SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    TMDB_READ_ACCESS_TOKEN: ${{ secrets.TMDB_READ_ACCESS_TOKEN }}
+    NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
+    WATCHMODE_API_KEY: ${{ secrets.WATCHMODE_API_KEY }}
+    TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+    TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  setup:
-    name: Install dependencies
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v5
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - uses: actions/cache/save@v5
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+    setup:
+        name: Install dependencies
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v5
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - uses: actions/cache/save@v5
+              with:
+                  path: node_modules
+                  key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-  typecheck:
-    name: Type check
-    needs: setup
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v5
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-      - uses: actions/cache/restore@v5
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-      - run: pnpm exec tsc --noEmit
+    typecheck:
+        name: Type check
+        needs: setup
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v5
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+            - run: pnpm exec tsc --noEmit
 
-  lint:
-    name: Lint
-    needs: setup
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v5
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-      - uses: actions/cache/restore@v5
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-      - run: pnpm run lint
+    lint:
+        name: Lint
+        needs: setup
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v5
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+            - run: pnpm run lint
 
-  prettier:
-    name: Vérifier le formatage du code
-    needs: setup
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v5
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-      - uses: actions/cache/restore@v5
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-      - run: npm run format:check
+    prettier:
+        name: Vérifier le formatage du code
+        needs: setup
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v5
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+            - run: npm run format:check
 
-  unit-tests:
-    name: Unit tests
-    needs: setup
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v5
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-      - uses: actions/cache/restore@v5
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-      - run: pnpm run test
+    unit-tests:
+        name: Unit tests
+        needs: setup
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v5
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+            - run: pnpm run test
 
-  build:
-    name: Build
-    needs: [typecheck, lint, unit-tests]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v5
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-      - uses: actions/cache/restore@v5
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-      - uses: actions/cache/restore@v5
-        with:
-          path: .next/cache
-          key: nextjs-${{ github.ref_name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            nextjs-${{ github.ref_name }}-
-            nextjs-main-
-      - run: pnpm run build
-      - uses: actions/cache/save@v5
-        with:
-          path: .next/cache
-          key: nextjs-${{ github.ref_name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-      - uses: actions/cache/save@v5
-        with:
-          path: .next
-          key: next-build-${{ github.sha }}
+    build:
+        name: Build
+        needs: [typecheck, lint, unit-tests]
+        runs-on: ubuntu-24.04
+        timeout-minutes: 20
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v5
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+            - uses: actions/cache/restore@v5
+              with:
+                  path: .next/cache
+                  key: nextjs-${{ github.ref_name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  restore-keys: |
+                      nextjs-${{ github.ref_name }}-
+                      nextjs-main-
+            - run: pnpm run build
+            - uses: actions/cache/save@v5
+              with:
+                  path: .next/cache
+                  key: nextjs-${{ github.ref_name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+            - uses: actions/cache/save@v5
+              with:
+                  path: .next
+                  key: next-build-${{ github.sha }}
 
-  e2e:
-    name: E2E tests
-    needs: build
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v5
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-      - uses: actions/cache/restore@v5
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-      - uses: actions/cache/restore@v5
-        with:
-          path: .next
-          key: next-build-${{ github.sha }}
-          fail-on-cache-miss: true
-      - id: playwright-cache
-        uses: actions/cache/restore@v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-chromium-${{ hashFiles('**/pnpm-lock.yaml') }}
-      - run: pnpm exec playwright install --with-deps chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-      - uses: actions/cache/save@v5
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-chromium-${{ hashFiles('**/pnpm-lock.yaml') }}
-      - run: pnpm run test:e2e
-      - uses: actions/upload-artifact@v6
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
+    e2e:
+        name: E2E tests
+        needs: build
+        runs-on: ubuntu-24.04
+        timeout-minutes: 30
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v5
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+            - uses: actions/cache/restore@v5
+              with:
+                  path: .next
+                  key: next-build-${{ github.sha }}
+                  fail-on-cache-miss: true
+            - id: playwright-cache
+              uses: actions/cache/restore@v5
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: playwright-chromium-${{ hashFiles('**/pnpm-lock.yaml') }}
+            - run: pnpm exec playwright install --with-deps chromium
+              if: steps.playwright-cache.outputs.cache-hit != 'true'
+            - uses: actions/cache/save@v5
+              if: steps.playwright-cache.outputs.cache-hit != 'true'
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: playwright-chromium-${{ hashFiles('**/pnpm-lock.yaml') }}
+            - run: pnpm run test:e2e
+            - uses: actions/upload-artifact@v6
+              if: always()
+              with:
+                  name: playwright-report
+                  path: playwright-report/
+                  retention-days: 7

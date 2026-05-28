@@ -8,14 +8,14 @@ import { createClient } from '@/lib/supabase/server';
  * @throws Error if no authenticated session is found.
  */
 export async function getAuthenticatedUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user) throw new Error('Unauthenticated');
+    if (!user) throw new Error('Unauthenticated');
 
-  return { supabase, userId: user.id, user };
+    return { supabase, userId: user.id, user };
 }
 
 /**
@@ -25,10 +25,10 @@ export async function getAuthenticatedUser() {
  * @returns Object containing the Supabase client and the user's UUID or null.
  */
 export async function getOptionalUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
-  return { supabase, userId: user?.id ?? null };
+    return { supabase, userId: user?.id ?? null };
 }

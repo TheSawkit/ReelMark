@@ -8,9 +8,9 @@ import type { MediaItem } from '@/types/tmdb';
  * @returns String of the form `"movie-123"` or `"tv-456"`.
  */
 export function getMediaKey(
-  item: Pick<MediaItem, 'media_type' | 'id'>
+    item: Pick<MediaItem, 'media_type' | 'id'>
 ): string {
-  return `${item.media_type}-${item.id}`;
+    return `${item.media_type}-${item.id}`;
 }
 
 /**
@@ -20,7 +20,7 @@ export function getMediaKey(
  * @returns `/tv/{id}` for TV shows, `/movie/{id}` for movies.
  */
 export function getMediaHref(
-  item: Pick<MediaItem, 'media_type' | 'id'>
+    item: Pick<MediaItem, 'media_type' | 'id'>
 ): string {
-  return item.media_type === 'tv' ? `/tv/${item.id}` : `/movie/${item.id}`;
+    return item.media_type === 'tv' ? `/tv/${item.id}` : `/movie/${item.id}`;
 }

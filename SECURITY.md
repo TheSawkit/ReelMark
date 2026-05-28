@@ -38,10 +38,10 @@ ReelMark implements several security measures to protect user data:
 
 1. **Do NOT create a public GitHub issue** for the vulnerability
 2. **Email the maintainer** at your earliest convenience with:
-   - A clear description of the vulnerability
-   - Steps to reproduce (if applicable)
-   - Potential impact
-   - Your contact information
+    - A clear description of the vulnerability
+    - Steps to reproduce (if applicable)
+    - Potential impact
+    - Your contact information
 
 ### Response Timeline
 

@@ -6,14 +6,14 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import type { Language } from '@/lib/i18n/translations';
 
 interface ProvidersProps {
-  children: ReactNode;
-  initialLang: Language;
+    children: ReactNode;
+    initialLang: Language;
 }
 
 export function Providers({ children, initialLang }: ProvidersProps) {
-  return (
-    <LanguageProvider initialLang={initialLang}>
-      <TooltipProvider>{children}</TooltipProvider>
-    </LanguageProvider>
-  );
+    return (
+        <LanguageProvider initialLang={initialLang}>
+            <TooltipProvider>{children}</TooltipProvider>
+        </LanguageProvider>
+    );
 }
