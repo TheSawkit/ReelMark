@@ -90,7 +90,7 @@ export function PendingInvitations({ requests, onCountChange }: PendingInvitatio
                 id="pending-invitations-list"
                 className={cn(
                     'overflow-hidden transition-all duration-(--duration-base) ease-apple',
-                    isExpanded ? 'max-h-[40rem] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+                    isExpanded ? 'max-h-160 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
                 )}
                 aria-live="polite"
             >
