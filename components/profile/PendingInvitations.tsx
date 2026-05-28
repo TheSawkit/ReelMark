@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { UserAvatar } from '@/components/shared/UserAvatar'
 import { acceptFriendRequest, rejectFriendRequest } from '@/app/actions/friends'
 import { useTranslation } from '@/lib/i18n/context'
-import type { PendingRequestEntry } from '@/types/profile'
+import type { Friendship, PendingRequestEntry } from '@/types/profile'
 
 interface PendingInvitationsProps {
     requests: PendingRequestEntry[]
@@ -23,14 +23,14 @@ export function PendingInvitations({ requests, onCountChange }: PendingInvitatio
 
     if (pending.length === 0) return null
 
-    const handleAccept = (id: string) => {
+    const handleAccept = (friendship: Friendship) => {
         const snapshot = pending
-        const next = pending.filter(r => r.friendship.id !== id)
+        const next = pending.filter(r => r.friendship.id !== friendship.id)
         setPending(next)
         onCountChange(next.length)
         startTransition(async () => {
             try {
-                await acceptFriendRequest(id)
+                await acceptFriendRequest(friendship.id, friendship.requester_id)
                 toast.success(t.profile.requestAcceptedToast)
             } catch {
                 setPending(snapshot)
@@ -40,14 +40,14 @@ export function PendingInvitations({ requests, onCountChange }: PendingInvitatio
         })
     }
 
-    const handleReject = (id: string) => {
+    const handleReject = (friendship: Friendship) => {
         const snapshot = pending
-        const next = pending.filter(r => r.friendship.id !== id)
+        const next = pending.filter(r => r.friendship.id !== friendship.id)
         setPending(next)
         onCountChange(next.length)
         startTransition(async () => {
             try {
-                await rejectFriendRequest(id)
+                await rejectFriendRequest(friendship.id, friendship.requester_id)
                 toast.success(t.profile.requestRejectedToast)
             } catch {
                 setPending(snapshot)
@@ -116,7 +116,7 @@ export function PendingInvitations({ requests, onCountChange }: PendingInvitatio
                                 <div className="flex items-center gap-1.5 shrink-0">
                                     <Button
                                         size="sm"
-                                        onClick={() => handleAccept(friendship.id)}
+                                        onClick={() => handleAccept(friendship)}
                                         disabled={isPending}
                                         className="gap-1.5 h-8 px-3 text-xs"
                                     >
@@ -126,7 +126,7 @@ export function PendingInvitations({ requests, onCountChange }: PendingInvitatio
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() => handleReject(friendship.id)}
+                                        onClick={() => handleReject(friendship)}
                                         disabled={isPending}
                                         className="h-8 px-3 text-xs"
                                     >

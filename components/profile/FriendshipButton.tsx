@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo, useEffect } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { UserPlus, UserCheck, Clock, UserMinus } from 'lucide-react'
+import { UserPlus, UserCheck, Clock, Check } from 'lucide-react'
 import {
     sendFriendRequest,
     acceptFriendRequest,
     rejectFriendRequest,
-    removeFriend,
+    cancelFriendRequest,
 } from '@/app/actions/friends'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import type { Friendship } from '@/types/profile'
 import { useTranslation } from '@/lib/i18n/context'
 
@@ -23,6 +25,28 @@ export function FriendshipButton({ targetUserId, currentUserId, friendship }: Fr
     const { t } = useTranslation()
     const [isPending, startTransition] = useTransition()
     const [localFriendship, setLocalFriendship] = useState<Friendship | null>(friendship)
+    const router = useRouter()
+    const supabase = useMemo(() => createClient(), [])
+
+    useEffect(() => {
+        const channel = supabase
+            .channel(`friendship-${currentUserId}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'friendships',
+                filter: `requester_id=eq.${currentUserId}`,
+            }, () => router.refresh())
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'friendships',
+                filter: `addressee_id=eq.${currentUserId}`,
+            }, () => router.refresh())
+            .subscribe()
+
+        return () => { supabase.removeChannel(channel) }
+    }, [currentUserId, supabase, router])
 
     const handleSendRequest = () => {
         startTransition(async () => {
@@ -51,9 +75,24 @@ export function FriendshipButton({ targetUserId, currentUserId, friendship }: Fr
         const snapshot = localFriendship
         startTransition(async () => {
             try {
-                await acceptFriendRequest(localFriendship.id)
+                await acceptFriendRequest(localFriendship.id, localFriendship.requester_id)
                 setLocalFriendship({ ...localFriendship, status: 'accepted' })
                 toast.success(t.profile.requestAcceptedToast)
+            } catch {
+                setLocalFriendship(snapshot)
+                toast.error(t.common.actionError)
+            }
+        })
+    }
+
+    const handleCancelRequest = () => {
+        if (!localFriendship) return
+        const snapshot = localFriendship
+        startTransition(async () => {
+            try {
+                await cancelFriendRequest(localFriendship.id, targetUserId)
+                setLocalFriendship(null)
+                toast.success(t.profile.requestCancelledToast)
             } catch {
                 setLocalFriendship(snapshot)
                 toast.error(t.common.actionError)
@@ -66,24 +105,9 @@ export function FriendshipButton({ targetUserId, currentUserId, friendship }: Fr
         const snapshot = localFriendship
         startTransition(async () => {
             try {
-                await rejectFriendRequest(localFriendship.id)
+                await rejectFriendRequest(localFriendship.id, localFriendship.requester_id)
                 setLocalFriendship(null)
                 toast.success(t.profile.requestRejectedToast)
-            } catch {
-                setLocalFriendship(snapshot)
-                toast.error(t.common.actionError)
-            }
-        })
-    }
-
-    const handleRemove = () => {
-        if (!localFriendship) return
-        const snapshot = localFriendship
-        startTransition(async () => {
-            try {
-                await removeFriend(localFriendship.id)
-                setLocalFriendship(null)
-                toast.success(t.profile.friendRemovedToast)
             } catch {
                 setLocalFriendship(snapshot)
                 toast.error(t.common.actionError)
@@ -101,17 +125,12 @@ export function FriendshipButton({ targetUserId, currentUserId, friendship }: Fr
     }
 
     if (localFriendship.status === 'accepted') {
-        return (
-            <Button size="sm" variant="outline" onClick={handleRemove} disabled={isPending} className="gap-2">
-                <UserMinus className="h-4 w-4" />
-                {t.profile.removeFriend}
-            </Button>
-        )
+        return null
     }
 
     if (localFriendship.status === 'pending' && localFriendship.requester_id === currentUserId) {
         return (
-            <Button size="sm" variant="outline" disabled className="gap-2 opacity-70">
+            <Button size="sm" variant="outline" onClick={handleCancelRequest} disabled={isPending} className="gap-2">
                 <Clock className="h-4 w-4" />
                 {t.profile.requestSent}
             </Button>
@@ -120,14 +139,20 @@ export function FriendshipButton({ targetUserId, currentUserId, friendship }: Fr
 
     if (localFriendship.status === 'pending' && localFriendship.addressee_id === currentUserId) {
         return (
-            <div className="flex gap-2">
-                <Button size="sm" onClick={handleAccept} disabled={isPending} className="gap-2">
-                    <UserCheck className="h-4 w-4" />
-                    {t.profile.acceptRequest}
-                </Button>
-                <Button size="sm" variant="outline" onClick={handleReject} disabled={isPending}>
-                    {t.profile.rejectRequest}
-                </Button>
+            <div className="flex-1 flex items-center justify-between gap-3 px-4 py-3 bg-surface/60 backdrop-blur-xl backdrop-saturate-150 border border-border-subtle rounded-cinema shadow-card">
+                <div className="flex items-center gap-2.5">
+                    <UserCheck className="h-4 w-4 text-gold-bright shrink-0" />
+                    <span className="text-sm font-medium text-text">{t.profile.friendRequestReceived}</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                    <Button size="sm" onClick={handleAccept} disabled={isPending} className="gap-1.5">
+                        <Check className="h-3.5 w-3.5" />
+                        {t.profile.acceptRequest}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={handleReject} disabled={isPending}>
+                        {t.profile.rejectRequest}
+                    </Button>
+                </div>
             </div>
         )
     }

@@ -6,12 +6,12 @@ import { PageLayout } from '@/components/layout/PageLayout'
 import { ProfileHero } from '@/components/profile/ProfileHero'
 import { ProfileTabs } from '@/components/profile/ProfileTabs'
 import { FriendshipButton } from '@/components/profile/FriendshipButton'
+import { ProfileOptionsMenu } from '@/components/profile/ProfileOptionsMenu'
 import { getProfileByUsername, getPrivacySettings } from '@/app/actions/profile'
 import { getUserReviews } from '@/app/actions/reviews'
 import { getUserPlaylists } from '@/app/actions/playlists'
-import { getFriends, getFriendshipStatus, getPendingRequestsWithProfiles } from '@/app/actions/friends'
+import { getFriendsWithProfiles, getFriendshipStatus, getPendingRequestsWithProfiles } from '@/app/actions/friends'
 import type { WatchlistEntry } from '@/types/tmdb'
-import type { FriendEntry } from '@/types/profile'
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns'
 
 interface Props {
@@ -53,11 +53,11 @@ export default async function ProfilePage({ params }: Props) {
     const supabase = await createClient()
     const adminClient = createAdminClient()
 
-    const [privacy, reviewsPage, playlists, rawFriends, friendship, watchlistData, ownerAuth, pendingRequests] = await Promise.all([
+    const [privacy, reviewsPage, playlists, allFriendEntries, friendship, watchlistData, ownerAuth, pendingRequests] = await Promise.all([
         getPrivacySettings(profile.user_id),
         getUserReviews(profile.user_id),
         getUserPlaylists(profile.user_id),
-        getFriends(profile.user_id),
+        getFriendsWithProfiles(profile.user_id),
         isOwnProfile ? Promise.resolve(null) : getFriendshipStatus(profile.user_id),
         supabase.from('watchlist').select(WATCHLIST_COLUMNS).eq('user_id', profile.user_id).order('created_at', { ascending: false }).limit(1000),
         adminClient.auth.admin.getUserById(profile.user_id),
@@ -77,29 +77,6 @@ export default async function ProfilePage({ params }: Props) {
     const toWatch = canView(privacy.watchlist_visibility) ? watchlist.filter(e => e.status === 'to_watch') : []
     const watched = canView(privacy.watched_visibility) ? watchlist.filter(e => e.status === 'watched') : []
 
-    const friendIdByFriendshipId = new Map(
-        rawFriends.map(f => [f.id, f.requester_id === profile.user_id ? f.addressee_id : f.requester_id])
-    )
-    const friendUserIds = Array.from(friendIdByFriendshipId.values())
-
-    const allFriendEntries: FriendEntry[] = []
-    if (friendUserIds.length > 0) {
-        const { data: friendProfiles } = await supabase
-            .from('user_profiles')
-            .select('user_id, username')
-            .in('user_id', friendUserIds)
-
-        const profileByUserId = new Map(friendProfiles?.map(p => [p.user_id, p]) ?? [])
-
-        for (const f of rawFriends) {
-            const friendId = friendIdByFriendshipId.get(f.id)
-            if (!friendId) continue
-            const friendProfile = profileByUserId.get(friendId)
-            if (!friendProfile) continue
-            allFriendEntries.push({ friendship: f, username: friendProfile.username })
-        }
-    }
-
     const filteredReviews = canView(privacy.reviews_visibility) ? reviewsPage.reviews : []
     const initialReviewsCursor = canView(privacy.reviews_visibility) ? reviewsPage.nextCursor : null
     const filteredFriends = canView(privacy.friends_visibility) ? allFriendEntries : []
@@ -117,8 +94,16 @@ export default async function ProfilePage({ params }: Props) {
                 isOwnProfile={isOwnProfile}
                 friendshipButton={!isOwnProfile ? (
                     <FriendshipButton
+                        key={friendship ? `${friendship.id}-${friendship.status}` : 'none'}
                         targetUserId={profile.user_id}
                         currentUserId={currentUser.id}
+                        friendship={friendship}
+                    />
+                ) : undefined}
+                optionsMenu={!isOwnProfile ? (
+                    <ProfileOptionsMenu
+                        key={friendship ? `${friendship.id}-${friendship.status}` : 'none'}
+                        targetUserId={profile.user_id}
                         friendship={friendship}
                     />
                 ) : undefined}

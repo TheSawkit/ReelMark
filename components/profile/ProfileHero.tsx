@@ -61,9 +61,10 @@ interface ProfileHeroProps {
     fullName?: string
     isOwnProfile: boolean
     friendshipButton?: React.ReactNode
+    optionsMenu?: React.ReactNode
 }
 
-export function ProfileHero({ profile, avatarUrl, fullName, isOwnProfile, friendshipButton }: ProfileHeroProps) {
+export function ProfileHero({ profile, avatarUrl, fullName, isOwnProfile, friendshipButton, optionsMenu }: ProfileHeroProps) {
     const { t } = useTranslation()
     const displayName = fullName || profile.username
     const initials = displayName.slice(0, 2).toUpperCase()
@@ -121,6 +122,7 @@ export function ProfileHero({ profile, avatarUrl, fullName, isOwnProfile, friend
                     {fullName && fullName !== profile.username && (
                         <span className="text-muted text-sm">@{profile.username}</span>
                     )}
+                    {optionsMenu}
                 </div>
 
                 {profile.bio && (
