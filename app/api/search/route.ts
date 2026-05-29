@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { searchMulti } from '@/lib/tmdb';
 import { rankMedia } from '@/lib/search/score';
 import { getMediaKey } from '@/lib/media';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import type { MediaItem } from '@/types/tmdb';
 
 const MAX_RESULTS = 6;
+const MAX_USER_RESULTS = 5;
 const FALLBACK_MIN_RESULTS = 3;
 const FALLBACK_MIN_QUERY_LEN = 4;
 const MAX_FALLBACK_QUERIES = 2;
@@ -35,6 +37,36 @@ export async function GET(req: NextRequest) {
 
 	if (!query || query.length < 2) {
 		return NextResponse.json({ results: [] });
+	}
+
+	if (query.startsWith('@')) {
+		const username = query.slice(1);
+		if (!username) return NextResponse.json({ users: [] });
+
+		const supabase = await createClient();
+		const { data: profiles } = await supabase
+			.from('user_profiles')
+			.select('user_id, username, bio')
+			.ilike('username', `%${username}%`)
+			.limit(MAX_USER_RESULTS);
+
+		if (!profiles?.length) return NextResponse.json({ users: [] });
+
+		const adminClient = createAdminClient();
+		const users = await Promise.all(
+			profiles.map(async (profile) => {
+				const { data } = await adminClient.auth.admin.getUserById(
+					profile.user_id
+				);
+				const avatarUrl =
+					typeof data.user?.user_metadata?.avatar_url === 'string'
+						? data.user.user_metadata.avatar_url
+						: null;
+				return { ...profile, avatar_url: avatarUrl };
+			})
+		);
+
+		return NextResponse.json({ users });
 	}
 
 	try {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useId } from 'react';
-import { Search, X, Loader2 } from 'lucide-react';
+import { Search, User, X, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/lib/i18n/context';
@@ -25,10 +25,14 @@ export function SearchBar({
 }: SearchBarProps) {
 	const { t } = useTranslation();
 	const [query, setQuery] = useState('');
+	const [isFocused, setIsFocused] = useState(autoFocus);
 	const [activeIndex, setActiveIndex] = useState(-1);
-	const { results, isLoading, isOpen, setIsOpen } =
+	const { results, users, isLoading, isOpen, setIsOpen } =
 		useSearchSuggestions(query);
+	const isUserSearch = query.startsWith('@');
+	const activeItems = isUserSearch ? users : results;
 	const [trackedResults, setTrackedResults] = useState(results);
+	const [trackedUsers, setTrackedUsers] = useState(users);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 	const isCompact = variant === 'compact';
@@ -37,10 +41,11 @@ export function SearchBar({
 	const inputId = `search-input-${reactId}`;
 	const listboxId = `search-listbox-${reactId}`;
 	const optionId = (index: number) => `search-option-${reactId}-${index}`;
-	const expanded = isOpen && results.length > 0;
+	const expanded = isOpen && activeItems.length > 0;
 
-	if (trackedResults !== results) {
+	if (trackedResults !== results || trackedUsers !== users) {
 		setTrackedResults(results);
+		setTrackedUsers(users);
 		setActiveIndex(-1);
 	}
 
@@ -69,44 +74,49 @@ export function SearchBar({
 	const handleSearch = (e?: React.FormEvent) => {
 		e?.preventDefault();
 		if (query.trim().length < 2) return;
+		if (isUserSearch) return;
 		handleSelect();
 		router.push(`/explorer/search?q=${encodeURIComponent(query.trim())}`);
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (!results.length && e.key !== 'Escape') return;
+		if (!activeItems.length && e.key !== 'Escape') return;
 
 		switch (e.key) {
 			case 'ArrowDown':
 				e.preventDefault();
 				if (!isOpen) setIsOpen(true);
-				setActiveIndex((prev) => (prev + 1) % results.length);
+				setActiveIndex((prev) => (prev + 1) % activeItems.length);
 				break;
 			case 'ArrowUp':
 				e.preventDefault();
 				if (!isOpen) setIsOpen(true);
 				setActiveIndex(
-					(prev) => (prev - 1 + results.length) % results.length
+					(prev) =>
+						(prev - 1 + activeItems.length) % activeItems.length
 				);
 				break;
 			case 'Home':
-				if (isOpen && results.length > 0) {
+				if (isOpen && activeItems.length > 0) {
 					e.preventDefault();
 					setActiveIndex(0);
 				}
 				break;
 			case 'End':
-				if (isOpen && results.length > 0) {
+				if (isOpen && activeItems.length > 0) {
 					e.preventDefault();
-					setActiveIndex(results.length - 1);
+					setActiveIndex(activeItems.length - 1);
 				}
 				break;
 			case 'Enter':
-				if (activeIndex >= 0 && activeIndex < results.length) {
+				if (activeIndex >= 0 && activeIndex < activeItems.length) {
 					e.preventDefault();
-					const item = results[activeIndex];
 					handleSelect();
-					router.push(getMediaHref(item));
+					if (isUserSearch) {
+						router.push(`/profile/${users[activeIndex].username}`);
+					} else {
+						router.push(getMediaHref(results[activeIndex]));
+					}
 				}
 				break;
 			case 'Escape':
@@ -118,6 +128,8 @@ export function SearchBar({
 				break;
 		}
 	};
+
+	const SearchIcon = isUserSearch ? User : Search;
 
 	return (
 		<div
@@ -138,7 +150,7 @@ export function SearchBar({
 				<Input
 					id={inputId}
 					type="text"
-					placeholder={t.pages.search.placeholder}
+					placeholder=""
 					autoComplete="off"
 					role="combobox"
 					aria-expanded={expanded}
@@ -155,10 +167,49 @@ export function SearchBar({
 					)}
 					value={query}
 					onChange={(e) => setQuery(e.target.value)}
-					onFocus={() => query.length >= 2 && setIsOpen(true)}
+					onFocus={() => {
+						setIsFocused(true);
+						if (query.length >= 2) setIsOpen(true);
+					}}
+					onBlur={() => setIsFocused(false)}
 					onKeyDown={handleKeyDown}
 					autoFocus={autoFocus}
 				/>
+
+				{!query && (
+					<div
+						className={cn(
+							'absolute inset-y-0 flex items-center pointer-events-none',
+							isCompact ? 'left-10' : 'left-16'
+						)}
+						aria-hidden
+					>
+						<div className="relative">
+							<span
+								className={cn(
+									'block transition-all duration-(--duration-base) ease-apple text-muted/50 whitespace-nowrap',
+									isCompact ? 'text-sm' : 'text-base',
+									isFocused
+										? 'opacity-0 -translate-y-2'
+										: 'opacity-100 translate-y-0'
+								)}
+							>
+								{t.pages.search.placeholder}
+							</span>
+							<span
+								className={cn(
+									'absolute inset-0 transition-all duration-(--duration-base) ease-apple text-muted/50 whitespace-nowrap',
+									isCompact ? 'text-sm' : 'text-base',
+									isFocused
+										? 'opacity-100 translate-y-0'
+										: 'opacity-0 translate-y-2'
+								)}
+							>
+								{t.pages.search.hint}
+							</span>
+						</div>
+					</div>
+				)}
 
 				<div
 					className={cn(
@@ -176,10 +227,10 @@ export function SearchBar({
 							)}
 						/>
 					) : isCompact ? (
-						<Search className="w-4 h-4 text-muted transition-all duration-(--duration-fast) ease-apple group-focus-within:scale-110" />
+						<SearchIcon className="w-4 h-4 text-muted transition-all duration-(--duration-fast) ease-apple group-focus-within:scale-110" />
 					) : (
 						<div className="flex items-center gap-3">
-							<Search className="w-6 h-6 text-muted transition-all duration-(--duration-fast) ease-apple group-focus-within:scale-110" />
+							<SearchIcon className="w-6 h-6 text-muted transition-all duration-(--duration-fast) ease-apple group-focus-within:scale-110" />
 							<div className="w-px h-7 bg-border/30" />
 						</div>
 					)}
@@ -203,6 +254,8 @@ export function SearchBar({
 			<SearchDropdown
 				query={query}
 				results={results}
+				users={users}
+				isUserSearch={isUserSearch}
 				isOpen={isOpen}
 				isLoading={isLoading}
 				activeIndex={activeIndex}

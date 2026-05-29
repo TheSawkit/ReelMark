@@ -3,16 +3,20 @@
 import { useState, useEffect } from 'react';
 import type { MediaItem } from '@/types/tmdb';
 
+export interface UserSearchResult {
+	user_id: string;
+	username: string;
+	bio: string | null;
+	avatar_url: string | null;
+}
+
 /**
- * Fetches live search suggestions from the internal `/api/search` route,
- * debounced by 300ms with stale-request cancellation via AbortController.
- * Resets results when the query is shorter than 2 characters.
- *
- * @param query - Current search input value.
- * @returns `{ results, isLoading, isOpen, setIsOpen }`
+ * Fetches live search suggestions from `/api/search`, debounced 300ms.
+ * Queries starting with '@' search user profiles instead of media.
  */
 export function useSearchSuggestions(query: string) {
 	const [results, setResults] = useState<MediaItem[]>([]);
+	const [users, setUsers] = useState<UserSearchResult[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
 	const [trackedQuery, setTrackedQuery] = useState(query);
@@ -21,6 +25,7 @@ export function useSearchSuggestions(query: string) {
 		setTrackedQuery(query);
 		if (query.trim().length < 2) {
 			setResults([]);
+			setUsers([]);
 			setIsLoading(false);
 		}
 	}
@@ -40,13 +45,24 @@ export function useSearchSuggestions(query: string) {
 				);
 				if (!response.ok)
 					throw new Error(`Search failed: ${response.status}`);
-				const data: { results?: MediaItem[] } = await response.json();
-				setResults(Array.isArray(data.results) ? data.results : []);
+				const data: {
+					results?: MediaItem[];
+					users?: UserSearchResult[];
+				} = await response.json();
+
+				if ('users' in data) {
+					setUsers(Array.isArray(data.users) ? data.users : []);
+					setResults([]);
+				} else {
+					setResults(Array.isArray(data.results) ? data.results : []);
+					setUsers([]);
+				}
 				setIsOpen(true);
 			} catch (err) {
 				if (err instanceof DOMException && err.name === 'AbortError')
 					return;
 				setResults([]);
+				setUsers([]);
 			} finally {
 				if (!controller.signal.aborted) setIsLoading(false);
 			}
@@ -58,5 +74,5 @@ export function useSearchSuggestions(query: string) {
 		};
 	}, [query]);
 
-	return { results, isLoading, isOpen, setIsOpen };
+	return { results, users, isLoading, isOpen, setIsOpen };
 }
