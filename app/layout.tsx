@@ -11,6 +11,7 @@ import { getServerLanguage, getTranslations } from '@/lib/i18n/server';
 import { BASE_URL } from '@/lib/metadata';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
 import { PreventImageContextMenu } from '@/components/shared/PreventImageContextMenu';
+import NextTopLoader from 'nextjs-toploader';
 
 const sans = Inter({
 	subsets: ['latin'],
@@ -310,6 +311,7 @@ export default async function RootLayout({
 		>
 			<head>
 				<link rel="dns-prefetch" href="https://image.tmdb.org" />
+				<style>{`#nprogress .bar { top: calc(4rem + env(safe-area-inset-top)) !important; }`}</style>
 				<script
 					dangerouslySetInnerHTML={{
 						__html: `(function(){try{var h=document.documentElement,t=localStorage.getItem("theme"),m=window.matchMedia("(prefers-color-scheme: light)");function a(l){h.classList.remove("light","dark");h.classList.add(l?"light":"dark")}if(t==="light")a(true);else if(t==="dark")a(false);else{a(m.matches);m.addEventListener("change",function(e){var s=localStorage.getItem("theme");if(!s||s==="system")a(e.matches)})}}catch(e){}})()`,
@@ -330,6 +332,15 @@ export default async function RootLayout({
 					>
 						{t.common.skipToMainContent}
 					</a>
+					<NextTopLoader
+						color="#B9090B"
+						height={2}
+						showSpinner={false}
+						shadow={'sm'}
+						easing="ease"
+						speed={200}
+						zIndex={9999}
+					/>
 					<Navbar />
 					<PageTopGradient />
 					<main

@@ -52,6 +52,7 @@ export function SeasonWatchIcon({
 	return (
 		<button
 			onClick={handleClick}
+			disabled={loading}
 			aria-label={
 				allWatched ? t.movie.markUnwatched : t.movie.markSeasonWatched
 			}

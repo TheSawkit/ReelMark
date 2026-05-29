@@ -11,6 +11,11 @@ export default function LibraryLoading() {
 				<div className="h-10 w-28 rounded-lg bg-surface-2 animate-pulse" />
 			</div>
 
+			<div className="flex gap-2 border-b border-border pb-0 mb-8">
+				<div className="h-10 w-24 rounded-t-lg bg-surface-2 animate-pulse" />
+				<div className="h-10 w-20 rounded-t-lg bg-surface-2 animate-pulse" />
+			</div>
+
 			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
 				{Array.from({ length: 6 }).map((_, i) => (
 					<div

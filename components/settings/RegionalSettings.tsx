@@ -103,8 +103,8 @@ export function RegionalSettings({ user }: RegionalSettingsProps) {
 						<p className="text-sm text-gold">{state.message}</p>
 					)}
 
-					<Button type="submit" disabled={isPending}>
-						{isPending ? t.common.updating : t.settings.region.save}
+					<Button type="submit" loading={isPending}>
+						{t.settings.region.save}
 					</Button>
 				</form>
 			</CardContent>

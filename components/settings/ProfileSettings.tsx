@@ -171,14 +171,9 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
 																}
 															);
 														}}
-														disabled={
-															isAvatarPending
-														}
+														loading={isAvatarPending}
 													>
-														{isAvatarPending
-															? t.common.updating
-															: t.settings.profile
-																	.updateAvatar}
+														{t.settings.profile.updateAvatar}
 													</Button>
 													{avatarState.error && (
 														<p
@@ -266,10 +261,8 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
 							</p>
 						)}
 
-						<Button type="submit" disabled={isPending}>
-							{isPending
-								? t.common.updating
-								: t.settings.profile.updateProfile}
+						<Button type="submit" loading={isPending}>
+							{t.settings.profile.updateProfile}
 						</Button>
 					</form>
 				</CardContent>

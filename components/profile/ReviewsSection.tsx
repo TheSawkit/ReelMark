@@ -204,6 +204,7 @@ export function ReviewsSection({
 											onClick={() =>
 												setEditingReview(review)
 											}
+											disabled={isPending}
 											className="h-8 w-8 p-0 text-muted hover:text-text"
 											aria-label={t.movie.editReview}
 										>

@@ -508,12 +508,12 @@ export function DataSettings() {
 				<CardContent>
 					<Button
 						onClick={handleExport}
-						disabled={exportPending}
+						loading={exportPending}
 						variant="outline"
 						className="gap-2"
 					>
 						<Upload className="h-4 w-4" />
-						{exportPending ? '...' : td.exportButton}
+						{td.exportButton}
 					</Button>
 				</CardContent>
 			</Card>
