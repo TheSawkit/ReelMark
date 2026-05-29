@@ -37,6 +37,15 @@ export const translations = {
 			notFoundDescription:
 				"La page que vous cherchez n'existe pas ou a été déplacée.",
 		},
+		pwa: {
+			title: 'Installer ReelMark',
+			description: "Ajoutez l'application sur votre écran d'accueil.",
+			install: 'Installer',
+			dismiss: 'Plus tard',
+			iosThen: 'puis',
+			iosShare: 'Partager',
+			iosAdd: "Écran d'accueil",
+		},
 		navbar: {
 			dashboard: 'Tableau de bord',
 			explorer: 'Explorateur',
@@ -747,6 +756,15 @@ export const translations = {
 			notFoundTitle: 'Page not found',
 			notFoundDescription:
 				'The page you are looking for does not exist or has been moved.',
+		},
+		pwa: {
+			title: 'Install ReelMark',
+			description: 'Add the app to your home screen.',
+			install: 'Install',
+			dismiss: 'Later',
+			iosThen: 'then',
+			iosShare: 'Share',
+			iosAdd: 'Home Screen',
 		},
 		navbar: {
 			dashboard: 'Dashboard',

@@ -11,6 +11,7 @@ import { getServerLanguage, getTranslations } from '@/lib/i18n/server';
 import { BASE_URL } from '@/lib/metadata';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
 import { PreventImageContextMenu } from '@/components/shared/PreventImageContextMenu';
+import { PWAInstallPrompt } from '@/components/shared/PWAInstallPrompt';
 import NextTopLoader from 'nextjs-toploader';
 
 const sans = Inter({
@@ -355,6 +356,7 @@ export default async function RootLayout({
 					<footer className="border-t border-border-subtle mt-auto py-8 text-center text-sm text-muted">
 						<p>© {new Date().getFullYear()} ReelMark</p>
 					</footer>
+					<PWAInstallPrompt />
 				</Providers>
 				<Toaster />
 			</body>
