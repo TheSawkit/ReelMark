@@ -143,15 +143,17 @@ export function ProfileHero({
 			</div>
 
 			<div className="flex-1 min-w-0">
-				<div className="flex flex-wrap items-center gap-3 mb-1">
-					<h1 className="text-2xl font-bold text-text truncate">
-						{displayName}
-					</h1>
-					{fullName && fullName !== profile.username && (
-						<span className="text-muted text-sm">
-							@{profile.username}
-						</span>
-					)}
+				<div className="flex flex-wrap gap-3 mb-4">
+					<span className="flex flex-col gap-2">
+						<h1 className="text-2xl font-bold text-text truncate">
+							{displayName}
+						</h1>
+						{fullName && fullName !== profile.username && (
+							<span className="text-muted text-sm">
+								@{profile.username}
+							</span>
+						)}
+					</span>
 					{optionsMenu}
 				</div>
 

@@ -10,6 +10,7 @@ import { UserAvatar } from '@/components/shared/UserAvatar';
 import { SearchBar } from '@/components/search/SearchBar';
 import { useTranslation } from '@/lib/i18n/context';
 import type { NavbarMobileProps } from '@/types/components';
+import Link from 'next/link';
 
 export function NavbarMobile({ user }: NavbarMobileProps) {
 	const { t } = useTranslation();
@@ -62,6 +63,7 @@ export function NavbarMobile({ user }: NavbarMobileProps) {
 							</Button>
 						</div>
 						<div className="flex items-center gap-4 mb-4">
+							<Link href="/profile" className="flex items-center gap-2">
 							<UserAvatar
 								picture={
 									user.user_metadata.avatar_url ||
@@ -78,14 +80,14 @@ export function NavbarMobile({ user }: NavbarMobileProps) {
 							/>
 							<div>
 								<p className="text-sm font-medium text-text">
-									{user.user_metadata.username ||
-										user.user_metadata.full_name ||
+									{	user.user_metadata.full_name ||
 										t.common.user}
 								</p>
 								<p className="text-xs text-muted">
-									{user.user_metadata.email || ''}
+									@{user.user_metadata.username || ''}
 								</p>
 							</div>
+							</Link>
 						</div>
 
 						<div className="mt-4">
