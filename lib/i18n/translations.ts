@@ -81,16 +81,8 @@ export const translations = {
 				"Suivez les critiques et listes de vos amis, envoyez des demandes d'amis et découvrez ce que regardent les autres.",
 		},
 		explorer: {
-			title: 'Explorateur',
 			overview: "Vue d'ensemble",
-			subtitle:
-				'Découvrez des films et séries à ajouter à votre collection.',
 			searchResults: 'Suggestions',
-			search: 'Rechercher',
-			noResults: "Désolé, nous n'avons trouvé aucun résultat.",
-			results: 'Résultats pour',
-			matchingMovies:
-				'Nous avons trouvé {count} résultats correspondants.',
 			trending: 'Films Tendances',
 			nowPlaying: 'Au cinéma',
 			popular: 'Films Populaires',
@@ -794,14 +786,8 @@ export const translations = {
 				"Follow friends' reviews and watchlists, send friend requests, and discover what others are watching.",
 		},
 		explorer: {
-			title: 'Explorer',
 			overview: 'Overview',
-			subtitle: 'Discover movies and shows to add to your collection.',
 			searchResults: 'Suggestions',
-			search: 'Search',
-			noResults: 'No results found for this search.',
-			results: 'Results for',
-			matchingMovies: 'We found {count} matching results.',
 			trending: 'Trending Movies',
 			nowPlaying: 'Now Playing',
 			popular: 'Popular Movies',

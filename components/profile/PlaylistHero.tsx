@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
-import { BlurredPosterBackdrop } from '@/components/media/BlurredPosterBackdrop';
+import { BlurredPosterBackdrop } from '@/components/shared/BlurredPosterBackdrop';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { BASE_URL } from '@/lib/metadata';
 import { useTranslation } from '@/lib/i18n/context';

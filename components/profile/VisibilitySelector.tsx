@@ -2,7 +2,7 @@
 
 import { useTranslation } from '@/lib/i18n/context';
 import { cn } from '@/lib/utils';
-import { VISIBILITY_ICON } from '@/lib/visibility-ui';
+import { VISIBILITY_ICON } from '@/lib/visibility';
 import type { PrivacyVisibility } from '@/types/profile';
 
 interface VisibilitySelectorProps {

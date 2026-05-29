@@ -4,7 +4,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Inter, Bebas_Neue } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/navigation/Navbar';
-import { PageTopGradient } from '@/components/ui/PageTopGradient';
+import { PageTopGradient } from '@/components/navigation/PageTopGradient';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from './providers';
 import { getServerLanguage, getTranslations } from '@/lib/i18n/server';

@@ -118,18 +118,6 @@ export async function getNowPlayingMovies(page: number = 1): Promise<Movie[]> {
 	return results;
 }
 
-/** @returns Paginated list of movies matching the search query. */
-export async function searchMovies(
-	query: string,
-	page: number = 1
-): Promise<Movie[]> {
-	const { results } = await fetchTMDB<{ results: Movie[] }>('/search/movie', {
-		query,
-		page: clampPage(page).toString(),
-	});
-	return results;
-}
-
 /**
  * Fetches full movie details including certification for the user's region.
  * Certification is fetched separately and injected into the returned object.

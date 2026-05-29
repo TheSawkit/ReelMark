@@ -10,7 +10,7 @@ import { useTranslation } from '@/lib/i18n/context';
 import { getLocale } from '@/lib/i18n/utils';
 import { formatDate, formatRuntime } from '@/lib/format';
 import { useDominantColor } from '@/hooks/useDominantColor';
-import { NavbarGradient } from '@/components/ui/NavbarGradient';
+import { NavbarGradient } from '@/components/navigation/NavbarGradient';
 import { mediaHeaderStore } from '@/lib/media-header-store';
 /**
  * Large hero banner displaying media details with parallax backdrop.

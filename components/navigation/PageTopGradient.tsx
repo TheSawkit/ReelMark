@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { NavbarGradient } from '@/components/ui/NavbarGradient';
+import { NavbarGradient } from '@/components/navigation/NavbarGradient';
 
 export function PageTopGradient() {
 	const pathname = usePathname();

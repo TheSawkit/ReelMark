@@ -75,18 +75,6 @@ export async function getOnTheAirTvShows(page: number = 1): Promise<TvShow[]> {
 	return results;
 }
 
-/** @returns Paginated list of TV shows matching the search query. */
-export async function searchTvShows(
-	query: string,
-	page: number = 1
-): Promise<TvShow[]> {
-	const { results } = await fetchTMDB<{ results: TvShow[] }>('/search/tv', {
-		query,
-		page: clampPage(page).toString(),
-	});
-	return results;
-}
-
 /**
  * Fetches full TV show details including certification for the user's region.
  *

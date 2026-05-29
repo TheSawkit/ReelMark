@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input';
 import { createPlaylist, deletePlaylist } from '@/app/actions/playlists';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { cn } from '@/lib/utils';
-import { VISIBILITY_ICON } from '@/lib/visibility-ui';
-import { BlurredPosterBackdrop } from '@/components/media/BlurredPosterBackdrop';
+import { VISIBILITY_ICON } from '@/lib/visibility';
+import { BlurredPosterBackdrop } from '@/components/shared/BlurredPosterBackdrop';
 import type {
 	Playlist,
 	PlaylistItem,
