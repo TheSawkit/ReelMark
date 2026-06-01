@@ -171,9 +171,14 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
 																}
 															);
 														}}
-														loading={isAvatarPending}
+														loading={
+															isAvatarPending
+														}
 													>
-														{t.settings.profile.updateAvatar}
+														{
+															t.settings.profile
+																.updateAvatar
+														}
 													</Button>
 													{avatarState.error && (
 														<p
