@@ -78,7 +78,13 @@ export async function fetchMoreMedia(
 	category: string,
 	page: number
 ): Promise<MediaItem[]> {
+	if (!Object.prototype.hasOwnProperty.call(CATEGORY_FETCHERS, category)) {
+		return [];
+	}
+
 	const fetcher = CATEGORY_FETCHERS[category];
-	const items = fetcher ? await fetcher(page) : [];
+	if (typeof fetcher !== 'function') return [];
+
+	const items = await fetcher(page);
 	return mergeMediaWithWatchlist(items);
 }
