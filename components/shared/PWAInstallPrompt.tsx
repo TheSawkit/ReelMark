@@ -28,7 +28,9 @@ export function PWAInstallPrompt() {
 				'fixed left-0 right-0 z-40',
 				'top-[calc(4rem+env(safe-area-inset-top))]',
 				'transition-transform duration-(--duration-slow) ease-apple',
-				visible ? 'translate-y-0' : '-translate-y-[200%] pointer-events-none'
+				visible
+					? 'translate-y-0'
+					: '-translate-y-[200%] pointer-events-none'
 			)}
 		>
 			<div className="mx-auto max-w-lg bg-surface/95 backdrop-blur-xl border-b border-border/60 px-4 py-3 flex items-center gap-3">
@@ -50,7 +52,9 @@ export function PWAInstallPrompt() {
 								<Share className="size-3" aria-hidden />
 								{t.pwa.iosShare}
 							</span>
-							<span className="text-xs text-muted">{t.pwa.iosThen}</span>
+							<span className="text-xs text-muted">
+								{t.pwa.iosThen}
+							</span>
 							<span className="inline-flex items-center gap-1 bg-surface-2 border border-border-subtle rounded-md px-1.5 py-0.5 text-xs text-text shrink-0">
 								<SquarePlus className="size-3" aria-hidden />
 								{t.pwa.iosAdd}

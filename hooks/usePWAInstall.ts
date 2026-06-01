@@ -36,8 +36,10 @@ function detectIOS(): boolean {
 }
 
 function isMobile(): boolean {
-	return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-		(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+	return (
+		/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+		(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+	);
 }
 
 export function usePWAInstall() {
@@ -91,5 +93,10 @@ export function usePWAInstall() {
 		}
 	}
 
-	return { visible: state.visible, isIOS: state.isIOS, dismiss, triggerInstall };
+	return {
+		visible: state.visible,
+		isIOS: state.isIOS,
+		dismiss,
+		triggerInstall,
+	};
 }

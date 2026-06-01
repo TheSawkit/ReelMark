@@ -83,9 +83,7 @@ export function SearchDropdown({
 									aria-selected={isActive}
 									href={`/profile/${user.username}`}
 									onClick={onClose}
-									onMouseEnter={() =>
-										onActiveChange?.(index)
-									}
+									onMouseEnter={() => onActiveChange?.(index)}
 									className={cn(
 										'flex items-center gap-4 p-2 rounded-xl transition-all duration-(--duration-fast) ease-apple group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
 										isActive
