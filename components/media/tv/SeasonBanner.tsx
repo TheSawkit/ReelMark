@@ -2,45 +2,62 @@
 
 import { useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft, Calendar, Layers } from 'lucide-react';
 import { getImageUrl } from '@/lib/tmdb/images';
-import type { MediaBannerProps } from '@/types/components';
-import { Clock, Calendar, ArrowLeft } from 'lucide-react';
 import { InfoBadge, RatingBadge } from '@/components/ui/InfoBadge';
 import { useTranslation } from '@/lib/i18n/context';
 import { getLocale } from '@/lib/i18n/utils';
-import { formatDate, formatRuntime } from '@/lib/format';
+import { formatDate } from '@/lib/format';
 import { useDominantColor } from '@/hooks/useDominantColor';
 import { NavbarGradient } from '@/components/navigation/NavbarGradient';
 import { CinematicBackdrop } from '@/components/media/detail/CinematicBackdrop';
+import { ProgressBar } from '@/components/shared/ProgressBar';
+import { SeasonWatchButton } from '@/components/media/tv/SeasonWatchButton';
 import { mediaHeaderStore } from '@/lib/media-header-store';
+
+interface SeasonBannerProps {
+	tvId: number;
+	tvName: string;
+	seasonName: string;
+	seasonNumber: number;
+	backdropUrl: string;
+	posterPath: string | null;
+	airDate: string | null;
+	episodeCount: number;
+	watchedCount: number;
+	totalEpisodes: number;
+	genres: { id: number; name: string }[];
+	rating: { avg: number; count: number } | null;
+}
+
 /**
- * Large hero banner displaying media details with parallax backdrop.
- * Feeds title and scroll state into mediaHeaderStore for NavbarClient and MediaActionsBar.
+ * Cinematic season hero, mirroring MediaBanner: show backdrop + season poster,
+ * title, badges, progress and watch action. Feeds mediaHeaderStore for the navbar.
  */
-export function MediaBanner({
-	title,
-	tagline,
+export function SeasonBanner({
+	tvId,
+	tvName,
+	seasonName,
+	seasonNumber,
 	backdropUrl,
 	posterPath,
-	voteAverage,
-	releaseDate,
-	runtime,
-	certification,
+	airDate,
+	episodeCount,
+	watchedCount,
+	totalEpisodes,
 	genres,
-	actions,
-	communityBadge,
-}: MediaBannerProps) {
+	rating,
+}: SeasonBannerProps) {
 	const { t, lang } = useTranslation();
 	const locale = getLocale(lang);
-	const router = useRouter();
-	const bottomRef = useRef<HTMLDivElement>(null);
 	const dominantColor = useDominantColor(backdropUrl);
+	const bottomRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		mediaHeaderStore.setMedia(title);
+		mediaHeaderStore.setMedia(seasonName);
 		return () => mediaHeaderStore.clear();
-	}, [title]);
+	}, [seasonName]);
 
 	useEffect(() => {
 		const observer = new IntersectionObserver(
@@ -53,7 +70,6 @@ export function MediaBanner({
 			},
 			{ threshold: 0, rootMargin: '-64px 0px 0px 0px' }
 		);
-
 		const el = bottomRef.current;
 		if (el) observer.observe(el);
 		return () => {
@@ -70,23 +86,24 @@ export function MediaBanner({
 			}}
 		>
 			<NavbarGradient color={dominantColor} />
-			<CinematicBackdrop src={backdropUrl} alt={title} />
+			<CinematicBackdrop src={backdropUrl} alt={seasonName} />
 
 			<div className="relative z-10 container mx-auto px-6 lg:px-12 h-full flex flex-col justify-end pb-4 sm:pb-12">
 				<div className="w-full justify-start mb-6 md:mb-8 z-20 hidden md:flex">
-					<button
-						onClick={() => router.back()}
-						aria-label={t.common.goBack}
+					<Link
+						href={`/tv/${tvId}`}
+						aria-label={`${t.movie.backTo} ${tvName}`}
 						className="h-11 w-11 flex items-center justify-center rounded-full glass-overlay hover:bg-surface-2/20 shrink-0 text-text transition-colors cursor-pointer shadow-card-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
 					>
 						<ArrowLeft className="h-5 w-5" />
-					</button>
+					</Link>
 				</div>
+
 				<div className="flex flex-col md:flex-row gap-3 sm:gap-6 md:gap-8 w-full items-start md:items-end pt-4 sm:pt-10 md:pt-0">
 					<div className="relative aspect-2/3 w-20 sm:w-40 md:w-48 lg:w-56 shrink-0 rounded-lg overflow-hidden border-2 border-gold/30 shadow-poster">
 						<Image
 							src={getImageUrl(posterPath, 'w500')}
-							alt={title}
+							alt={seasonName}
 							fill
 							className="object-cover"
 							sizes="(max-width: 768px) 128px, 224px"
@@ -94,61 +111,43 @@ export function MediaBanner({
 					</div>
 
 					<div className="flex-1 max-w-4xl">
+						<Link
+							href={`/tv/${tvId}`}
+							className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-text transition-colors mb-2"
+						>
+							<ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+							{tvName}
+						</Link>
+
 						<h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-text mb-4 drop-shadow-text">
-							{title}
+							{seasonName}
 						</h1>
 
-						{tagline && (
-							<p className="text-base sm:text-xl md:text-2xl text-text-muted mb-6 italic">
-								{tagline}
-							</p>
-						)}
-
 						<div className="flex flex-wrap items-center gap-4 md:gap-6 mb-4">
-							<RatingBadge
-								value={
-									voteAverage && voteAverage > 0
-										? voteAverage.toFixed(1)
-										: t.movie.notRated
-								}
-							/>
-
-							{communityBadge}
-
-							{releaseDate && (
+							{rating && (
+								<RatingBadge value={rating.avg.toFixed(1)} />
+							)}
+							<InfoBadge
+								icon={<Layers className="h-5 w-5 text-muted" />}
+							>
+								<span className="text-text">
+									{episodeCount} {t.movie.episodes}
+								</span>
+							</InfoBadge>
+							{airDate && (
 								<InfoBadge
 									icon={
 										<Calendar className="h-5 w-5 text-muted" />
 									}
 								>
 									<span className="text-text">
-										{formatDate(releaseDate, locale)}
-									</span>
-								</InfoBadge>
-							)}
-
-							{runtime && runtime > 0 && (
-								<InfoBadge
-									icon={
-										<Clock className="h-5 w-5 text-muted" />
-									}
-								>
-									<span className="text-text">
-										{formatRuntime(runtime)}
-									</span>
-								</InfoBadge>
-							)}
-
-							{certification && (
-								<InfoBadge>
-									<span className="font-semibold text-text">
-										{certification}
+										{formatDate(airDate, locale)}
 									</span>
 								</InfoBadge>
 							)}
 						</div>
 
-						{genres && genres.length > 0 && (
+						{genres.length > 0 && (
 							<div className="flex flex-wrap gap-2.5 mb-6">
 								{genres.map((genre) => (
 									<span
@@ -161,18 +160,37 @@ export function MediaBanner({
 							</div>
 						)}
 
-						{actions && (
-							<div
-								ref={bottomRef}
-								className="flex flex-wrap justify-center sm:justify-normal items-center gap-3 mt-2"
-							>
-								{actions}
-							</div>
-						)}
-
-						{!actions && (
-							<div ref={bottomRef} className="h-1 w-full" />
-						)}
+						<div
+							ref={bottomRef}
+							className="flex flex-col sm:flex-row sm:items-center gap-3 mt-2"
+						>
+							<SeasonWatchButton
+								tvId={tvId}
+								seasonNumber={seasonNumber}
+								totalEpisodes={totalEpisodes}
+								watchedCount={watchedCount}
+							/>
+							{watchedCount > 0 && (
+								<div className="flex items-center gap-3 px-4 py-2 rounded-full glass-surface shadow-card-sm">
+									<span className="text-xs uppercase tracking-wider font-bold text-muted">
+										{watchedCount}/{totalEpisodes}{' '}
+										{t.movie.episodes}
+									</span>
+									<ProgressBar
+										watched={watchedCount}
+										total={totalEpisodes}
+										className="w-20 sm:w-28 h-1 bg-border-subtle rounded-full"
+										innerClassName="bg-linear-to-r from-primary to-gold rounded-full"
+									/>
+									<span className="text-sm font-bold text-text tabular-nums">
+										{Math.round(
+											(watchedCount / totalEpisodes) * 100
+										)}
+										%
+									</span>
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>

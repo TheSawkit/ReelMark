@@ -12,6 +12,7 @@ import { SocialLinksSettings } from './SocialLinksSettings';
 import { PrivacySettings } from './PrivacySettings';
 import { DataSettings } from './DataSettings';
 import { SettingsNav, type SettingsTab } from './SettingsNav';
+import { SignoutButton } from '@/components/auth/SignoutButton';
 import type {
 	UserProfile,
 	PrivacySettings as PrivacySettingsType,
@@ -60,6 +61,10 @@ export function SettingsContent({
 						<DangerZone />
 					</div>
 				)}
+
+				<div className="mt-6 rounded-(--radius-xl) border border-border bg-surface p-4">
+					<SignoutButton />
+				</div>
 			</main>
 		</div>
 	);

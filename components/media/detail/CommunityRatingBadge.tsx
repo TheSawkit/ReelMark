@@ -19,7 +19,7 @@ interface CommunityRatingBadgeProps {
 }
 
 const BADGE_CLASSES =
-	'flex items-center gap-2 bg-glass-bg-hover backdrop-blur-2xl backdrop-saturate-150 px-4 py-2 rounded-full border border-glass-border-hover shadow-card-sm';
+	'flex items-center gap-2 glass-surface px-4 py-2 rounded-full shadow-card-sm';
 
 export function CommunityRatingBadge({
 	rating,

@@ -92,10 +92,6 @@ export interface NavbarUser {
 	};
 }
 
-export interface NavbarMobileProps {
-	user: NavbarUser;
-}
-
 export interface NavLinksProps {
 	orientation?: 'horizontal' | 'vertical';
 	className?: string;

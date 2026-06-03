@@ -35,7 +35,7 @@ export function MediaTypeSwitcher({
 
 	return (
 		<div className="flex justify-center mb-8">
-			<div className="relative inline-flex items-center p-1 bg-surface/80 backdrop-blur-md rounded-xl border border-border/10 shadow-card-xs isolate">
+			<div className="relative inline-flex items-center p-1 glass-surface rounded-xl shadow-card-xs isolate">
 				<div
 					className={cn(
 						'absolute top-1 bottom-1 w-[calc(50%-4px)] bg-primary rounded-lg transition-transform duration-(--duration-base) ease-in-out -z-10',

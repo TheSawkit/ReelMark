@@ -12,7 +12,9 @@ import {
 	getSeasonAverageRating,
 	getPublicEpisodeReviews,
 } from '@/app/actions/reviews';
-import { SeasonHeader } from '@/components/media/tv/SeasonHeader';
+import { SeasonBanner } from '@/components/media/tv/SeasonBanner';
+import { SeasonWatchButton } from '@/components/media/tv/SeasonWatchButton';
+import { MediaActionsBar } from '@/components/media/detail/MediaActionsBar';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { CommunityRating } from '@/components/media/detail/CommunityRating';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
@@ -113,19 +115,41 @@ export default async function SeasonPage(props: SeasonPageProps) {
 		reviewsByEpisodeId.set(review.media_id, list);
 	}
 
+	const totalEpisodes = seasonDetails.episodes.length;
+	const backdropUrl = getImageUrl(
+		tvDetails.backdrop_path ??
+			seasonDetails.poster_path ??
+			tvDetails.poster_path,
+		'original'
+	);
+
 	return (
-		<div className="min-h-screen bg-app-bg pb-20">
-			<SeasonHeader
+		<div className="min-h-screen">
+			<SeasonBanner
 				tvId={tvId}
 				tvName={tvDetails.name}
 				seasonName={seasonDetails.name}
 				seasonNumber={seasonNumber}
-				totalEpisodes={seasonDetails.episodes.length}
+				backdropUrl={backdropUrl}
+				posterPath={seasonDetails.poster_path ?? tvDetails.poster_path}
+				airDate={seasonDetails.air_date}
+				episodeCount={totalEpisodes}
 				watchedCount={watchedCount}
-				labels={{ backTo: t.movie.backTo, episodes: t.movie.episodes }}
+				totalEpisodes={totalEpisodes}
+				genres={tvDetails.genres}
+				rating={seasonRating}
 			/>
 
-			<div className="container mx-auto px-6 lg:px-12 py-10 space-y-12">
+			<MediaActionsBar>
+				<SeasonWatchButton
+					tvId={tvId}
+					seasonNumber={seasonNumber}
+					totalEpisodes={totalEpisodes}
+					watchedCount={watchedCount}
+				/>
+			</MediaActionsBar>
+
+			<div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16">
 				{seasonDetails.overview && (
 					<div className="max-w-4xl space-y-4">
 						<SectionHeading>{t.explorer.overview}</SectionHeading>

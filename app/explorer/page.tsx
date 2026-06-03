@@ -15,6 +15,7 @@ import {
 } from '@/lib/tmdb';
 import { mergeMediaWithWatchlist } from '@/app/actions/media';
 import { MediaSection } from '@/components/media/card/MediaSection';
+import { SpotlightPick } from '@/components/explorer/SpotlightPick';
 import { CategoryNav } from '@/components/navigation/CategoryNav';
 import { SearchBar } from '@/components/search/SearchBar';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
@@ -98,7 +99,7 @@ export default async function ExplorerPage({ searchParams }: Props) {
 	};
 
 	return (
-		<PageLayout>
+		<PageLayout className="screen-in">
 			<PageHeader
 				title={t.pages.explorer.title}
 				subtitle={t.pages.explorer.subtitle}
@@ -118,15 +119,20 @@ export default async function ExplorerPage({ searchParams }: Props) {
 				</Suspense>
 			</div>
 
+			{trendingItems.length > 0 && (
+				<SpotlightPick
+					item={trendingItems[0]}
+					badgeLabel={t.pages.explorer.featured}
+					ctaLabel={t.pages.dashboard.discover}
+				/>
+			)}
+
 			<MediaSection
-				title={
-					type === 'movie'
-						? t.pages.explorer.trending
-						: t.pages.explorer.tvTrending
-				}
+				title={t.pages.explorer.top10}
 				items={trendingItems}
 				categoryUrl={`/explorer/${type === 'movie' ? 'trending' : 'tv-trending'}`}
 			/>
+
 			<MediaSection
 				title={
 					type === 'movie'

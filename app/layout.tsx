@@ -353,8 +353,10 @@ export default async function RootLayout({
 					>
 						{children}
 					</main>
-					<footer className="border-t border-border-subtle mt-auto py-8 text-center text-sm text-muted">
-						<p>© {new Date().getFullYear()} ReelMark</p>
+					<footer className="border-t border-border-subtle mt-auto">
+						<div className="container mx-auto px-6 lg:px-12 pt-8 pb-28 text-center text-sm text-muted md:pb-8">
+							<p>© {new Date().getFullYear()} ReelMark</p>
+						</div>
 					</footer>
 					<PWAInstallPrompt />
 				</Providers>

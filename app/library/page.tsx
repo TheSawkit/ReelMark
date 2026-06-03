@@ -71,7 +71,7 @@ export default async function LibraryPage({ searchParams }: Props) {
 	const inLibraryText = t.library.inLibrary;
 
 	return (
-		<PageLayout>
+		<PageLayout className="screen-in">
 			<PageHeader
 				title={t.pages.library.title}
 				subtitle={`${watchlist.length} ${filmsCountText} ${inLibraryText}`}

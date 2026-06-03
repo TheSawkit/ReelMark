@@ -134,7 +134,7 @@ export default async function ProfilePage({ params }: Props) {
 			: undefined;
 
 	return (
-		<PageLayout>
+		<PageLayout className="screen-in">
 			<ProfileHero
 				profile={profile}
 				avatarUrl={avatarUrl}

@@ -151,7 +151,7 @@ export default async function MoviePage(props: MoviePageProps) {
 						/>
 					</div>
 					{isWatched && watchlistEntry?.created_at && (
-						<div className="flex items-center gap-2 px-4 py-2 rounded-md bg-surface/30 backdrop-blur-md border border-border/10 text-muted animate-in fade-in slide-in-from-left-4 duration-(--duration-slow)">
+						<div className="flex items-center gap-2 px-4 py-2 rounded-md glass-overlay text-muted animate-in fade-in slide-in-from-left-4 duration-(--duration-slow)">
 							<Eye className="h-4 w-4 shrink-0" />
 							<span className="text-sm font-medium">
 								{t.movie.watchedOn}{' '}

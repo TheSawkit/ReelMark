@@ -54,7 +54,7 @@ function TrailerEmbed({
 }) {
 	if (site !== 'YouTube') {
 		return (
-			<div className="relative aspect-video bg-surface/20 backdrop-blur-2xl rounded-xl overflow-hidden border border-border/10 border-t-border/20 shadow-card">
+			<div className="relative aspect-video glass-overlay rounded-xl overflow-hidden shadow-card">
 				<div className="w-full h-full flex items-center justify-center bg-transparent text-muted">
 					<p className="text-sm font-medium">{unsupportedLabel}</p>
 				</div>
@@ -63,7 +63,7 @@ function TrailerEmbed({
 	}
 
 	return (
-		<div className="relative aspect-video bg-surface/20 backdrop-blur-2xl rounded-xl overflow-hidden border border-border/10 border-t-border/20 shadow-card transition-all duration-(--duration-base) hover:shadow-glow-gold hover:border-gold/30 hover:border-t-gold/50">
+		<div className="relative aspect-video glass-overlay rounded-xl overflow-hidden shadow-card transition-all duration-(--duration-base) hover:shadow-glow-gold hover:border-gold/30 hover:border-t-gold/50">
 			<iframe
 				src={`https://www.youtube.com/embed/${videoKey}?rel=0&modestbranding=1`}
 				title={title}

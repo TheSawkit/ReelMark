@@ -44,7 +44,7 @@ export function ActorBanner({ actor }: ActorBannerProps) {
 
 						<div className="flex flex-wrap justify-center md:justify-start items-center gap-3 md:gap-4">
 							{actor.birthday && (
-								<div className="flex items-center gap-2 bg-surface/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-border/20">
+								<div className="flex items-center gap-2 glass-surface px-3 py-1.5 rounded-full">
 									<Calendar className="h-4 w-4 text-muted" />
 									<span className="text-sm text-text">
 										{formatDate(actor.birthday, locale)}
@@ -55,7 +55,7 @@ export function ActorBanner({ actor }: ActorBannerProps) {
 							)}
 
 							{actor.deathday && (
-								<div className="flex items-center gap-2 bg-surface/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-border/20">
+								<div className="flex items-center gap-2 glass-surface px-3 py-1.5 rounded-full">
 									<Calendar className="h-4 w-4 text-red-2" />
 									<span className="text-sm text-text">
 										† {formatDate(actor.deathday, locale)}
@@ -64,7 +64,7 @@ export function ActorBanner({ actor }: ActorBannerProps) {
 							)}
 
 							{actor.place_of_birth && (
-								<div className="flex items-center gap-2 bg-surface/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-border/20">
+								<div className="flex items-center gap-2 glass-surface px-3 py-1.5 rounded-full">
 									<MapPin className="h-4 w-4 text-muted" />
 									<span className="text-sm text-text">
 										{actor.place_of_birth}
@@ -72,7 +72,7 @@ export function ActorBanner({ actor }: ActorBannerProps) {
 								</div>
 							)}
 
-							<div className="flex items-center gap-2 bg-surface/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-border/20">
+							<div className="flex items-center gap-2 glass-surface px-3 py-1.5 rounded-full">
 								<Star className="h-4 w-4 fill-gold text-gold" />
 								<span className="text-sm font-semibold text-text">
 									{(actor.popularity || 0).toFixed(0)}

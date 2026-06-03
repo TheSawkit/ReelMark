@@ -370,3 +370,116 @@ a {
 		opacity: 1;
 	}
 }
+
+/* ── Aceternity-style effects (drift, sweep, marquee, spin, screen enter) ── */
+@keyframes aurora-drift-a {
+	0%,
+	100% {
+		transform: translate(0, 0) scale(1);
+	}
+
+	50% {
+		transform: translate(14%, 10%) scale(1.18);
+	}
+}
+
+@keyframes aurora-drift-b {
+	0%,
+	100% {
+		transform: translate(0, 0) scale(1.05);
+	}
+
+	50% {
+		transform: translate(-12%, -8%) scale(0.9);
+	}
+}
+
+@keyframes aurora-drift-c {
+	0%,
+	100% {
+		transform: translate(0, 0) scale(0.9);
+	}
+
+	50% {
+		transform: translate(-16%, 12%) scale(1.1);
+	}
+}
+
+@keyframes spotlight-sweep {
+	0%,
+	100% {
+		transform: rotate(-7deg);
+		opacity: 0.7;
+	}
+
+	50% {
+		transform: rotate(7deg);
+		opacity: 1;
+	}
+}
+
+@keyframes marquee {
+	from {
+		transform: translateX(0);
+	}
+
+	to {
+		transform: translateX(-50%);
+	}
+}
+
+@keyframes conic-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes screen-in {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.screen-in {
+	animation: screen-in var(--duration-medium) var(--ease-apple) both;
+}
+
+.marquee-track {
+	animation: marquee var(--marquee-duration, 40s) linear infinite;
+}
+
+.marquee-paused:hover .marquee-track {
+	animation-play-state: paused;
+}
+
+@layer components {
+	/* Pills, badges, panels (self-contained border). */
+	.glass-surface {
+		background-color: var(--glass-bg-hover);
+		backdrop-filter: blur(24px) saturate(150%);
+		-webkit-backdrop-filter: blur(24px) saturate(150%);
+		border: 1px solid var(--glass-border-hover);
+	}
+
+	/* Fixed bars (navbar, action bars, tab bar) — component picks the border side. */
+	.glass-bar {
+		background-color: color-mix(in srgb, var(--surface) 70%, transparent);
+		backdrop-filter: blur(40px) saturate(150%);
+		-webkit-backdrop-filter: blur(40px) saturate(150%);
+	}
+
+	/* Glass layered over media / dark backdrops (cards, buttons on posters). */
+	.glass-overlay {
+		background-color: color-mix(in srgb, var(--surface) 22%, transparent);
+		backdrop-filter: blur(40px) saturate(150%);
+		-webkit-backdrop-filter: blur(40px) saturate(150%);
+		border: 1px solid var(--border);
+		border-top-color: var(--glass-border-hover);
+	}
+}

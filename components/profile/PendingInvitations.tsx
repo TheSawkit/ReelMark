@@ -70,7 +70,7 @@ export function PendingInvitations({
 	};
 
 	return (
-		<div className="bg-surface/60 backdrop-blur-xl backdrop-saturate-150 border border-border-subtle rounded-cinema shadow-card overflow-hidden">
+		<div className="glass-surface rounded-cinema shadow-card overflow-hidden">
 			<button
 				type="button"
 				onClick={() => setIsExpanded((v) => !v)}

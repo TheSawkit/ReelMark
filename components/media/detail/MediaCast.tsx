@@ -31,7 +31,7 @@ export function MediaCast({ cast }: MediaCastProps) {
 							href={`/actor/${actor.id}`}
 							className="flex flex-col items-center text-center space-y-2 group w-full"
 						>
-							<div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full bg-surface/20 backdrop-blur-2xl border border-border/10 border-t-border/20 shadow-card-sm group-hover:scale-105 group-hover:border-gold/30 group-hover:border-t-gold/50 group-hover:shadow-glow-gold transition-all duration-(--duration-base)">
+							<div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full glass-overlay shadow-card-sm group-hover:scale-105 group-hover:border-gold/30 group-hover:border-t-gold/50 group-hover:shadow-glow-gold transition-all duration-(--duration-base)">
 								<div className="absolute inset-0 rounded-full overflow-hidden">
 									<Image
 										src={getImageUrl(actor.profile_path)}

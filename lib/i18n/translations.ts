@@ -60,6 +60,13 @@ export const translations = {
 				toggleMenu: 'Ouvrir le menu',
 				closeMenu: 'Fermer le menu',
 			},
+			tabs: {
+				home: 'Accueil',
+				explore: 'Explorer',
+				library: 'Ma liste',
+				profile: 'Profil',
+			},
+			notifications: 'Notifications',
 		},
 		hero: {
 			title: 'ReelMark',
@@ -591,6 +598,12 @@ export const translations = {
 				recommendations: 'Recommandations',
 				basedOn: 'Parce que vous avez vu ${movie.movie_title}',
 				similarTo: 'Similaire à ${movie.movie_title}',
+				resume: 'Reprendre',
+				discover: 'Voir la fiche',
+				trendingNow: 'Tendances du moment',
+				statsMoviesWatched: 'Films vus',
+				statsSeriesWatched: 'Séries vues',
+				statsToWatch: 'À voir',
 			},
 			explorer: {
 				title: 'Explorateur',
@@ -606,6 +619,8 @@ export const translations = {
 				tvTrending: 'Séries Tendances',
 				tvAiringToday: "Séries Diffusées aujourd'hui",
 				tvOnTheAir: 'Séries En cours de diffusion',
+				featured: 'Sélection du jour',
+				top10: 'Top 10 de la semaine',
 			},
 			library: {
 				title: 'Ma bibliothèque',
@@ -780,6 +795,13 @@ export const translations = {
 				toggleMenu: 'Open menu',
 				closeMenu: 'Close menu',
 			},
+			tabs: {
+				home: 'Home',
+				explore: 'Explore',
+				library: 'My List',
+				profile: 'Profile',
+			},
+			notifications: 'Notifications',
 		},
 		hero: {
 			title: 'ReelMark',
@@ -1301,6 +1323,12 @@ export const translations = {
 				recommendations: 'Recommendations',
 				basedOn: 'Because you watched ${movie.movie_title}',
 				similarTo: 'Similar to ${movie.movie_title}',
+				resume: 'Resume',
+				discover: 'View details',
+				trendingNow: 'Trending now',
+				statsMoviesWatched: 'Movies watched',
+				statsSeriesWatched: 'Series watched',
+				statsToWatch: 'To watch',
 			},
 			explorer: {
 				title: 'Explorer',
@@ -1316,6 +1344,8 @@ export const translations = {
 				tvTrending: 'Trending Shows',
 				tvAiringToday: 'Shows Airing Today',
 				tvOnTheAir: 'Shows On The Air',
+				featured: 'Featured pick',
+				top10: 'Top 10 this week',
 			},
 			library: {
 				title: 'My Library',
