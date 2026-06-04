@@ -47,10 +47,6 @@ export const translations = {
 			iosAdd: "Écran d'accueil",
 		},
 		navbar: {
-			dashboard: 'Tableau de bord',
-			explorer: 'Explorateur',
-			library: 'Ma bibliothèque',
-			profile: 'Mon profil',
 			settings: 'Paramètres',
 			userMenu: 'Menu utilisateur',
 			logout: 'Déconnexion',
@@ -601,8 +597,9 @@ export const translations = {
 				resume: 'Reprendre',
 				discover: 'Voir la fiche',
 				trendingNow: 'Tendances du moment',
+				statsTitle: 'Tes statistiques',
 				statsMoviesWatched: 'Films vus',
-				statsSeriesWatched: 'Séries vues',
+				statsEpisodesWatched: 'Épisodes vus',
 				statsToWatch: 'À voir',
 			},
 			explorer: {
@@ -782,10 +779,6 @@ export const translations = {
 			iosAdd: 'Home Screen',
 		},
 		navbar: {
-			dashboard: 'Dashboard',
-			explorer: 'Explorer',
-			library: 'My Library',
-			profile: 'My Profile',
 			settings: 'Settings',
 			userMenu: 'User menu',
 			logout: 'Logout',
@@ -1326,8 +1319,9 @@ export const translations = {
 				resume: 'Resume',
 				discover: 'View details',
 				trendingNow: 'Trending now',
+				statsTitle: 'Your stats',
 				statsMoviesWatched: 'Movies watched',
-				statsSeriesWatched: 'Series watched',
+				statsEpisodesWatched: 'Episodes watched',
 				statsToWatch: 'To watch',
 			},
 			explorer: {

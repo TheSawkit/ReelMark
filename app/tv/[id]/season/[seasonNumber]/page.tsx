@@ -171,14 +171,12 @@ export default async function SeasonPage(props: SeasonPageProps) {
 				<div className="w-full h-px bg-border/10 my-8" />
 
 				<section className="space-y-6">
-					<div className="flex items-end justify-between">
-						<h2 className="text-2xl md:text-3xl font-bold text-text">
-							{t.movie.episodesCapitalized}{' '}
-							<span className="text-muted text-xl font-normal ml-2">
-								({seasonDetails.episodes.length})
-							</span>
-						</h2>
-					</div>
+					<SectionHeading>
+						{t.movie.episodesCapitalized}
+						<span className="text-muted text-base font-normal ml-1">
+							({seasonDetails.episodes.length})
+						</span>
+					</SectionHeading>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{seasonDetails.episodes.map((episode) => (
 							<EpisodeCard

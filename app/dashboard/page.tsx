@@ -122,9 +122,10 @@ export default async function DashboardPage({ searchParams }: Props) {
 	const moviesWatched = watchlist.filter(
 		(e) => e.media_type === 'movie' && e.status === 'watched'
 	).length;
-	const seriesWatched = watchlist.filter(
-		(e) => e.media_type === 'tv' && e.status === 'watched'
-	).length;
+	const episodesWatched = Object.values(tvProgress).reduce(
+		(sum, n) => sum + n,
+		0
+	);
 	const toWatchCount = watchlist.filter(
 		(e) => e.status === 'to_watch'
 	).length;
@@ -199,12 +200,13 @@ export default async function DashboardPage({ searchParams }: Props) {
 			)}
 
 			<BentoStats
+				title={t.pages.dashboard.statsTitle}
 				moviesWatched={moviesWatched}
-				seriesWatched={seriesWatched}
+				episodesWatched={episodesWatched}
 				toWatch={toWatchCount}
 				labels={{
 					movies: t.pages.dashboard.statsMoviesWatched,
-					series: t.pages.dashboard.statsSeriesWatched,
+					episodes: t.pages.dashboard.statsEpisodesWatched,
 					toWatch: t.pages.dashboard.statsToWatch,
 				}}
 			/>

@@ -93,9 +93,8 @@ export interface NavbarUser {
 }
 
 export interface NavLinksProps {
-	orientation?: 'horizontal' | 'vertical';
+	username?: string;
 	className?: string;
-	onLinkClick?: () => void;
 }
 
 export interface HorizontalScrollProps {

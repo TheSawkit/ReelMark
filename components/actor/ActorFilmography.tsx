@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Film, Tv } from 'lucide-react';
 import type { ActorFilmographyProps } from '@/types/components';
 import { InfiniteScrollMedia } from '@/components/media/card/InfiniteScrollMedia';
+import { SectionHeading } from '@/components/ui/SectionHeading';
 import { useTranslation } from '@/lib/i18n/context';
 import type { MediaItem } from '@/types/tmdb';
 
@@ -45,9 +46,7 @@ export function ActorFilmography({ movies, tvShows }: ActorFilmographyProps) {
 
 	return (
 		<section className="space-y-6">
-			<h2 className="text-2xl md:text-3xl font-bold text-text">
-				{t.movie.filmography}
-			</h2>
+			<SectionHeading>{t.movie.filmography}</SectionHeading>
 
 			{hasMovies && hasTvShows && (
 				<div className="flex gap-2">

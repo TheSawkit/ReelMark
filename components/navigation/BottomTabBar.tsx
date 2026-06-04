@@ -1,10 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Home, Compass, Library, User, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTranslation } from '@/lib/i18n/context';
+import { useNavItems } from '@/components/navigation/use-nav-items';
 
 interface BottomTabBarProps {
 	username?: string;
@@ -12,41 +10,7 @@ interface BottomTabBarProps {
 
 /** Mobile-only glass bottom navigation (Home / Explore / Library / Profile). */
 export function BottomTabBar({ username }: BottomTabBarProps) {
-	const pathname = usePathname();
-	const { t } = useTranslation();
-	const profileHref = username ? `/profile/${username}` : '/settings';
-
-	const tabs: {
-		href: string;
-		label: string;
-		icon: LucideIcon;
-		active: boolean;
-	}[] = [
-		{
-			href: '/dashboard',
-			label: t.navbar.tabs.home,
-			icon: Home,
-			active: pathname === '/dashboard',
-		},
-		{
-			href: '/explorer',
-			label: t.navbar.tabs.explore,
-			icon: Compass,
-			active: pathname.startsWith('/explorer'),
-		},
-		{
-			href: '/library',
-			label: t.navbar.tabs.library,
-			icon: Library,
-			active: pathname === '/library',
-		},
-		{
-			href: profileHref,
-			label: t.navbar.tabs.profile,
-			icon: User,
-			active: pathname.startsWith('/profile'),
-		},
-	];
+	const tabs = useNavItems(username);
 
 	return (
 		<nav

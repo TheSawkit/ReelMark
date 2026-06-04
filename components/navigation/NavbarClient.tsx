@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { ArrowLeft, Bell, Settings, User } from 'lucide-react';
+import { ArrowLeft, Bell, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Title from '@/components/layout/Title';
@@ -26,7 +26,6 @@ interface NavbarTranslations {
 	common: { goBack: string };
 	navbar: {
 		userMenu: string;
-		profile: string;
 		settings: string;
 		login: string;
 		signup: string;
@@ -67,10 +66,9 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 					}}
 				>
 					<div className="mx-auto max-w-7xl px-6 lg:px-12">
-						{/* Mobile: contextual bar (media title, else logo + actions) */}
-						<div className="flex md:hidden h-16 items-center gap-3">
+						<div className="flex md:hidden h-16 items-center gap-2">
 							{isMedia ? (
-								<>
+								<div className="flex flex-1 min-w-0 items-center gap-2">
 									<button
 										onClick={() => router.back()}
 										aria-label={t.common.goBack}
@@ -81,53 +79,52 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 									<span className="font-semibold text-text text-base truncate">
 										{title}
 									</span>
-								</>
+								</div>
 							) : (
-								<>
-									{logo}
-									<div className="ml-auto flex items-center gap-1">
-										{user ? (
-											<>
-												<SearchModal />
-												<Button
-													variant="ghost"
-													size="icon"
-													disabled
-													aria-label={
-														t.navbar.notifications
-													}
-													className="text-muted"
-												>
-													<Bell className="h-5 w-5" />
-												</Button>
-											</>
-										) : (
-											<div className="flex gap-2">
-												<Button
-													asChild
-													variant="outline"
-													size="sm"
-													className="border-border text-muted hover:text-text hover:bg-surface-2 border"
-												>
-													<Link href="/login">
-														{t.navbar.login}
-													</Link>
-												</Button>
-												<Button
-													asChild
-													size="sm"
-													className="bg-primary hover:bg-primary-hover text-white"
-												>
-													<Link href="/signup">
-														{t.navbar.signup}
-													</Link>
-												</Button>
-											</div>
-										)}
-									</div>
-								</>
+								<div className="flex-1 min-w-0">{logo}</div>
 							)}
+
+							<div className="shrink-0 flex items-center gap-1">
+								{user ? (
+									<>
+										<SearchModal key={pathname} />
+										<Button
+											variant="ghost"
+											size="icon"
+											disabled
+											aria-label={t.navbar.notifications}
+											className="text-muted"
+										>
+											<Bell className="h-5 w-5" />
+										</Button>
+									</>
+								) : (
+									<div className="flex gap-2">
+										<Button
+											asChild
+											variant="outline"
+											size="sm"
+											className="border-border text-muted hover:text-text hover:bg-surface-2 border"
+										>
+											<Link href="/login">
+												{t.navbar.login}
+											</Link>
+										</Button>
+										<Button
+											asChild
+											size="sm"
+											className="bg-primary hover:bg-primary-hover text-white"
+										>
+											<Link href="/signup">
+												{t.navbar.signup}
+											</Link>
+										</Button>
+									</div>
+								)}
+							</div>
 						</div>
+
+						<div id="rm-nav-actions" className="md:hidden empty:hidden" />
 
 						{/* Desktop: full navigation */}
 						<div className="hidden md:grid grid-cols-3 h-16 items-center gap-4">
@@ -136,8 +133,10 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 							</div>
 
 							{user ? (
-								<div className="flex gap-6 justify-center col-start-2">
-									<NavLinks orientation="horizontal" />
+								<div className="flex justify-center col-start-2">
+									<NavLinks
+										username={user.user_metadata.username}
+									/>
 								</div>
 							) : null}
 
@@ -193,19 +192,6 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 													</div>
 												</DropdownMenuLabel>
 												<DropdownMenuSeparator />
-												{user.user_metadata.username && (
-													<DropdownMenuItem asChild>
-														<Link
-															href={`/profile/${user.user_metadata.username}`}
-															className="cursor-pointer w-full flex items-center"
-														>
-															<User className="mr-2 h-4 w-4" />
-															<span>
-																{t.navbar.profile}
-															</span>
-														</Link>
-													</DropdownMenuItem>
-												)}
 												<DropdownMenuItem asChild>
 													<Link
 														href="/settings"

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { SectionHeading } from '@/components/ui/SectionHeading';
 import type { ActorBioProps } from '@/types/components';
 import { useTranslation } from '@/lib/i18n/context';
 
@@ -14,9 +15,7 @@ export function ActorBio({ biography }: ActorBioProps) {
 	if (!biography) {
 		return (
 			<section className="space-y-4">
-				<h2 className="text-2xl md:text-3xl font-bold text-text">
-					{t.movie.biography}
-				</h2>
+				<SectionHeading>{t.movie.biography}</SectionHeading>
 				<p className="text-muted italic">{t.movie.noBiography}</p>
 			</section>
 		);
@@ -30,9 +29,7 @@ export function ActorBio({ biography }: ActorBioProps) {
 
 	return (
 		<section className="space-y-4">
-			<h2 className="text-2xl md:text-3xl font-bold text-text">
-				{t.movie.biography}
-			</h2>
+			<SectionHeading>{t.movie.biography}</SectionHeading>
 
 			<p className="text-lg text-muted leading-relaxed max-w-4xl whitespace-pre-line">
 				{displayedText}

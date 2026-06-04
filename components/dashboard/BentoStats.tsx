@@ -1,29 +1,34 @@
 import { Film, Tv, Bookmark, type LucideIcon } from 'lucide-react';
 import { Aurora } from '@/components/effects/Aurora';
+import { SectionHeading } from '@/components/ui/SectionHeading';
 
 interface BentoStatsProps {
+	title: string;
 	moviesWatched: number;
-	seriesWatched: number;
+	episodesWatched: number;
 	toWatch: number;
-	labels: { movies: string; series: string; toWatch: string };
+	labels: { movies: string; episodes: string; toWatch: string };
 }
 
 /** Compact stat grid summarizing the user's watch activity (data-backed counts). */
 export function BentoStats({
+	title,
 	moviesWatched,
-	seriesWatched,
+	episodesWatched,
 	toWatch,
 	labels,
 }: BentoStatsProps) {
 	const cells: { icon: LucideIcon; value: number; label: string }[] = [
 		{ icon: Film, value: moviesWatched, label: labels.movies },
-		{ icon: Tv, value: seriesWatched, label: labels.series },
+		{ icon: Tv, value: episodesWatched, label: labels.episodes },
 		{ icon: Bookmark, value: toWatch, label: labels.toWatch },
 	];
 
 	return (
-		<div className="mb-10 grid grid-cols-3 gap-3 sm:gap-4">
-			{cells.map(({ icon: Icon, value, label }, i) => (
+		<section className="mb-10 space-y-4">
+			<SectionHeading>{title}</SectionHeading>
+			<div className="grid grid-cols-3 gap-3 sm:gap-4">
+				{cells.map(({ icon: Icon, value, label }, i) => (
 				<div
 					key={label}
 					className="relative overflow-hidden rounded-2xl border border-border bg-surface p-4 sm:p-5"
@@ -41,7 +46,8 @@ export function BentoStats({
 						</div>
 					</div>
 				</div>
-			))}
-		</div>
+				))}
+			</div>
+		</section>
 	);
 }

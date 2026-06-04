@@ -63,7 +63,7 @@ export function DashboardHero({
 					<Aurora intensity={0.65} />
 					<Spotlight />
 					<Grain />
-					<div className="absolute inset-0 bg-linear-to-t from-background via-background/40 to-transparent" />
+					<div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/45 to-transparent" />
 
 					<div className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1.5 backdrop-blur-md">
 						<Play className="h-3.5 w-3.5 fill-primary text-primary" />
@@ -92,7 +92,7 @@ export function DashboardHero({
 
 						{item.voteAverage > 0 && (
 							<div className="mt-3 flex items-center gap-3 text-sm">
-								<span className="inline-flex items-center gap-1 font-semibold text-gold">
+								<span className="inline-flex items-center gap-1 font-semibold text-gold-bright">
 									<Star className="h-4 w-4 fill-current" />
 									{item.voteAverage.toFixed(1)}
 								</span>

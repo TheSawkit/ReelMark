@@ -41,10 +41,10 @@ export function SpotlightPick({ item, badgeLabel, ctaLabel }: SpotlightPickProps
 
 					<Aurora intensity={0.5} />
 					<Grain opacity={0.06} />
-					<div className="absolute inset-0 bg-linear-to-r from-background/90 via-background/40 to-transparent" />
+					<div className="absolute inset-0 bg-linear-to-r from-black/85 via-black/45 to-transparent" />
 
 					<div className="absolute inset-0 flex max-w-[80%] flex-col justify-center p-6 sm:max-w-[70%]">
-						<span className="mb-2 inline-flex items-center gap-1.5 self-start text-xs font-bold uppercase tracking-wide text-gold">
+						<span className="mb-2 inline-flex items-center gap-1.5 self-start text-xs font-bold uppercase tracking-wide text-gold-bright">
 							<Sparkles className="h-3.5 w-3.5" />
 							{badgeLabel}
 						</span>
