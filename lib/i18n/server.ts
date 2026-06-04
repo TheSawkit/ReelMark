@@ -32,6 +32,8 @@ export const getTranslations = cache(async () => {
 	return translations[lang];
 });
 
+export type Translations = Awaited<ReturnType<typeof getTranslations>>;
+
 /** Returns the BCP 47 locale string ("fr-FR" or "en-US") for the server-resolved language. */
 export const getServerLocale = cache(async (): Promise<string> => {
 	const lang = await getServerLanguage();

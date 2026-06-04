@@ -19,16 +19,13 @@ import { MediaActionsBar } from '@/components/media/detail/MediaActionsBar';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { CommunityRating } from '@/components/media/detail/CommunityRating';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
+import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { EpisodeCard } from '@/components/media/tv/EpisodeCard';
 import { BASE_URL } from '@/lib/metadata';
 
 type SeasonPageParams = Promise<{ id: string; seasonNumber: string }>;
 interface SeasonPageProps {
 	params: SeasonPageParams;
-}
-
-function DetailSectionSkeleton() {
-	return <div className="h-28 rounded-xl bg-surface/20 animate-pulse" />;
 }
 
 async function SeasonProvidersSection({ tvId }: { tvId: number }) {

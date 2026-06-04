@@ -10,6 +10,7 @@ import { ActorBanner } from '@/components/actor/ActorBanner';
 import { ActorBio } from '@/components/actor/ActorBio';
 import { ActorFilmography } from '@/components/actor/ActorFilmography';
 import { movieCreditToMediaItem, tvCreditToMediaItem } from '@/lib/mappers';
+import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { mergeWithWatchlist } from '@/lib/data/watchlist';
 import { getTranslations } from '@/lib/i18n/server';
 import { BASE_URL } from '@/lib/metadata';
@@ -90,14 +91,7 @@ function FilmographySkeleton() {
 	return (
 		<div className="space-y-6">
 			<div className="h-8 w-40 rounded bg-surface-2 animate-pulse" />
-			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-				{Array.from({ length: 12 }).map((_, i) => (
-					<div
-						key={i}
-						className="aspect-2/3 rounded-(--radius-cinema) bg-surface-2 animate-pulse"
-					/>
-				))}
-			</div>
+			<PosterGridSkeleton />
 		</div>
 	);
 }

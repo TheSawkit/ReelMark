@@ -1,4 +1,3 @@
-import { Card, CardContent } from '@/components/ui/card';
 import type { FeatureCardProps } from '@/types/components';
 
 export default function FeatureCard({
@@ -7,14 +6,14 @@ export default function FeatureCard({
 	description,
 }: FeatureCardProps) {
 	return (
-		<Card className="shadow-cinema transform transition-all duration-(--duration-base) hover:scale-105 hover:shadow-card group h-full">
-			<CardContent className="p-8 h-full flex flex-col">
-				<div className="mb-4 text-4xl">{icon}</div>
-				<h3 className="mb-3 font-display text-2xl font-normal text-text">
-					{title}
-				</h3>
-				<p className="text-muted flex-1">{description}</p>
-			</CardContent>
-		</Card>
+		<div className="glass-surface h-full rounded-2xl p-8 transition-all duration-(--duration-base) ease-apple hover:-translate-y-1 hover:border-glass-border-hover hover:shadow-glow-red">
+			<div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border-subtle bg-glass-bg-hover">
+				{icon}
+			</div>
+			<h3 className="mb-3 font-display text-2xl font-normal text-text">
+				{title}
+			</h3>
+			<p className="text-muted">{description}</p>
+		</div>
 	);
 }

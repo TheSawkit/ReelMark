@@ -25,6 +25,20 @@ export function DetailBannerSkeleton() {
 	);
 }
 
+export function DetailSectionSkeleton() {
+	return <div className="h-28 rounded-xl bg-surface/20 animate-pulse" />;
+}
+
+export function DescriptionSkeleton() {
+	return (
+		<div className="space-y-4">
+			<div className="h-4 w-full bg-surface-2 rounded animate-pulse" />
+			<div className="h-4 w-full bg-surface-2 rounded animate-pulse" />
+			<div className="h-4 w-2/3 bg-surface-2 rounded animate-pulse" />
+		</div>
+	);
+}
+
 export function CastRowSkeleton() {
 	return (
 		<div className="space-y-6">

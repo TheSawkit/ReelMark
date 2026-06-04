@@ -20,13 +20,10 @@ import { SpotlightPick } from '@/components/explorer/SpotlightPick';
 import { CategoryNav } from '@/components/navigation/CategoryNav';
 import { SearchBar } from '@/components/search/SearchBar';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
-import { getTranslations } from '@/lib/i18n/server';
+import { getTranslations, type Translations } from '@/lib/i18n/server';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
 import { buildPageMetadata } from '@/lib/metadata';
-import type { Movie, TvShow } from '@/types/tmdb';
-
-type Translations = Awaited<ReturnType<typeof getTranslations>>;
-type MediaKind = 'movie' | 'tv';
+import type { Movie, TvShow, MediaType } from '@/types/tmdb';
 
 export async function generateMetadata(): Promise<Metadata> {
 	const t = await getTranslations();
@@ -44,17 +41,17 @@ async function TrendingSpotlightSection({
 	type,
 	t,
 }: {
-	type: MediaKind;
+	type: MediaType;
 	t: Translations;
 }) {
 	const isMovie = type === 'movie';
-	const raw = isMovie
+	const rawResults = isMovie
 		? await getTrendingMovies('week')
 		: await getTrendingTvShows('week');
 	const items = await mergeWithWatchlist(
 		isMovie
-			? (raw as Movie[]).map(movieToMediaItem)
-			: (raw as TvShow[]).map(tvShowToMediaItem)
+			? (rawResults as Movie[]).map(movieToMediaItem)
+			: (rawResults as TvShow[]).map(tvShowToMediaItem)
 	);
 
 	return (
@@ -75,13 +72,13 @@ async function TrendingSpotlightSection({
 	);
 }
 
-async function PopularSection({ type, t }: { type: MediaKind; t: Translations }) {
+async function PopularSection({ type, t }: { type: MediaType; t: Translations }) {
 	const isMovie = type === 'movie';
-	const raw = isMovie ? await getPopularMovies() : await getPopularTvShows();
+	const rawResults = isMovie ? await getPopularMovies() : await getPopularTvShows();
 	const items = await mergeWithWatchlist(
 		isMovie
-			? (raw as Movie[]).map(movieToMediaItem)
-			: (raw as TvShow[]).map(tvShowToMediaItem)
+			? (rawResults as Movie[]).map(movieToMediaItem)
+			: (rawResults as TvShow[]).map(tvShowToMediaItem)
 	);
 
 	return (
@@ -97,15 +94,15 @@ async function TopRatedSection({
 	type,
 	t,
 }: {
-	type: MediaKind;
+	type: MediaType;
 	t: Translations;
 }) {
 	const isMovie = type === 'movie';
-	const raw = isMovie ? await getTopRatedMovies() : await getTopRatedTvShows();
+	const rawResults = isMovie ? await getTopRatedMovies() : await getTopRatedTvShows();
 	const items = await mergeWithWatchlist(
 		isMovie
-			? (raw as Movie[]).map(movieToMediaItem)
-			: (raw as TvShow[]).map(tvShowToMediaItem)
+			? (rawResults as Movie[]).map(movieToMediaItem)
+			: (rawResults as TvShow[]).map(tvShowToMediaItem)
 	);
 
 	return (
@@ -121,17 +118,17 @@ async function UpcomingSection({
 	type,
 	t,
 }: {
-	type: MediaKind;
+	type: MediaType;
 	t: Translations;
 }) {
 	const isMovie = type === 'movie';
-	const raw = isMovie
+	const rawResults = isMovie
 		? await getUpcomingMovies()
 		: await getAiringTodayTvShows();
 	const items = await mergeWithWatchlist(
 		isMovie
-			? (raw as Movie[]).map(movieToMediaItem)
-			: (raw as TvShow[]).map(tvShowToMediaItem)
+			? (rawResults as Movie[]).map(movieToMediaItem)
+			: (rawResults as TvShow[]).map(tvShowToMediaItem)
 	);
 
 	return (
@@ -159,7 +156,7 @@ export default async function ExplorerPage({ searchParams }: Props) {
 	await requireAuth();
 
 	const params = await searchParams;
-	const type: MediaKind = params?.type === 'tv' ? 'tv' : 'movie';
+	const type: MediaType = params?.type === 'tv' ? 'tv' : 'movie';
 	const t = await getTranslations();
 
 	return (

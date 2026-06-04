@@ -21,7 +21,7 @@ import {
 } from '@/components/media/card/MediaSection';
 import { MediaSectionsSkeleton } from '@/components/media/card/MediaSectionsSkeleton';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
-import { getTranslations } from '@/lib/i18n/server';
+import { getTranslations, type Translations } from '@/lib/i18n/server';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
 import {
 	DashboardHero,
@@ -36,10 +36,7 @@ import {
 } from '@/components/dashboard/DashboardSkeletons';
 import { getWatchlistWithProgress } from '@/lib/data/watchlist';
 import { buildPageMetadata } from '@/lib/metadata';
-import type { Movie, TvShow } from '@/types/tmdb';
-
-type Translations = Awaited<ReturnType<typeof getTranslations>>;
-type MediaKind = 'movie' | 'tv';
+import type { Movie, TvShow, MediaType } from '@/types/tmdb';
 
 export async function generateMetadata(): Promise<Metadata> {
 	const t = await getTranslations();
@@ -168,7 +165,7 @@ async function LibraryContentSection({
 	type,
 	t,
 }: {
-	type: MediaKind;
+	type: MediaType;
 	t: Translations;
 }) {
 	const { watchlist } = await getWatchlistWithProgress();
@@ -265,7 +262,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 	await requireAuth();
 
 	const params = await searchParams;
-	const type: MediaKind = params?.type === 'tv' ? 'tv' : 'movie';
+	const type: MediaType = params?.type === 'tv' ? 'tv' : 'movie';
 	const t = await getTranslations();
 
 	return (

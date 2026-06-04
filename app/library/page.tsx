@@ -4,13 +4,12 @@ import { getAllTvShowsWatchProgress } from '@/app/actions/episodes';
 import { getCachedUserWatchlist } from '@/lib/data/watchlist';
 import { LibraryTabs } from '@/components/library/LibraryTabs';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
-import { getTranslations } from '@/lib/i18n/server';
+import { getTranslations, type Translations } from '@/lib/i18n/server';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
+import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { getTvShowTotalEpisodes } from '@/lib/tmdb';
 import { BASE_URL, buildPageMetadata } from '@/lib/metadata';
-
-type Translations = Awaited<ReturnType<typeof getTranslations>>;
-type MediaKind = 'movie' | 'tv';
+import type { MediaType } from '@/types/tmdb';
 
 export async function generateMetadata() {
 	const t = await getTranslations();
@@ -32,7 +31,7 @@ async function LibrarySubtitle({
 	type,
 	t,
 }: {
-	type: MediaKind;
+	type: MediaType;
 	t: Translations;
 }) {
 	const fullWatchlist = await getCachedUserWatchlist();
@@ -51,7 +50,7 @@ async function LibrarySubtitle({
 	return <>{`${count} ${filmsCountText} ${t.library.inLibrary}`}</>;
 }
 
-async function LibraryContent({ type }: { type: MediaKind }) {
+async function LibraryContent({ type }: { type: MediaType }) {
 	const fullWatchlist = await getCachedUserWatchlist();
 	const watchlist = fullWatchlist.filter((entry) => entry.media_type === type);
 
@@ -94,14 +93,7 @@ function LibraryGridSkeleton() {
 				<div className="h-10 w-24 rounded-t-lg bg-surface-2 animate-pulse" />
 				<div className="h-10 w-20 rounded-t-lg bg-surface-2 animate-pulse" />
 			</div>
-			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-				{Array.from({ length: 6 }).map((_, i) => (
-					<div
-						key={i}
-						className="aspect-2/3 rounded-(--radius-cinema) bg-surface-2 animate-pulse"
-					/>
-				))}
-			</div>
+			<PosterGridSkeleton count={6} />
 		</>
 	);
 }
@@ -110,7 +102,7 @@ export default async function LibraryPage({ searchParams }: Props) {
 	await requireAuth();
 
 	const params = await searchParams;
-	const type: MediaKind = params?.type === 'tv' ? 'tv' : 'movie';
+	const type: MediaType = params?.type === 'tv' ? 'tv' : 'movie';
 
 	const t = await getTranslations();
 

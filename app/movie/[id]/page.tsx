@@ -16,6 +16,7 @@ import { WatchButton } from '@/components/media/detail/WatchButton';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
 import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
+import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { PublicReviewsSection } from '@/components/media/reviews/PublicReviewsSection';
 import { getMediaWatchlistEntry } from '@/app/actions/watchlist';
 import { getAverageRating, getMediaReview } from '@/app/actions/reviews';
@@ -28,10 +29,6 @@ import { formatDate } from '@/lib/format';
 type MoviePageParams = Promise<{ id: string }>;
 interface MoviePageProps {
 	params: MoviePageParams;
-}
-
-function DetailSectionSkeleton() {
-	return <div className="h-28 rounded-xl bg-surface/20 animate-pulse" />;
 }
 
 async function MovieProvidersSection({ movieId }: { movieId: number }) {

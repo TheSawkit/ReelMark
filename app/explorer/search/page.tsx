@@ -2,11 +2,11 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { searchMulti } from '@/lib/tmdb';
 import { MediaGrid } from '@/components/media/card/MediaGrid';
+import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { SearchBar } from '@/components/search/SearchBar';
-import { getTranslations } from '@/lib/i18n/server';
+import { getTranslations, type Translations } from '@/lib/i18n/server';
 import { Search as SearchIcon } from 'lucide-react';
-
-type Translations = Awaited<ReturnType<typeof getTranslations>>;
 
 interface SearchPageProps {
 	searchParams: Promise<{ q?: string; query?: string }>;
@@ -61,19 +61,6 @@ async function SearchResults({
 	);
 }
 
-function SearchResultsSkeleton() {
-	return (
-		<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-			{Array.from({ length: 12 }).map((_, i) => (
-				<div
-					key={i}
-					className="aspect-2/3 rounded-(--radius-cinema) bg-surface-2 animate-pulse"
-				/>
-			))}
-		</div>
-	);
-}
-
 export default async function SearchResultsPage({
 	searchParams,
 }: SearchPageProps) {
@@ -83,7 +70,7 @@ export default async function SearchResultsPage({
 	const t = await getTranslations();
 
 	return (
-		<div className="container mx-auto py-12 px-6">
+		<PageLayout>
 			<div
 				className="mb-10"
 				style={{
@@ -100,10 +87,10 @@ export default async function SearchResultsPage({
 			<SearchBar />
 
 			<div className="mt-8">
-				<Suspense fallback={<SearchResultsSkeleton />}>
+				<Suspense fallback={<PosterGridSkeleton />}>
 					<SearchResults query={query} t={t} />
 				</Suspense>
 			</div>
-		</div>
+		</PageLayout>
 	);
 }

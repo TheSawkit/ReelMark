@@ -16,6 +16,7 @@ import { WatchButton } from '@/components/media/detail/WatchButton';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
 import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
+import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { SeasonCard } from '@/components/media/tv/SeasonCard';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { SectionHeading } from '@/components/ui/SectionHeading';
@@ -32,10 +33,6 @@ import type { Season } from '@/types/tmdb';
 type TvPageParams = Promise<{ id: string }>;
 interface TvPageProps {
 	params: TvPageParams;
-}
-
-function DetailSectionSkeleton() {
-	return <div className="h-28 rounded-xl bg-surface/20 animate-pulse" />;
 }
 
 async function TvProvidersSection({ tvId }: { tvId: number }) {

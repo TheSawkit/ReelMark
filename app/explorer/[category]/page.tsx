@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { requireAuth } from '@/lib/auth';
 import { fetchMoreMedia } from '@/app/actions/media';
 import { InfiniteScrollMedia } from '@/components/media/card/InfiniteScrollMedia';
+import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { CategoryNav } from '@/components/navigation/CategoryNav';
 import { getTranslations } from '@/lib/i18n/server';
 import { SearchBar } from '@/components/search/SearchBar';
@@ -116,7 +117,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 			</Suspense>
 
 			<div className="mt-8">
-				<Suspense fallback={<CategoryGridSkeleton />}>
+				<Suspense fallback={<PosterGridSkeleton />}>
 					<CategoryGrid category={category} />
 				</Suspense>
 			</div>
@@ -128,18 +129,5 @@ async function CategoryGrid({ category }: { category: string }) {
 	const initialItems = await fetchMoreMedia(category, 1);
 	return (
 		<InfiniteScrollMedia initialItems={initialItems} category={category} />
-	);
-}
-
-function CategoryGridSkeleton() {
-	return (
-		<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-			{Array.from({ length: 12 }).map((_, i) => (
-				<div
-					key={i}
-					className="aspect-2/3 rounded-(--radius-cinema) bg-surface-2 animate-pulse"
-				/>
-			))}
-		</div>
 	);
 }

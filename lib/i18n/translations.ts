@@ -57,7 +57,7 @@ export const translations = {
 				closeMenu: 'Fermer le menu',
 			},
 			tabs: {
-				home: 'Accueil',
+				home: 'Tableau de bord',
 				explore: 'Explorer',
 				library: 'Ma liste',
 				profile: 'Profil',
@@ -655,6 +655,11 @@ export const translations = {
 				button: 'Créer un compte gratuitement',
 				alreadyHave: "J'ai déjà un compte",
 			},
+			preview: {
+				title: 'Tout le cinéma, au même endroit',
+				subtitle:
+					'Des milliers de films et séries à suivre, noter et organiser.',
+			},
 		},
 		offline: {
 			title: 'Vous êtes hors ligne',
@@ -789,7 +794,7 @@ export const translations = {
 				closeMenu: 'Close menu',
 			},
 			tabs: {
-				home: 'Home',
+				home: 'Dashboard',
 				explore: 'Explore',
 				library: 'My List',
 				profile: 'Profile',
@@ -1376,6 +1381,11 @@ export const translations = {
 					'Join the movie lovers community and start tracking your favorite films right now.',
 				button: 'Create a free account',
 				alreadyHave: 'I already have an account',
+			},
+			preview: {
+				title: 'All of cinema, in one place',
+				subtitle:
+					'Thousands of movies and shows to track, rate and organize.',
 			},
 		},
 		offline: {

@@ -1,5 +1,6 @@
 import {
 	DetailBannerSkeleton,
+	DescriptionSkeleton,
 	CastRowSkeleton,
 } from '@/components/media/detail/MediaDetailSkeleton';
 
@@ -9,11 +10,7 @@ export default function TvShowLoading() {
 			<DetailBannerSkeleton />
 
 			<div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16">
-				<div className="space-y-4">
-					<div className="h-4 w-full bg-surface-2 rounded animate-pulse" />
-					<div className="h-4 w-full bg-surface-2 rounded animate-pulse" />
-					<div className="h-4 w-2/3 bg-surface-2 rounded animate-pulse" />
-				</div>
+				<DescriptionSkeleton />
 
 				<div className="space-y-6">
 					<div className="h-8 w-40 bg-surface-2 rounded animate-pulse" />
