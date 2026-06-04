@@ -51,6 +51,11 @@ const nextConfig: NextConfig = {
 			'@radix-ui/react-separator',
 			'@radix-ui/react-slot',
 		],
+		viewTransition: true,
+		staleTimes: {
+			dynamic: 30,
+			static: 180,
+		},
 	},
 	turbopack: {
 		root: __dirname,

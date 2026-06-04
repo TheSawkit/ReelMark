@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { requireAuth } from '@/lib/auth';
 import { getUserWatchlist } from '@/app/actions/watchlist';
-import { getAllTvShowsWatchProgress } from '@/app/actions/episodes';
 import {
 	getMovieRecommendations,
 	getSimilarMovies,
@@ -20,6 +19,7 @@ import {
 	MediaSection,
 	LibraryMediaSection,
 } from '@/components/media/card/MediaSection';
+import { MediaSectionsSkeleton } from '@/components/media/card/MediaSectionsSkeleton';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { getTranslations } from '@/lib/i18n/server';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
@@ -29,8 +29,17 @@ import {
 } from '@/components/dashboard/DashboardHero';
 import { BentoStats } from '@/components/dashboard/BentoStats';
 import { TrendingMarquee } from '@/components/dashboard/TrendingMarquee';
+import {
+	DashboardHeroSkeleton,
+	BentoStatsSkeleton,
+	TrendingMarqueeSkeleton,
+} from '@/components/dashboard/DashboardSkeletons';
+import { getWatchlistWithProgress } from '@/lib/data/watchlist';
 import { buildPageMetadata } from '@/lib/metadata';
 import type { Movie, TvShow } from '@/types/tmdb';
+
+type Translations = Awaited<ReturnType<typeof getTranslations>>;
+type MediaKind = 'movie' | 'tv';
 
 export async function generateMetadata(): Promise<Metadata> {
 	const t = await getTranslations();
@@ -93,31 +102,22 @@ async function buildHero(
 	}
 }
 
-export default async function DashboardPage({ searchParams }: Props) {
-	await requireAuth();
-
-	const params = await searchParams;
-	const type = params?.type === 'tv' ? 'tv' : 'movie';
-
-	const t = await getTranslations();
-	const watchlist = await getUserWatchlist();
-
-	const tvIds = watchlist
-		.filter((e) => e.media_type === 'tv')
-		.map((e) => e.media_id);
-
-	const [tvProgress, trendingMovies, trendingTv] = await Promise.all([
-		getAllTvShowsWatchProgress(tvIds),
-		getTrendingMovies().catch((): Movie[] => []),
-		getTrendingTvShows().catch((): TvShow[] => []),
-	]);
-
+async function HeroSection({ t }: { t: Translations }) {
+	const { watchlist, tvProgress } = await getWatchlistWithProgress();
 	const hero = await buildHero(watchlist, tvProgress);
+	if (!hero) return null;
 
-	const trendingItems = [
-		...trendingMovies.slice(0, 10).map(movieToMediaItem),
-		...trendingTv.slice(0, 10).map(tvShowToMediaItem),
-	].slice(0, 16);
+	return (
+		<DashboardHero
+			item={hero}
+			resumeLabel={t.pages.dashboard.resume}
+			discoverLabel={t.pages.dashboard.discover}
+		/>
+	);
+}
+
+async function StatsSection({ t }: { t: Translations }) {
+	const { watchlist, tvProgress } = await getWatchlistWithProgress();
 
 	const moviesWatched = watchlist.filter(
 		(e) => e.media_type === 'movie' && e.status === 'watched'
@@ -130,10 +130,51 @@ export default async function DashboardPage({ searchParams }: Props) {
 		(e) => e.status === 'to_watch'
 	).length;
 
+	return (
+		<BentoStats
+			title={t.pages.dashboard.statsTitle}
+			moviesWatched={moviesWatched}
+			episodesWatched={episodesWatched}
+			toWatch={toWatchCount}
+			labels={{
+				movies: t.pages.dashboard.statsMoviesWatched,
+				episodes: t.pages.dashboard.statsEpisodesWatched,
+				toWatch: t.pages.dashboard.statsToWatch,
+			}}
+		/>
+	);
+}
+
+async function TrendingSection({ t }: { t: Translations }) {
+	const [trendingMovies, trendingTv] = await Promise.all([
+		getTrendingMovies().catch((): Movie[] => []),
+		getTrendingTvShows().catch((): TvShow[] => []),
+	]);
+
+	const trendingItems = [
+		...trendingMovies.slice(0, 10).map(movieToMediaItem),
+		...trendingTv.slice(0, 10).map(tvShowToMediaItem),
+	].slice(0, 16);
+
+	return (
+		<TrendingMarquee
+			title={t.pages.dashboard.trendingNow}
+			items={trendingItems}
+		/>
+	);
+}
+
+async function LibraryContentSection({
+	type,
+	t,
+}: {
+	type: MediaKind;
+	t: Translations;
+}) {
+	const { watchlist } = await getWatchlistWithProgress();
+
 	const toWatch = watchlist
-		.filter(
-			(entry) => entry.media_type === type && entry.status === 'to_watch'
-		)
+		.filter((entry) => entry.media_type === type && entry.status === 'to_watch')
 		.slice(0, 10);
 	const watched = watchlist.filter(
 		(entry) => entry.media_type === type && entry.status === 'watched'
@@ -185,41 +226,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 		watchlist.filter((entry) => entry.media_type === type).length === 0;
 
 	return (
-		<PageLayout className="screen-in">
-			<PageHeader
-				title={t.pages.dashboard.welcome}
-				subtitle={t.pages.dashboard.subtitle}
-			/>
-
-			{hero && (
-				<DashboardHero
-					item={hero}
-					resumeLabel={t.pages.dashboard.resume}
-					discoverLabel={t.pages.dashboard.discover}
-				/>
-			)}
-
-			<BentoStats
-				title={t.pages.dashboard.statsTitle}
-				moviesWatched={moviesWatched}
-				episodesWatched={episodesWatched}
-				toWatch={toWatchCount}
-				labels={{
-					movies: t.pages.dashboard.statsMoviesWatched,
-					episodes: t.pages.dashboard.statsEpisodesWatched,
-					toWatch: t.pages.dashboard.statsToWatch,
-				}}
-			/>
-
-			<TrendingMarquee
-				title={t.pages.dashboard.trendingNow}
-				items={trendingItems}
-			/>
-
-			<Suspense fallback={<div className="h-11.5 mb-8" />}>
-				<MediaTypeSwitcher defaultType="movie" />
-			</Suspense>
-
+		<>
 			{toWatch.length > 0 && (
 				<LibraryMediaSection
 					title={t.pages.dashboard.nextWatchings}
@@ -250,6 +257,47 @@ export default async function DashboardPage({ searchParams }: Props) {
 					</Link>
 				</div>
 			)}
+		</>
+	);
+}
+
+export default async function DashboardPage({ searchParams }: Props) {
+	await requireAuth();
+
+	const params = await searchParams;
+	const type: MediaKind = params?.type === 'tv' ? 'tv' : 'movie';
+	const t = await getTranslations();
+
+	return (
+		<PageLayout className="screen-in">
+			<PageHeader
+				title={t.pages.dashboard.welcome}
+				subtitle={t.pages.dashboard.subtitle}
+			/>
+
+			<Suspense fallback={<DashboardHeroSkeleton />}>
+				<HeroSection t={t} />
+			</Suspense>
+
+			<Suspense fallback={<BentoStatsSkeleton />}>
+				<StatsSection t={t} />
+			</Suspense>
+
+			<Suspense fallback={<TrendingMarqueeSkeleton />}>
+				<TrendingSection t={t} />
+			</Suspense>
+
+			<Suspense fallback={<div className="h-11.5 mb-8" />}>
+				<MediaTypeSwitcher defaultType="movie" />
+			</Suspense>
+
+			<Suspense
+				fallback={
+					<MediaSectionsSkeleton sections={3} cardsPerSection={8} />
+				}
+			>
+				<LibraryContentSection type={type} t={t} />
+			</Suspense>
 		</PageLayout>
 	);
 }

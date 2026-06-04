@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import {
 	getTvShowDetails,
 	getSeasonDetails,
@@ -24,6 +25,15 @@ import { BASE_URL } from '@/lib/metadata';
 type SeasonPageParams = Promise<{ id: string; seasonNumber: string }>;
 interface SeasonPageProps {
 	params: SeasonPageParams;
+}
+
+function DetailSectionSkeleton() {
+	return <div className="h-28 rounded-xl bg-surface/20 animate-pulse" />;
+}
+
+async function SeasonProvidersSection({ tvId }: { tvId: number }) {
+	const providers = await getTvShowWatchProviders(tvId).catch(() => null);
+	return <WatchProviders providers={providers} />;
 }
 
 export async function generateMetadata({
@@ -90,21 +100,14 @@ export default async function SeasonPage(props: SeasonPageProps) {
 	}
 
 	const episodeIds = seasonDetails.episodes.map((e) => e.id);
-	const [
-		t,
-		locale,
-		watchedEpisodes,
-		seasonRating,
-		episodeReviews,
-		watchProviders,
-	] = await Promise.all([
-		getTranslations(),
-		getServerLocale(),
-		getSeasonEpisodeWatches(tvId, seasonNumber),
-		getSeasonAverageRating(tvId, seasonNumber),
-		getPublicEpisodeReviews(episodeIds),
-		getTvShowWatchProviders(tvId).catch(() => null),
-	]);
+	const [t, locale, watchedEpisodes, seasonRating, episodeReviews] =
+		await Promise.all([
+			getTranslations(),
+			getServerLocale(),
+			getSeasonEpisodeWatches(tvId, seasonNumber),
+			getSeasonAverageRating(tvId, seasonNumber),
+			getPublicEpisodeReviews(episodeIds),
+		]);
 
 	const watchedCount = watchedEpisodes.size;
 
@@ -159,7 +162,9 @@ export default async function SeasonPage(props: SeasonPageProps) {
 					</div>
 				)}
 
-				<WatchProviders providers={watchProviders} />
+				<Suspense fallback={<DetailSectionSkeleton />}>
+					<SeasonProvidersSection tvId={tvId} />
+				</Suspense>
 
 				{seasonRating && (
 					<CommunityRating

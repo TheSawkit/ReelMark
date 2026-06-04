@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import {
 	getActorDetails,
@@ -9,14 +10,14 @@ import { ActorBanner } from '@/components/actor/ActorBanner';
 import { ActorBio } from '@/components/actor/ActorBio';
 import { ActorFilmography } from '@/components/actor/ActorFilmography';
 import { movieCreditToMediaItem, tvCreditToMediaItem } from '@/lib/mappers';
+import { mergeWithWatchlist } from '@/lib/data/watchlist';
+import { getTranslations } from '@/lib/i18n/server';
+import { BASE_URL } from '@/lib/metadata';
 
 type ActorPageParams = Promise<{ id: string }>;
 interface ActorPageProps {
 	params: ActorPageParams;
 }
-import { mergeMediaWithWatchlist } from '@/app/actions/media';
-import { getTranslations } from '@/lib/i18n/server';
-import { BASE_URL } from '@/lib/metadata';
 
 export async function generateMetadata({
 	params,
@@ -72,6 +73,35 @@ export async function generateMetadata({
 	}
 }
 
+async function ActorFilmographySection({ actorId }: { actorId: number }) {
+	const [movieCredits, tvCredits] = await Promise.all([
+		getActorMovieCredits(actorId),
+		getActorTvCredits(actorId),
+	]);
+	const [mergedMovies, mergedTvShows] = await Promise.all([
+		mergeWithWatchlist(movieCredits.map(movieCreditToMediaItem)),
+		mergeWithWatchlist(tvCredits.map(tvCreditToMediaItem)),
+	]);
+
+	return <ActorFilmography movies={mergedMovies} tvShows={mergedTvShows} />;
+}
+
+function FilmographySkeleton() {
+	return (
+		<div className="space-y-6">
+			<div className="h-8 w-40 rounded bg-surface-2 animate-pulse" />
+			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+				{Array.from({ length: 12 }).map((_, i) => (
+					<div
+						key={i}
+						className="aspect-2/3 rounded-(--radius-cinema) bg-surface-2 animate-pulse"
+					/>
+				))}
+			</div>
+		</div>
+	);
+}
+
 export default async function ActorPage(props: ActorPageProps) {
 	const params = await props.params;
 	const actorId = parseInt(params.id);
@@ -80,24 +110,12 @@ export default async function ActorPage(props: ActorPageProps) {
 		notFound();
 	}
 
-	let actor, movieCredits, tvCredits;
-
+	let actor;
 	try {
-		[actor, movieCredits, tvCredits] = await Promise.all([
-			getActorDetails(actorId),
-			getActorMovieCredits(actorId),
-			getActorTvCredits(actorId),
-		]);
+		actor = await getActorDetails(actorId);
 	} catch {
 		notFound();
 	}
-
-	const mergedMovies = await mergeMediaWithWatchlist(
-		movieCredits.map(movieCreditToMediaItem)
-	);
-	const mergedTvShows = await mergeMediaWithWatchlist(
-		tvCredits.map(tvCreditToMediaItem)
-	);
 
 	return (
 		<div className="min-h-screen">
@@ -106,10 +124,9 @@ export default async function ActorPage(props: ActorPageProps) {
 			<div className="container mx-auto px-6 lg:px-12 py-8 space-y-12">
 				<ActorBio biography={actor.biography} />
 
-				<ActorFilmography
-					movies={mergedMovies}
-					tvShows={mergedTvShows}
-				/>
+				<Suspense fallback={<FilmographySkeleton />}>
+					<ActorFilmographySection actorId={actorId} />
+				</Suspense>
 			</div>
 		</div>
 	);

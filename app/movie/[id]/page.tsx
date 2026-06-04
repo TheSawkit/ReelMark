@@ -14,6 +14,8 @@ import {
 import { MediaBanner } from '@/components/media/detail/MediaBanner';
 import { WatchButton } from '@/components/media/detail/WatchButton';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
+import { WatchProviders } from '@/components/media/detail/WatchProviders';
+import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
 import { PublicReviewsSection } from '@/components/media/reviews/PublicReviewsSection';
 import { getMediaWatchlistEntry } from '@/app/actions/watchlist';
 import { getAverageRating, getMediaReview } from '@/app/actions/reviews';
@@ -26,6 +28,22 @@ import { formatDate } from '@/lib/format';
 type MoviePageParams = Promise<{ id: string }>;
 interface MoviePageProps {
 	params: MoviePageParams;
+}
+
+function DetailSectionSkeleton() {
+	return <div className="h-28 rounded-xl bg-surface/20 animate-pulse" />;
+}
+
+async function MovieProvidersSection({ movieId }: { movieId: number }) {
+	const providers = await getMovieWatchProviders(movieId).catch(() => null);
+	return <WatchProviders providers={providers} />;
+}
+
+async function MovieTrailersSection({ movieId }: { movieId: number }) {
+	const videos = await getMovieVideos(movieId);
+	const trailers = await filterAvailableVideos(filterTrailers(videos));
+	if (trailers.length === 0) return null;
+	return <MediaTrailers trailers={trailers} />;
 }
 
 export async function generateMetadata({
@@ -45,12 +63,11 @@ export default async function MoviePage(props: MoviePageProps) {
 
 	if (isNaN(movieId)) notFound();
 
-	let movieDetails, credits, videos, images;
+	let movieDetails, credits, images;
 	try {
-		[movieDetails, credits, videos, images] = await Promise.all([
+		[movieDetails, credits, images] = await Promise.all([
 			getMovieDetails(movieId),
 			getMovieCredits(movieId),
-			getMovieVideos(movieId),
 			getMovieImages(movieId),
 		]);
 	} catch (error) {
@@ -74,23 +91,14 @@ export default async function MoviePage(props: MoviePageProps) {
 		notFound();
 	}
 
-	const [
-		trailers,
-		watchProviders,
-		watchlistEntry,
-		movieRating,
-		userReview,
-		t,
-		locale,
-	] = await Promise.all([
-		filterAvailableVideos(filterTrailers(videos)),
-		getMovieWatchProviders(movieId).catch(() => null),
-		getMediaWatchlistEntry(movieId, 'movie'),
-		getAverageRating(movieId, 'movie'),
-		getMediaReview(movieId, 'movie'),
-		getTranslations(),
-		getServerLocale(),
-	]);
+	const [watchlistEntry, movieRating, userReview, t, locale] =
+		await Promise.all([
+			getMediaWatchlistEntry(movieId, 'movie'),
+			getAverageRating(movieId, 'movie'),
+			getMediaReview(movieId, 'movie'),
+			getTranslations(),
+			getServerLocale(),
+		]);
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, movieDetails.backdrop_path),
@@ -196,7 +204,11 @@ export default async function MoviePage(props: MoviePageProps) {
 			banner={banner}
 			actionsBar={actionsBar}
 			description={movieDetails.overview}
-			watchProviders={watchProviders}
+			watchProviders={
+				<Suspense fallback={<DetailSectionSkeleton />}>
+					<MovieProvidersSection movieId={movieId} />
+				</Suspense>
+			}
 			rating={movieRating}
 			reviews={
 				<Suspense
@@ -207,7 +219,11 @@ export default async function MoviePage(props: MoviePageProps) {
 					<PublicReviewsSection mediaId={movieId} mediaType="movie" />
 				</Suspense>
 			}
-			trailers={trailers}
+			trailers={
+				<Suspense fallback={<DetailSectionSkeleton />}>
+					<MovieTrailersSection movieId={movieId} />
+				</Suspense>
+			}
 			cast={credits.cast}
 		/>
 	);

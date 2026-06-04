@@ -26,6 +26,7 @@ export function BottomTabBar({ username }: BottomTabBarProps) {
 					<Link
 						key={label}
 						href={href}
+						prefetch
 						aria-current={active ? 'page' : undefined}
 						className="relative flex h-full flex-1 flex-col items-center justify-center gap-1 focus-visible:outline-none"
 					>

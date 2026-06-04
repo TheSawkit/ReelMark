@@ -483,3 +483,17 @@ a {
 		border-top-color: var(--glass-border-hover);
 	}
 }
+
+/* Subtle, snappy cross-fade between pages (React View Transitions). */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: var(--duration-fast);
+	animation-timing-function: var(--ease-apple);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation: none;
+	}
+}

@@ -14,6 +14,8 @@ import {
 import { MediaBanner } from '@/components/media/detail/MediaBanner';
 import { WatchButton } from '@/components/media/detail/WatchButton';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
+import { WatchProviders } from '@/components/media/detail/WatchProviders';
+import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
 import { SeasonCard } from '@/components/media/tv/SeasonCard';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { SectionHeading } from '@/components/ui/SectionHeading';
@@ -30,6 +32,22 @@ import type { Season } from '@/types/tmdb';
 type TvPageParams = Promise<{ id: string }>;
 interface TvPageProps {
 	params: TvPageParams;
+}
+
+function DetailSectionSkeleton() {
+	return <div className="h-28 rounded-xl bg-surface/20 animate-pulse" />;
+}
+
+async function TvProvidersSection({ tvId }: { tvId: number }) {
+	const providers = await getTvShowWatchProviders(tvId).catch(() => null);
+	return <WatchProviders providers={providers} />;
+}
+
+async function TvTrailersSection({ tvId }: { tvId: number }) {
+	const videos = await getTvShowVideos(tvId);
+	const trailers = await filterAvailableVideos(filterTrailers(videos));
+	if (trailers.length === 0) return null;
+	return <MediaTrailers trailers={trailers} />;
 }
 
 export async function generateMetadata({
@@ -49,12 +67,11 @@ export default async function TvShowPage(props: TvPageProps) {
 
 	if (isNaN(tvId)) notFound();
 
-	let tvDetails, credits, videos, images;
+	let tvDetails, credits, images;
 	try {
-		[tvDetails, credits, videos, images] = await Promise.all([
+		[tvDetails, credits, images] = await Promise.all([
 			getTvShowDetails(tvId),
 			getTvShowCredits(tvId),
-			getTvShowVideos(tvId),
 			getTvShowImages(tvId),
 		]);
 	} catch (error) {
@@ -79,8 +96,6 @@ export default async function TvShowPage(props: TvPageProps) {
 	}
 
 	const [
-		trailers,
-		watchProviders,
 		watchlistEntry,
 		watchProgress,
 		showRating,
@@ -88,8 +103,6 @@ export default async function TvShowPage(props: TvPageProps) {
 		t,
 		locale,
 	] = await Promise.all([
-		filterAvailableVideos(filterTrailers(videos)),
-		getTvShowWatchProviders(tvId).catch(() => null),
 		getMediaWatchlistEntry(tvId, 'tv'),
 		getTvShowWatchProgress(tvId),
 		getShowAverageRating(tvId),
@@ -230,7 +243,11 @@ export default async function TvShowPage(props: TvPageProps) {
 			banner={banner}
 			actionsBar={actionsBar}
 			description={tvDetails.overview}
-			watchProviders={watchProviders}
+			watchProviders={
+				<Suspense fallback={<DetailSectionSkeleton />}>
+					<TvProvidersSection tvId={tvId} />
+				</Suspense>
+			}
 			rating={showRating}
 			reviews={
 				<Suspense
@@ -242,7 +259,11 @@ export default async function TvShowPage(props: TvPageProps) {
 				</Suspense>
 			}
 			extraSections={seasonsSection}
-			trailers={trailers}
+			trailers={
+				<Suspense fallback={<DetailSectionSkeleton />}>
+					<TvTrailersSection tvId={tvId} />
+				</Suspense>
+			}
 			cast={credits.cast}
 		/>
 	);

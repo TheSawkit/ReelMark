@@ -1,10 +1,12 @@
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { requireAuth } from '@/lib/auth';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { getTranslations } from '@/lib/i18n/server';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ProfileHero } from '@/components/profile/ProfileHero';
 import { ProfileTabs } from '@/components/profile/ProfileTabs';
+import { ProfileTabsSkeleton } from '@/components/profile/ProfileTabsSkeleton';
 import { FriendshipButton } from '@/components/profile/FriendshipButton';
 import { ProfileOptionsMenu } from '@/components/profile/ProfileOptionsMenu';
 import {
@@ -24,6 +26,8 @@ import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
 interface Props {
 	params: Promise<{ username: string }>;
 }
+
+type Friendship = Awaited<ReturnType<typeof getFriendshipStatus>>;
 
 export async function generateMetadata({
 	params,
@@ -55,49 +59,40 @@ export async function generateMetadata({
 	};
 }
 
-export default async function ProfilePage({ params }: Props) {
-	const { username } = await params;
-
-	const [currentUser, profile] = await Promise.all([
-		requireAuth(),
-		getProfileByUsername(username),
-	]);
-	if (!profile) notFound();
-
-	const isOwnProfile = currentUser.id === profile.user_id;
-
+async function ProfileTabsSection({
+	profileUserId,
+	isOwnProfile,
+	friendship,
+}: {
+	profileUserId: string;
+	isOwnProfile: boolean;
+	friendship: Friendship;
+}) {
 	const supabase = await createClient();
-	const adminClient = createAdminClient();
+	const isFriend = friendship?.status === 'accepted';
 
 	const [
 		privacy,
 		reviewsPage,
 		playlists,
 		allFriendEntries,
-		friendship,
 		watchlistData,
-		ownerAuth,
 		pendingRequests,
 	] = await Promise.all([
-		getPrivacySettings(profile.user_id),
-		getUserReviews(profile.user_id),
-		getUserPlaylists(profile.user_id),
-		getFriendsWithProfiles(profile.user_id),
-		isOwnProfile
-			? Promise.resolve(null)
-			: getFriendshipStatus(profile.user_id),
+		getPrivacySettings(profileUserId),
+		getUserReviews(profileUserId),
+		getUserPlaylists(profileUserId),
+		getFriendsWithProfiles(profileUserId),
 		supabase
 			.from('watchlist')
 			.select(WATCHLIST_COLUMNS)
-			.eq('user_id', profile.user_id)
+			.eq('user_id', profileUserId)
 			.order('created_at', { ascending: false })
 			.limit(1000),
-		adminClient.auth.admin.getUserById(profile.user_id),
 		isOwnProfile ? getPendingRequestsWithProfiles() : Promise.resolve([]),
 	]);
 
 	const watchlist = (watchlistData.data ?? []) as WatchlistEntry[];
-	const isFriend = friendship?.status === 'accepted';
 
 	function canView(visibility: string): boolean {
 		if (isOwnProfile) return true;
@@ -122,6 +117,42 @@ export default async function ProfilePage({ params }: Props) {
 	const filteredFriends = canView(privacy.friends_visibility)
 		? allFriendEntries
 		: [];
+
+	return (
+		<ProfileTabs
+			toWatch={toWatch}
+			watched={watched}
+			reviews={filteredReviews}
+			initialReviewsCursor={initialReviewsCursor}
+			profileUserId={profileUserId}
+			playlists={playlists}
+			friends={filteredFriends}
+			pendingRequests={pendingRequests}
+			privacy={privacy}
+			isOwnProfile={isOwnProfile}
+			isFriend={isFriend}
+		/>
+	);
+}
+
+export default async function ProfilePage({ params }: Props) {
+	const { username } = await params;
+
+	const [currentUser, profile] = await Promise.all([
+		requireAuth(),
+		getProfileByUsername(username),
+	]);
+	if (!profile) notFound();
+
+	const isOwnProfile = currentUser.id === profile.user_id;
+	const adminClient = createAdminClient();
+
+	const [friendship, ownerAuth] = await Promise.all([
+		isOwnProfile
+			? Promise.resolve(null)
+			: getFriendshipStatus(profile.user_id),
+		adminClient.auth.admin.getUserById(profile.user_id),
+	]);
 
 	const ownerMeta = ownerAuth.data.user?.user_metadata;
 	const avatarUrl =
@@ -168,19 +199,13 @@ export default async function ProfilePage({ params }: Props) {
 					) : undefined
 				}
 			/>
-			<ProfileTabs
-				toWatch={toWatch}
-				watched={watched}
-				reviews={filteredReviews}
-				initialReviewsCursor={initialReviewsCursor}
-				profileUserId={profile.user_id}
-				playlists={playlists}
-				friends={filteredFriends}
-				pendingRequests={pendingRequests}
-				privacy={privacy}
-				isOwnProfile={isOwnProfile}
-				isFriend={isFriend}
-			/>
+			<Suspense fallback={<ProfileTabsSkeleton />}>
+				<ProfileTabsSection
+					profileUserId={profile.user_id}
+					isOwnProfile={isOwnProfile}
+					friendship={friendship}
+				/>
+			</Suspense>
 		</PageLayout>
 	);
 }

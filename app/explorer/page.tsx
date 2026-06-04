@@ -13,8 +13,9 @@ import {
 	movieToMediaItem,
 	tvShowToMediaItem,
 } from '@/lib/tmdb';
-import { mergeMediaWithWatchlist } from '@/app/actions/media';
+import { mergeWithWatchlist } from '@/lib/data/watchlist';
 import { MediaSection } from '@/components/media/card/MediaSection';
+import { MediaSectionsSkeleton } from '@/components/media/card/MediaSectionsSkeleton';
 import { SpotlightPick } from '@/components/explorer/SpotlightPick';
 import { CategoryNav } from '@/components/navigation/CategoryNav';
 import { SearchBar } from '@/components/search/SearchBar';
@@ -23,6 +24,9 @@ import { getTranslations } from '@/lib/i18n/server';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
 import { buildPageMetadata } from '@/lib/metadata';
 import type { Movie, TvShow } from '@/types/tmdb';
+
+type Translations = Awaited<ReturnType<typeof getTranslations>>;
+type MediaKind = 'movie' | 'tv';
 
 export async function generateMetadata(): Promise<Metadata> {
 	const t = await getTranslations();
@@ -36,67 +40,127 @@ type Props = {
 	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
+async function TrendingSpotlightSection({
+	type,
+	t,
+}: {
+	type: MediaKind;
+	t: Translations;
+}) {
+	const isMovie = type === 'movie';
+	const raw = isMovie
+		? await getTrendingMovies('week')
+		: await getTrendingTvShows('week');
+	const items = await mergeWithWatchlist(
+		isMovie
+			? (raw as Movie[]).map(movieToMediaItem)
+			: (raw as TvShow[]).map(tvShowToMediaItem)
+	);
+
+	return (
+		<>
+			{items.length > 0 && (
+				<SpotlightPick
+					item={items[0]}
+					badgeLabel={t.pages.explorer.featured}
+					ctaLabel={t.pages.dashboard.discover}
+				/>
+			)}
+			<MediaSection
+				title={t.pages.explorer.top10}
+				items={items}
+				categoryUrl={`/explorer/${isMovie ? 'trending' : 'tv-trending'}`}
+			/>
+		</>
+	);
+}
+
+async function PopularSection({ type, t }: { type: MediaKind; t: Translations }) {
+	const isMovie = type === 'movie';
+	const raw = isMovie ? await getPopularMovies() : await getPopularTvShows();
+	const items = await mergeWithWatchlist(
+		isMovie
+			? (raw as Movie[]).map(movieToMediaItem)
+			: (raw as TvShow[]).map(tvShowToMediaItem)
+	);
+
+	return (
+		<MediaSection
+			title={isMovie ? t.pages.explorer.popular : t.pages.explorer.tvPopular}
+			items={items}
+			categoryUrl={`/explorer/${isMovie ? 'popular' : 'tv-popular'}`}
+		/>
+	);
+}
+
+async function TopRatedSection({
+	type,
+	t,
+}: {
+	type: MediaKind;
+	t: Translations;
+}) {
+	const isMovie = type === 'movie';
+	const raw = isMovie ? await getTopRatedMovies() : await getTopRatedTvShows();
+	const items = await mergeWithWatchlist(
+		isMovie
+			? (raw as Movie[]).map(movieToMediaItem)
+			: (raw as TvShow[]).map(tvShowToMediaItem)
+	);
+
+	return (
+		<MediaSection
+			title={isMovie ? t.pages.explorer.topRated : t.pages.explorer.tvTopRated}
+			items={items}
+			categoryUrl={isMovie ? '/explorer/top-rated' : '/explorer/tv-top-rated'}
+		/>
+	);
+}
+
+async function UpcomingSection({
+	type,
+	t,
+}: {
+	type: MediaKind;
+	t: Translations;
+}) {
+	const isMovie = type === 'movie';
+	const raw = isMovie
+		? await getUpcomingMovies()
+		: await getAiringTodayTvShows();
+	const items = await mergeWithWatchlist(
+		isMovie
+			? (raw as Movie[]).map(movieToMediaItem)
+			: (raw as TvShow[]).map(tvShowToMediaItem)
+	);
+
+	return (
+		<MediaSection
+			title={isMovie ? t.pages.explorer.upcoming : t.pages.explorer.tvAiringToday}
+			items={items}
+			categoryUrl={
+				isMovie ? '/explorer/upcoming' : '/explorer/tv-airing-today'
+			}
+			hideRating={isMovie}
+		/>
+	);
+}
+
+function SpotlightTrendingSkeleton() {
+	return (
+		<>
+			<div className="mb-10 h-52 w-full rounded-[22px] bg-surface-2 animate-pulse sm:h-56" />
+			<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
+		</>
+	);
+}
+
 export default async function ExplorerPage({ searchParams }: Props) {
 	await requireAuth();
 
 	const params = await searchParams;
-	const type = params?.type === 'tv' ? 'tv' : 'movie';
+	const type: MediaKind = params?.type === 'tv' ? 'tv' : 'movie';
 	const t = await getTranslations();
-
-	const isMovie = type === 'movie';
-
-	const [trending, popular, extra1, extra2] = await Promise.all(
-		isMovie
-			? [
-					getTrendingMovies('week'),
-					getPopularMovies(),
-					getTopRatedMovies(),
-					getUpcomingMovies(),
-				]
-			: [
-					getTrendingTvShows('week'),
-					getPopularTvShows(),
-					getTopRatedTvShows(),
-					getAiringTodayTvShows(),
-				]
-	);
-
-	const trendingItems = await mergeMediaWithWatchlist(
-		isMovie
-			? (trending as Movie[]).map(movieToMediaItem)
-			: (trending as TvShow[]).map(tvShowToMediaItem)
-	);
-	const popularItems = await mergeMediaWithWatchlist(
-		isMovie
-			? (popular as Movie[]).map(movieToMediaItem)
-			: (popular as TvShow[]).map(tvShowToMediaItem)
-	);
-
-	const extraItems1 = {
-		title: isMovie
-			? t.pages.explorer.topRated
-			: t.pages.explorer.tvTopRated,
-		items: await mergeMediaWithWatchlist(
-			isMovie
-				? (extra1 as Movie[]).map(movieToMediaItem)
-				: (extra1 as TvShow[]).map(tvShowToMediaItem)
-		),
-		categoryUrl: isMovie ? '/explorer/top-rated' : '/explorer/tv-top-rated',
-	};
-
-	const extraItems2 = {
-		title: isMovie
-			? t.pages.explorer.upcoming
-			: t.pages.explorer.tvAiringToday,
-		items: await mergeMediaWithWatchlist(
-			isMovie
-				? (extra2 as Movie[]).map(movieToMediaItem)
-				: (extra2 as TvShow[]).map(tvShowToMediaItem)
-		),
-		categoryUrl: isMovie
-			? '/explorer/upcoming'
-			: '/explorer/tv-airing-today',
-	};
 
 	return (
 		<PageLayout className="screen-in">
@@ -119,41 +183,33 @@ export default async function ExplorerPage({ searchParams }: Props) {
 				</Suspense>
 			</div>
 
-			{trendingItems.length > 0 && (
-				<SpotlightPick
-					item={trendingItems[0]}
-					badgeLabel={t.pages.explorer.featured}
-					ctaLabel={t.pages.dashboard.discover}
-				/>
-			)}
+			<Suspense fallback={<SpotlightTrendingSkeleton />}>
+				<TrendingSpotlightSection type={type} t={t} />
+			</Suspense>
 
-			<MediaSection
-				title={t.pages.explorer.top10}
-				items={trendingItems}
-				categoryUrl={`/explorer/${type === 'movie' ? 'trending' : 'tv-trending'}`}
-			/>
-
-			<MediaSection
-				title={
-					type === 'movie'
-						? t.pages.explorer.popular
-						: t.pages.explorer.tvPopular
+			<Suspense
+				fallback={
+					<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
 				}
-				items={popularItems}
-				categoryUrl={`/explorer/${type === 'movie' ? 'popular' : 'tv-popular'}`}
-			/>
+			>
+				<PopularSection type={type} t={t} />
+			</Suspense>
 
-			<MediaSection
-				title={extraItems1.title}
-				items={extraItems1.items}
-				categoryUrl={extraItems1.categoryUrl}
-			/>
-			<MediaSection
-				title={extraItems2.title}
-				items={extraItems2.items}
-				categoryUrl={extraItems2.categoryUrl}
-				hideRating={isMovie}
-			/>
+			<Suspense
+				fallback={
+					<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
+				}
+			>
+				<TopRatedSection type={type} t={t} />
+			</Suspense>
+
+			<Suspense
+				fallback={
+					<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
+				}
+			>
+				<UpcomingSection type={type} t={t} />
+			</Suspense>
 		</PageLayout>
 	);
 }

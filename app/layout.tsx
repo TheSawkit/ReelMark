@@ -13,6 +13,7 @@ import { ScrollToTop } from '@/components/layout/ScrollToTop';
 import { PreventImageContextMenu } from '@/components/shared/PreventImageContextMenu';
 import { PWAInstallPrompt } from '@/components/shared/PWAInstallPrompt';
 import NextTopLoader from 'nextjs-toploader';
+import { ViewTransition } from 'react';
 
 const sans = Inter({
 	subsets: ['latin'],
@@ -351,7 +352,7 @@ export default async function RootLayout({
 							paddingTop: 'calc(4rem + env(safe-area-inset-top))',
 						}}
 					>
-						{children}
+						<ViewTransition>{children}</ViewTransition>
 					</main>
 					<footer className="border-t border-border-subtle mt-auto">
 						<div className="container mx-auto px-6 lg:px-12 pt-8 pb-28 text-center text-sm text-muted md:pb-8">
