@@ -118,8 +118,8 @@ export type Database = {
 			};
 			notifications: {
 				Row: {
-					actor_id: string | null;
-					actor_username: string | null;
+					sender_id: string | null;
+					sender_username: string | null;
 					created_at: string;
 					episode_number: number | null;
 					id: string;
@@ -133,9 +133,9 @@ export type Database = {
 					url: string | null;
 					user_id: string;
 				};
-				Insert: {
-					actor_id?: string | null;
-					actor_username?: string | null;
+					Insert: {
+						sender_id?: string | null;
+						sender_username?: string | null;
 					created_at?: string;
 					episode_number?: number | null;
 					id?: string;
@@ -149,9 +149,9 @@ export type Database = {
 					url?: string | null;
 					user_id: string;
 				};
-				Update: {
-					actor_id?: string | null;
-					actor_username?: string | null;
+					Update: {
+						sender_id?: string | null;
+						sender_username?: string | null;
 					created_at?: string;
 					episode_number?: number | null;
 					id?: string;

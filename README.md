@@ -27,7 +27,7 @@
 | ⭐  | **Ratings & reviews**      | Rate on a 1–10 scale and write reviews visible on your public profile         |
 | 📁  | **Playlists**              | Create themed collections and share them publicly                             |
 | 👥  | **Friends & community**    | Send friend requests, follow friends' watchlists and reviews                  |
-| 🎭  | **Actor profiles**         | Full filmographies, biographies, and credits for every actor                  |
+| 🎭  | **Crew profiles**         | Full filmographies, biographies, and credits for every crew member           |
 | 📱  | **Installable PWA**        | Works on iPhone, Android, Mac, Windows, and Linux — no app store required     |
 | 🌍  | **Native bilingualism**    | Instant EN/FR switching with server-side language detection                   |
 | 🔒  | **Privacy controls**       | Per-section visibility: public, friends only, or private                      |
@@ -97,7 +97,7 @@ watchlist/
 │   ├── actions/                # Server Actions (all mutations)
 │   ├── movie/[id]/             # Movie detail page
 │   ├── tv/[id]/                # TV show + season pages
-│   ├── actor/[id]/             # Actor detail page
+│   ├── crew/[id]/             # Crew detail page
 │   ├── explorer/               # Browse & search
 │   ├── library/                # User watchlist
 │   ├── dashboard/              # User dashboard

@@ -31,7 +31,7 @@ export {
 export { searchMulti, movieToMediaItem, tvShowToMediaItem } from './search';
 export { selectHeroImage, getImageUrl } from './images';
 export {
-	getActorDetails,
-	getActorMovieCredits,
-	getActorTvCredits,
-} from './actors';
+	getCrewDetails,
+	getCrewMovieCredits,
+	getCrewTvCredits,
+} from './crew';

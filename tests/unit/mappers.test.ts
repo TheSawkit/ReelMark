@@ -6,8 +6,8 @@ import {
 } from '@/lib/mappers';
 import type {
 	WatchlistEntry,
-	ActorMovieCredit,
-	ActorTvCredit,
+	CrewMovieCredit,
+	CrewTvCredit,
 } from '@/types/tmdb';
 
 const baseWatchlistEntry: WatchlistEntry = {
@@ -21,7 +21,7 @@ const baseWatchlistEntry: WatchlistEntry = {
 	created_at: '2024-01-01T00:00:00Z',
 };
 
-const baseMovieCredit: ActorMovieCredit = {
+const baseMovieCredit: CrewMovieCredit = {
 	id: 550,
 	title: 'Fight Club',
 	overview: 'An insomniac office worker forms an underground club.',
@@ -33,7 +33,7 @@ const baseMovieCredit: ActorMovieCredit = {
 	character: 'Narrator',
 };
 
-const baseTvCredit: ActorTvCredit = {
+const baseTvCredit: CrewTvCredit = {
 	id: 1399,
 	name: 'Game of Thrones',
 	overview: 'Seven noble families fight for control.',

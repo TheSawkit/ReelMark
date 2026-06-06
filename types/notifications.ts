@@ -10,7 +10,7 @@ export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export interface AppNotification {
 	id: string;
 	type: NotificationType;
-	actorUsername: string | null;
+	senderUsername: string | null;
 	mediaId: number | null;
 	mediaType: 'movie' | 'tv' | null;
 	mediaTitle: string | null;

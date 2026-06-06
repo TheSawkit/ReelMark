@@ -3,8 +3,8 @@ import { notificationMessage } from '@/lib/notifications';
 import type { AppNotification } from '@/types/notifications';
 
 const T = {
-	friend_request: "{actor} vous a envoyé une demande d'ami",
-	friend_accepted: "{actor} a accepté votre demande d'ami",
+	friend_request: "{user} vous a envoyé une demande d'ami",
+	friend_accepted: "{user} a accepté votre demande d'ami",
 	new_episode: 'Nouvel épisode de {title} : S{season}E{episode}',
 	suggestion: 'Suggestion : {title}',
 };
@@ -12,7 +12,7 @@ const T = {
 const base: AppNotification = {
 	id: '1',
 	type: 'friend_request',
-	actorUsername: 'neo',
+	senderUsername: 'neo',
 	mediaId: null,
 	mediaType: null,
 	mediaTitle: null,

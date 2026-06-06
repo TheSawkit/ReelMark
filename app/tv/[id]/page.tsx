@@ -26,6 +26,7 @@ import { getTvShowWatchProgress } from '@/app/actions/episodes';
 import { getShowAverageRating, getMediaReview } from '@/app/actions/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
+import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import { getServerLocale, getTranslations } from '@/lib/i18n/server';
 import type { Season } from '@/types/tmdb';
@@ -129,6 +130,8 @@ export default async function TvShowPage(props: TvPageProps) {
 			: 0;
 
 	const isWatched = watchlistEntry?.status === 'watched';
+
+	const crew = groupCrew(credits.crew);
 
 	const banner = (
 		<MediaBanner
@@ -240,6 +243,8 @@ export default async function TvShowPage(props: TvPageProps) {
 			banner={banner}
 			actionsBar={actionsBar}
 			description={tvDetails.overview}
+			crew={crew}
+			creators={tvDetails.created_by}
 			watchProviders={
 				<Suspense fallback={<DetailSectionSkeleton />}>
 					<TvProvidersSection tvId={tvId} />

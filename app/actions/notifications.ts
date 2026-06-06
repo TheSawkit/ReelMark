@@ -10,7 +10,7 @@ import {
 } from '@/types/notifications';
 
 const NOTIFICATION_COLUMNS =
-	'id, type, actor_username, media_id, media_type, media_title, poster_path, season_number, episode_number, url, read_at, created_at';
+	'id, type, sender_username, media_id, media_type, media_title, poster_path, season_number, episode_number, url, read_at, created_at';
 
 /** Returns the authenticated user's notifications, newest first. */
 export async function getNotifications(limit = 30): Promise<AppNotification[]> {

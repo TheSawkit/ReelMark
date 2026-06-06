@@ -64,6 +64,7 @@ export interface TvShowDetails extends TvShow {
 	tagline: string;
 	homepage: string;
 	seasons: Season[];
+	created_by: CreatedBy[];
 	episode_run_time: number[];
 	certification?: string;
 }
@@ -121,12 +122,30 @@ export interface Cast {
 	order: number;
 }
 
-interface Crew {
+export interface Crew {
 	id: number;
 	name: string;
 	job: string;
 	department: string;
 	profile_path: string | null;
+}
+
+export interface CreatedBy {
+	id: number;
+	credit_id: string;
+	name: string;
+	original_name: string;
+	gender: number;
+	profile_path: string | null;
+}
+
+export interface GroupedCrew {
+	directors: Crew[];
+	writers: Crew[];
+	producers: Crew[];
+	dop: Crew[];
+	composers: Crew[];
+	editors: Crew[];
 }
 
 export interface Credits {
@@ -191,7 +210,7 @@ export interface MediaImagesResponse {
 	posters: MediaImage[];
 }
 
-export interface ActorDetails {
+export interface CrewDetails {
 	id: number;
 	name: string;
 	biography: string;
@@ -205,7 +224,7 @@ export interface ActorDetails {
 	gender: number;
 }
 
-export interface ActorMovieCredit {
+export interface CrewMovieCredit {
 	id: number;
 	title: string;
 	character: string;
@@ -217,10 +236,36 @@ export interface ActorMovieCredit {
 	overview: string;
 }
 
-export interface ActorTvCredit {
+export interface CrewTvCredit {
 	id: number;
 	name: string;
 	character: string;
+	poster_path: string | null;
+	backdrop_path: string | null;
+	first_air_date: string;
+	vote_average: number;
+	popularity: number;
+	overview: string;
+}
+
+export interface CrewMovieCrewCredit {
+	id: number;
+	title: string;
+	job: string;
+	department: string;
+	poster_path: string | null;
+	backdrop_path: string | null;
+	release_date: string;
+	vote_average: number;
+	popularity: number;
+	overview: string;
+}
+
+export interface CrewTvCrewCredit {
+	id: number;
+	name: string;
+	job: string;
+	department: string;
 	poster_path: string | null;
 	backdrop_path: string | null;
 	first_air_date: string;

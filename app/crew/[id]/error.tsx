@@ -2,7 +2,7 @@
 
 import { ErrorCard } from '@/components/ui/ErrorCard';
 
-export default function ActorError({
+export default function CrewError({
 	reset,
 }: {
 	error: Error & { digest?: string };

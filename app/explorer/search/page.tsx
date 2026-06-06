@@ -20,8 +20,8 @@ export async function generateMetadata({
 	return {
 		title: query ? `"${query}" — Search` : 'Search',
 		description: query
-			? `Search results for "${query}" on ReelMark — movies, TV shows, and actors.`
-			: 'Search movies, TV shows, and actors on ReelMark.',
+			? `Search results for "${query}" on ReelMark — movies, TV shows, and crew.`
+			: 'Search movies, TV shows, and crew on ReelMark.',
 	};
 }
 

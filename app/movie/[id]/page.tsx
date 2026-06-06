@@ -22,6 +22,7 @@ import { getMediaWatchlistEntry } from '@/app/actions/watchlist';
 import { getAverageRating, getMediaReview } from '@/app/actions/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
+import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import { Eye } from 'lucide-react';
 import { getTranslations, getServerLocale } from '@/lib/i18n/server';
@@ -102,6 +103,8 @@ export default async function MoviePage(props: MoviePageProps) {
 		'original'
 	);
 	const isWatched = watchlistEntry?.status === 'watched';
+
+	const crew = groupCrew(credits.crew);
 
 	const banner = (
 		<MediaBanner
@@ -201,6 +204,7 @@ export default async function MoviePage(props: MoviePageProps) {
 			banner={banner}
 			actionsBar={actionsBar}
 			description={movieDetails.overview}
+			crew={crew}
 			watchProviders={
 				<Suspense fallback={<DetailSectionSkeleton />}>
 					<MovieProvidersSection movieId={movieId} />

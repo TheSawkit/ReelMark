@@ -8,7 +8,7 @@ export function notificationMessage(
 	templates: Templates
 ): string {
 	return templates[n.type]
-		.replace('{actor}', n.actorUsername ?? '')
+		.replace('{user}', n.senderUsername ?? '')
 		.replace('{title}', n.mediaTitle ?? '')
 		.replace('{season}', String(n.seasonNumber ?? ''))
 		.replace('{episode}', String(n.episodeNumber ?? ''));
@@ -18,7 +18,7 @@ export function notificationMessage(
 export function rowToAppNotification(row: {
 	id: string;
 	type: string;
-	actor_username: string | null;
+	sender_username: string | null;
 	media_id: number | null;
 	media_type: string | null;
 	media_title: string | null;
@@ -32,7 +32,7 @@ export function rowToAppNotification(row: {
 	return {
 		id: row.id,
 		type: row.type as NotificationType,
-		actorUsername: row.actor_username,
+		senderUsername: row.sender_username,
 		mediaId: row.media_id,
 		mediaType: row.media_type as 'movie' | 'tv' | null,
 		mediaTitle: row.media_title,

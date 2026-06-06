@@ -2,13 +2,16 @@ import type { ReactNode } from 'react';
 import { MediaDescription } from '@/components/media/detail/MediaDescription';
 import { CommunityRating } from '@/components/media/detail/CommunityRating';
 import { MediaCast } from '@/components/media/detail/MediaCast';
+import { MediaCrew } from '@/components/media/detail/MediaCrew';
 import { MediaActionsBar } from '@/components/media/detail/MediaActionsBar';
-import type { Cast } from '@/types/tmdb';
+import type { Cast, CreatedBy, GroupedCrew } from '@/types/tmdb';
 
 interface MediaDetailLayoutProps {
 	banner: ReactNode;
 	actionsBar?: ReactNode;
 	description: string;
+	crew?: GroupedCrew;
+	creators?: CreatedBy[];
 	watchProviders: ReactNode;
 	rating: { avg: number; count: number } | null;
 	reviews: ReactNode;
@@ -19,7 +22,7 @@ interface MediaDetailLayoutProps {
 
 /**
  * Generic slot-based layout for movie and TV show detail pages.
- * Enforces a fixed section order (description → providers → rating → reviews → extra → trailers → cast)
+ * Enforces a fixed section order (description → providers → rating → reviews → extra → trailers → cast → crew)
  * so both page types share identical structure without duplication.
  * Slow slots (watchProviders, trailers, reviews) are passed as nodes so pages can stream them via Suspense.
  */
@@ -27,6 +30,8 @@ export function MediaDetailLayout({
 	banner,
 	actionsBar,
 	description,
+	crew,
+	creators,
 	watchProviders,
 	rating,
 	reviews,
@@ -48,6 +53,7 @@ export function MediaDetailLayout({
 				{extraSections}
 				{trailers}
 				<MediaCast cast={cast.slice(0, 30)} />
+				{crew && <MediaCrew crew={crew} creators={creators} />}
 			</div>
 		</div>
 	);
