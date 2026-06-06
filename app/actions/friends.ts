@@ -257,7 +257,7 @@ export async function acceptFriendRequest(
 }
 
 /**
- * Rejects a pending friend request addressed to the authenticated user.
+ * Rejects a pending friend request by deleting it, so the pair can request again later.
  *
  * @param friendshipId - UUID of the friendship record.
  * @param requesterId - Supabase user ID of the requester (used to revalidate their profile).
@@ -270,7 +270,7 @@ export async function rejectFriendRequest(
 
 	const { error } = await supabase
 		.from('friendships')
-		.update({ status: 'rejected', updated_at: new Date().toISOString() })
+		.delete()
 		.eq('id', friendshipId)
 		.eq('addressee_id', userId)
 		.eq('status', 'pending');
