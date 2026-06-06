@@ -6,6 +6,7 @@ import { useTranslation } from '@/lib/i18n/context';
 export type SettingsTab =
 	| 'profile'
 	| 'security'
+	| 'notifications'
 	| 'appearance'
 	| 'data'
 	| 'privacy';
@@ -21,6 +22,11 @@ export function SettingsNav({ onTabChange, activeTab }: SettingsNavProps) {
 	const TABS: Array<{ id: SettingsTab; label: string; icon: string }> = [
 		{ id: 'profile', label: t.settings.profile.title, icon: '👤' },
 		{ id: 'security', label: t.settings.password.title, icon: '🔒' },
+		{
+			id: 'notifications',
+			label: t.settings.notifications.title,
+			icon: '🔔',
+		},
 		{ id: 'appearance', label: t.settings.theme.title, icon: '🎨' },
 		{ id: 'privacy', label: t.settings.privacy.title, icon: '🔐' },
 		{ id: 'data', label: t.settings.dangerZone.title, icon: '📁' },

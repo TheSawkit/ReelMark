@@ -1,11 +1,18 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import HeroSection from '@/components/home/HeroSection';
+import PreviewSection from '@/components/home/PreviewSection';
 import FeaturesSection from '@/components/home/FeaturesSection';
 import CTASection from '@/components/home/CTASection';
-
-import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from '@/lib/i18n/server';
+import {
+	getTrendingMovies,
+	getTrendingTvShows,
+	movieToMediaItem,
+	tvShowToMediaItem,
+} from '@/lib/tmdb';
+import type { Movie, TvShow } from '@/types/tmdb';
 
 export async function generateMetadata(): Promise<Metadata> {
 	const t = await getTranslations();
@@ -35,9 +42,17 @@ export default async function Home() {
 		redirect('/dashboard');
 	}
 
+	const [movies, shows] = await Promise.all([
+		getTrendingMovies().catch((): Movie[] => []),
+		getTrendingTvShows().catch((): TvShow[] => []),
+	]);
+	const movieItems = movies.map(movieToMediaItem);
+	const showItems = shows.map(tvShowToMediaItem);
+
 	return (
 		<main className="min-h-screen">
-			<HeroSection />
+			<HeroSection posters={[...movieItems, ...showItems]} />
+			<PreviewSection movies={movieItems} shows={showItems} />
 			<FeaturesSection />
 			<CTASection />
 		</main>

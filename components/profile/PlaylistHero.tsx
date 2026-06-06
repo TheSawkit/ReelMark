@@ -53,7 +53,7 @@ export function PlaylistHero({
 						{ownerUsername && (
 							<Link
 								href={`/profile/${ownerUsername}`}
-								className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-glass-bg-hover backdrop-blur-2xl backdrop-saturate-150 border border-glass-border-hover shadow-card-sm text-sm text-muted hover:text-text hover:bg-glass-bg-hover transition-colors"
+								className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-surface shadow-card-sm text-sm text-muted hover:text-text hover:bg-glass-bg-hover transition-colors"
 							>
 								<span className="relative h-5 w-5 shrink-0 overflow-hidden rounded-full border border-border bg-surface-3">
 									{ownerAvatarUrl ? (
@@ -91,7 +91,7 @@ export function PlaylistHero({
 								asChild
 								size="sm"
 								variant="outline"
-								className="bg-glass-bg-hover backdrop-blur-2xl border-glass-border-hover text-text hover:bg-glass-bg-hover hover:text-text"
+								className="glass-surface text-text hover:bg-glass-bg-hover hover:text-text"
 							>
 								<Link href={`/profile/${ownerUsername}`}>
 									{t.profile.viewProfile}

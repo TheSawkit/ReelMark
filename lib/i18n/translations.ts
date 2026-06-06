@@ -47,10 +47,6 @@ export const translations = {
 			iosAdd: "Écran d'accueil",
 		},
 		navbar: {
-			dashboard: 'Tableau de bord',
-			explorer: 'Explorateur',
-			library: 'Ma bibliothèque',
-			profile: 'Mon profil',
 			settings: 'Paramètres',
 			userMenu: 'Menu utilisateur',
 			logout: 'Déconnexion',
@@ -59,6 +55,27 @@ export const translations = {
 			mobile: {
 				toggleMenu: 'Ouvrir le menu',
 				closeMenu: 'Fermer le menu',
+			},
+			tabs: {
+				home: 'Tableau de bord',
+				explore: 'Explorer',
+				library: 'Ma liste',
+				profile: 'Profil',
+			},
+			notifications: 'Notifications',
+		},
+		notifications: {
+			title: 'Notifications',
+			empty: 'Aucune notification pour le moment',
+			markAllRead: 'Tout marquer comme lu',
+			seeAll: 'Voir tout',
+			new: 'Nouveau',
+			delete: 'Supprimer',
+			templates: {
+				friend_request: '{user} vous a envoyé une demande d’ami',
+				friend_accepted: '{user} a accepté votre demande d’ami',
+				new_episode: 'Nouvel épisode de {title} : S{season}E{episode}',
+				suggestion: 'À voir : {title}',
 			},
 		},
 		hero: {
@@ -121,6 +138,25 @@ export const translations = {
 			filtersLabel: 'Filtres de la bibliothèque',
 		},
 		settings: {
+			notifications: {
+				title: 'Notifications',
+				description:
+					'Choisis ce dont tu veux être prévenu et active les notifications push.',
+				push: 'Notifications push',
+				pushDesc:
+					'Reçois les notifications même quand l’app est fermée.',
+				pushEnable: 'Activer',
+				pushDisable: 'Désactiver',
+				pushUnsupported:
+					'Ton navigateur ne supporte pas les notifications push.',
+				iosHint:
+					'Sur iOS, installe d’abord l’app à l’écran d’accueil pour activer les notifications push.',
+				types: 'Types de notifications',
+				friend_requests: 'Demandes d’ami',
+				friend_accepted: 'Demandes acceptées',
+				new_episodes: 'Nouveaux épisodes',
+				suggestions: 'Suggestions',
+			},
 			title: 'Paramètres',
 			subtitle: 'Gérez votre compte et vos préférences',
 			missingFields: 'Tous les champs sont obligatoires',
@@ -518,6 +554,14 @@ export const translations = {
 			readLess: 'Afficher moins',
 			cast: 'Distribution',
 			castTitle: 'Casting',
+			crewTitle: 'Équipe technique',
+			directing: 'Réalisation',
+			creator: 'Création',
+			writing: 'Scénario',
+			production: 'Production',
+			cinematography: 'Photographie',
+			music: 'Musique',
+			editing: 'Montage',
 			trailers: 'Bandes annonces',
 			unsupportedFormat: 'Format non supporté',
 			noDescription: 'Aucune description disponible',
@@ -535,6 +579,73 @@ export const translations = {
 			series: 'Séries',
 			serie: 'Série',
 			actorActress: 'Acteur / Actrice',
+			jobTitles: {
+				acting: {
+					male: 'Acteur',
+					female: 'Actrice',
+					default: 'Acteur / Actrice',
+				},
+				directing: {
+					male: 'Réalisateur',
+					female: 'Réalisatrice',
+					default: 'Réalisation',
+				},
+				production: {
+					male: 'Producteur',
+					female: 'Productrice',
+					default: 'Production',
+				},
+				writing: {
+					male: 'Scénariste',
+					female: 'Scénariste',
+					default: 'Scénario',
+				},
+				cinematography: {
+					male: 'Directeur de la photographie',
+					female: 'Directrice de la photographie',
+					default: 'Photographie',
+				},
+				music: {
+					male: 'Compositeur',
+					female: 'Compositrice',
+					default: 'Musique',
+				},
+				editing: {
+					male: 'Monteur',
+					female: 'Monteuse',
+					default: 'Montage',
+				},
+				camera: {
+					male: 'Opérateur caméra',
+					female: 'Opératrice caméra',
+					default: 'Caméra',
+				},
+				sound: {
+					male: 'Musicien',
+					female: 'Musicienne',
+					default: 'Musicien / Musicienne',
+				},
+				art: {
+					male: 'Chef décorateur',
+					female: 'Cheffe décoratrice',
+					default: 'Décors',
+				},
+				visualEffects: {
+					male: 'Effets visuels',
+					female: 'Effets visuels',
+					default: 'Effets visuels',
+				},
+				costumeMakeUp: {
+					male: 'Costumier / Maquilleur',
+					female: 'Costumière / Maquilleuse',
+					default: 'Costumes & Maquillage',
+				},
+				lighting: {
+					male: 'Chef électricien',
+					female: 'Cheffe électricienne',
+					default: 'Éclairage',
+				},
+			},
 			runtime: '${hours}h ${mins}min',
 			scrollEnd: 'Vous avez tout vu !',
 			scrollEndCount: 'titres affichés',
@@ -591,6 +702,13 @@ export const translations = {
 				recommendations: 'Recommandations',
 				basedOn: 'Parce que vous avez vu ${movie.movie_title}',
 				similarTo: 'Similaire à ${movie.movie_title}',
+				resume: 'Reprendre',
+				discover: 'Voir la fiche',
+				trendingNow: 'Tendances du moment',
+				statsTitle: 'Tes statistiques',
+				statsMoviesWatched: 'Films vus',
+				statsEpisodesWatched: 'Épisodes vus',
+				statsToWatch: 'À voir',
 			},
 			explorer: {
 				title: 'Explorateur',
@@ -606,6 +724,8 @@ export const translations = {
 				tvTrending: 'Séries Tendances',
 				tvAiringToday: "Séries Diffusées aujourd'hui",
 				tvOnTheAir: 'Séries En cours de diffusion',
+				featured: 'Sélection du jour',
+				top10: 'Top 10 de la semaine',
 			},
 			library: {
 				title: 'Ma bibliothèque',
@@ -643,6 +763,11 @@ export const translations = {
 				button: 'Créer un compte gratuitement',
 				alreadyHave: "J'ai déjà un compte",
 			},
+			preview: {
+				title: 'Tout le cinéma, au même endroit',
+				subtitle:
+					'Des milliers de films et séries à suivre, noter et organiser.',
+			},
 		},
 		offline: {
 			title: 'Vous êtes hors ligne',
@@ -667,11 +792,11 @@ export const translations = {
 			defaultMovieDescription:
 				'Suivez et découvrez des films sur ReelMark',
 			defaultTvDescription: 'Suivez et découvrez des séries sur ReelMark',
-			defaultActorDescription:
-				'Explorez les acteurs et leur filmographie sur ReelMark',
+			defaultCrewDescription:
+				'Explorez les artistes et leur filmographie sur ReelMark',
 			watchMovieOn: 'Regardez ${title} sur ReelMark',
 			watchShowOn: 'Regardez ${title} sur ReelMark',
-			exploreActorOn: 'Explorez la filmographie de ${name} sur ReelMark',
+			exploreCrewOn: 'Explorez la filmographie de ${name} sur ReelMark',
 			dashboardTitle: 'Tableau de bord',
 			dashboardDescription:
 				'Accédez à votre tableau de bord personnel avec vos recommandations et votre historique de visionnage.',
@@ -767,10 +892,6 @@ export const translations = {
 			iosAdd: 'Home Screen',
 		},
 		navbar: {
-			dashboard: 'Dashboard',
-			explorer: 'Explorer',
-			library: 'My Library',
-			profile: 'My Profile',
 			settings: 'Settings',
 			userMenu: 'User menu',
 			logout: 'Logout',
@@ -779,6 +900,27 @@ export const translations = {
 			mobile: {
 				toggleMenu: 'Open menu',
 				closeMenu: 'Close menu',
+			},
+			tabs: {
+				home: 'Dashboard',
+				explore: 'Explore',
+				library: 'My List',
+				profile: 'Profile',
+			},
+			notifications: 'Notifications',
+		},
+		notifications: {
+			title: 'Notifications',
+			empty: 'No notifications yet',
+			markAllRead: 'Mark all as read',
+			seeAll: 'See all',
+			new: 'New',
+			delete: 'Delete',
+			templates: {
+				friend_request: '{user} sent you a friend request',
+				friend_accepted: '{user} accepted your friend request',
+				new_episode: 'New episode of {title}: S{season}E{episode}',
+				suggestion: 'Worth watching: {title}',
 			},
 		},
 		hero: {
@@ -839,6 +981,24 @@ export const translations = {
 			filtersLabel: 'Library filters',
 		},
 		settings: {
+			notifications: {
+				title: 'Notifications',
+				description:
+					'Choose what to be notified about and enable push notifications.',
+				push: 'Push notifications',
+				pushDesc: 'Get notified even when the app is closed.',
+				pushEnable: 'Enable',
+				pushDisable: 'Disable',
+				pushUnsupported:
+					'Your browser does not support push notifications.',
+				iosHint:
+					'On iOS, install the app to your home screen first to enable push notifications.',
+				types: 'Notification types',
+				friend_requests: 'Friend requests',
+				friend_accepted: 'Accepted requests',
+				new_episodes: 'New episodes',
+				suggestions: 'Suggestions',
+			},
 			title: 'Settings',
 			subtitle: 'Manage your account and preferences',
 			missingFields: 'All fields are required',
@@ -1228,6 +1388,14 @@ export const translations = {
 			readLess: 'Show Less',
 			cast: 'Cast',
 			castTitle: 'Cast',
+			crewTitle: 'Crew',
+			directing: 'Directing',
+			creator: 'Created by',
+			writing: 'Writing',
+			production: 'Production',
+			cinematography: 'Cinematography',
+			music: 'Music',
+			editing: 'Editing',
 			trailers: 'Trailers',
 			unsupportedFormat: 'Unsupported format',
 			noDescription: 'No description available',
@@ -1245,6 +1413,69 @@ export const translations = {
 			series: 'Series',
 			serie: 'Series',
 			actorActress: 'Actor / Actress',
+			jobTitles: {
+				acting: {
+					male: 'Actor',
+					female: 'Actress',
+					default: 'Actor / Actress',
+				},
+				directing: {
+					male: 'Director',
+					female: 'Director',
+					default: 'Directing',
+				},
+				production: {
+					male: 'Producer',
+					female: 'Producer',
+					default: 'Production',
+				},
+				writing: {
+					male: 'Writer',
+					female: 'Writer',
+					default: 'Writing',
+				},
+				cinematography: {
+					male: 'Cinematographer',
+					female: 'Cinematographer',
+					default: 'Cinematography',
+				},
+				music: {
+					male: 'Composer',
+					female: 'Composer',
+					default: 'Music',
+				},
+				editing: {
+					male: 'Editor',
+					female: 'Editor',
+					default: 'Editing',
+				},
+				camera: {
+					male: 'Camera operator',
+					female: 'Camera operator',
+					default: 'Camera',
+				},
+				sound: { male: 'Sound', female: 'Sound', default: 'Sound' },
+				art: {
+					male: 'Production designer',
+					female: 'Production designer',
+					default: 'Art',
+				},
+				visualEffects: {
+					male: 'Visual effects',
+					female: 'Visual effects',
+					default: 'Visual Effects',
+				},
+				costumeMakeUp: {
+					male: 'Costume & Make-Up',
+					female: 'Costume & Make-Up',
+					default: 'Costume & Make-Up',
+				},
+				lighting: {
+					male: 'Lighting',
+					female: 'Lighting',
+					default: 'Lighting',
+				},
+			},
 			runtime: '${hours}h ${mins}min',
 			scrollEnd: "You've seen it all!",
 			scrollEndCount: 'titles displayed',
@@ -1301,6 +1532,13 @@ export const translations = {
 				recommendations: 'Recommendations',
 				basedOn: 'Because you watched ${movie.movie_title}',
 				similarTo: 'Similar to ${movie.movie_title}',
+				resume: 'Resume',
+				discover: 'View details',
+				trendingNow: 'Trending now',
+				statsTitle: 'Your stats',
+				statsMoviesWatched: 'Movies watched',
+				statsEpisodesWatched: 'Episodes watched',
+				statsToWatch: 'To watch',
 			},
 			explorer: {
 				title: 'Explorer',
@@ -1316,6 +1554,8 @@ export const translations = {
 				tvTrending: 'Trending Shows',
 				tvAiringToday: 'Shows Airing Today',
 				tvOnTheAir: 'Shows On The Air',
+				featured: 'Featured pick',
+				top10: 'Top 10 this week',
 			},
 			library: {
 				title: 'My Library',
@@ -1353,6 +1593,11 @@ export const translations = {
 				button: 'Create a free account',
 				alreadyHave: 'I already have an account',
 			},
+			preview: {
+				title: 'All of cinema, in one place',
+				subtitle:
+					'Thousands of movies and shows to track, rate and organize.',
+			},
 		},
 		offline: {
 			title: 'You are offline',
@@ -1375,11 +1620,11 @@ export const translations = {
 		metadata: {
 			defaultMovieDescription: 'Track and discover movies on ReelMark',
 			defaultTvDescription: 'Track and discover TV shows on ReelMark',
-			defaultActorDescription:
-				'Explore actors and their filmography on ReelMark',
+			defaultCrewDescription:
+				'Explore crew and their filmography on ReelMark',
 			watchMovieOn: 'Watch ${title} on ReelMark',
 			watchShowOn: 'Watch ${title} on ReelMark',
-			exploreActorOn: "Explore ${name}'s filmography on ReelMark",
+			exploreCrewOn: "Explore ${name}'s filmography on ReelMark",
 			dashboardTitle: 'Dashboard',
 			dashboardDescription:
 				'Access your personal dashboard with recommendations and watch history.',

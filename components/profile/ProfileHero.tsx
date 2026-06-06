@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { Globe } from 'lucide-react';
 import { siInstagram, siLetterboxd } from 'simple-icons';
 import { Button } from '@/components/ui/button';
+import { Aurora } from '@/components/effects/Aurora';
+import { Spotlight } from '@/components/effects/Spotlight';
+import { Grain } from '@/components/effects/Grain';
 import type { UserProfile } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
 
@@ -122,49 +125,71 @@ export function ProfileHero({
 	}>;
 
 	return (
-		<div className="flex flex-col sm:flex-row items-start gap-6 mb-10">
-			<div className="shrink-0">
-				{avatarUrl ? (
-					<Image
-						src={avatarUrl}
-						alt={`${displayName} — ${t.common.userAvatar}`}
-						width={80}
-						height={80}
-						className="rounded-full object-cover border-2 border-border shadow-card"
-						unoptimized
-					/>
-				) : (
-					<div className="w-20 h-20 rounded-full bg-surface-2 border-2 border-border flex items-center justify-center shadow-card">
-						<span className="text-xl font-bold text-muted">
-							{initials}
-						</span>
-					</div>
-				)}
+		<div className="relative mb-10 overflow-hidden rounded-3xl border border-border bg-surface">
+			<div className="relative h-28 overflow-hidden sm:h-36">
+				<div className="absolute inset-0 bg-linear-to-br from-primary/25 via-surface-2 to-surface" />
+				<Aurora intensity={0.6} />
+				<Spotlight />
+				<Grain opacity={0.06} />
+				<div className="absolute inset-0 bg-linear-to-t from-surface via-surface/20 to-transparent" />
 			</div>
 
-			<div className="flex-1 min-w-0">
-				<div className="flex flex-wrap gap-3 mb-4">
-					<span className="flex flex-col gap-2">
-						<h1 className="text-2xl font-bold text-text truncate">
-							{displayName}
-						</h1>
-						{fullName && fullName !== profile.username && (
-							<span className="text-muted text-sm">
-								@{profile.username}
-							</span>
+			<div className="relative px-5 pb-6 sm:px-7">
+				<div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end">
+					<div className="shrink-0">
+						{avatarUrl ? (
+							<Image
+								src={avatarUrl}
+								alt={`${displayName} — ${t.common.userAvatar}`}
+								width={96}
+								height={96}
+								className="h-24 w-24 rounded-full border-4 border-surface object-cover shadow-card"
+								unoptimized
+							/>
+						) : (
+							<div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-surface bg-surface-2 shadow-card">
+								<span className="text-2xl font-bold text-muted">
+									{initials}
+								</span>
+							</div>
 						)}
-					</span>
-					{optionsMenu}
+					</div>
+
+					<div className="min-w-0 flex-1 sm:pb-1">
+						<div className="flex flex-wrap items-center gap-3">
+							<h1 className="truncate text-2xl font-bold text-text">
+								{displayName}
+							</h1>
+							{fullName && fullName !== profile.username && (
+								<span className="text-sm text-muted">
+									@{profile.username}
+								</span>
+							)}
+							{optionsMenu}
+						</div>
+					</div>
+
+					<div className="flex flex-wrap gap-2 sm:pb-1">
+						{isOwnProfile ? (
+							<Button variant="outline" size="sm" asChild>
+								<Link href="/settings">
+									{t.profile.editProfile}
+								</Link>
+							</Button>
+						) : (
+							friendshipButton
+						)}
+					</div>
 				</div>
 
 				{profile.bio && (
-					<p className="text-muted text-sm mb-3 max-w-lg leading-relaxed">
+					<p className="mt-4 max-w-lg text-sm leading-relaxed text-muted">
 						{profile.bio}
 					</p>
 				)}
 
 				{socialLinks.length > 0 && (
-					<div className="flex flex-wrap gap-2 mb-3">
+					<div className="mt-3 flex flex-wrap gap-2">
 						{socialLinks.map((link) => (
 							<a
 								key={link.label}
@@ -172,7 +197,7 @@ export function ProfileHero({
 								target="_blank"
 								rel="noopener noreferrer"
 								aria-label={link.label}
-								className="flex items-center gap-1.5 text-xs text-muted hover:text-text transition-colors px-2.5 py-1 rounded-md bg-surface-2 hover:bg-surface border border-border-subtle"
+								className="flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-2 px-2.5 py-1 text-xs text-muted transition-colors hover:bg-surface hover:text-text"
 							>
 								{link.icon}
 								<span>{link.label}</span>
@@ -180,18 +205,6 @@ export function ProfileHero({
 						))}
 					</div>
 				)}
-
-				<div className="flex flex-wrap gap-2 mt-3">
-					{isOwnProfile ? (
-						<Button variant="outline" size="sm" asChild>
-							<Link href="/settings">
-								{t.profile.editProfile}
-							</Link>
-						</Button>
-					) : (
-						friendshipButton
-					)}
-				</div>
 			</div>
 		</div>
 	);

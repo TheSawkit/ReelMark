@@ -60,7 +60,7 @@ export function CategoryNav() {
 						'px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple',
 						pathname === '/explorer'
 							? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
-							: 'bg-glass-bg backdrop-blur-md border border-glass-border text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
+							: 'glass-surface text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
 					)}
 				>
 					{t.explorer.overview}
@@ -76,7 +76,7 @@ export function CategoryNav() {
 							'px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple',
 							pathname === category.href
 								? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
-								: 'bg-glass-bg backdrop-blur-md border border-glass-border text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
+								: 'glass-surface text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
 						)}
 					>
 						{category.name}

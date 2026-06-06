@@ -14,6 +14,9 @@ import {
 import { MediaBanner } from '@/components/media/detail/MediaBanner';
 import { WatchButton } from '@/components/media/detail/WatchButton';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
+import { WatchProviders } from '@/components/media/detail/WatchProviders';
+import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
+import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { SeasonCard } from '@/components/media/tv/SeasonCard';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { SectionHeading } from '@/components/ui/SectionHeading';
@@ -23,6 +26,7 @@ import { getTvShowWatchProgress } from '@/app/actions/episodes';
 import { getShowAverageRating, getMediaReview } from '@/app/actions/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
+import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import { getServerLocale, getTranslations } from '@/lib/i18n/server';
 import type { Season } from '@/types/tmdb';
@@ -30,6 +34,18 @@ import type { Season } from '@/types/tmdb';
 type TvPageParams = Promise<{ id: string }>;
 interface TvPageProps {
 	params: TvPageParams;
+}
+
+async function TvProvidersSection({ tvId }: { tvId: number }) {
+	const providers = await getTvShowWatchProviders(tvId).catch(() => null);
+	return <WatchProviders providers={providers} />;
+}
+
+async function TvTrailersSection({ tvId }: { tvId: number }) {
+	const videos = await getTvShowVideos(tvId);
+	const trailers = await filterAvailableVideos(filterTrailers(videos));
+	if (trailers.length === 0) return null;
+	return <MediaTrailers trailers={trailers} />;
 }
 
 export async function generateMetadata({
@@ -49,12 +65,11 @@ export default async function TvShowPage(props: TvPageProps) {
 
 	if (isNaN(tvId)) notFound();
 
-	let tvDetails, credits, videos, images;
+	let tvDetails, credits, images;
 	try {
-		[tvDetails, credits, videos, images] = await Promise.all([
+		[tvDetails, credits, images] = await Promise.all([
 			getTvShowDetails(tvId),
 			getTvShowCredits(tvId),
-			getTvShowVideos(tvId),
 			getTvShowImages(tvId),
 		]);
 	} catch (error) {
@@ -78,25 +93,15 @@ export default async function TvShowPage(props: TvPageProps) {
 		notFound();
 	}
 
-	const [
-		trailers,
-		watchProviders,
-		watchlistEntry,
-		watchProgress,
-		showRating,
-		userReview,
-		t,
-		locale,
-	] = await Promise.all([
-		filterAvailableVideos(filterTrailers(videos)),
-		getTvShowWatchProviders(tvId).catch(() => null),
-		getMediaWatchlistEntry(tvId, 'tv'),
-		getTvShowWatchProgress(tvId),
-		getShowAverageRating(tvId),
-		getMediaReview(tvId, 'tv'),
-		getTranslations(),
-		getServerLocale(),
-	]);
+	const [watchlistEntry, watchProgress, showRating, userReview, t, locale] =
+		await Promise.all([
+			getMediaWatchlistEntry(tvId, 'tv'),
+			getTvShowWatchProgress(tvId),
+			getShowAverageRating(tvId),
+			getMediaReview(tvId, 'tv'),
+			getTranslations(),
+			getServerLocale(),
+		]);
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, tvDetails.backdrop_path),
@@ -119,6 +124,8 @@ export default async function TvShowPage(props: TvPageProps) {
 			: 0;
 
 	const isWatched = watchlistEntry?.status === 'watched';
+
+	const crew = groupCrew(credits.crew);
 
 	const banner = (
 		<MediaBanner
@@ -161,7 +168,7 @@ export default async function TvShowPage(props: TvPageProps) {
 						/>
 					</div>
 					{totalWatched > 0 && (
-						<div className="hidden sm:flex items-center gap-3 px-4 py-2 rounded-md bg-surface/30 backdrop-blur-md border border-border/10">
+						<div className="hidden sm:flex items-center gap-3 px-4 py-2 rounded-md glass-overlay">
 							<div className="flex flex-col gap-1">
 								<span className="text-xs font-medium text-muted">
 									{totalWatched}/{totalEpisodes}{' '}
@@ -230,7 +237,13 @@ export default async function TvShowPage(props: TvPageProps) {
 			banner={banner}
 			actionsBar={actionsBar}
 			description={tvDetails.overview}
-			watchProviders={watchProviders}
+			crew={crew}
+			creators={tvDetails.created_by}
+			watchProviders={
+				<Suspense fallback={<DetailSectionSkeleton />}>
+					<TvProvidersSection tvId={tvId} />
+				</Suspense>
+			}
 			rating={showRating}
 			reviews={
 				<Suspense
@@ -242,7 +255,11 @@ export default async function TvShowPage(props: TvPageProps) {
 				</Suspense>
 			}
 			extraSections={seasonsSection}
-			trailers={trailers}
+			trailers={
+				<Suspense fallback={<DetailSectionSkeleton />}>
+					<TvTrailersSection tvId={tvId} />
+				</Suspense>
+			}
 			cast={credits.cast}
 		/>
 	);

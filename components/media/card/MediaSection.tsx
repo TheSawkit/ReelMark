@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { MediaCard } from '@/components/media/card/MediaCard';
 import { ArrowRight } from 'lucide-react';
 import { HorizontalScroll } from '@/components/shared/HorizontalScroll';
+import { SectionHeading } from '@/components/ui/SectionHeading';
 import { useTranslation } from '@/lib/i18n/context';
 import { watchlistEntryToMediaItem } from '@/lib/mappers';
 import { getMediaKey } from '@/lib/media';
@@ -18,6 +19,7 @@ interface LibrarySectionProps {
 }
 
 const CARD_ANIMATION_DELAY_MS = 50;
+const SECTION_ITEM_LIMIT = 10;
 
 /**
  * Horizontal scrolling section for displaying media cards with category navigation.
@@ -37,14 +39,15 @@ export function MediaSection({
 	hideRating,
 }: MediaSectionProps) {
 	const { t } = useTranslation();
+	const visible = items.slice(0, SECTION_ITEM_LIMIT);
 
 	return (
 		<HorizontalScroll
 			className="mb-12 lg:mb-16"
 			scrollAmount={500}
-			title={<SectionTitle title={title} href={categoryUrl} />}
+			title={<SectionHeading href={categoryUrl}>{title}</SectionHeading>}
 		>
-			{items.map((media, index) => (
+			{visible.map((media, index) => (
 				<StaggeredItem
 					key={getMediaKey(media)}
 					index={index}
@@ -81,15 +84,16 @@ export function LibraryMediaSection({
 	categoryUrl,
 }: LibrarySectionProps) {
 	const { t } = useTranslation();
-	const mediaItems = entries.map(watchlistEntryToMediaItem);
+	const visibleEntries = entries.slice(0, SECTION_ITEM_LIMIT);
+	const mediaItems = visibleEntries.map(watchlistEntryToMediaItem);
 
 	return (
 		<HorizontalScroll
 			className="mb-12 lg:mb-16"
 			scrollAmount={500}
-			title={<SectionTitle title={title} href={categoryUrl} />}
+			title={<SectionHeading href={categoryUrl}>{title}</SectionHeading>}
 		>
-			{entries.map((entry, index) => (
+			{visibleEntries.map((entry, index) => (
 				<StaggeredItem
 					key={entry.id}
 					index={index}
@@ -108,20 +112,6 @@ export function LibraryMediaSection({
 			))}
 			<ViewAllCard href={categoryUrl} label={t.common.viewAll} />
 		</HorizontalScroll>
-	);
-}
-
-function SectionTitle({ title, href }: { title: string; href: string }) {
-	return (
-		<Link
-			href={href}
-			className="group/title flex items-center gap-3 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm"
-		>
-			<h2 className="text-xl md:text-2xl font-bold group-hover/title:text-gold transition-colors duration-(--duration-medium) ease-apple tracking-tight">
-				{title}
-			</h2>
-			<ArrowRight className="w-5 h-5 opacity-0 -translate-x-3 group-hover/title:opacity-100 group-hover/title:translate-x-0 transition-all duration-(--duration-medium) ease-apple text-gold" />
-		</Link>
 	);
 }
 

@@ -4,9 +4,10 @@ import type {
 	MediaType,
 	Cast,
 	Video,
-	ActorDetails,
+	CrewDetails,
 	WatchStatus,
 } from '@/types/tmdb';
+import type { FilmographyDepartment } from '@/lib/filmography';
 
 export interface FeatureCardProps {
 	icon: ReactNode;
@@ -82,6 +83,7 @@ export interface WatchButtonProps {
 }
 
 export interface NavbarUser {
+	id: string;
 	email?: string;
 	user_metadata: {
 		full_name?: string;
@@ -92,14 +94,9 @@ export interface NavbarUser {
 	};
 }
 
-export interface NavbarMobileProps {
-	user: NavbarUser;
-}
-
 export interface NavLinksProps {
-	orientation?: 'horizontal' | 'vertical';
+	username?: string;
 	className?: string;
-	onLinkClick?: () => void;
 }
 
 export interface HorizontalScrollProps {
@@ -110,15 +107,14 @@ export interface HorizontalScrollProps {
 	containerClassName?: string;
 }
 
-export interface ActorBannerProps {
-	actor: ActorDetails;
+export interface CrewBannerProps {
+	crew: CrewDetails;
 }
 
-export interface ActorBioProps {
+export interface CrewBioProps {
 	biography: string;
 }
 
-export interface ActorFilmographyProps {
-	movies: MediaItem[];
-	tvShows: MediaItem[];
+export interface CrewFilmographyProps {
+	departments: FilmographyDepartment[];
 }

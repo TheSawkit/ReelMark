@@ -46,7 +46,7 @@ export function SearchDropdown({
 	if (query.length >= 2 && !isLoading && isEmpty) {
 		return (
 			<div
-				className="absolute top-full mt-2 w-full bg-glass-bg backdrop-blur-xl border border-glass-border rounded-(--radius-xl) p-8 text-center shadow-card z-50 animate-in fade-in slide-in-from-top-2 duration-(--duration-fast) ease-apple"
+				className="absolute top-full mt-2 w-full glass-surface rounded-(--radius-xl) p-8 text-center shadow-card z-50 animate-in fade-in slide-in-from-top-2 duration-(--duration-fast) ease-apple"
 				role="status"
 				aria-live="polite"
 			>
@@ -63,7 +63,7 @@ export function SearchDropdown({
 
 	if (isUserSearch) {
 		return (
-			<div className="absolute top-full mt-2 w-full bg-glass-bg backdrop-blur-xl border border-glass-border rounded-(--radius-xl) shadow-search-dropdown overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-(--duration-fast) ease-apple">
+			<div className="absolute top-full mt-2 w-full glass-surface rounded-(--radius-xl) shadow-search-dropdown overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-(--duration-fast) ease-apple">
 				<span className="sr-only" aria-live="polite">
 					{users.length} {t.pages.search.usersFound}
 				</span>
@@ -143,7 +143,7 @@ export function SearchDropdown({
 	}
 
 	return (
-		<div className="absolute top-full mt-2 w-full bg-glass-bg backdrop-blur-xl border border-glass-border rounded-(--radius-xl) shadow-search-dropdown overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-(--duration-fast) ease-apple">
+		<div className="absolute top-full mt-2 w-full glass-surface rounded-(--radius-xl) shadow-search-dropdown overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-(--duration-fast) ease-apple">
 			<span className="sr-only" aria-live="polite">
 				{t.pages.search.suggestionsCount.replace(
 					'${count}',

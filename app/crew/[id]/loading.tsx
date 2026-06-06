@@ -1,6 +1,6 @@
 import { MediaCardSkeleton } from '@/components/media/card/MediaCardSkeleton';
 
-export default function ActorLoading() {
+export default function CrewLoading() {
 	return (
 		<div className="min-h-screen">
 			<div className="relative w-full overflow-hidden">

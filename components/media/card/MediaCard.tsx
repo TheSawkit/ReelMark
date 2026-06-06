@@ -19,6 +19,7 @@ interface Props extends MediaCardProps {
 	tvProgress?: { watched: number; total: number };
 	priority?: boolean;
 	imageSize?: 'card' | 'grid';
+	compact?: boolean;
 }
 
 /**
@@ -44,6 +45,7 @@ export function MediaCard({
 	tvProgress,
 	priority,
 	imageSize = 'card',
+	compact = false,
 }: Props) {
 	const { t, lang } = useTranslation();
 	const locale = getLocale(lang);
@@ -90,12 +92,14 @@ export function MediaCard({
 					}
 				/>
 
-				<div
-					className={cn(
-						'absolute inset-0 bg-linear-to-t from-black/90 via-black/60 to-transparent transition-opacity duration-(--duration-base)',
-						'opacity-0 group-hover:opacity-100'
-					)}
-				/>
+				{!compact && (
+					<div
+						className={cn(
+							'absolute inset-0 bg-linear-to-t from-black/90 via-black/60 to-transparent transition-opacity duration-(--duration-base)',
+							'opacity-0 group-hover:opacity-100'
+						)}
+					/>
+				)}
 
 				{tvProgress && tvProgress.total > 0 && (
 					<div className="absolute bottom-0 inset-x-0 z-20">
@@ -136,69 +140,73 @@ export function MediaCard({
 					</div>
 				)}
 
-				<div
-					className={cn(
-						'absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 transition-all duration-(--duration-base) z-10',
-						'translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100'
-					)}
-				>
-					<div>
-						<h3 className="text-lg font-bold text-white/80 leading-tight line-clamp-2">
-							{media.title}
-						</h3>
-
-						{media.character && (
-							<p className="mt-0.5 text-xs font-bold text-gold line-clamp-1">
-								{media.character}
-							</p>
+				{!compact && (
+					<div
+						className={cn(
+							'absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 transition-all duration-(--duration-base) z-10',
+							'translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100'
 						)}
+					>
+						<div>
+							<h3 className="text-lg font-bold text-white/80 leading-tight line-clamp-2">
+								{media.title}
+							</h3>
 
-						{watchlistEntry ? (
-							<div className="flex items-center gap-1.5 mt-1">
-								{media.media_type === 'tv' ? (
-									<Clock className="h-3 w-3 text-white/80 shrink-0" />
-								) : isWatched ? (
-									<Eye className="h-3 w-3 text-white/80 shrink-0" />
-								) : (
-									<Clock className="h-3 w-3 text-white/80 shrink-0" />
-								)}
-								<span className="text-xs text-white/60 leading-tight">
-									{media.media_type === 'tv'
-										? t.movie.startedOn
-										: isWatched
-											? t.movie.watchedOn
-											: t.movie.addedOn}{' '}
-									{formatShortDate(
-										watchlistEntry.created_at,
-										locale
+							{media.character && (
+								<p className="mt-0.5 text-xs font-bold text-gold line-clamp-1">
+									{media.character}
+								</p>
+							)}
+
+							{watchlistEntry ? (
+								<div className="flex items-center gap-1.5 mt-1">
+									{media.media_type === 'tv' ? (
+										<Clock className="h-3 w-3 text-white/80 shrink-0" />
+									) : isWatched ? (
+										<Eye className="h-3 w-3 text-white/80 shrink-0" />
+									) : (
+										<Clock className="h-3 w-3 text-white/80 shrink-0" />
 									)}
-								</span>
-							</div>
-						) : (
-							<p className="mt-1 text-xs text-white/80 line-clamp-2">
-								{media.overview || t.movie.noDescription}
-							</p>
-						)}
-					</div>
+									<span className="text-xs text-white/60 leading-tight">
+										{media.media_type === 'tv'
+											? t.movie.startedOn
+											: isWatched
+												? t.movie.watchedOn
+												: t.movie.addedOn}{' '}
+										{formatShortDate(
+											watchlistEntry.created_at,
+											locale
+										)}
+									</span>
+								</div>
+							) : (
+								<p className="mt-1 text-xs text-white/80 line-clamp-2">
+									{media.overview || t.movie.noDescription}
+								</p>
+							)}
+						</div>
 
-					<WatchButton
-						mediaId={watchlistEntry?.media_id ?? media.id}
-						mediaTitle={watchlistEntry?.media_title ?? media.title}
-						mediaType={
-							watchlistEntry?.media_type ?? media.media_type
-						}
-						posterPath={
-							watchlistEntry?.poster_path ?? media.poster_path
-						}
-						status={resolvedStatus}
-						initialIsActive={
-							!!watchlistEntry || !!media.watchlistEntry
-						}
-						fallbackStatus={resolvedFallback}
-						variant="full"
-						onDark
-					/>
-				</div>
+						<WatchButton
+							mediaId={watchlistEntry?.media_id ?? media.id}
+							mediaTitle={
+								watchlistEntry?.media_title ?? media.title
+							}
+							mediaType={
+								watchlistEntry?.media_type ?? media.media_type
+							}
+							posterPath={
+								watchlistEntry?.poster_path ?? media.poster_path
+							}
+							status={resolvedStatus}
+							initialIsActive={
+								!!watchlistEntry || !!media.watchlistEntry
+							}
+							fallbackStatus={resolvedFallback}
+							variant="full"
+							onDark
+						/>
+					</div>
+				)}
 			</div>
 		</Link>
 	);

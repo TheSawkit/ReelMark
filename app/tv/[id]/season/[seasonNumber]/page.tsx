@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import {
 	getTvShowDetails,
 	getSeasonDetails,
@@ -12,16 +13,24 @@ import {
 	getSeasonAverageRating,
 	getPublicEpisodeReviews,
 } from '@/app/actions/reviews';
-import { SeasonHeader } from '@/components/media/tv/SeasonHeader';
+import { SeasonBanner } from '@/components/media/tv/SeasonBanner';
+import { SeasonWatchButton } from '@/components/media/tv/SeasonWatchButton';
+import { MediaActionsBar } from '@/components/media/detail/MediaActionsBar';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { CommunityRating } from '@/components/media/detail/CommunityRating';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
+import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { EpisodeCard } from '@/components/media/tv/EpisodeCard';
 import { BASE_URL } from '@/lib/metadata';
 
 type SeasonPageParams = Promise<{ id: string; seasonNumber: string }>;
 interface SeasonPageProps {
 	params: SeasonPageParams;
+}
+
+async function SeasonProvidersSection({ tvId }: { tvId: number }) {
+	const providers = await getTvShowWatchProviders(tvId).catch(() => null);
+	return <WatchProviders providers={providers} />;
 }
 
 export async function generateMetadata({
@@ -88,21 +97,14 @@ export default async function SeasonPage(props: SeasonPageProps) {
 	}
 
 	const episodeIds = seasonDetails.episodes.map((e) => e.id);
-	const [
-		t,
-		locale,
-		watchedEpisodes,
-		seasonRating,
-		episodeReviews,
-		watchProviders,
-	] = await Promise.all([
-		getTranslations(),
-		getServerLocale(),
-		getSeasonEpisodeWatches(tvId, seasonNumber),
-		getSeasonAverageRating(tvId, seasonNumber),
-		getPublicEpisodeReviews(episodeIds),
-		getTvShowWatchProviders(tvId).catch(() => null),
-	]);
+	const [t, locale, watchedEpisodes, seasonRating, episodeReviews] =
+		await Promise.all([
+			getTranslations(),
+			getServerLocale(),
+			getSeasonEpisodeWatches(tvId, seasonNumber),
+			getSeasonAverageRating(tvId, seasonNumber),
+			getPublicEpisodeReviews(episodeIds),
+		]);
 
 	const watchedCount = watchedEpisodes.size;
 
@@ -113,19 +115,41 @@ export default async function SeasonPage(props: SeasonPageProps) {
 		reviewsByEpisodeId.set(review.media_id, list);
 	}
 
+	const totalEpisodes = seasonDetails.episodes.length;
+	const backdropUrl = getImageUrl(
+		tvDetails.backdrop_path ??
+			seasonDetails.poster_path ??
+			tvDetails.poster_path,
+		'original'
+	);
+
 	return (
-		<div className="min-h-screen bg-app-bg pb-20">
-			<SeasonHeader
+		<div className="min-h-screen">
+			<SeasonBanner
 				tvId={tvId}
 				tvName={tvDetails.name}
 				seasonName={seasonDetails.name}
 				seasonNumber={seasonNumber}
-				totalEpisodes={seasonDetails.episodes.length}
+				backdropUrl={backdropUrl}
+				posterPath={seasonDetails.poster_path ?? tvDetails.poster_path}
+				airDate={seasonDetails.air_date}
+				episodeCount={totalEpisodes}
 				watchedCount={watchedCount}
-				labels={{ backTo: t.movie.backTo, episodes: t.movie.episodes }}
+				totalEpisodes={totalEpisodes}
+				genres={tvDetails.genres}
+				rating={seasonRating}
 			/>
 
-			<div className="container mx-auto px-6 lg:px-12 py-10 space-y-12">
+			<MediaActionsBar>
+				<SeasonWatchButton
+					tvId={tvId}
+					seasonNumber={seasonNumber}
+					totalEpisodes={totalEpisodes}
+					watchedCount={watchedCount}
+				/>
+			</MediaActionsBar>
+
+			<div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16">
 				{seasonDetails.overview && (
 					<div className="max-w-4xl space-y-4">
 						<SectionHeading>{t.explorer.overview}</SectionHeading>
@@ -135,7 +159,9 @@ export default async function SeasonPage(props: SeasonPageProps) {
 					</div>
 				)}
 
-				<WatchProviders providers={watchProviders} />
+				<Suspense fallback={<DetailSectionSkeleton />}>
+					<SeasonProvidersSection tvId={tvId} />
+				</Suspense>
 
 				{seasonRating && (
 					<CommunityRating
@@ -147,14 +173,12 @@ export default async function SeasonPage(props: SeasonPageProps) {
 				<div className="w-full h-px bg-border/10 my-8" />
 
 				<section className="space-y-6">
-					<div className="flex items-end justify-between">
-						<h2 className="text-2xl md:text-3xl font-bold text-text">
-							{t.movie.episodesCapitalized}{' '}
-							<span className="text-muted text-xl font-normal ml-2">
-								({seasonDetails.episodes.length})
-							</span>
-						</h2>
-					</div>
+					<SectionHeading>
+						{t.movie.episodesCapitalized}
+						<span className="text-muted text-base font-normal ml-1">
+							({seasonDetails.episodes.length})
+						</span>
+					</SectionHeading>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{seasonDetails.episodes.map((episode) => (
 							<EpisodeCard

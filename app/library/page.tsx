@@ -1,13 +1,15 @@
 import { Suspense } from 'react';
 import { requireAuth } from '@/lib/auth';
-import { getUserWatchlist } from '@/app/actions/watchlist';
 import { getAllTvShowsWatchProgress } from '@/app/actions/episodes';
+import { getCachedUserWatchlist } from '@/lib/data/watchlist';
 import { LibraryTabs } from '@/components/library/LibraryTabs';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
-import { getTranslations } from '@/lib/i18n/server';
+import { getTranslations, type Translations } from '@/lib/i18n/server';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
+import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { getTvShowTotalEpisodes } from '@/lib/tmdb';
 import { BASE_URL, buildPageMetadata } from '@/lib/metadata';
+import type { MediaType } from '@/types/tmdb';
 
 export async function generateMetadata() {
 	const t = await getTranslations();
@@ -25,14 +27,31 @@ type Props = {
 	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default async function LibraryPage({ searchParams }: Props) {
-	await requireAuth();
+async function LibrarySubtitle({
+	type,
+	t,
+}: {
+	type: MediaType;
+	t: Translations;
+}) {
+	const fullWatchlist = await getCachedUserWatchlist();
+	const count = fullWatchlist.filter(
+		(entry) => entry.media_type === type
+	).length;
+	const isPlural = count > 1;
+	const filmsCountText = isPlural
+		? type === 'tv'
+			? t.library.tvCountPlural
+			: t.library.filmsCountPlural
+		: type === 'tv'
+			? t.library.tvCount
+			: t.library.filmsCount;
 
-	const params = await searchParams;
-	const type = params?.type === 'tv' ? 'tv' : 'movie';
+	return <>{`${count} ${filmsCountText} ${t.library.inLibrary}`}</>;
+}
 
-	const t = await getTranslations();
-	const fullWatchlist = await getUserWatchlist();
+async function LibraryContent({ type }: { type: MediaType }) {
+	const fullWatchlist = await getCachedUserWatchlist();
 	const watchlist = fullWatchlist.filter(
 		(entry) => entry.media_type === type
 	);
@@ -60,32 +79,57 @@ export default async function LibraryPage({ searchParams }: Props) {
 		}
 	}
 
-	const isPlural = watchlist.length > 1;
-	const filmsCountText = isPlural
-		? type === 'tv'
-			? t.library.tvCountPlural
-			: t.library.filmsCountPlural
-		: type === 'tv'
-			? t.library.tvCount
-			: t.library.filmsCount;
-	const inLibraryText = t.library.inLibrary;
+	return (
+		<LibraryTabs
+			toWatch={toWatch}
+			watched={watched}
+			tvProgress={tvProgressMap}
+		/>
+	);
+}
+
+function LibraryGridSkeleton() {
+	return (
+		<>
+			<div className="flex gap-2 border-b border-border pb-0 mb-8">
+				<div className="h-10 w-24 rounded-t-lg bg-surface-2 animate-pulse" />
+				<div className="h-10 w-20 rounded-t-lg bg-surface-2 animate-pulse" />
+			</div>
+			<PosterGridSkeleton count={6} />
+		</>
+	);
+}
+
+export default async function LibraryPage({ searchParams }: Props) {
+	await requireAuth();
+
+	const params = await searchParams;
+	const type: MediaType = params?.type === 'tv' ? 'tv' : 'movie';
+
+	const t = await getTranslations();
 
 	return (
-		<PageLayout>
+		<PageLayout className="screen-in">
 			<PageHeader
 				title={t.pages.library.title}
-				subtitle={`${watchlist.length} ${filmsCountText} ${inLibraryText}`}
+				subtitle={
+					<Suspense
+						fallback={
+							<span className="inline-block h-5 w-40 max-w-full animate-pulse rounded bg-surface-2 align-middle" />
+						}
+					>
+						<LibrarySubtitle type={type} t={t} />
+					</Suspense>
+				}
 			/>
 
 			<Suspense fallback={<div className="h-11.5 mb-8" />}>
 				<MediaTypeSwitcher defaultType="movie" />
 			</Suspense>
 
-			<LibraryTabs
-				toWatch={toWatch}
-				watched={watched}
-				tvProgress={tvProgressMap}
-			/>
+			<Suspense fallback={<LibraryGridSkeleton />}>
+				<LibraryContent type={type} />
+			</Suspense>
 		</PageLayout>
 	);
 }

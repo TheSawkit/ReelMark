@@ -51,6 +51,7 @@ export function EpisodeCard({
 	const [isExpanded, setIsExpanded] = useState(false);
 	const dialogRef = useRef<HTMLDivElement>(null);
 	const triggerRef = useRef<HTMLButtonElement>(null);
+	const wasOpenRef = useRef(false);
 
 	const handleEscape = useCallback((e: KeyboardEvent) => {
 		if (e.key === 'Escape') setIsExpanded(false);
@@ -77,17 +78,21 @@ export function EpisodeCard({
 	}, []);
 
 	useEffect(() => {
-		if (!isExpanded) {
-			triggerRef.current?.focus();
-			return;
+		if (isExpanded) {
+			wasOpenRef.current = true;
+			document.addEventListener('keydown', handleEscape);
+			const closeButton =
+				dialogRef.current?.querySelector<HTMLButtonElement>(
+					'[data-close]'
+				);
+			closeButton?.focus();
+			return () => document.removeEventListener('keydown', handleEscape);
 		}
 
-		document.addEventListener('keydown', handleEscape);
-		const closeButton =
-			dialogRef.current?.querySelector<HTMLButtonElement>('[data-close]');
-		closeButton?.focus();
-
-		return () => document.removeEventListener('keydown', handleEscape);
+		if (wasOpenRef.current) {
+			wasOpenRef.current = false;
+			triggerRef.current?.focus();
+		}
 	}, [isExpanded, handleEscape]);
 
 	const noImage = labels?.noImage ?? t.movie.noImage;
@@ -96,7 +101,7 @@ export function EpisodeCard({
 	return (
 		<div
 			className={cn(
-				'relative flex flex-col overflow-hidden bg-surface/20 backdrop-blur-2xl rounded-poster transition-all duration-(--duration-base) hover:shadow-glow-gold shadow-card border border-border/10 border-t-border/20 group focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
+				'relative flex flex-col overflow-hidden glass-overlay rounded-poster transition-all duration-(--duration-base) hover:shadow-glow-gold shadow-card group focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
 				isWatched
 					? 'border-primary/40'
 					: 'hover:border-gold/40 hover:border-t-gold/60'
@@ -115,12 +120,12 @@ export function EpisodeCard({
 						<span className="text-sm">{noImage}</span>
 					</div>
 				)}
-				<div className="absolute top-2 left-2 bg-surface/20 backdrop-blur-2xl border border-border/10 border-t-border/20 shadow-card-sm text-text font-bold text-sm px-2 py-1 rounded">
+				<div className="absolute top-2 left-2 glass-overlay shadow-card-sm text-text font-bold text-sm px-2 py-1 rounded">
 					E{episode.episode_number.toString().padStart(2, '0')}
 				</div>
 				<div
 					className={cn(
-						'absolute top-2 right-2 bg-surface/20 backdrop-blur-2xl px-2 py-1 rounded border border-border/10 border-t-border/20 shadow-card-sm',
+						'absolute top-2 right-2 glass-overlay px-2 py-1 rounded shadow-card-sm',
 						'flex items-center gap-1 text-xs font-bold text-gold'
 					)}
 				>
@@ -195,7 +200,7 @@ export function EpisodeCard({
 					aria-modal="true"
 					aria-labelledby={`episode-title-${episode.episode_number}`}
 					onKeyDown={handleDialogKeyDown}
-					className="absolute inset-0 z-30 bg-surface/40 backdrop-blur-3xl border border-border/10 border-t-border/20 flex flex-col p-6 animate-in fade-in duration-(--duration-base) cursor-pointer"
+					className="absolute inset-0 z-30 glass-overlay flex flex-col p-6 animate-in fade-in duration-(--duration-base) cursor-pointer"
 				>
 					<div className="flex justify-between items-start mb-4 gap-4">
 						<h3

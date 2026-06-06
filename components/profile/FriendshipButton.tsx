@@ -180,7 +180,7 @@ export function FriendshipButton({
 		localFriendship.addressee_id === currentUserId
 	) {
 		return (
-			<div className="flex-1 flex items-center justify-between gap-3 px-4 py-3 bg-surface/60 backdrop-blur-xl backdrop-saturate-150 border border-border-subtle rounded-cinema shadow-card">
+			<div className="flex-1 flex items-center justify-between gap-3 px-4 py-3 glass-surface rounded-cinema shadow-card">
 				<div className="flex items-center gap-2.5">
 					<UserCheck className="h-4 w-4 text-gold-bright shrink-0" />
 					<span className="text-sm font-medium text-text">

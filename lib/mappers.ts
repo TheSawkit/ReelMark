@@ -1,7 +1,9 @@
 import type {
 	MediaItem,
-	ActorMovieCredit,
-	ActorTvCredit,
+	CrewMovieCredit,
+	CrewTvCredit,
+	CrewMovieCrewCredit,
+	CrewTvCrewCredit,
 	WatchlistEntry,
 } from '@/types/tmdb';
 import type { PlaylistItem } from '@/types/profile';
@@ -31,12 +33,12 @@ export function watchlistEntryToMediaItem(entry: WatchlistEntry): MediaItem {
 }
 
 /**
- * Converts an actor's movie credit into a `MediaItem`.
+ * Converts a person's movie credit into a `MediaItem`.
  *
- * @param credit - Movie credit from the TMDB actor credits endpoint.
+ * @param credit - Movie credit from the TMDB person credits endpoint.
  * @returns Normalized `MediaItem` with `media_type: "movie"`.
  */
-export function movieCreditToMediaItem(credit: ActorMovieCredit): MediaItem {
+export function movieCreditToMediaItem(credit: CrewMovieCredit): MediaItem {
 	return {
 		id: credit.id,
 		media_type: 'movie',
@@ -54,12 +56,12 @@ export function movieCreditToMediaItem(credit: ActorMovieCredit): MediaItem {
 }
 
 /**
- * Converts an actor's TV show credit into a `MediaItem`.
+ * Converts a person's TV show credit into a `MediaItem`.
  *
- * @param credit - TV credit from the TMDB actor credits endpoint.
+ * @param credit - TV credit from the TMDB person credits endpoint.
  * @returns Normalized `MediaItem` with `media_type: "tv"`.
  */
-export function tvCreditToMediaItem(credit: ActorTvCredit): MediaItem {
+export function tvCreditToMediaItem(credit: CrewTvCredit): MediaItem {
 	return {
 		id: credit.id,
 		media_type: 'tv',
@@ -73,6 +75,52 @@ export function tvCreditToMediaItem(credit: ActorTvCredit): MediaItem {
 		vote_count: 0,
 		popularity: credit.popularity,
 		character: credit.character || undefined,
+	};
+}
+
+/**
+ * Converts a person's movie crew credit (directing, writing, music…) into a `MediaItem`.
+ *
+ * @param credit - Movie crew credit from the TMDB person credits endpoint.
+ * @returns Normalized `MediaItem` with `media_type: "movie"`.
+ */
+export function movieCrewCreditToMediaItem(
+	credit: CrewMovieCrewCredit
+): MediaItem {
+	return {
+		id: credit.id,
+		media_type: 'movie',
+		title: credit.title,
+		original_title: credit.title,
+		overview: credit.overview,
+		poster_path: credit.poster_path,
+		backdrop_path: credit.backdrop_path,
+		release_date: credit.release_date,
+		vote_average: credit.vote_average,
+		vote_count: 0,
+		popularity: credit.popularity,
+	};
+}
+
+/**
+ * Converts a person's TV crew credit (directing, writing, music…) into a `MediaItem`.
+ *
+ * @param credit - TV crew credit from the TMDB person credits endpoint.
+ * @returns Normalized `MediaItem` with `media_type: "tv"`.
+ */
+export function tvCrewCreditToMediaItem(credit: CrewTvCrewCredit): MediaItem {
+	return {
+		id: credit.id,
+		media_type: 'tv',
+		title: credit.name,
+		original_title: credit.name,
+		overview: credit.overview,
+		poster_path: credit.poster_path,
+		backdrop_path: credit.backdrop_path,
+		release_date: credit.first_air_date,
+		vote_average: credit.vote_average,
+		vote_count: 0,
+		popularity: credit.popularity,
 	};
 }
 

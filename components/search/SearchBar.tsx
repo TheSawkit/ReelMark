@@ -163,7 +163,7 @@ export function SearchBar({
 						'transition-all duration-(--duration-base) ease-apple',
 						isCompact
 							? 'pl-10 pr-8 py-2 h-10 bg-surface-2/50 backdrop-blur border border-border/30 hover:border-border/50 focus-visible:border-primary/60 focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:ring-offset-1 focus-visible:ring-offset-background text-sm shadow-sm rounded-lg'
-							: 'pl-16 pr-10 py-3 h-16 bg-glass-bg backdrop-blur-xl border border-glass-border hover:border-glass-border-hover focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background text-base shadow-card rounded-(--radius-xl)'
+							: 'pl-16 pr-10 py-3 h-16 glass-surface hover:border-glass-border-hover focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background text-base shadow-card rounded-(--radius-xl)'
 					)}
 					value={query}
 					onChange={(e) => setQuery(e.target.value)}

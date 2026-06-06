@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { requireAuth } from '@/lib/auth';
 import { fetchMoreMedia } from '@/app/actions/media';
 import { InfiniteScrollMedia } from '@/components/media/card/InfiniteScrollMedia';
+import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { CategoryNav } from '@/components/navigation/CategoryNav';
 import { getTranslations } from '@/lib/i18n/server';
 import { SearchBar } from '@/components/search/SearchBar';
@@ -105,8 +106,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
 	const title = categoryMap[category].title;
 
-	const initialItems = await fetchMoreMedia(category, 1);
-
 	return (
 		<PageLayout>
 			<PageHeader title={title} subtitle={t.pages.explorer.subtitle} />
@@ -118,11 +117,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 			</Suspense>
 
 			<div className="mt-8">
-				<InfiniteScrollMedia
-					initialItems={initialItems}
-					category={category}
-				/>
+				<Suspense fallback={<PosterGridSkeleton />}>
+					<CategoryGrid category={category} />
+				</Suspense>
 			</div>
 		</PageLayout>
+	);
+}
+
+async function CategoryGrid({ category }: { category: string }) {
+	const initialItems = await fetchMoreMedia(category, 1);
+	return (
+		<InfiniteScrollMedia initialItems={initialItems} category={category} />
 	);
 }

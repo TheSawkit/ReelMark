@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 interface PageLayoutProps {
@@ -21,7 +22,7 @@ export function PageLayout({ children, className }: PageLayoutProps) {
 
 interface PageHeaderProps {
 	title: string;
-	subtitle?: string;
+	subtitle?: ReactNode;
 }
 
 /** Animated page header with a title and an optional subtitle. */

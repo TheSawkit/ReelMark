@@ -1,10 +1,13 @@
+import { Suspense } from 'react';
 import { requireAuth } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { SettingsContent } from '@/components/settings/SettingsContent';
+import { SettingsContentSkeleton } from '@/components/settings/SettingsContentSkeleton';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { getTranslations } from '@/lib/i18n/server';
 import { USER_PROFILE_COLUMNS, PRIVACY_COLUMNS } from '@/lib/supabase/columns';
 import type { UserProfile, PrivacySettings } from '@/types/profile';
+import type { User } from '@supabase/supabase-js';
 
 export async function generateMetadata() {
 	const t = await getTranslations();
@@ -19,8 +22,7 @@ export async function generateMetadata() {
 	};
 }
 
-export default async function SettingsPage() {
-	const user = await requireAuth();
+async function SettingsSection({ user }: { user: User }) {
 	const supabase = await createClient();
 
 	const [profileResult, privacyResult] = await Promise.all([
@@ -40,6 +42,17 @@ export default async function SettingsPage() {
 	const privacySettings =
 		(privacyResult.data as PrivacySettings | null) ?? null;
 
+	return (
+		<SettingsContent
+			user={user}
+			userProfile={userProfile}
+			privacySettings={privacySettings}
+		/>
+	);
+}
+
+export default async function SettingsPage() {
+	const user = await requireAuth();
 	const t = await getTranslations();
 
 	return (
@@ -48,11 +61,9 @@ export default async function SettingsPage() {
 				title={t.settings.title}
 				subtitle={t.settings.subtitle}
 			/>
-			<SettingsContent
-				user={user}
-				userProfile={userProfile}
-				privacySettings={privacySettings}
-			/>
+			<Suspense fallback={<SettingsContentSkeleton />}>
+				<SettingsSection user={user} />
+			</Suspense>
 		</PageLayout>
 	);
 }

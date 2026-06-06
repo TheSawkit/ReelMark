@@ -40,6 +40,7 @@ export function LibraryTabs({
 	};
 
 	const current = tabs[activeTab];
+	const activeIndex = activeTab === 'to_watch' ? 0 : 1;
 
 	function switchTab(tab: Tab) {
 		setActiveTab(tab);
@@ -49,10 +50,18 @@ export function LibraryTabs({
 	return (
 		<div>
 			<div
-				className="flex gap-2 mb-8 border-b border-border pb-0"
+				className="relative flex p-1 mb-8 rounded-2xl bg-surface-2 border border-border"
 				role="tablist"
 				aria-label={t.library.filtersLabel}
 			>
+				<div
+					aria-hidden="true"
+					className="absolute top-1 bottom-1 rounded-xl bg-surface border border-border shadow-card-sm transition-[left] duration-(--duration-base) ease-apple-spring"
+					style={{
+						left: `calc(${activeIndex * 50}% + 0.25rem)`,
+						width: 'calc(50% - 0.5rem)',
+					}}
+				/>
 				{(Object.entries(tabs) as [Tab, (typeof tabs)[Tab]][]).map(
 					([id, tab]) => (
 						<button
@@ -62,11 +71,11 @@ export function LibraryTabs({
 							aria-controls={`panel-${id}`}
 							onClick={() => switchTab(id)}
 							className={cn(
-								'flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all duration-(--duration-fast) ease-apple cursor-pointer',
-								'border-b-2 -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:rounded-sm',
+								'relative z-10 flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl min-h-11 transition-colors duration-(--duration-fast) cursor-pointer',
+								'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 								activeTab === id
-									? 'border-primary text-text'
-									: 'border-transparent text-muted hover:text-text hover:border-border'
+									? 'text-text'
+									: 'text-muted hover:text-text'
 							)}
 						>
 							<tab.icon className="h-4 w-4" />
@@ -76,7 +85,7 @@ export function LibraryTabs({
 									'ml-1 px-1.5 py-0.5 rounded-full text-xs',
 									activeTab === id
 										? 'bg-primary/20 text-text'
-										: 'bg-surface-2 text-muted'
+										: 'bg-surface-3 text-muted'
 								)}
 							>
 								{tab.items.length}

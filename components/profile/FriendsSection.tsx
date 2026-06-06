@@ -25,7 +25,7 @@ export function FriendsSection({
 		return <EmptyState message={t.profile.noFriends} />;
 
 	return (
-		<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+		<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
 			{friends.map(({ friendship, username, avatarUrl, fullName }) => {
 				const displayName = fullName || username;
 				const initials = displayName.slice(0, 2).toUpperCase();

@@ -1,4 +1,8 @@
 import { MAX_REVIEW_LENGTH } from '@/types/profile';
+import {
+	NOTIFICATION_TYPES,
+	type NotificationType,
+} from '@/types/notifications';
 
 export const VALID_STATUSES = new Set<string>(['watched', 'to_watch']);
 export const VALID_MEDIA_TYPES = new Set<string>(['movie', 'tv']);
@@ -107,4 +111,12 @@ export function validateAvatarFile(
 	if (!(ALLOWED_AVATAR_MIMES as readonly string[]).includes(file.type))
 		return { valid: false, errorCode: 'invalidMimeType' };
 	return { valid: true, ext };
+}
+
+export const VALID_NOTIFICATION_TYPES = new Set<string>(NOTIFICATION_TYPES);
+
+export function isValidNotificationType(
+	value: unknown
+): value is NotificationType {
+	return typeof value === 'string' && VALID_NOTIFICATION_TYPES.has(value);
 }

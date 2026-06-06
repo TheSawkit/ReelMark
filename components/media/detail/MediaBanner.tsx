@@ -5,12 +5,14 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { getImageUrl } from '@/lib/tmdb/images';
 import type { MediaBannerProps } from '@/types/components';
-import { Star, Clock, Calendar, ArrowLeft } from 'lucide-react';
+import { Clock, Calendar, ArrowLeft } from 'lucide-react';
+import { InfoBadge, RatingBadge } from '@/components/ui/InfoBadge';
 import { useTranslation } from '@/lib/i18n/context';
 import { getLocale } from '@/lib/i18n/utils';
 import { formatDate, formatRuntime } from '@/lib/format';
 import { useDominantColor } from '@/hooks/useDominantColor';
 import { NavbarGradient } from '@/components/navigation/NavbarGradient';
+import { CinematicBackdrop } from '@/components/media/detail/CinematicBackdrop';
 import { mediaHeaderStore } from '@/lib/media-header-store';
 /**
  * Large hero banner displaying media details with parallax backdrop.
@@ -68,27 +70,14 @@ export function MediaBanner({
 			}}
 		>
 			<NavbarGradient color={dominantColor} />
-			<div className="absolute inset-x-0 inset-y-0 -z-10">
-				<Image
-					src={backdropUrl}
-					alt={title}
-					fill
-					style={{
-						paddingTop: 'calc(4rem + env(safe-area-inset-top))',
-					}}
-					className="pt-20 object-cover object-top"
-					sizes="100vw"
-				/>
-				<div className="absolute inset-0 bg-linear-to-t from-app-bg via-app-bg/40 to-transparent" />
-				<div className="absolute inset-0 bg-linear-to-r from-app-bg via-app-bg/40 to-transparent" />
-			</div>
+			<CinematicBackdrop src={backdropUrl} alt={title} />
 
 			<div className="relative z-10 container mx-auto px-6 lg:px-12 h-full flex flex-col justify-end pb-4 sm:pb-12">
 				<div className="w-full justify-start mb-6 md:mb-8 z-20 hidden md:flex">
 					<button
 						onClick={() => router.back()}
 						aria-label={t.common.goBack}
-						className="h-11 w-11 flex items-center justify-center rounded-full bg-surface/20 backdrop-blur-2xl border border-border/10 border-t-border/20 hover:bg-surface-2/20 shrink-0 text-text transition-colors cursor-pointer shadow-card-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+						className="h-11 w-11 flex items-center justify-center rounded-full glass-overlay hover:bg-surface-2/20 shrink-0 text-text transition-colors cursor-pointer shadow-card-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
 					>
 						<ArrowLeft className="h-5 w-5" />
 					</button>
@@ -116,22 +105,18 @@ export function MediaBanner({
 						)}
 
 						<div className="flex flex-wrap items-center gap-4 md:gap-6 mb-4">
-							<HeroBadge
-								icon={
-									<Star className="h-5 w-5 fill-rating-gold text-rating-gold" />
-								}
-							>
-								<span className="font-semibold text-text">
-									{voteAverage && voteAverage > 0
+							<RatingBadge
+								value={
+									voteAverage && voteAverage > 0
 										? voteAverage.toFixed(1)
-										: t.movie.notRated}
-								</span>
-							</HeroBadge>
+										: t.movie.notRated
+								}
+							/>
 
 							{communityBadge}
 
 							{releaseDate && (
-								<HeroBadge
+								<InfoBadge
 									icon={
 										<Calendar className="h-5 w-5 text-muted" />
 									}
@@ -139,11 +124,11 @@ export function MediaBanner({
 									<span className="text-text">
 										{formatDate(releaseDate, locale)}
 									</span>
-								</HeroBadge>
+								</InfoBadge>
 							)}
 
 							{runtime && runtime > 0 && (
-								<HeroBadge
+								<InfoBadge
 									icon={
 										<Clock className="h-5 w-5 text-muted" />
 									}
@@ -151,15 +136,15 @@ export function MediaBanner({
 									<span className="text-text">
 										{formatRuntime(runtime)}
 									</span>
-								</HeroBadge>
+								</InfoBadge>
 							)}
 
 							{certification && (
-								<HeroBadge>
+								<InfoBadge>
 									<span className="font-semibold text-text">
 										{certification}
 									</span>
-								</HeroBadge>
+								</InfoBadge>
 							)}
 						</div>
 
@@ -168,7 +153,7 @@ export function MediaBanner({
 								{genres.map((genre) => (
 									<span
 										key={genre.id}
-										className="bg-glass-bg-hover text-text px-3.5 py-1.5 rounded-full text-sm font-medium border border-glass-border-hover backdrop-blur-xl"
+										className="glass-surface text-text px-3.5 py-1.5 rounded-full text-sm font-medium"
 									>
 										{genre.name}
 									</span>
@@ -191,21 +176,6 @@ export function MediaBanner({
 					</div>
 				</div>
 			</div>
-		</div>
-	);
-}
-
-function HeroBadge({
-	children,
-	icon,
-}: {
-	children: React.ReactNode;
-	icon?: React.ReactNode;
-}) {
-	return (
-		<div className="flex items-center gap-2 bg-glass-bg-hover backdrop-blur-2xl backdrop-saturate-150 px-4 py-2 rounded-full border border-glass-border-hover shadow-card-sm">
-			{icon}
-			{children}
 		</div>
 	);
 }

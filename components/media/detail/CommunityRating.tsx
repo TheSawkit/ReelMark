@@ -1,4 +1,5 @@
 import { StarRating } from '@/components/ui/StarRating';
+import { SectionHeading } from '@/components/ui/SectionHeading';
 import { getTranslations } from '@/lib/i18n/server';
 
 interface CommunityRatingProps {
@@ -10,10 +11,8 @@ export async function CommunityRating({ avg, count }: CommunityRatingProps) {
 	const t = await getTranslations();
 
 	return (
-		<div className="flex flex-col gap-1.5">
-			<span className="text-xs font-semibold text-muted uppercase tracking-wider">
-				{t.movie.communityRating}
-			</span>
+		<div className="flex flex-col gap-3">
+			<SectionHeading>{t.movie.communityRating}</SectionHeading>
 			<div className="flex items-center gap-2">
 				<StarRating value={Math.round(avg)} size="sm" />
 				<span className="text-sm font-bold text-gold tabular-nums">

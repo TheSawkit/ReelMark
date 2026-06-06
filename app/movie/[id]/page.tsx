@@ -14,11 +14,15 @@ import {
 import { MediaBanner } from '@/components/media/detail/MediaBanner';
 import { WatchButton } from '@/components/media/detail/WatchButton';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
+import { WatchProviders } from '@/components/media/detail/WatchProviders';
+import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
+import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { PublicReviewsSection } from '@/components/media/reviews/PublicReviewsSection';
 import { getMediaWatchlistEntry } from '@/app/actions/watchlist';
 import { getAverageRating, getMediaReview } from '@/app/actions/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
+import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import { Eye } from 'lucide-react';
 import { getTranslations, getServerLocale } from '@/lib/i18n/server';
@@ -26,6 +30,18 @@ import { formatDate } from '@/lib/format';
 type MoviePageParams = Promise<{ id: string }>;
 interface MoviePageProps {
 	params: MoviePageParams;
+}
+
+async function MovieProvidersSection({ movieId }: { movieId: number }) {
+	const providers = await getMovieWatchProviders(movieId).catch(() => null);
+	return <WatchProviders providers={providers} />;
+}
+
+async function MovieTrailersSection({ movieId }: { movieId: number }) {
+	const videos = await getMovieVideos(movieId);
+	const trailers = await filterAvailableVideos(filterTrailers(videos));
+	if (trailers.length === 0) return null;
+	return <MediaTrailers trailers={trailers} />;
 }
 
 export async function generateMetadata({
@@ -45,12 +61,11 @@ export default async function MoviePage(props: MoviePageProps) {
 
 	if (isNaN(movieId)) notFound();
 
-	let movieDetails, credits, videos, images;
+	let movieDetails, credits, images;
 	try {
-		[movieDetails, credits, videos, images] = await Promise.all([
+		[movieDetails, credits, images] = await Promise.all([
 			getMovieDetails(movieId),
 			getMovieCredits(movieId),
-			getMovieVideos(movieId),
 			getMovieImages(movieId),
 		]);
 	} catch (error) {
@@ -74,29 +89,22 @@ export default async function MoviePage(props: MoviePageProps) {
 		notFound();
 	}
 
-	const [
-		trailers,
-		watchProviders,
-		watchlistEntry,
-		movieRating,
-		userReview,
-		t,
-		locale,
-	] = await Promise.all([
-		filterAvailableVideos(filterTrailers(videos)),
-		getMovieWatchProviders(movieId).catch(() => null),
-		getMediaWatchlistEntry(movieId, 'movie'),
-		getAverageRating(movieId, 'movie'),
-		getMediaReview(movieId, 'movie'),
-		getTranslations(),
-		getServerLocale(),
-	]);
+	const [watchlistEntry, movieRating, userReview, t, locale] =
+		await Promise.all([
+			getMediaWatchlistEntry(movieId, 'movie'),
+			getAverageRating(movieId, 'movie'),
+			getMediaReview(movieId, 'movie'),
+			getTranslations(),
+			getServerLocale(),
+		]);
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, movieDetails.backdrop_path),
 		'original'
 	);
 	const isWatched = watchlistEntry?.status === 'watched';
+
+	const crew = groupCrew(credits.crew);
 
 	const banner = (
 		<MediaBanner
@@ -151,7 +159,7 @@ export default async function MoviePage(props: MoviePageProps) {
 						/>
 					</div>
 					{isWatched && watchlistEntry?.created_at && (
-						<div className="flex items-center gap-2 px-4 py-2 rounded-md bg-surface/30 backdrop-blur-md border border-border/10 text-muted animate-in fade-in slide-in-from-left-4 duration-(--duration-slow)">
+						<div className="flex items-center gap-2 px-4 py-2 rounded-md glass-overlay text-muted animate-in fade-in slide-in-from-left-4 duration-(--duration-slow)">
 							<Eye className="h-4 w-4 shrink-0" />
 							<span className="text-sm font-medium">
 								{t.movie.watchedOn}{' '}
@@ -196,7 +204,12 @@ export default async function MoviePage(props: MoviePageProps) {
 			banner={banner}
 			actionsBar={actionsBar}
 			description={movieDetails.overview}
-			watchProviders={watchProviders}
+			crew={crew}
+			watchProviders={
+				<Suspense fallback={<DetailSectionSkeleton />}>
+					<MovieProvidersSection movieId={movieId} />
+				</Suspense>
+			}
 			rating={movieRating}
 			reviews={
 				<Suspense
@@ -207,7 +220,11 @@ export default async function MoviePage(props: MoviePageProps) {
 					<PublicReviewsSection mediaId={movieId} mediaType="movie" />
 				</Suspense>
 			}
-			trailers={trailers}
+			trailers={
+				<Suspense fallback={<DetailSectionSkeleton />}>
+					<MovieTrailersSection movieId={movieId} />
+				</Suspense>
+			}
 			cast={credits.cast}
 		/>
 	);
