@@ -4,7 +4,13 @@ import { getMediaKey } from '@/lib/media';
 import { getTranslations } from '@/lib/i18n/server';
 import type { MediaItem } from '@/types/tmdb';
 
-function PosterRow({ items, reverse }: { items: MediaItem[]; reverse?: boolean }) {
+function PosterRow({
+	items,
+	reverse,
+}: {
+	items: MediaItem[];
+	reverse?: boolean;
+}) {
 	if (items.length === 0) return null;
 	return (
 		<MovingRow speed={reverse ? 78 : 62} gap={14} reverse={reverse}>

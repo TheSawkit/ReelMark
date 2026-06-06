@@ -34,9 +34,13 @@ export function RatingBadge({
 	return (
 		<InfoBadge
 			className={className}
-			icon={<Star className="h-5 w-5 fill-rating-gold text-rating-gold" />}
+			icon={
+				<Star className="h-5 w-5 fill-rating-gold text-rating-gold" />
+			}
 		>
-			<span className="font-semibold text-text tabular-nums">{value}</span>
+			<span className="font-semibold text-text tabular-nums">
+				{value}
+			</span>
 		</InfoBadge>
 	);
 }

@@ -1,9 +1,9 @@
 import type {
-    CrewDetails,
-    CrewMovieCredit,
-    CrewTvCredit,
-    CrewMovieCrewCredit,
-    CrewTvCrewCredit,
+	CrewDetails,
+	CrewMovieCredit,
+	CrewTvCredit,
+	CrewMovieCrewCredit,
+	CrewTvCrewCredit,
 } from '@/types/tmdb';
 import { fetchTMDB } from './client';
 
@@ -12,7 +12,7 @@ import { fetchTMDB } from './client';
  * @returns Full person/crew details including biography and profile images.
  */
 export async function getCrewDetails(id: number): Promise<CrewDetails> {
-    return fetchTMDB<CrewDetails>(`/person/${id}`, {}, 86400);
+	return fetchTMDB<CrewDetails>(`/person/${id}`, {}, 86400);
 }
 
 /**
@@ -22,13 +22,13 @@ export async function getCrewDetails(id: number): Promise<CrewDetails> {
  * @param id - TMDB person ID.
  */
 export async function getCrewMovieCredits(
-    id: number
+	id: number
 ): Promise<{ cast: CrewMovieCredit[]; crew: CrewMovieCrewCredit[] }> {
-    const { cast, crew } = await fetchTMDB<{
-        cast: CrewMovieCredit[];
-        crew: CrewMovieCrewCredit[];
-    }>(`/person/${id}/movie_credits`, {}, 86400);
-    return { cast, crew };
+	const { cast, crew } = await fetchTMDB<{
+		cast: CrewMovieCredit[];
+		crew: CrewMovieCrewCredit[];
+	}>(`/person/${id}/movie_credits`, {}, 86400);
+	return { cast, crew };
 }
 
 /**
@@ -38,11 +38,11 @@ export async function getCrewMovieCredits(
  * @param id - TMDB person ID.
  */
 export async function getCrewTvCredits(
-    id: number
+	id: number
 ): Promise<{ cast: CrewTvCredit[]; crew: CrewTvCrewCredit[] }> {
-    const { cast, crew } = await fetchTMDB<{
-        cast: CrewTvCredit[];
-        crew: CrewTvCrewCredit[];
-    }>(`/person/${id}/tv_credits`, {}, 86400);
-    return { cast, crew };
+	const { cast, crew } = await fetchTMDB<{
+		cast: CrewTvCredit[];
+		crew: CrewTvCrewCredit[];
+	}>(`/person/${id}/tv_credits`, {}, 86400);
+	return { cast, crew };
 }

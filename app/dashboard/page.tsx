@@ -171,7 +171,9 @@ async function LibraryContentSection({
 	const { watchlist } = await getWatchlistWithProgress();
 
 	const toWatch = watchlist
-		.filter((entry) => entry.media_type === type && entry.status === 'to_watch')
+		.filter(
+			(entry) => entry.media_type === type && entry.status === 'to_watch'
+		)
 		.slice(0, 10);
 	const watched = watchlist.filter(
 		(entry) => entry.media_type === type && entry.status === 'watched'
@@ -199,7 +201,9 @@ async function LibraryContentSection({
 				entry.media_title
 			),
 			items: isMovie
-				? (recommendationsResults[index] as Movie[]).map(movieToMediaItem)
+				? (recommendationsResults[index] as Movie[]).map(
+						movieToMediaItem
+					)
 				: (recommendationsResults[index] as TvShow[]).map(
 						tvShowToMediaItem
 					),

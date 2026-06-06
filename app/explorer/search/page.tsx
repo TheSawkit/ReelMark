@@ -25,13 +25,7 @@ export async function generateMetadata({
 	};
 }
 
-async function SearchResults({
-	query,
-	t,
-}: {
-	query: string;
-	t: Translations;
-}) {
+async function SearchResults({ query, t }: { query: string; t: Translations }) {
 	const results = query ? await searchMulti(query) : [];
 
 	const foundMessage = `${t.pages.search.found} ${t.pages.search.foundCount.replace('${count}', String(results.length))}`;

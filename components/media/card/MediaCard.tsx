@@ -188,7 +188,9 @@ export function MediaCard({
 
 						<WatchButton
 							mediaId={watchlistEntry?.media_id ?? media.id}
-							mediaTitle={watchlistEntry?.media_title ?? media.title}
+							mediaTitle={
+								watchlistEntry?.media_title ?? media.title
+							}
 							mediaType={
 								watchlistEntry?.media_type ?? media.media_type
 							}

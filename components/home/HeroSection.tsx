@@ -37,7 +37,10 @@ export default async function HeroSection({
 
 				<p
 					className="mx-auto mb-3 max-w-2xl text-xl text-muted md:text-2xl"
-					style={{ animation: SLIDE, animationDelay: 'var(--duration-fast)' }}
+					style={{
+						animation: SLIDE,
+						animationDelay: 'var(--duration-fast)',
+					}}
 				>
 					{t.hero.subtitle}
 				</p>

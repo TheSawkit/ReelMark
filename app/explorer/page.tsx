@@ -72,9 +72,17 @@ async function TrendingSpotlightSection({
 	);
 }
 
-async function PopularSection({ type, t }: { type: MediaType; t: Translations }) {
+async function PopularSection({
+	type,
+	t,
+}: {
+	type: MediaType;
+	t: Translations;
+}) {
 	const isMovie = type === 'movie';
-	const rawResults = isMovie ? await getPopularMovies() : await getPopularTvShows();
+	const rawResults = isMovie
+		? await getPopularMovies()
+		: await getPopularTvShows();
 	const items = await mergeWithWatchlist(
 		isMovie
 			? (rawResults as Movie[]).map(movieToMediaItem)
@@ -83,7 +91,9 @@ async function PopularSection({ type, t }: { type: MediaType; t: Translations })
 
 	return (
 		<MediaSection
-			title={isMovie ? t.pages.explorer.popular : t.pages.explorer.tvPopular}
+			title={
+				isMovie ? t.pages.explorer.popular : t.pages.explorer.tvPopular
+			}
 			items={items}
 			categoryUrl={`/explorer/${isMovie ? 'popular' : 'tv-popular'}`}
 		/>
@@ -98,7 +108,9 @@ async function TopRatedSection({
 	t: Translations;
 }) {
 	const isMovie = type === 'movie';
-	const rawResults = isMovie ? await getTopRatedMovies() : await getTopRatedTvShows();
+	const rawResults = isMovie
+		? await getTopRatedMovies()
+		: await getTopRatedTvShows();
 	const items = await mergeWithWatchlist(
 		isMovie
 			? (rawResults as Movie[]).map(movieToMediaItem)
@@ -107,9 +119,15 @@ async function TopRatedSection({
 
 	return (
 		<MediaSection
-			title={isMovie ? t.pages.explorer.topRated : t.pages.explorer.tvTopRated}
+			title={
+				isMovie
+					? t.pages.explorer.topRated
+					: t.pages.explorer.tvTopRated
+			}
 			items={items}
-			categoryUrl={isMovie ? '/explorer/top-rated' : '/explorer/tv-top-rated'}
+			categoryUrl={
+				isMovie ? '/explorer/top-rated' : '/explorer/tv-top-rated'
+			}
 		/>
 	);
 }
@@ -133,7 +151,11 @@ async function UpcomingSection({
 
 	return (
 		<MediaSection
-			title={isMovie ? t.pages.explorer.upcoming : t.pages.explorer.tvAiringToday}
+			title={
+				isMovie
+					? t.pages.explorer.upcoming
+					: t.pages.explorer.tvAiringToday
+			}
 			items={items}
 			categoryUrl={
 				isMovie ? '/explorer/upcoming' : '/explorer/tv-airing-today'

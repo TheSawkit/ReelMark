@@ -16,7 +16,11 @@ interface SpotlightPickProps {
 }
 
 /** Featured "pick of the day" card with an animated glow border. */
-export function SpotlightPick({ item, badgeLabel, ctaLabel }: SpotlightPickProps) {
+export function SpotlightPick({
+	item,
+	badgeLabel,
+	ctaLabel,
+}: SpotlightPickProps) {
 	return (
 		<div className="mb-10">
 			<GlowBorder radius={22} pad={1.5}>

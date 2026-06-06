@@ -44,10 +44,16 @@ export async function generateMetadata({
 
 	try {
 		const crew = await getCrewDetails(crewId);
-		const profileImage = crew.profile_path ? `https://image.tmdb.org/t/p/w500${crew.profile_path}` : undefined;
+		const profileImage = crew.profile_path
+			? `https://image.tmdb.org/t/p/w500${crew.profile_path}`
+			: undefined;
 
-		const images = profileImage ? [{ url: profileImage, width: 500, height: 750 }] : [];
-		const bioDescription = crew.biography?.substring(0, 160) || t.metadata.exploreCrewOn.replace('${name}', crew.name);
+		const images = profileImage
+			? [{ url: profileImage, width: 500, height: 750 }]
+			: [];
+		const bioDescription =
+			crew.biography?.substring(0, 160) ||
+			t.metadata.exploreCrewOn.replace('${name}', crew.name);
 
 		return {
 			title: crew.name,
@@ -81,7 +87,10 @@ async function CrewFilmographySection({
 	crewId: number;
 	knownForDepartment: string;
 }) {
-	const [movieCredits, tvCredits] = await Promise.all([getCrewMovieCredits(crewId), getCrewTvCredits(crewId)]);
+	const [movieCredits, tvCredits] = await Promise.all([
+		getCrewMovieCredits(crewId),
+		getCrewTvCredits(crewId),
+	]);
 
 	const actingItems = [
 		...movieCredits.cast.map(movieCreditToMediaItem),
@@ -145,7 +154,10 @@ export default async function CrewPage(props: CrewPageProps) {
 				<CrewBio biography={crew.biography} />
 
 				<Suspense fallback={<FilmographySkeleton />}>
-					<CrewFilmographySection crewId={crewId} knownForDepartment={crew.known_for_department} />
+					<CrewFilmographySection
+						crewId={crewId}
+						knownForDepartment={crew.known_for_department}
+					/>
 				</Suspense>
 			</div>
 		</div>

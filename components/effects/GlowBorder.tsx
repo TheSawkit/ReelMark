@@ -27,7 +27,9 @@ export function GlowBorder({
 				style={{
 					background:
 						'conic-gradient(from 0deg, transparent 0deg, rgb(var(--color-red-rgb)) 40deg, var(--gold) 80deg, transparent 130deg, transparent 360deg)',
-					animation: run ? 'conic-spin 4.5s linear infinite' : undefined,
+					animation: run
+						? 'conic-spin 4.5s linear infinite'
+						: undefined,
 				}}
 			/>
 			<div

@@ -93,21 +93,15 @@ export default async function TvShowPage(props: TvPageProps) {
 		notFound();
 	}
 
-	const [
-		watchlistEntry,
-		watchProgress,
-		showRating,
-		userReview,
-		t,
-		locale,
-	] = await Promise.all([
-		getMediaWatchlistEntry(tvId, 'tv'),
-		getTvShowWatchProgress(tvId),
-		getShowAverageRating(tvId),
-		getMediaReview(tvId, 'tv'),
-		getTranslations(),
-		getServerLocale(),
-	]);
+	const [watchlistEntry, watchProgress, showRating, userReview, t, locale] =
+		await Promise.all([
+			getMediaWatchlistEntry(tvId, 'tv'),
+			getTvShowWatchProgress(tvId),
+			getShowAverageRating(tvId),
+			getMediaReview(tvId, 'tv'),
+			getTranslations(),
+			getServerLocale(),
+		]);
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, tvDetails.backdrop_path),

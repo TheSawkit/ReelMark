@@ -30,8 +30,4 @@ export {
 } from './tv';
 export { searchMulti, movieToMediaItem, tvShowToMediaItem } from './search';
 export { selectHeroImage, getImageUrl } from './images';
-export {
-	getCrewDetails,
-	getCrewMovieCredits,
-	getCrewTvCredits,
-} from './crew';
+export { getCrewDetails, getCrewMovieCredits, getCrewTvCredits } from './crew';

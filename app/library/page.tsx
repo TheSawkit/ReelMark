@@ -52,7 +52,9 @@ async function LibrarySubtitle({
 
 async function LibraryContent({ type }: { type: MediaType }) {
 	const fullWatchlist = await getCachedUserWatchlist();
-	const watchlist = fullWatchlist.filter((entry) => entry.media_type === type);
+	const watchlist = fullWatchlist.filter(
+		(entry) => entry.media_type === type
+	);
 
 	const toWatch = watchlist.filter((entry) => entry.status === 'to_watch');
 	const watched = watchlist.filter((entry) => entry.status === 'watched');

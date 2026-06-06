@@ -24,7 +24,8 @@ export function EmptyState({
 				className
 			)}
 			style={{
-				animation: 'scaleIn var(--duration-slow) var(--ease-apple) both',
+				animation:
+					'scaleIn var(--duration-slow) var(--ease-apple) both',
 			}}
 		>
 			<div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/15 text-primary">
