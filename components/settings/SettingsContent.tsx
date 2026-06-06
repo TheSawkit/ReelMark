@@ -11,6 +11,7 @@ import { DangerZone } from './DangerZone';
 import { SocialLinksSettings } from './SocialLinksSettings';
 import { PrivacySettings } from './PrivacySettings';
 import { DataSettings } from './DataSettings';
+import { NotificationSettings } from './NotificationSettings';
 import { SettingsNav, type SettingsTab } from './SettingsNav';
 import { SignoutButton } from '@/components/auth/SignoutButton';
 import type {
@@ -45,6 +46,7 @@ export function SettingsContent({
 					</div>
 				)}
 				{activeTab === 'security' && <PasswordSettings />}
+				{activeTab === 'notifications' && <NotificationSettings />}
 				{activeTab === 'appearance' && (
 					<div className="space-y-6">
 						<ThemeSettings />

@@ -68,6 +68,105 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			notification_dedup: {
+				Row: {
+					created_at: string;
+					dedup_key: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					dedup_key: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					dedup_key?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
+			notification_preferences: {
+				Row: {
+					created_at: string;
+					friend_accepted: boolean;
+					friend_requests: boolean;
+					new_episodes: boolean;
+					suggestions: boolean;
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					friend_accepted?: boolean;
+					friend_requests?: boolean;
+					new_episodes?: boolean;
+					suggestions?: boolean;
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					friend_accepted?: boolean;
+					friend_requests?: boolean;
+					new_episodes?: boolean;
+					suggestions?: boolean;
+					updated_at?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
+			notifications: {
+				Row: {
+					actor_id: string | null;
+					actor_username: string | null;
+					created_at: string;
+					episode_number: number | null;
+					id: string;
+					media_id: number | null;
+					media_title: string | null;
+					media_type: string | null;
+					poster_path: string | null;
+					read_at: string | null;
+					season_number: number | null;
+					type: string;
+					url: string | null;
+					user_id: string;
+				};
+				Insert: {
+					actor_id?: string | null;
+					actor_username?: string | null;
+					created_at?: string;
+					episode_number?: number | null;
+					id?: string;
+					media_id?: number | null;
+					media_title?: string | null;
+					media_type?: string | null;
+					poster_path?: string | null;
+					read_at?: string | null;
+					season_number?: number | null;
+					type: string;
+					url?: string | null;
+					user_id: string;
+				};
+				Update: {
+					actor_id?: string | null;
+					actor_username?: string | null;
+					created_at?: string;
+					episode_number?: number | null;
+					id?: string;
+					media_id?: number | null;
+					media_title?: string | null;
+					media_type?: string | null;
+					poster_path?: string | null;
+					read_at?: string | null;
+					season_number?: number | null;
+					type?: string;
+					url?: string | null;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
 			playlist_items: {
 				Row: {
 					added_at: string;
@@ -160,6 +259,36 @@ export type Database = {
 					user_id?: string;
 					watched_visibility?: string;
 					watchlist_visibility?: string;
+				};
+				Relationships: [];
+			};
+			push_subscriptions: {
+				Row: {
+					auth: string;
+					created_at: string;
+					endpoint: string;
+					id: string;
+					p256dh: string;
+					user_agent: string | null;
+					user_id: string;
+				};
+				Insert: {
+					auth: string;
+					created_at?: string;
+					endpoint: string;
+					id?: string;
+					p256dh: string;
+					user_agent?: string | null;
+					user_id: string;
+				};
+				Update: {
+					auth?: string;
+					created_at?: string;
+					endpoint?: string;
+					id?: string;
+					p256dh?: string;
+					user_agent?: string | null;
+					user_id?: string;
 				};
 				Relationships: [];
 			};

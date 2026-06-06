@@ -64,6 +64,20 @@ export const translations = {
 			},
 			notifications: 'Notifications',
 		},
+		notifications: {
+			title: 'Notifications',
+			empty: 'Aucune notification pour le moment',
+			markAllRead: 'Tout marquer comme lu',
+			seeAll: 'Voir tout',
+			new: 'Nouveau',
+			delete: 'Supprimer',
+			templates: {
+				friend_request: '{actor} vous a envoyé une demande d’ami',
+				friend_accepted: '{actor} a accepté votre demande d’ami',
+				new_episode: 'Nouvel épisode de {title} : S{season}E{episode}',
+				suggestion: 'À voir : {title}',
+			},
+		},
 		hero: {
 			title: 'ReelMark',
 			subtitle: 'Votre compagnon personnel pour suivre et organiser',
@@ -124,6 +138,25 @@ export const translations = {
 			filtersLabel: 'Filtres de la bibliothèque',
 		},
 		settings: {
+			notifications: {
+				title: 'Notifications',
+				description:
+					'Choisis ce dont tu veux être prévenu et active les notifications push.',
+				push: 'Notifications push',
+				pushDesc:
+					'Reçois les notifications même quand l’app est fermée.',
+				pushEnable: 'Activer',
+				pushDisable: 'Désactiver',
+				pushUnsupported:
+					'Ton navigateur ne supporte pas les notifications push.',
+				iosHint:
+					'Sur iOS, installe d’abord l’app à l’écran d’accueil pour activer les notifications push.',
+				types: 'Types de notifications',
+				friend_requests: 'Demandes d’ami',
+				friend_accepted: 'Demandes acceptées',
+				new_episodes: 'Nouveaux épisodes',
+				suggestions: 'Suggestions',
+			},
 			title: 'Paramètres',
 			subtitle: 'Gérez votre compte et vos préférences',
 			missingFields: 'Tous les champs sont obligatoires',
@@ -801,6 +834,20 @@ export const translations = {
 			},
 			notifications: 'Notifications',
 		},
+		notifications: {
+			title: 'Notifications',
+			empty: 'No notifications yet',
+			markAllRead: 'Mark all as read',
+			seeAll: 'See all',
+			new: 'New',
+			delete: 'Delete',
+			templates: {
+				friend_request: '{actor} sent you a friend request',
+				friend_accepted: '{actor} accepted your friend request',
+				new_episode: 'New episode of {title}: S{season}E{episode}',
+				suggestion: 'Worth watching: {title}',
+			},
+		},
 		hero: {
 			title: 'ReelMark',
 			subtitle: 'Your personal companion to track and organize',
@@ -859,6 +906,24 @@ export const translations = {
 			filtersLabel: 'Library filters',
 		},
 		settings: {
+			notifications: {
+				title: 'Notifications',
+				description:
+					'Choose what to be notified about and enable push notifications.',
+				push: 'Push notifications',
+				pushDesc: 'Get notified even when the app is closed.',
+				pushEnable: 'Enable',
+				pushDisable: 'Disable',
+				pushUnsupported:
+					'Your browser does not support push notifications.',
+				iosHint:
+					'On iOS, install the app to your home screen first to enable push notifications.',
+				types: 'Notification types',
+				friend_requests: 'Friend requests',
+				friend_accepted: 'Accepted requests',
+				new_episodes: 'New episodes',
+				suggestions: 'Suggestions',
+			},
 			title: 'Settings',
 			subtitle: 'Manage your account and preferences',
 			missingFields: 'All fields are required',

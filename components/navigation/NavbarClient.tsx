@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { ArrowLeft, Bell, Settings } from 'lucide-react';
+import { ArrowLeft, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Title from '@/components/layout/Title';
@@ -20,6 +20,8 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useMediaHeader } from '@/lib/media-header-store';
+import { NotificationsProvider } from '@/components/notifications/NotificationsProvider';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import type { NavbarUser } from '@/types/components';
 
 interface NavbarTranslations {
@@ -36,9 +38,14 @@ interface NavbarTranslations {
 interface NavbarClientProps {
 	user: NavbarUser | null;
 	t: NavbarTranslations;
+	initialUnreadCount: number;
 }
 
-export function NavbarClient({ user, t }: NavbarClientProps) {
+export function NavbarClient({
+	user,
+	t,
+	initialUnreadCount,
+}: NavbarClientProps) {
 	const { title, scrolled } = useMediaHeader();
 	const router = useRouter();
 	const pathname = usePathname();
@@ -54,7 +61,7 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 		</Link>
 	);
 
-	return (
+	const content = (
 		<>
 			<header>
 				<nav
@@ -88,15 +95,7 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 								{user ? (
 									<>
 										<SearchModal key={pathname} />
-										<Button
-											variant="ghost"
-											size="icon"
-											disabled
-											aria-label={t.navbar.notifications}
-											className="text-muted"
-										>
-											<Bell className="h-5 w-5" />
-										</Button>
+										<NotificationBell variant="mobile" />
 									</>
 								) : (
 									<div className="flex gap-2">
@@ -124,7 +123,10 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 							</div>
 						</div>
 
-						<div id="rm-nav-actions" className="md:hidden empty:hidden" />
+						<div
+							id="rm-nav-actions"
+							className="md:hidden empty:hidden"
+						/>
 
 						{/* Desktop: full navigation */}
 						<div className="hidden md:grid grid-cols-3 h-16 items-center gap-4">
@@ -144,12 +146,15 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 								{user ? (
 									<div className="flex items-center gap-4">
 										<SearchModal key={pathname} />
+										<NotificationBell variant="desktop" />
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
 												<Button
 													variant="outline"
 													size="icon-lg"
-													aria-label={t.navbar.userMenu}
+													aria-label={
+														t.navbar.userMenu
+													}
 													className="rounded-full overflow-hidden border-2 border-transparent data-[state=open]:border-primary transition-all duration-(--duration-fast) focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 min-w-12"
 												>
 													<UserAvatar
@@ -166,7 +171,8 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 																.full_name
 														}
 														email={
-															user.user_metadata.email
+															user.user_metadata
+																.email
 														}
 														size={128}
 														className="select-none"
@@ -183,7 +189,8 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 														<p className="text-sm font-medium leading-none">
 															{user.user_metadata
 																.username ||
-																user.user_metadata
+																user
+																	.user_metadata
 																	.full_name}
 														</p>
 														<p className="text-xs leading-none text-muted">
@@ -260,9 +267,18 @@ export function NavbarClient({ user, t }: NavbarClientProps) {
 				</nav>
 			</header>
 
-			{user && (
-				<BottomTabBar username={user.user_metadata.username} />
-			)}
+			{user && <BottomTabBar username={user.user_metadata.username} />}
 		</>
+	);
+
+	return user ? (
+		<NotificationsProvider
+			userId={user.id}
+			initialUnreadCount={initialUnreadCount}
+		>
+			{content}
+		</NotificationsProvider>
+	) : (
+		content
 	);
 }

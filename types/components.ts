@@ -82,6 +82,7 @@ export interface WatchButtonProps {
 }
 
 export interface NavbarUser {
+	id: string;
 	email?: string;
 	user_metadata: {
 		full_name?: string;

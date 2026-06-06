@@ -9,5 +9,21 @@ export default async function Navbar() {
 	} = await supabase.auth.getUser();
 	const t = await getTranslations();
 
-	return <NavbarClient user={user} t={t} />;
+	let initialUnreadCount = 0;
+	if (user) {
+		const { count } = await supabase
+			.from('notifications')
+			.select('id', { count: 'exact', head: true })
+			.eq('user_id', user.id)
+			.is('read_at', null);
+		initialUnreadCount = count ?? 0;
+	}
+
+	return (
+		<NavbarClient
+			user={user}
+			t={t}
+			initialUnreadCount={initialUnreadCount}
+		/>
+	);
 }
