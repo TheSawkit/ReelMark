@@ -1,12 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
+import { getUserContext } from '@/lib/supabase/auth-helpers';
 import { getTranslations } from '@/lib/i18n/server';
 import { NavbarClient } from '@/components/navigation/NavbarClient';
 
 export default async function Navbar() {
-	const supabase = await createClient();
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+	const { supabase, user } = await getUserContext();
 	const t = await getTranslations();
 
 	let initialUnreadCount = 0;

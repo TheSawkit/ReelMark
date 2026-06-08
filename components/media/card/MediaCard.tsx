@@ -1,5 +1,6 @@
 'use client';
 
+import { ViewTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getImageUrl } from '@/lib/tmdb/images';
@@ -7,9 +8,9 @@ import { Star, Eye, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WatchButton } from '@/components/media/detail/WatchButton';
 import { useTranslation } from '@/lib/i18n/context';
-import { getLocale } from '@/lib/i18n/utils';
+import { getLocale, localizedHref } from '@/lib/i18n/utils';
 import { formatShortDate } from '@/lib/format';
-import { getMediaHref } from '@/lib/media';
+import { getMediaHref, posterTransitionName } from '@/lib/media';
 import type { MediaCardProps } from '@/types/components';
 import type { WatchlistEntry } from '@/types/tmdb';
 
@@ -20,6 +21,7 @@ interface Props extends MediaCardProps {
 	priority?: boolean;
 	imageSize?: 'card' | 'grid';
 	compact?: boolean;
+	enableSharedTransition?: boolean;
 }
 
 /**
@@ -46,11 +48,12 @@ export function MediaCard({
 	priority,
 	imageSize = 'card',
 	compact = false,
+	enableSharedTransition = false,
 }: Props) {
 	const { t, lang } = useTranslation();
 	const locale = getLocale(lang);
 
-	const href = getMediaHref(media);
+	const href = localizedHref(lang, getMediaHref(media));
 	const isWatched = watchlistEntry?.status === 'watched';
 	const resolvedStatus =
 		media.media_type === 'tv'
@@ -64,6 +67,25 @@ export function MediaCard({
 			? 'to_watch'
 			: undefined;
 
+	const poster = (
+		<Image
+			src={getImageUrl(
+				media.poster_path,
+				imageSize === 'grid' ? 'w342' : 'w185'
+			)}
+			alt={media.title}
+			fill
+			loading={priority ? 'eager' : 'lazy'}
+			{...(priority ? { priority: true } : {})}
+			className="object-cover transition-transform duration-(--duration-base) ease-out group-hover:scale-105"
+			sizes={
+				imageSize === 'grid'
+					? '(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 16vw'
+					: '200px'
+			}
+		/>
+	);
+
 	return (
 		<Link
 			href={href}
@@ -75,22 +97,13 @@ export function MediaCard({
 			)}
 		>
 			<div className="relative aspect-2/3 w-full overflow-hidden rounded-poster bg-surface">
-				<Image
-					src={getImageUrl(
-						media.poster_path,
-						imageSize === 'grid' ? 'w342' : 'w185'
-					)}
-					alt={media.title}
-					fill
-					loading={priority ? 'eager' : 'lazy'}
-					{...(priority ? { priority: true } : {})}
-					className="object-cover transition-transform duration-(--duration-base) ease-out group-hover:scale-105"
-					sizes={
-						imageSize === 'grid'
-							? '(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 16vw'
-							: '200px'
-					}
-				/>
+				{enableSharedTransition ? (
+					<ViewTransition name={posterTransitionName(media)}>
+						{poster}
+					</ViewTransition>
+				) : (
+					poster
+				)}
 
 				{!compact && (
 					<div

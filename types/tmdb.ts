@@ -10,6 +10,7 @@ export interface WatchlistEntry {
 	poster_path: string | null;
 	status: WatchStatus;
 	created_at: string;
+	total_episodes: number | null;
 }
 
 export interface Movie {

@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { getMediaHref } from '@/lib/media';
+import { getServerLanguage } from '@/lib/i18n/server';
+import { localizedHref } from '@/lib/i18n/utils';
 import { Aurora } from '@/components/effects/Aurora';
 import { Grain } from '@/components/effects/Grain';
 import { GlowBorder } from '@/components/effects/GlowBorder';
@@ -16,16 +18,18 @@ interface SpotlightPickProps {
 }
 
 /** Featured "pick of the day" card with an animated glow border. */
-export function SpotlightPick({
+export async function SpotlightPick({
 	item,
 	badgeLabel,
 	ctaLabel,
 }: SpotlightPickProps) {
+	const lang = await getServerLanguage();
+
 	return (
 		<div className="mb-10">
 			<GlowBorder radius={22} pad={1.5}>
 				<Link
-					href={getMediaHref(item)}
+					href={localizedHref(lang, getMediaHref(item))}
 					className="relative block h-52 overflow-hidden rounded-[20px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-56"
 				>
 					{item.backdrop_path ? (

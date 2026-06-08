@@ -92,17 +92,23 @@ export function WatchButton({
 					? Eye
 					: Plus;
 
+	const stateLabel = error
+		? t.common.actionError
+		: isActive
+			? status === 'watched'
+				? t.movie.watched
+				: t.movie.added
+			: status === 'watched'
+				? t.movie.markAsWatched
+				: t.movie.addToList;
+
 	if (variant === 'responsive') {
 		return (
 			<>
 				<button
 					onClick={handleClick}
 					disabled={isPending}
-					aria-label={
-						status === 'watched'
-							? t.movie.markAsWatched
-							: t.movie.addToList
-					}
+					aria-label={stateLabel}
 					className={cn(
 						'h-12 w-12 md:h-auto md:w-auto md:min-h-11 md:px-4 md:py-2.5',
 						'rounded-full md:rounded-lg',
@@ -120,17 +126,7 @@ export function WatchButton({
 							isPending && 'animate-spin'
 						)}
 					/>
-					<span className="hidden md:inline">
-						{error
-							? t.common.actionError
-							: isActive
-								? status === 'watched'
-									? t.movie.watched
-									: t.movie.added
-								: status === 'watched'
-									? t.movie.markAsWatched
-									: t.movie.addToList}
-					</span>
+					<span className="hidden md:inline">{stateLabel}</span>
 				</button>
 				{reviewDialog}
 			</>
@@ -155,15 +151,7 @@ export function WatchButton({
 					<Icon
 						className={cn('h-4 w-4', isPending && 'animate-spin')}
 					/>
-					{error
-						? t.common.actionError
-						: isActive
-							? status === 'watched'
-								? t.movie.watched
-								: t.movie.added
-							: status === 'watched'
-								? t.movie.markAsWatched
-								: t.movie.addToList}
+					{stateLabel}
 				</button>
 				{reviewDialog}
 			</>
@@ -175,16 +163,8 @@ export function WatchButton({
 			<button
 				onClick={handleClick}
 				disabled={isPending}
-				aria-label={
-					status === 'watched'
-						? t.movie.markAsWatched
-						: t.movie.addToList
-				}
-				title={
-					status === 'watched'
-						? t.movie.markAsWatched
-						: t.movie.addToList
-				}
+				aria-label={stateLabel}
+				title={stateLabel}
 				className={cn(
 					'h-12 w-12 rounded-full backdrop-blur-2xl border',
 					'flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',

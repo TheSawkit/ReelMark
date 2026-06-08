@@ -6,6 +6,7 @@ import { ArrowRight } from 'lucide-react';
 import { HorizontalScroll } from '@/components/shared/HorizontalScroll';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import { watchlistEntryToMediaItem } from '@/lib/mappers';
 import { getMediaKey } from '@/lib/media';
 import type { MediaSectionProps } from '@/types/components';
@@ -38,14 +39,19 @@ export function MediaSection({
 	categoryUrl,
 	hideRating,
 }: MediaSectionProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const visible = items.slice(0, SECTION_ITEM_LIMIT);
+	const localizedCategoryUrl = localizedHref(lang, categoryUrl);
 
 	return (
 		<HorizontalScroll
 			className="mb-12 lg:mb-16"
 			scrollAmount={500}
-			title={<SectionHeading href={categoryUrl}>{title}</SectionHeading>}
+			title={
+				<SectionHeading href={localizedCategoryUrl}>
+					{title}
+				</SectionHeading>
+			}
 		>
 			{visible.map((media, index) => (
 				<StaggeredItem
@@ -63,7 +69,7 @@ export function MediaSection({
 					/>
 				</StaggeredItem>
 			))}
-			<ViewAllCard href={categoryUrl} label={t.common.viewAll} />
+			<ViewAllCard href={localizedCategoryUrl} label={t.common.viewAll} />
 		</HorizontalScroll>
 	);
 }
@@ -83,15 +89,20 @@ export function LibraryMediaSection({
 	entries,
 	categoryUrl,
 }: LibrarySectionProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const visibleEntries = entries.slice(0, SECTION_ITEM_LIMIT);
 	const mediaItems = visibleEntries.map(watchlistEntryToMediaItem);
+	const localizedCategoryUrl = localizedHref(lang, categoryUrl);
 
 	return (
 		<HorizontalScroll
 			className="mb-12 lg:mb-16"
 			scrollAmount={500}
-			title={<SectionHeading href={categoryUrl}>{title}</SectionHeading>}
+			title={
+				<SectionHeading href={localizedCategoryUrl}>
+					{title}
+				</SectionHeading>
+			}
 		>
 			{visibleEntries.map((entry, index) => (
 				<StaggeredItem
@@ -110,7 +121,7 @@ export function LibraryMediaSection({
 					/>
 				</StaggeredItem>
 			))}
-			<ViewAllCard href={categoryUrl} label={t.common.viewAll} />
+			<ViewAllCard href={localizedCategoryUrl} label={t.common.viewAll} />
 		</HorizontalScroll>
 	);
 }

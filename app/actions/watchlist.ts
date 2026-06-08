@@ -1,21 +1,24 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import {
 	getAuthenticatedUser,
 	getOptionalUser,
 } from '@/lib/supabase/auth-helpers';
-import { SHARED_REVALIDATE_PATHS } from '@/app/actions/_helpers';
+import {
+	SHARED_REVALIDATE_PATHS,
+	revalidateLocalized,
+} from '@/app/actions/_helpers';
 import { VALID_STATUSES, VALID_MEDIA_TYPES } from '@/lib/validators';
 import type { WatchStatus, WatchlistEntry, MediaType } from '@/types/tmdb';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
+import {
+	getTvShowTotalEpisodes,
+	getTvShowsTotalEpisodes,
+} from '@/lib/tmdb';
 
-function revalidateWatchlistPaths(mediaType: MediaType) {
-	SHARED_REVALIDATE_PATHS.forEach((p) => revalidatePath(p));
-	revalidatePath(
-		mediaType === 'movie' ? '/movie/[id]' : '/tv/[id]',
-		'layout'
-	);
+function revalidateWatchlistPaths(mediaType: MediaType, mediaId: number) {
+	SHARED_REVALIDATE_PATHS.forEach(revalidateLocalized);
+	revalidateLocalized(`/${mediaType}/${mediaId}`);
 }
 
 export async function addToWatchlist(
@@ -31,6 +34,9 @@ export async function addToWatchlist(
 
 	const { supabase, userId } = await getAuthenticatedUser();
 
+	const totalEpisodes =
+		mediaType === 'tv' ? await getTvShowTotalEpisodes(mediaId) : null;
+
 	const { error } = await supabase.from('watchlist').upsert(
 		{
 			user_id: userId,
@@ -39,13 +45,46 @@ export async function addToWatchlist(
 			poster_path: posterPath,
 			status,
 			media_type: mediaType,
+			total_episodes: totalEpisodes,
 		},
 		{ onConflict: 'user_id,media_id,media_type' }
 	);
 
 	if (error) throw new Error(error.message);
 
-	revalidateWatchlistPaths(mediaType);
+	revalidateWatchlistPaths(mediaType, mediaId);
+}
+
+/** One-shot backfill: fills total_episodes for the caller's TV watchlist rows that lack it (library cold-load → instant). */
+export async function backfillTvTotals(): Promise<{ updated: number }> {
+	const { supabase, userId } = await getAuthenticatedUser();
+
+	const { data: rows } = await supabase
+		.from('watchlist')
+		.select('media_id')
+		.eq('user_id', userId)
+		.eq('media_type', 'tv')
+		.is('total_episodes', null);
+
+	const ids = (rows ?? []).map((r) => r.media_id);
+	if (ids.length === 0) return { updated: 0 };
+
+	const totals = await getTvShowsTotalEpisodes(ids);
+	let updated = 0;
+	await Promise.all(
+		ids.map(async (id) => {
+			const total = totals[id];
+			if (!total) return;
+			await supabase
+				.from('watchlist')
+				.update({ total_episodes: total })
+				.eq('user_id', userId)
+				.eq('media_id', id)
+				.eq('media_type', 'tv');
+			updated++;
+		})
+	);
+	return { updated };
 }
 
 export async function removeFromWatchlist(
@@ -63,7 +102,7 @@ export async function removeFromWatchlist(
 
 	if (error) throw new Error(error.message);
 
-	revalidateWatchlistPaths(mediaType);
+	revalidateWatchlistPaths(mediaType, mediaId);
 }
 
 export async function getUserWatchlist(): Promise<WatchlistEntry[]> {

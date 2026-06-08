@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { getServerLocale, getServerLanguage } from '@/lib/i18n/server';
 import { createClient } from '@/lib/supabase/server';
 
@@ -49,7 +50,8 @@ export async function getImageLanguageFilter(): Promise<string> {
 export async function fetchTMDB<T>(
 	endpoint: string,
 	params: Record<string, string> = {},
-	revalidate = 3600
+	revalidate = 3600,
+	retries = 2
 ): Promise<T> {
 	if (!TMDB_READ_ACCESS_TOKEN) {
 		throw new Error('TMDB_READ_ACCESS_TOKEN is not defined.');
@@ -61,22 +63,31 @@ export async function fetchTMDB<T>(
 	const queryParams = new URLSearchParams({ language: locale, ...params });
 
 	const url = `${TMDB_BASE_URL}${safeEndpoint}?${queryParams.toString()}`;
-	const response = await fetch(url, {
-		headers: { Authorization: `Bearer ${TMDB_READ_ACCESS_TOKEN}` },
-		next: { revalidate },
-	});
 
-	if (!response.ok) {
+	for (let attempt = 0; ; attempt++) {
+		const response = await fetch(url, {
+			headers: { Authorization: `Bearer ${TMDB_READ_ACCESS_TOKEN}` },
+			next: { revalidate },
+		});
+
+		if (response.ok) return response.json();
+
+		if (response.status === 429 && attempt < retries) {
+			const retryAfter = Number(response.headers.get('retry-after'));
+			const delayMs =
+				retryAfter > 0 ? retryAfter * 1000 : 300 * (attempt + 1);
+			await new Promise((resolve) => setTimeout(resolve, delayMs));
+			continue;
+		}
+
 		throw new Error(
 			`TMDB API Error: ${response.status} ${response.statusText}`
 		);
 	}
-
-	return response.json();
 }
 
-/** Resolves the user's region from profile metadata, falling back to locale country or "US". */
-export async function getUserRegion(): Promise<string> {
+/** Resolves the user's region from profile metadata, falling back to locale country or "US". Deduped per request. */
+export const getUserRegion = cache(async (): Promise<string> => {
 	try {
 		const supabase = await createClient();
 		const {
@@ -96,4 +107,4 @@ export async function getUserRegion(): Promise<string> {
 	}
 
 	return 'US';
-}
+});

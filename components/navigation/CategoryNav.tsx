@@ -4,12 +4,14 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref, stripLocale } from '@/lib/i18n/utils';
 
 export function CategoryNav() {
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 	const type = searchParams.get('type') || 'movie';
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
+	const path = stripLocale(pathname);
 
 	const isTvPath = pathname.includes('tv-') || type === 'tv';
 	const activeDomain = isTvPath ? 'tv' : 'movie';
@@ -54,11 +56,11 @@ export function CategoryNav() {
 			<div className="absolute right-0 top-0 bottom-2 w-12 bg-linear-to-l from-background to-transparent pointer-events-none z-10 md:hidden" />
 			<div className="flex overflow-x-scroll overflow-y-visible pb-2 gap-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
 				<Link
-					href={`/explorer?type=${activeDomain}`}
-					aria-current={pathname === '/explorer' ? 'page' : undefined}
+					href={localizedHref(lang, `/explorer?type=${activeDomain}`)}
+					aria-current={path === '/explorer' ? 'page' : undefined}
 					className={cn(
 						'px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple',
-						pathname === '/explorer'
+						path === '/explorer'
 							? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
 							: 'glass-surface text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
 					)}
@@ -68,13 +70,13 @@ export function CategoryNav() {
 				{categories.map((category) => (
 					<Link
 						key={category.href}
-						href={category.href}
+						href={localizedHref(lang, category.href)}
 						aria-current={
-							pathname === category.href ? 'page' : undefined
+							path === category.href ? 'page' : undefined
 						}
 						className={cn(
 							'px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple',
-							pathname === category.href
+							path === category.href
 								? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
 								: 'glass-surface text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
 						)}

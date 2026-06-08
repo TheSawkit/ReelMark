@@ -17,7 +17,7 @@ import {
 	FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { updateProfile, updateAvatar } from '@/app/settings/actions';
+import { updateProfile, updateAvatar } from '@/app/[lang]/(protected)/settings/actions';
 import { Upload } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { useTranslation } from '@/lib/i18n/context';

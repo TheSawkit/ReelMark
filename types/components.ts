@@ -44,6 +44,8 @@ export interface InfiniteScrollMediaProps {
 }
 
 export interface MediaBannerProps {
+	mediaType: MediaType;
+	mediaId: number;
 	title: string;
 	tagline?: string;
 	backdropUrl: string;

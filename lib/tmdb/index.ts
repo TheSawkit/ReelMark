@@ -20,6 +20,7 @@ export {
 	getOnTheAirTvShows,
 	getTvShowDetails,
 	getTvShowTotalEpisodes,
+	getTvShowsTotalEpisodes,
 	getTvShowCredits,
 	getTvShowVideos,
 	getTvShowImages,

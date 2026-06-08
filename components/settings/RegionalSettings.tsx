@@ -15,7 +15,7 @@ import {
 	FieldGroup,
 	FieldLabel,
 } from '@/components/ui/field';
-import { updateProfile } from '@/app/settings/actions';
+import { updateProfile } from '@/app/[lang]/(protected)/settings/actions';
 import { User } from '@supabase/supabase-js';
 import { useTranslation } from '@/lib/i18n/context';
 import { SelectInput } from '@/components/ui/SelectInput';

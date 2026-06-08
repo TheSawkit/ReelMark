@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import { Play } from 'lucide-react';
 import { getTranslations } from '@/lib/i18n/server';
+import { localizedHref } from '@/lib/i18n/utils';
+import type { Language } from '@/lib/i18n/translations';
 import { Aurora } from '@/components/effects/Aurora';
 import { Grain } from '@/components/effects/Grain';
 import { GlowBorder } from '@/components/effects/GlowBorder';
 
-export default async function CTASection() {
-	const t = await getTranslations();
+export default async function CTASection({ lang }: { lang: Language }) {
+	const t = await getTranslations(lang);
 
 	return (
 		<section className="px-6 py-24 lg:px-12">
@@ -25,7 +27,7 @@ export default async function CTASection() {
 
 					<div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
 						<Link
-							href="/signup"
+							href={localizedHref(lang, '/signup')}
 							className="group/cta rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 						>
 							<GlowBorder radius={16} pad={1.5}>
@@ -37,7 +39,7 @@ export default async function CTASection() {
 						</Link>
 
 						<Link
-							href="/login"
+							href={localizedHref(lang, '/login')}
 							className="glass-surface inline-flex h-14 items-center justify-center rounded-2xl px-8 text-lg font-semibold text-text transition-colors duration-(--duration-fast) ease-apple hover:bg-glass-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 						>
 							{t.home.cta.alreadyHave}

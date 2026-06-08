@@ -12,6 +12,7 @@ import {
 import { NotificationPanel } from '@/components/notifications/NotificationPanel';
 import { useNotifications } from '@/components/notifications/NotificationsProvider';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 
 function Badge({ count }: { count: number }) {
 	if (count <= 0) return null;
@@ -27,7 +28,7 @@ export function NotificationBell({
 }: {
 	variant: 'desktop' | 'mobile';
 }) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const { unreadCount } = useNotifications();
 	const [open, setOpen] = useState(false);
 
@@ -40,7 +41,7 @@ export function NotificationBell({
 				aria-label={t.navbar.notifications}
 				className="relative text-muted transition-colors hover:text-text"
 			>
-				<Link href="/notifications">
+				<Link href={localizedHref(lang, '/notifications')}>
 					<Bell className="h-5 w-5" />
 					<Badge count={unreadCount} />
 				</Link>

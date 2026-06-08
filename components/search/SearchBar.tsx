@@ -5,6 +5,7 @@ import { Search, User, X, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { SearchDropdown } from './SearchDropdown';
 import { cn } from '@/lib/utils';
@@ -23,7 +24,7 @@ export function SearchBar({
 	onNavigate,
 	autoFocus = false,
 }: SearchBarProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const [query, setQuery] = useState('');
 	const [isFocused, setIsFocused] = useState(autoFocus);
 	const [activeIndex, setActiveIndex] = useState(-1);
@@ -76,7 +77,12 @@ export function SearchBar({
 		if (query.trim().length < 2) return;
 		if (isUserSearch) return;
 		handleSelect();
-		router.push(`/explorer/search?q=${encodeURIComponent(query.trim())}`);
+		router.push(
+			localizedHref(
+				lang,
+				`/explorer/search?q=${encodeURIComponent(query.trim())}`
+			)
+		);
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -113,9 +119,19 @@ export function SearchBar({
 					e.preventDefault();
 					handleSelect();
 					if (isUserSearch) {
-						router.push(`/profile/${users[activeIndex].username}`);
+						router.push(
+							localizedHref(
+								lang,
+								`/profile/${users[activeIndex].username}`
+							)
+						);
 					} else {
-						router.push(getMediaHref(results[activeIndex]));
+						router.push(
+							localizedHref(
+								lang,
+								getMediaHref(results[activeIndex])
+							)
+						);
 					}
 				}
 				break;

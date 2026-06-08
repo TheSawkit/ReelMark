@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
-import { getTranslations } from '@/lib/i18n/server';
+import { getServerLanguage, getTranslations } from '@/lib/i18n/server';
+import { localizedHref } from '@/lib/i18n/utils';
 import {
 	validateEmail,
 	validatePassword,
@@ -56,7 +57,7 @@ export async function login(prevState: unknown, formData: FormData) {
 	if (error) return { error: mapAuthError(error.message, t) };
 
 	revalidatePath('/', 'layout');
-	redirect('/dashboard');
+	redirect(localizedHref(await getServerLanguage(), '/dashboard'));
 }
 
 export async function signup(prevState: unknown, formData: FormData) {
@@ -102,14 +103,14 @@ export async function signup(prevState: unknown, formData: FormData) {
 	if (error) return { error: mapAuthError(error.message, t) };
 
 	revalidatePath('/', 'layout');
-	redirect('/dashboard');
+	redirect(localizedHref(await getServerLanguage(), '/dashboard'));
 }
 
 export async function signout() {
 	const supabase = await createClient();
 	await supabase.auth.signOut();
 	revalidatePath('/', 'layout');
-	redirect('/login');
+	redirect(localizedHref(await getServerLanguage(), '/login'));
 }
 
 export async function requestPasswordReset(
@@ -144,5 +145,5 @@ export async function updatePassword(prevState: unknown, formData: FormData) {
 	if (error) return { error: error.message };
 
 	revalidatePath('/', 'layout');
-	redirect('/dashboard');
+	redirect(localizedHref(await getServerLanguage(), '/dashboard'));
 }

@@ -491,9 +491,16 @@ a {
 	animation-timing-function: var(--ease-apple);
 }
 
+/* Shared-element morph (poster card → detail banner) glides with the app easing. */
+::view-transition-group(*) {
+	animation-duration: var(--duration-base);
+	animation-timing-function: var(--ease-apple);
+}
+
 @media (prefers-reduced-motion: reduce) {
-	::view-transition-old(root),
-	::view-transition-new(root) {
-		animation: none;
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		animation: none !important;
 	}
 }

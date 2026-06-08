@@ -9,6 +9,7 @@ import { deleteReview, getUserReviews } from '@/app/actions/reviews';
 import { getImageUrl } from '@/lib/tmdb/images';
 import type { Review, PrivacyVisibility } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import { useInView } from '@/hooks/useInView';
 import { PrivacyBlock } from '@/components/profile/PrivacyBlock';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -34,7 +35,7 @@ export function ReviewsSection({
 	canView,
 	isOwnProfile,
 }: ReviewsSectionProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const [reviews, setReviews] = useState(initial);
 	const [isPending, startTransition] = useTransition();
 	const [editingReview, setEditingReview] = useState<Review | null>(null);
@@ -102,7 +103,10 @@ export function ReviewsSection({
 					>
 						{review.media_type !== 'episode' ? (
 							<Link
-								href={`/${review.media_type}/${review.media_id}`}
+								href={localizedHref(
+									lang,
+									`/${review.media_type}/${review.media_id}`
+								)}
 								className="shrink-0"
 							>
 								<div className="relative w-12 aspect-2/3 rounded-poster overflow-hidden bg-surface-2">
@@ -144,7 +148,10 @@ export function ReviewsSection({
 						<div className="flex-1 min-w-0">
 							{review.media_type !== 'episode' ? (
 								<Link
-									href={`/${review.media_type}/${review.media_id}`}
+									href={localizedHref(
+										lang,
+										`/${review.media_type}/${review.media_id}`
+									)}
 								>
 									<p className="font-medium text-sm text-text hover:text-primary transition-colors truncate">
 										{review.media_title}

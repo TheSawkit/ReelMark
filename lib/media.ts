@@ -24,3 +24,16 @@ export function getMediaHref(
 ): string {
 	return item.media_type === 'tv' ? `/tv/${item.id}` : `/movie/${item.id}`;
 }
+
+/**
+ * Stable `view-transition-name` for a media poster, shared between its grid card
+ * and its detail-page banner to drive the shared-element morph.
+ *
+ * @param item - Object exposing `media_type` and `id`.
+ * @returns String of the form `"poster-movie-123"`.
+ */
+export function posterTransitionName(
+	item: Pick<MediaItem, 'media_type' | 'id'>
+): string {
+	return `poster-${item.media_type}-${item.id}`;
+}

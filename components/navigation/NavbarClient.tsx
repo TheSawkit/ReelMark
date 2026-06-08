@@ -20,6 +20,8 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useMediaHeader } from '@/lib/media-header-store';
+import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import { NotificationsProvider } from '@/components/notifications/NotificationsProvider';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import type { NavbarUser } from '@/types/components';
@@ -47,6 +49,7 @@ export function NavbarClient({
 	initialUnreadCount,
 }: NavbarClientProps) {
 	const { title, scrolled } = useMediaHeader();
+	const { lang } = useTranslation();
 	const router = useRouter();
 	const pathname = usePathname();
 	const isMedia = !!title;
@@ -54,7 +57,7 @@ export function NavbarClient({
 
 	const logo = (
 		<Link
-			href="/"
+			href={localizedHref(lang, '/')}
 			className="font-display text-2xl font-normal text-text transform transition-transform duration-(--duration-fast) hover:scale-105 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 flex items-center"
 		>
 			<Title className="inline-block h-[0.7em] align-baseline mr-[0.03em] text-text" />
@@ -105,7 +108,7 @@ export function NavbarClient({
 											size="sm"
 											className="border-border text-muted hover:text-text hover:bg-surface-2 border"
 										>
-											<Link href="/login">
+											<Link href={localizedHref(lang, '/login')}>
 												{t.navbar.login}
 											</Link>
 										</Button>
@@ -114,7 +117,7 @@ export function NavbarClient({
 											size="sm"
 											className="bg-primary hover:bg-primary-hover text-white"
 										>
-											<Link href="/signup">
+											<Link href={localizedHref(lang, '/signup')}>
 												{t.navbar.signup}
 											</Link>
 										</Button>
@@ -201,7 +204,7 @@ export function NavbarClient({
 												<DropdownMenuSeparator />
 												<DropdownMenuItem asChild>
 													<Link
-														href="/settings"
+														href={localizedHref(lang, '/settings')}
 														className="cursor-pointer w-full flex items-center"
 													>
 														<Settings className="mr-2 h-4 w-4" />
@@ -224,7 +227,7 @@ export function NavbarClient({
 											variant="outline"
 											className="focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 border-border text-muted hover:text-text hover:bg-surface-2 border"
 										>
-											<Link href="/login">
+											<Link href={localizedHref(lang, '/login')}>
 												{t.navbar.login}
 											</Link>
 										</Button>
@@ -232,7 +235,7 @@ export function NavbarClient({
 											asChild
 											className="focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 flex items-center bg-primary hover:bg-primary-hover text-white"
 										>
-											<Link href="/signup">
+											<Link href={localizedHref(lang, '/signup')}>
 												{t.navbar.signup}
 											</Link>
 										</Button>

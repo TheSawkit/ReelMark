@@ -379,6 +379,7 @@ export type Database = {
 					media_type: string;
 					poster_path: string | null;
 					status: string;
+					total_episodes: number | null;
 					user_id: string;
 				};
 				Insert: {
@@ -389,6 +390,7 @@ export type Database = {
 					media_type?: string;
 					poster_path?: string | null;
 					status: string;
+					total_episodes?: number | null;
 					user_id: string;
 				};
 				Update: {
@@ -399,6 +401,7 @@ export type Database = {
 					media_type?: string;
 					poster_path?: string | null;
 					status?: string;
+					total_episodes?: number | null;
 					user_id?: string;
 				};
 				Relationships: [];

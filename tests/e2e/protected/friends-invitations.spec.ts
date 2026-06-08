@@ -9,7 +9,7 @@ test.beforeEach(() => {
 });
 
 async function getOwnProfileHref(page: Page): Promise<string | null> {
-	await page.goto('/dashboard');
+	await page.goto('/en/dashboard');
 	const userMenuBtn = page.getByRole('button', {
 		name: /Menu utilisateur|User menu/i,
 	});

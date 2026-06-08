@@ -19,6 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { requestPasswordReset } from '@/app/auth/actions';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import { cn } from '@/lib/utils';
 
 const initialState: { error: string; success?: boolean } = { error: '' };
@@ -31,7 +32,7 @@ export function ResetPasswordForm({
 		requestPasswordReset,
 		initialState
 	);
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 
 	if (state?.success) {
 		return (
@@ -53,7 +54,7 @@ export function ResetPasswordForm({
 					</CardHeader>
 					<CardContent>
 						<FieldDescription className="text-center">
-							<Link href="/login">
+							<Link href={localizedHref(lang, '/login')}>
 								{t.auth.resetPassword.backToLogin}
 							</Link>
 						</FieldDescription>
@@ -109,7 +110,7 @@ export function ResetPasswordForm({
 										: t.auth.resetPassword.button}
 								</Button>
 								<FieldDescription className="text-center">
-									<Link href="/login">
+									<Link href={localizedHref(lang, '/login')}>
 										{t.auth.resetPassword.backToLogin}
 									</Link>
 								</FieldDescription>

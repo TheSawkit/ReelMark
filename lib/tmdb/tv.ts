@@ -109,13 +109,32 @@ export async function getTvShowDetails(id: number): Promise<TvShowDetails> {
  */
 export async function getTvShowTotalEpisodes(id: number): Promise<number> {
 	try {
-		const details = await getTvShowDetails(id);
+		const details = await fetchTMDB<TvShowDetails>(`/tv/${id}`, {}, 86400);
 		return (details.seasons ?? [])
 			.filter((s) => s.season_number > 0)
 			.reduce((sum, s) => sum + s.episode_count, 0);
 	} catch {
 		return 0;
 	}
+}
+
+const TV_EPISODES_BATCH_SIZE = 8;
+
+/** Batched total-episode lookup that caps TMDB concurrency to avoid 429 rate limiting on the library. */
+export async function getTvShowsTotalEpisodes(
+	ids: number[]
+): Promise<Record<number, number>> {
+	const totals: Record<number, number> = {};
+	for (let i = 0; i < ids.length; i += TV_EPISODES_BATCH_SIZE) {
+		const batch = ids.slice(i, i + TV_EPISODES_BATCH_SIZE);
+		const counts = await Promise.all(
+			batch.map(
+				async (id) => [id, await getTvShowTotalEpisodes(id)] as const
+			)
+		);
+		for (const [id, total] of counts) totals[id] = total;
+	}
+	return totals;
 }
 
 /** @returns Cast and crew credits for the given TV show. */

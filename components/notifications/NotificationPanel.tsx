@@ -12,6 +12,7 @@ import {
 	deleteNotification,
 } from '@/app/actions/notifications';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import type { AppNotification } from '@/types/notifications';
 
 interface NotificationPanelProps {
@@ -19,7 +20,7 @@ interface NotificationPanelProps {
 }
 
 export function NotificationPanel({ onClose }: NotificationPanelProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const { markAllRead, decrement } = useNotifications();
 	const [items, setItems] = useState<AppNotification[] | null>(null);
 
@@ -70,7 +71,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
 			</div>
 
 			<Link
-				href="/notifications"
+				href={localizedHref(lang, '/notifications')}
 				onClick={onClose}
 				className="mt-1 block rounded-lg px-3 py-2 text-center text-sm font-medium text-primary transition-colors hover:bg-surface-2"
 			>

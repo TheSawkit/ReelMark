@@ -1,11 +1,14 @@
 'use server';
 
-import { revalidatePath, unstable_cache } from 'next/cache';
+import { unstable_cache } from 'next/cache';
 import {
 	getAuthenticatedUser,
 	getOptionalUser,
 } from '@/lib/supabase/auth-helpers';
-import { SHARED_REVALIDATE_PATHS } from '@/app/actions/_helpers';
+import {
+	SHARED_REVALIDATE_PATHS,
+	revalidateLocalized,
+} from '@/app/actions/_helpers';
 import { getTvShowDetails } from '@/lib/tmdb';
 import type { SupabaseServerClient } from '@/lib/supabase/server';
 
@@ -16,9 +19,9 @@ const getCachedTvShowDetails = unstable_cache(
 );
 
 function revalidateEpisodePaths(tvId: number, seasonNumber: number) {
-	SHARED_REVALIDATE_PATHS.forEach((p) => revalidatePath(p));
-	revalidatePath(`/tv/${tvId}`);
-	revalidatePath(`/tv/${tvId}/season/${seasonNumber}`);
+	SHARED_REVALIDATE_PATHS.forEach(revalidateLocalized);
+	revalidateLocalized(`/tv/${tvId}`);
+	revalidateLocalized(`/tv/${tvId}/season/${seasonNumber}`);
 }
 
 async function syncTvShowWatchlistStatus(
@@ -37,7 +40,7 @@ async function syncTvShowWatchlistStatus(
 		.eq('tv_id', tvId);
 	const entryPromise = supabase
 		.from('watchlist')
-		.select('status')
+		.select('status, total_episodes')
 		.eq('user_id', userId)
 		.eq('media_id', tvId)
 		.eq('media_type', 'tv')
@@ -84,14 +87,18 @@ async function syncTvShowWatchlistStatus(
 			poster_path: details.poster_path,
 			status: newStatus,
 			media_type: 'tv',
+			total_episodes: totalEpisodes,
 		});
 		return;
 	}
 
-	if (entry.status !== newStatus) {
+	if (
+		entry.status !== newStatus ||
+		entry.total_episodes !== totalEpisodes
+	) {
 		await supabase
 			.from('watchlist')
-			.update({ status: newStatus })
+			.update({ status: newStatus, total_episodes: totalEpisodes })
 			.eq('user_id', userId)
 			.eq('media_id', tvId)
 			.eq('media_type', 'tv');
