@@ -73,6 +73,7 @@ export function NavbarClient({
 						paddingLeft: 'env(safe-area-inset-left)',
 						paddingRight: 'env(safe-area-inset-right)',
 						paddingTop: 'env(safe-area-inset-top)',
+						viewTransitionName: 'top-nav',
 					}}
 				>
 					<div className="mx-auto max-w-7xl px-6 lg:px-12">

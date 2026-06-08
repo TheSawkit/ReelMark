@@ -13,6 +13,7 @@ import type { Language } from '@/lib/i18n/translations';
 import { notFound } from 'next/navigation';
 import { BASE_URL } from '@/lib/metadata';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
+import { NavTransitionDirection } from '@/components/layout/NavTransitionDirection';
 import { PreventImageContextMenu } from '@/components/shared/PreventImageContextMenu';
 import { PWAInstallPrompt } from '@/components/shared/PWAInstallPrompt';
 import NextTopLoader from 'nextjs-toploader';
@@ -339,6 +340,7 @@ export default async function RootLayout({
 				<PreventImageContextMenu />
 				<Providers initialLang={lang}>
 					<ScrollToTop />
+					<NavTransitionDirection />
 					<a
 						href="#main-content"
 						className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-lg"

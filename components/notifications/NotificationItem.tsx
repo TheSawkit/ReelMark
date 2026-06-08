@@ -69,7 +69,7 @@ export function NotificationItem({
 
 	const itemClassName = cn(
 		'group flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors',
-		'hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+		'hover:bg-surface-2 active:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
 	);
 
 	return (

@@ -71,7 +71,7 @@ export function LibraryTabs({
 							aria-controls={`panel-${id}`}
 							onClick={() => switchTab(id)}
 							className={cn(
-								'relative z-10 flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl min-h-11 transition-colors duration-(--duration-fast) cursor-pointer',
+								'relative z-10 flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl min-h-11 transition-[color,scale] duration-(--duration-fast) cursor-pointer active:scale-95',
 								'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 								activeTab === id
 									? 'text-text'
@@ -159,7 +159,7 @@ export function LibraryTabs({
 								onClick={() =>
 									setVisibleCount((c) => c + PAGE_SIZE)
 								}
-								className="flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-2 border border-border text-sm font-medium text-muted hover:text-text hover:bg-surface-3 transition-colors"
+								className="flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-2 border border-border text-sm font-medium text-muted hover:text-text hover:bg-surface-3 transition duration-(--duration-fast) active:scale-95"
 							>
 								<ChevronDown className="h-4 w-4" />
 								{t.library.loadMore} (

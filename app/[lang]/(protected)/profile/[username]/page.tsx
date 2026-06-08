@@ -29,6 +29,7 @@ interface Props {
 
 type Friendship = Awaited<ReturnType<typeof getFriendshipStatus>>;
 
+{/* TODO: Not found 404 */ }
 export async function generateMetadata({
 	params,
 }: Props): Promise<import('next').Metadata> {

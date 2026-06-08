@@ -89,7 +89,7 @@ export function SearchDropdown({
 									onClick={onClose}
 									onMouseEnter={() => onActiveChange?.(index)}
 									className={cn(
-										'flex items-center gap-4 p-2 rounded-xl transition-all duration-(--duration-fast) ease-apple group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
+										'flex items-center gap-4 p-2 rounded-xl transition-all duration-(--duration-fast) ease-apple group active:bg-glass-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
 										isActive
 											? 'bg-glass-bg-hover ring-1 ring-primary/40'
 											: 'hover:bg-glass-bg-hover'
@@ -172,7 +172,7 @@ export function SearchDropdown({
 								onClick={onClose}
 								onMouseEnter={() => onActiveChange?.(index)}
 								className={cn(
-									'flex items-center gap-4 p-2 rounded-xl transition-all duration-(--duration-fast) ease-apple group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
+									'flex items-center gap-4 p-2 rounded-xl transition-all duration-(--duration-fast) ease-apple group relative overflow-hidden active:bg-glass-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
 									isActive
 										? 'bg-glass-bg-hover ring-1 ring-primary/40'
 										: 'hover:bg-glass-bg-hover'

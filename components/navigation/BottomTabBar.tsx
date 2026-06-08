@@ -15,7 +15,10 @@ export function BottomTabBar({ username }: BottomTabBarProps) {
 	return (
 		<nav
 			className="fixed inset-x-0 bottom-0 z-50 md:hidden"
-			style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+			style={{
+				paddingBottom: 'env(safe-area-inset-bottom)',
+				viewTransitionName: 'bottom-nav',
+			}}
 		>
 			<div
 				aria-hidden="true"
@@ -28,7 +31,7 @@ export function BottomTabBar({ username }: BottomTabBarProps) {
 						href={href}
 						prefetch
 						aria-current={active ? 'page' : undefined}
-						className="relative flex h-full flex-1 flex-col items-center justify-center gap-1 focus-visible:outline-none"
+						className="relative flex h-full flex-1 flex-col items-center justify-center gap-1 transition-transform duration-(--duration-fast) ease-apple active:scale-90 focus-visible:outline-none"
 					>
 						{active && (
 							<span

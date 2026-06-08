@@ -35,7 +35,7 @@ export function FriendsSection({
 					<Link
 						key={friendship.id}
 						href={localizedHref(lang, `/profile/${username}`)}
-						className="flex flex-col items-center gap-2 p-3 rounded-lg bg-surface border border-border-subtle shadow-card-sm hover:bg-surface-2 transition-colors"
+						className="flex flex-col items-center gap-2 p-3 rounded-lg bg-surface border border-border-subtle shadow-card-sm hover:bg-surface-2 transition duration-(--duration-fast) ease-apple active:scale-[0.97]"
 					>
 						{avatarUrl ? (
 							<Image
