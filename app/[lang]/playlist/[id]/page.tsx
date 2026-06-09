@@ -2,11 +2,13 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { MediaGrid } from '@/components/media/card/MediaGrid';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PlaylistHero } from '@/components/profile/PlaylistHero';
+import { PlaylistItemsView } from '@/components/profile/PlaylistItemsView';
 import { getPlaylistById } from '@/app/actions/playlists';
+import { getUserReviewRatings } from '@/app/actions/reviews';
 import { playlistItemToMediaItem } from '@/lib/mappers';
+import { getGenres } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { localizedAlternates } from '@/lib/metadata';
 
@@ -65,8 +67,15 @@ export default async function PlaylistPage({ params }: Props) {
 
 	if (!result) notFound();
 
-	const { playlist, ownerUsername, ownerAvatarUrl } = result;
+	const { playlist, isOwn, ownerUsername, ownerAvatarUrl } = result;
 	const items = (playlist.items ?? []).map(playlistItemToMediaItem);
+
+	const [genreNames, ratingByKey] = await Promise.all([
+		getGenres(),
+		isOwn
+			? getUserReviewRatings(playlist.user_id)
+			: Promise.resolve<Record<string, number>>({}),
+	]);
 
 	return (
 		<>
@@ -77,7 +86,12 @@ export default async function PlaylistPage({ params }: Props) {
 			/>
 			<PageLayout className="pt-8 md:pt-12">
 				{items.length > 0 ? (
-					<MediaGrid items={items} hideRating />
+					<PlaylistItemsView
+						items={items}
+						genreNames={genreNames}
+						ratingByKey={ratingByKey}
+						storageKey={`reelmark:list:playlist:${id}`}
+					/>
 				) : (
 					<EmptyState message={t.profile.noPlaylistsYet} />
 				)}

@@ -153,6 +153,8 @@ export function PlaylistEditDialog({
 				media_title: item.title,
 				poster_path: item.poster_path ?? null,
 				added_at: new Date().toISOString(),
+				release_date: item.release_date || null,
+				genre_ids: item.genre_ids ?? null,
 			});
 			setQuery('');
 		} catch {

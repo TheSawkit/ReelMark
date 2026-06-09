@@ -109,7 +109,12 @@ export function NavbarClient({
 											size="sm"
 											className="border-border text-muted hover:text-text hover:bg-surface-2 border"
 										>
-											<Link href={localizedHref(lang, '/login')}>
+											<Link
+												href={localizedHref(
+													lang,
+													'/login'
+												)}
+											>
 												{t.navbar.login}
 											</Link>
 										</Button>
@@ -118,7 +123,12 @@ export function NavbarClient({
 											size="sm"
 											className="bg-primary hover:bg-primary-hover text-white"
 										>
-											<Link href={localizedHref(lang, '/signup')}>
+											<Link
+												href={localizedHref(
+													lang,
+													'/signup'
+												)}
+											>
 												{t.navbar.signup}
 											</Link>
 										</Button>
@@ -205,7 +215,10 @@ export function NavbarClient({
 												<DropdownMenuSeparator />
 												<DropdownMenuItem asChild>
 													<Link
-														href={localizedHref(lang, '/settings')}
+														href={localizedHref(
+															lang,
+															'/settings'
+														)}
 														className="cursor-pointer w-full flex items-center"
 													>
 														<Settings className="mr-2 h-4 w-4" />
@@ -228,7 +241,12 @@ export function NavbarClient({
 											variant="outline"
 											className="focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 border-border text-muted hover:text-text hover:bg-surface-2 border"
 										>
-											<Link href={localizedHref(lang, '/login')}>
+											<Link
+												href={localizedHref(
+													lang,
+													'/login'
+												)}
+											>
 												{t.navbar.login}
 											</Link>
 										</Button>
@@ -236,7 +254,12 @@ export function NavbarClient({
 											asChild
 											className="focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 flex items-center bg-primary hover:bg-primary-hover text-white"
 										>
-											<Link href={localizedHref(lang, '/signup')}>
+											<Link
+												href={localizedHref(
+													lang,
+													'/signup'
+												)}
+											>
 												{t.navbar.signup}
 											</Link>
 										</Button>

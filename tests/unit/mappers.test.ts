@@ -19,6 +19,9 @@ const baseWatchlistEntry: WatchlistEntry = {
 	poster_path: '/poster.jpg',
 	status: 'to_watch',
 	created_at: '2024-01-01T00:00:00Z',
+	total_episodes: null,
+	release_date: null,
+	genre_ids: null,
 };
 
 const baseMovieCredit: CrewMovieCredit = {
@@ -68,6 +71,17 @@ describe('watchlistEntryToMediaItem', () => {
 	it('preserves the original watchlistEntry reference', () => {
 		const item = watchlistEntryToMediaItem(baseWatchlistEntry);
 		expect(item.watchlistEntry).toBe(baseWatchlistEntry);
+	});
+
+	it('propagates release_date, genre_ids and addedAt for sorting/filtering', () => {
+		const item = watchlistEntryToMediaItem({
+			...baseWatchlistEntry,
+			release_date: '1999-10-15',
+			genre_ids: [18, 53],
+		});
+		expect(item.release_date).toBe('1999-10-15');
+		expect(item.genre_ids).toEqual([18, 53]);
+		expect(item.addedAt).toBe('2024-01-01T00:00:00Z');
 	});
 
 	it('works with tv media_type', () => {

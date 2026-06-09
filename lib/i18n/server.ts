@@ -40,7 +40,9 @@ export const getTranslations = cache(async (lang?: Language) => {
 export type Translations = Awaited<ReturnType<typeof getTranslations>>;
 
 /** Returns the BCP 47 locale string for the given language, or the request-resolved one when omitted. */
-export const getServerLocale = cache(async (lang?: Language): Promise<string> => {
-	const resolved = lang ?? (await getServerLanguage());
-	return getLocale(resolved);
-});
+export const getServerLocale = cache(
+	async (lang?: Language): Promise<string> => {
+		const resolved = lang ?? (await getServerLanguage());
+		return getLocale(resolved);
+	}
+);

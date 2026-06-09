@@ -34,7 +34,11 @@ export async function proxy(request: NextRequest) {
 
 	if (pathname === '/api/search') {
 		const ip = getClientIp(request);
-		const rate = checkRateLimit(`search:${ip}`, SEARCH_LIMIT, SEARCH_WINDOW_MS);
+		const rate = checkRateLimit(
+			`search:${ip}`,
+			SEARCH_LIMIT,
+			SEARCH_WINDOW_MS
+		);
 
 		if (!rate.allowed) {
 			return NextResponse.json(
@@ -83,7 +87,9 @@ export async function proxy(request: NextRequest) {
 		return NextResponse.next({ request: { headers: requestHeaders } });
 	}
 
-	const response = NextResponse.next({ request: { headers: requestHeaders } });
+	const response = NextResponse.next({
+		request: { headers: requestHeaders },
+	});
 
 	const supabase = createServerClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,

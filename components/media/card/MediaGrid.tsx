@@ -34,9 +34,7 @@ export function MediaGrid({
 								hideRating={hideRating}
 								imageSize="grid"
 								priority={index < 6}
-								enableSharedTransition={
-									enableSharedTransition
-								}
+								enableSharedTransition={enableSharedTransition}
 							/>
 						</StaggeredItem>
 					</div>

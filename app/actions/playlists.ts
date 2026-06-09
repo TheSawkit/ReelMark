@@ -8,6 +8,7 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { getTranslations } from '@/lib/i18n/server';
 import { revalidateProfile } from '@/app/actions/_helpers';
 import { parseVisibility, isVisibility } from '@/lib/privacy';
+import { getListMediaMetadata } from '@/lib/tmdb';
 import type { MediaType } from '@/types/tmdb';
 import type { Playlist, PrivacyVisibility } from '@/types/profile';
 
@@ -236,6 +237,11 @@ export async function addToPlaylist(
 	if (!playlist || playlist.user_id !== userId)
 		throw new Error(t.profile.errors.playlistNotFound);
 
+	const { release_date, genre_ids } = await getListMediaMetadata(
+		mediaId,
+		mediaType
+	);
+
 	const { error } = await supabase.from('playlist_items').upsert(
 		{
 			playlist_id: playlistId,
@@ -243,6 +249,8 @@ export async function addToPlaylist(
 			media_type: mediaType,
 			media_title: mediaTitle,
 			poster_path: posterPath,
+			release_date,
+			genre_ids,
 		},
 		{ onConflict: 'playlist_id,media_id,media_type' }
 	);

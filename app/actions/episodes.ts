@@ -92,10 +92,7 @@ async function syncTvShowWatchlistStatus(
 		return;
 	}
 
-	if (
-		entry.status !== newStatus ||
-		entry.total_episodes !== totalEpisodes
-	) {
+	if (entry.status !== newStatus || entry.total_episodes !== totalEpisodes) {
 		await supabase
 			.from('watchlist')
 			.update({ status: newStatus, total_episodes: totalEpisodes })

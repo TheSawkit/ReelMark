@@ -91,7 +91,9 @@ export default async function MoviePage(props: MoviePageProps) {
 				throw probeError;
 		}
 		if (isTvShow)
-			redirect(localizedHref(await getServerLanguage(), `/tv/${movieId}`));
+			redirect(
+				localizedHref(await getServerLanguage(), `/tv/${movieId}`)
+			);
 		notFound();
 	}
 

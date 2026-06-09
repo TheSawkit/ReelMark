@@ -32,6 +32,8 @@ interface ProfileTabsProps {
 	privacy: PrivacySettings;
 	isOwnProfile: boolean;
 	isFriend: boolean;
+	genreNames: Record<number, string>;
+	ratingByKey: Record<string, number>;
 }
 
 export function ProfileTabs({
@@ -46,6 +48,8 @@ export function ProfileTabs({
 	privacy,
 	isOwnProfile,
 	isFriend,
+	genreNames,
+	ratingByKey,
 }: ProfileTabsProps) {
 	const { t } = useTranslation();
 	const [activeTab, setActiveTab] = useState<ProfileTab>('watchlist');
@@ -131,6 +135,8 @@ export function ProfileTabs({
 					)}
 					isOwnProfile={isOwnProfile}
 					sectionKey="profile-watchlist"
+					genreNames={genreNames}
+					ratingByKey={ratingByKey}
 				/>
 			)}
 			{activeTab === 'watched' && (
@@ -143,6 +149,8 @@ export function ProfileTabs({
 					)}
 					isOwnProfile={isOwnProfile}
 					sectionKey="profile-watched"
+					genreNames={genreNames}
+					ratingByKey={ratingByKey}
 				/>
 			)}
 			{activeTab === 'reviews' && (

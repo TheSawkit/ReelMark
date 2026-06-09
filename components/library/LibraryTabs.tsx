@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { MediaCard } from '@/components/media/card/MediaCard';
+import { MediaListControls } from '@/components/media/list/MediaListControls';
 import { BookMarked, Eye, ChevronDown } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
-import type { WatchlistEntry } from '@/types/tmdb';
+import type { MediaItem, WatchlistEntry } from '@/types/tmdb';
 import { watchlistEntryToMediaItem } from '@/lib/mappers';
+import { getMediaKey } from '@/lib/media';
+import { useMediaListControls } from '@/hooks/useMediaListControls';
 
 const PAGE_SIZE = 24;
 
@@ -14,38 +17,69 @@ interface LibraryTabsProps {
 	toWatch: WatchlistEntry[];
 	watched: WatchlistEntry[];
 	tvProgress?: Record<number, { watched: number; total: number }>;
+	genreNames: Record<number, string>;
+	ratingByKey: Record<string, number>;
 }
 
 type Tab = 'to_watch' | 'watched';
+
+function toItems(
+	entries: WatchlistEntry[],
+	ratingByKey: Record<string, number>
+): MediaItem[] {
+	return entries.map((entry) => {
+		const item = watchlistEntryToMediaItem(entry);
+		return { ...item, userRating: ratingByKey[getMediaKey(item)] ?? null };
+	});
+}
 
 export function LibraryTabs({
 	toWatch,
 	watched,
 	tvProgress = {},
+	genreNames,
+	ratingByKey,
 }: LibraryTabsProps) {
 	const [activeTab, setActiveTab] = useState<Tab>('to_watch');
 	const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 	const { t } = useTranslation();
 
+	const toWatchItems = useMemo(
+		() => toItems(toWatch, ratingByKey),
+		[toWatch, ratingByKey]
+	);
+	const watchedItems = useMemo(
+		() => toItems(watched, ratingByKey),
+		[watched, ratingByKey]
+	);
+
 	const tabs: Record<
 		Tab,
-		{ label: string; icon: typeof BookMarked; items: WatchlistEntry[] }
+		{ label: string; icon: typeof BookMarked; items: MediaItem[] }
 	> = {
 		to_watch: {
 			label: t.library.toWatch,
 			icon: BookMarked,
-			items: toWatch,
+			items: toWatchItems,
 		},
-		watched: { label: t.library.watched, icon: Eye, items: watched },
+		watched: { label: t.library.watched, icon: Eye, items: watchedItems },
 	};
 
 	const current = tabs[activeTab];
 	const activeIndex = activeTab === 'to_watch' ? 0 : 1;
 
+	const controls = useMediaListControls(
+		current.items,
+		genreNames,
+		`reelmark:list:library:${activeTab}`
+	);
+
 	function switchTab(tab: Tab) {
 		setActiveTab(tab);
 		setVisibleCount(PAGE_SIZE);
 	}
+
+	const processed = controls.items;
 
 	return (
 		<div>
@@ -99,7 +133,7 @@ export function LibraryTabs({
 				<div
 					role="tabpanel"
 					id={`panel-${activeTab}`}
-					className="flex flex-col items-center justify-center py-32 animate-in fade-in slide-in-from-bottom-4 duration-(--duration-slow)"
+					className="flex flex-col items-center justify-center py-32"
 					style={{
 						animation:
 							'fadeIn var(--duration-medium) ease-out forwards',
@@ -121,39 +155,41 @@ export function LibraryTabs({
 				</div>
 			) : (
 				<>
-					<div
-						key={activeTab}
-						role="tabpanel"
-						id={`panel-${activeTab}`}
-						className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6"
-						style={{
-							animation:
-								'scaleIn var(--duration-base) ease-out forwards',
-							opacity: 0,
-						}}
-					>
-						{current.items
-							.slice(0, visibleCount)
-							.map((entry, index) => {
-								const mediaItem =
-									watchlistEntryToMediaItem(entry);
-								const progress =
-									entry.media_type === 'tv'
-										? tvProgress[entry.media_id]
-										: undefined;
-								return (
-									<MediaCard
-										key={entry.id}
-										media={mediaItem}
-										watchlistEntry={entry}
-										hideRating
-										priority={index < 6}
-										tvProgress={progress}
-									/>
-								);
-							})}
-					</div>
-					{visibleCount < current.items.length && (
+					<MediaListControls controls={controls} className="mb-6" />
+
+					{processed.length === 0 ? (
+						<p className="text-muted text-sm py-20 text-center">
+							{t.lists.noResults}
+						</p>
+					) : (
+						<div
+							role="tabpanel"
+							id={`panel-${activeTab}`}
+							className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6"
+						>
+							{processed
+								.slice(0, visibleCount)
+								.map((item, index) => {
+									const entry = item.watchlistEntry;
+									const progress =
+										item.media_type === 'tv'
+											? tvProgress[item.id]
+											: undefined;
+									return (
+										<MediaCard
+											key={entry?.id ?? getMediaKey(item)}
+											media={item}
+											watchlistEntry={entry}
+											hideRating
+											priority={index < 6}
+											tvProgress={progress}
+										/>
+									);
+								})}
+						</div>
+					)}
+
+					{visibleCount < processed.length && (
 						<div className="flex justify-center mt-10">
 							<button
 								onClick={() =>
@@ -163,7 +199,7 @@ export function LibraryTabs({
 							>
 								<ChevronDown className="h-4 w-4" />
 								{t.library.loadMore} (
-								{current.items.length - visibleCount})
+								{processed.length - visibleCount})
 							</button>
 						</div>
 					)}

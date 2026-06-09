@@ -13,13 +13,15 @@ import {
 	getProfileByUsername,
 	getPrivacySettings,
 } from '@/app/actions/profile';
-import { getUserReviews } from '@/app/actions/reviews';
+import { getUserReviews, getUserReviewRatings } from '@/app/actions/reviews';
 import { getUserPlaylists } from '@/app/actions/playlists';
 import {
 	getFriendsWithProfiles,
 	getFriendshipStatus,
 	getPendingRequestsWithProfiles,
 } from '@/app/actions/friends';
+import { getGenres } from '@/lib/tmdb';
+import { ListMetadataBackfill } from '@/components/library/ListMetadataBackfill';
 import type { WatchlistEntry } from '@/types/tmdb';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
 
@@ -29,7 +31,6 @@ interface Props {
 
 type Friendship = Awaited<ReturnType<typeof getFriendshipStatus>>;
 
-{/* TODO: Not found 404 */ }
 export async function generateMetadata({
 	params,
 }: Props): Promise<import('next').Metadata> {
@@ -79,6 +80,8 @@ async function ProfileTabsSection({
 		allFriendEntries,
 		watchlistData,
 		pendingRequests,
+		genreNames,
+		ratingByKey,
 	] = await Promise.all([
 		getPrivacySettings(profileUserId),
 		getUserReviews(profileUserId),
@@ -91,6 +94,10 @@ async function ProfileTabsSection({
 			.order('created_at', { ascending: false })
 			.limit(1000),
 		isOwnProfile ? getPendingRequestsWithProfiles() : Promise.resolve([]),
+		getGenres(),
+		isOwnProfile
+			? getUserReviewRatings(profileUserId)
+			: Promise.resolve<Record<string, number>>({}),
 	]);
 
 	const watchlist = (watchlistData.data ?? []) as WatchlistEntry[];
@@ -120,19 +127,24 @@ async function ProfileTabsSection({
 		: [];
 
 	return (
-		<ProfileTabs
-			toWatch={toWatch}
-			watched={watched}
-			reviews={filteredReviews}
-			initialReviewsCursor={initialReviewsCursor}
-			profileUserId={profileUserId}
-			playlists={playlists}
-			friends={filteredFriends}
-			pendingRequests={pendingRequests}
-			privacy={privacy}
-			isOwnProfile={isOwnProfile}
-			isFriend={isFriend}
-		/>
+		<>
+			{isOwnProfile && <ListMetadataBackfill />}
+			<ProfileTabs
+				toWatch={toWatch}
+				watched={watched}
+				reviews={filteredReviews}
+				initialReviewsCursor={initialReviewsCursor}
+				profileUserId={profileUserId}
+				playlists={playlists}
+				friends={filteredFriends}
+				pendingRequests={pendingRequests}
+				privacy={privacy}
+				isOwnProfile={isOwnProfile}
+				isFriend={isFriend}
+				genreNames={genreNames}
+				ratingByKey={ratingByKey}
+			/>
+		</>
 	);
 }
 

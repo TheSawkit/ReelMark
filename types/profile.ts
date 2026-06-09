@@ -62,6 +62,8 @@ export interface PlaylistItem {
 	media_title: string;
 	poster_path: string | null;
 	added_at: string;
+	release_date: string | null;
+	genre_ids: number[] | null;
 }
 
 export type FriendshipStatus = 'pending' | 'accepted' | 'rejected';

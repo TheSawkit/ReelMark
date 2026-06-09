@@ -170,30 +170,36 @@ export type Database = {
 			playlist_items: {
 				Row: {
 					added_at: string;
+					genre_ids: number[] | null;
 					id: string;
 					media_id: number;
 					media_title: string;
 					media_type: string;
 					playlist_id: string;
 					poster_path: string | null;
+					release_date: string | null;
 				};
 				Insert: {
 					added_at?: string;
+					genre_ids?: number[] | null;
 					id?: string;
 					media_id: number;
 					media_title: string;
 					media_type: string;
 					playlist_id: string;
 					poster_path?: string | null;
+					release_date?: string | null;
 				};
 				Update: {
 					added_at?: string;
+					genre_ids?: number[] | null;
 					id?: string;
 					media_id?: number;
 					media_title?: string;
 					media_type?: string;
 					playlist_id?: string;
 					poster_path?: string | null;
+					release_date?: string | null;
 				};
 				Relationships: [
 					{
@@ -373,33 +379,39 @@ export type Database = {
 			watchlist: {
 				Row: {
 					created_at: string | null;
+					genre_ids: number[] | null;
 					id: string;
 					media_id: number;
 					media_title: string;
 					media_type: string;
 					poster_path: string | null;
+					release_date: string | null;
 					status: string;
 					total_episodes: number | null;
 					user_id: string;
 				};
 				Insert: {
 					created_at?: string | null;
+					genre_ids?: number[] | null;
 					id?: string;
 					media_id: number;
 					media_title: string;
 					media_type?: string;
 					poster_path?: string | null;
+					release_date?: string | null;
 					status: string;
 					total_episodes?: number | null;
 					user_id: string;
 				};
 				Update: {
 					created_at?: string | null;
+					genre_ids?: number[] | null;
 					id?: string;
 					media_id?: number;
 					media_title?: string;
 					media_type?: string;
 					poster_path?: string | null;
+					release_date?: string | null;
 					status?: string;
 					total_episodes?: number | null;
 					user_id?: string;

@@ -67,6 +67,43 @@ export async function getUserReviews(
 }
 
 /**
+ * Returns a `media_key → rating` map of a user's own movie/tv ratings, for sorting lists
+ * by user rating. Reviews RLS restricts direct reads to the user's own rows, so callers
+ * should only request the rating map of the list owner viewing their own profile.
+ *
+ * @param userId - Owner of the reviews.
+ */
+export async function getUserReviewRatings(
+	userId: string
+): Promise<Record<string, number>> {
+	const supabase = await createClient();
+
+	const { data, error } = await supabase
+		.from('reviews')
+		.select('media_id, media_type, rating')
+		.eq('user_id', userId)
+		.in('media_type', ['movie', 'tv'])
+		.not('rating', 'is', null);
+
+	if (error) return {};
+
+	const map: Record<string, number> = {};
+	for (const row of data ?? []) {
+		if (row.rating !== null) {
+			map[`${row.media_type}-${row.media_id}`] = row.rating;
+		}
+	}
+	return map;
+}
+
+/** Returns the authenticated user's own `media_key → rating` map, or an empty map if signed out. */
+export async function getMyReviewRatings(): Promise<Record<string, number>> {
+	const { userId } = await getOptionalUser();
+	if (!userId) return {};
+	return getUserReviewRatings(userId);
+}
+
+/**
  * Returns the authenticated user's review for a specific media item, or null if none.
  */
 export async function getMediaReview(

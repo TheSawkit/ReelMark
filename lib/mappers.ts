@@ -24,10 +24,12 @@ export function watchlistEntryToMediaItem(entry: WatchlistEntry): MediaItem {
 		overview: '',
 		poster_path: entry.poster_path,
 		backdrop_path: null,
-		release_date: '',
+		release_date: entry.release_date ?? '',
 		vote_average: 0,
 		vote_count: 0,
 		popularity: 0,
+		genre_ids: entry.genre_ids ?? undefined,
+		addedAt: entry.created_at,
 		watchlistEntry: entry,
 	};
 }
@@ -139,9 +141,11 @@ export function playlistItemToMediaItem(item: PlaylistItem): MediaItem {
 		overview: '',
 		poster_path: item.poster_path,
 		backdrop_path: null,
-		release_date: '',
+		release_date: item.release_date ?? '',
 		vote_average: 0,
 		vote_count: 0,
 		popularity: 0,
+		genre_ids: item.genre_ids ?? undefined,
+		addedAt: item.added_at,
 	};
 }

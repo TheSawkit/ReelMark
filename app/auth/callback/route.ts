@@ -19,7 +19,9 @@ export async function GET(request: Request) {
 			await supabase.auth.exchangeCodeForSession(code);
 
 		if (!error && data.session) {
-			return NextResponse.redirect(`${baseUrl}${localizedHref(lang, next)}`);
+			return NextResponse.redirect(
+				`${baseUrl}${localizedHref(lang, next)}`
+			);
 		}
 
 		console.error('[auth/callback] Code exchange failed:', error?.message);

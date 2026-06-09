@@ -1,12 +1,14 @@
 import { Suspense } from 'react';
 import { getAllTvShowsWatchProgress } from '@/app/actions/episodes';
 import { getCachedUserWatchlist } from '@/lib/data/watchlist';
+import { getMyReviewRatings } from '@/app/actions/reviews';
 import { LibraryTabs } from '@/components/library/LibraryTabs';
+import { ListMetadataBackfill } from '@/components/library/ListMetadataBackfill';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
 import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
-import { getTvShowsTotalEpisodes } from '@/lib/tmdb';
+import { getTvShowsTotalEpisodes, getGenres } from '@/lib/tmdb';
 import { BASE_URL, buildPageMetadata } from '@/lib/metadata';
 import type { MediaType } from '@/types/tmdb';
 
@@ -50,7 +52,11 @@ async function LibrarySubtitle({
 }
 
 async function LibraryContent({ type }: { type: MediaType }) {
-	const fullWatchlist = await getCachedUserWatchlist();
+	const [fullWatchlist, genreNames, ratingByKey] = await Promise.all([
+		getCachedUserWatchlist(),
+		getGenres(),
+		getMyReviewRatings(),
+	]);
 	const watchlist = fullWatchlist.filter(
 		(entry) => entry.media_type === type
 	);
@@ -86,11 +92,16 @@ async function LibraryContent({ type }: { type: MediaType }) {
 	}
 
 	return (
-		<LibraryTabs
-			toWatch={toWatch}
-			watched={watched}
-			tvProgress={tvProgressMap}
-		/>
+		<>
+			<ListMetadataBackfill />
+			<LibraryTabs
+				toWatch={toWatch}
+				watched={watched}
+				tvProgress={tvProgressMap}
+				genreNames={genreNames}
+				ratingByKey={ratingByKey}
+			/>
+		</>
 	);
 }
 

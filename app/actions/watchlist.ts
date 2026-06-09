@@ -12,8 +12,9 @@ import { VALID_STATUSES, VALID_MEDIA_TYPES } from '@/lib/validators';
 import type { WatchStatus, WatchlistEntry, MediaType } from '@/types/tmdb';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
 import {
-	getTvShowTotalEpisodes,
 	getTvShowsTotalEpisodes,
+	getListMediaMetadata,
+	type ListMediaMetadata,
 } from '@/lib/tmdb';
 
 function revalidateWatchlistPaths(mediaType: MediaType, mediaId: number) {
@@ -34,8 +35,8 @@ export async function addToWatchlist(
 
 	const { supabase, userId } = await getAuthenticatedUser();
 
-	const totalEpisodes =
-		mediaType === 'tv' ? await getTvShowTotalEpisodes(mediaId) : null;
+	const { release_date, genre_ids, total_episodes } =
+		await getListMediaMetadata(mediaId, mediaType);
 
 	const { error } = await supabase.from('watchlist').upsert(
 		{
@@ -45,7 +46,9 @@ export async function addToWatchlist(
 			poster_path: posterPath,
 			status,
 			media_type: mediaType,
-			total_episodes: totalEpisodes,
+			total_episodes,
+			release_date,
+			genre_ids,
 		},
 		{ onConflict: 'user_id,media_id,media_type' }
 	);
@@ -85,6 +88,111 @@ export async function backfillTvTotals(): Promise<{ updated: number }> {
 		})
 	);
 	return { updated };
+}
+
+const META_BATCH_SIZE = 8;
+
+/**
+ * One-shot backfill: fills release_date + genre_ids for the caller's watchlist and
+ * playlist rows that predate the sort/filter migration, so lists can sort by year and
+ * filter by genre. Targets rows where genre_ids is null (new rows are populated on insert).
+ */
+export async function backfillListMetadata(): Promise<{
+	watchlist: number;
+	playlistItems: number;
+}> {
+	const { supabase, userId } = await getAuthenticatedUser();
+
+	const [watchlistResult, playlistsResult] = await Promise.all([
+		supabase
+			.from('watchlist')
+			.select('media_id, media_type')
+			.eq('user_id', userId)
+			.is('genre_ids', null),
+		supabase.from('playlists').select('id').eq('user_id', userId),
+	]);
+
+	const watchlistRows = watchlistResult.data ?? [];
+	const playlistIds = (playlistsResult.data ?? []).map((p) => p.id);
+
+	const playlistItemsResult = playlistIds.length
+		? await supabase
+				.from('playlist_items')
+				.select('media_id, media_type')
+				.in('playlist_id', playlistIds)
+				.is('genre_ids', null)
+		: null;
+	const playlistRows = playlistItemsResult?.data ?? [];
+
+	const uniqueItems = new Map<string, { id: number; type: MediaType }>();
+	for (const row of [...watchlistRows, ...playlistRows]) {
+		const type = row.media_type as MediaType;
+		uniqueItems.set(`${type}-${row.media_id}`, {
+			id: row.media_id,
+			type,
+		});
+	}
+	if (uniqueItems.size === 0) return { watchlist: 0, playlistItems: 0 };
+
+	const items = Array.from(uniqueItems.values());
+	const metaByKey = new Map<string, ListMediaMetadata>();
+	for (let i = 0; i < items.length; i += META_BATCH_SIZE) {
+		const batch = items.slice(i, i + META_BATCH_SIZE);
+		const results = await Promise.all(
+			batch.map(
+				async (item) =>
+					[
+						`${item.type}-${item.id}`,
+						await getListMediaMetadata(item.id, item.type),
+					] as const
+			)
+		);
+		for (const [key, meta] of results) metaByKey.set(key, meta);
+	}
+
+	let watchlistUpdated = 0;
+	await Promise.all(
+		watchlistRows.map(async (row) => {
+			const meta = metaByKey.get(`${row.media_type}-${row.media_id}`);
+			if (!meta) return;
+			await supabase
+				.from('watchlist')
+				.update({
+					release_date: meta.release_date,
+					genre_ids: meta.genre_ids,
+				})
+				.eq('user_id', userId)
+				.eq('media_id', row.media_id)
+				.eq('media_type', row.media_type);
+			watchlistUpdated++;
+		})
+	);
+
+	let playlistUpdated = 0;
+	if (playlistIds.length) {
+		const playlistKeys = new Set(
+			playlistRows.map((row) => `${row.media_type}-${row.media_id}`)
+		);
+		await Promise.all(
+			Array.from(playlistKeys).map(async (key) => {
+				const meta = metaByKey.get(key);
+				const item = uniqueItems.get(key);
+				if (!meta || !item) return;
+				await supabase
+					.from('playlist_items')
+					.update({
+						release_date: meta.release_date,
+						genre_ids: meta.genre_ids,
+					})
+					.in('playlist_id', playlistIds)
+					.eq('media_id', item.id)
+					.eq('media_type', item.type);
+				playlistUpdated++;
+			})
+		);
+	}
+
+	return { watchlist: watchlistUpdated, playlistItems: playlistUpdated };
 }
 
 export async function removeFromWatchlist(
