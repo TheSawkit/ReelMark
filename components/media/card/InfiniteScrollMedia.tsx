@@ -5,6 +5,7 @@ import { useInView } from '@/hooks/useInView';
 import type { MediaItem } from '@/types/tmdb';
 import { MediaGrid } from '@/components/media/card/MediaGrid';
 import { MediaCardSkeleton } from '@/components/media/card/MediaCardSkeleton';
+import { BackToTopButton } from '@/components/shared/BackToTopButton';
 import { fetchMoreMedia } from '@/app/actions/media';
 import { useTranslation } from '@/lib/i18n/context';
 import { getMediaKey } from '@/lib/media';
@@ -185,6 +186,8 @@ export function InfiniteScrollMedia({
 					{t.common.errorDescription}
 				</div>
 			)}
+
+			<BackToTopButton />
 		</>
 	);
 }
