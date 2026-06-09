@@ -1,11 +1,10 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { createClient } from '@/lib/supabase/server';
 import { formStr } from '@/lib/validators';
 import { getTranslations } from '@/lib/i18n/server';
-import { revalidateProfile } from '@/app/actions/_helpers';
+import { revalidateProfile, revalidateLocalized } from '@/app/actions/_helpers';
 import { parseVisibility } from '@/lib/privacy';
 import { USER_PROFILE_COLUMNS, PRIVACY_COLUMNS } from '@/lib/supabase/columns';
 import type {
@@ -105,7 +104,7 @@ export async function updateSocialLinks(
 
 	if (error) return { error: error.message, success: false };
 
-	revalidatePath(`/profile/${username}`);
+	revalidateLocalized(`/profile/${username}`);
 	return {
 		error: undefined,
 		success: true,

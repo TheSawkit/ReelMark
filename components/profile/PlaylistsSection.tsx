@@ -105,7 +105,7 @@ function PlaylistCard({
 	return (
 		<>
 			<div
-				className="group relative min-h-44 flex flex-col overflow-hidden rounded-xl cursor-pointer bg-surface border border-border-subtle"
+				className="group relative min-h-44 flex flex-col overflow-hidden rounded-xl cursor-pointer bg-surface border border-border-subtle transition-transform duration-(--duration-fast) ease-apple active:scale-[0.98]"
 				onClick={openViewDialog}
 				role="button"
 				aria-label={t.profile.viewPlaylist}

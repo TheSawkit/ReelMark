@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { signup } from '@/app/auth/actions';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 
 const initialState = { error: '' };
 
@@ -33,7 +34,7 @@ export function SignupForm({
 	const [state, formAction, isPending] = useActionState(signup, initialState);
 	const [oauthPending, setOAuthPending] = useState(false);
 	const [oauthError, setOAuthError] = useState('');
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const supabase = createClient();
 
 	const [browserLang] = useState(() => {
@@ -223,7 +224,7 @@ export function SignupForm({
 								</Button>
 								<FieldDescription className="text-center">
 									{t.auth.signup.alreadyHaveAccount}{' '}
-									<Link href="/login">
+									<Link href={localizedHref(lang, '/login')}>
 										{t.auth.signup.login}
 									</Link>
 								</FieldDescription>

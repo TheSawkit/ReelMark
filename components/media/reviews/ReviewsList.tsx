@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/sheet';
 import { StarRating } from '@/components/ui/StarRating';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
+import type { Language } from '@/lib/i18n/translations';
 import type { PublicReview } from '@/types/profile';
 
 function relativeDate(dateStr: string, lang: string): string {
@@ -58,14 +60,14 @@ function ReviewCard({
 	clamp,
 }: {
 	review: PublicReview;
-	lang: string;
+	lang: Language;
 	clamp: boolean;
 }) {
 	return (
 		<article className="space-y-2">
 			<div className="flex items-center justify-between gap-3">
 				<Link
-					href={`/profile/${review.username}`}
+					href={localizedHref(lang, `/profile/${review.username}`)}
 					className="flex items-center gap-2.5 min-w-0 group"
 				>
 					<Avatar

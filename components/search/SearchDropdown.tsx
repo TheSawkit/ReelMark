@@ -7,6 +7,7 @@ import type { MediaItem } from '@/types/tmdb';
 import type { UserSearchResult } from '@/hooks/useSearchSuggestions';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import { cn } from '@/lib/utils';
 import { getMediaHref, getMediaKey } from '@/lib/media';
 import { UserAvatar } from '@/components/shared/UserAvatar';
@@ -38,7 +39,7 @@ export function SearchDropdown({
 	onClose,
 	onActiveChange,
 }: SearchDropdownProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const isEmpty = isUserSearch ? users.length === 0 : results.length === 0;
 
 	if (!isOpen) return null;
@@ -81,11 +82,14 @@ export function SearchDropdown({
 									id={optionId(index)}
 									role="option"
 									aria-selected={isActive}
-									href={`/profile/${user.username}`}
+									href={localizedHref(
+										lang,
+										`/profile/${user.username}`
+									)}
 									onClick={onClose}
 									onMouseEnter={() => onActiveChange?.(index)}
 									className={cn(
-										'flex items-center gap-4 p-2 rounded-xl transition-all duration-(--duration-fast) ease-apple group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
+										'flex items-center gap-4 p-2 rounded-xl transition-all duration-(--duration-fast) ease-apple group active:bg-glass-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
 										isActive
 											? 'bg-glass-bg-hover ring-1 ring-primary/40'
 											: 'hover:bg-glass-bg-hover'
@@ -164,11 +168,11 @@ export function SearchDropdown({
 								id={optionId(index)}
 								role="option"
 								aria-selected={isActive}
-								href={getMediaHref(item)}
+								href={localizedHref(lang, getMediaHref(item))}
 								onClick={onClose}
 								onMouseEnter={() => onActiveChange?.(index)}
 								className={cn(
-									'flex items-center gap-4 p-2 rounded-xl transition-all duration-(--duration-fast) ease-apple group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
+									'flex items-center gap-4 p-2 rounded-xl transition-all duration-(--duration-fast) ease-apple group relative overflow-hidden active:bg-glass-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
 									isActive
 										? 'bg-glass-bg-hover ring-1 ring-primary/40'
 										: 'hover:bg-glass-bg-hover'
@@ -241,7 +245,10 @@ export function SearchDropdown({
 					{t.explorer.searchResults}
 				</span>
 				<Link
-					href={`/explorer/search?q=${encodeURIComponent(query)}`}
+					href={localizedHref(
+						lang,
+						`/explorer/search?q=${encodeURIComponent(query)}`
+					)}
 					className="text-xs font-bold text-red hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
 					onClick={onClose}
 				>

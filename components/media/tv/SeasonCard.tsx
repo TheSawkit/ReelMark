@@ -4,6 +4,8 @@ import { Calendar } from 'lucide-react';
 import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/tmdb/images';
+import { getServerLanguage } from '@/lib/i18n/server';
+import { localizedHref } from '@/lib/i18n/utils';
 import { SeasonWatchIcon } from '@/components/media/tv/SeasonWatchIcon';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import type { Season } from '@/types/tmdb';
@@ -20,7 +22,7 @@ interface SeasonCardProps {
 	};
 }
 
-export function SeasonCard({
+export async function SeasonCard({
 	tvId,
 	season,
 	seasonWatched,
@@ -29,11 +31,15 @@ export function SeasonCard({
 }: SeasonCardProps) {
 	const seasonTotal = season.episode_count;
 	const isComplete = seasonWatched === seasonTotal && seasonTotal > 0;
+	const lang = await getServerLanguage();
 
 	return (
 		<div className="relative group">
 			<Link
-				href={`/tv/${tvId}/season/${season.season_number}`}
+				href={localizedHref(
+					lang,
+					`/tv/${tvId}/season/${season.season_number}`
+				)}
 				className={cn(
 					'flex gap-4 bg-surface-2 rounded-xl p-4 transition-all duration-(--duration-base) hover:bg-surface-3 hover:shadow-cinema border cursor-pointer',
 					isComplete

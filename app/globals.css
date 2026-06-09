@@ -484,16 +484,83 @@ a {
 	}
 }
 
-/* Subtle, snappy cross-fade between pages (React View Transitions). */
+/* Default page transition (desktop / first load / unknown direction): snappy cross-fade. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
 	animation-duration: var(--duration-fast);
 	animation-timing-function: var(--ease-apple);
 }
 
+/* Native directional slide for the page content. The fixed chrome
+   (top-nav / bottom-nav) carries its own view-transition-name, so it is pulled
+   out of the `root` snapshot and stays pinned while only the page slides. */
+@keyframes rm-page-in-right {
+	from {
+		transform: translateX(100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+@keyframes rm-page-out-left {
+	from {
+		transform: translateX(0);
+		opacity: 1;
+	}
+	to {
+		transform: translateX(-25%);
+		opacity: 0.6;
+	}
+}
+@keyframes rm-page-in-left {
+	from {
+		transform: translateX(-25%);
+		opacity: 0.6;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+@keyframes rm-page-out-right {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(100%);
+	}
+}
+
+@media (width < 48rem) {
+	/* Forward (push): the new page slides in from the right over the old one. */
+	html[data-nav-direction='forward']::view-transition-old(root) {
+		animation: rm-page-out-left var(--duration-base) var(--ease-apple) both;
+	}
+	html[data-nav-direction='forward']::view-transition-new(root) {
+		animation: rm-page-in-right var(--duration-base) var(--ease-apple) both;
+		z-index: 1;
+	}
+
+	/* Back (pop / swipe back): the old page slides out to the right, revealing the previous one. */
+	html[data-nav-direction='back']::view-transition-old(root) {
+		animation: rm-page-out-right var(--duration-base) var(--ease-apple) both;
+		z-index: 1;
+	}
+	html[data-nav-direction='back']::view-transition-new(root) {
+		animation: rm-page-in-left var(--duration-base) var(--ease-apple) both;
+	}
+}
+
+/* Shared-element morph (poster card → detail banner) glides with the app easing. */
+::view-transition-group(*) {
+	animation-duration: var(--duration-base);
+	animation-timing-function: var(--ease-apple);
+}
+
 @media (prefers-reduced-motion: reduce) {
-	::view-transition-old(root),
-	::view-transition-new(root) {
-		animation: none;
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		animation: none !important;
 	}
 }

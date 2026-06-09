@@ -10,6 +10,9 @@ export interface WatchlistEntry {
 	poster_path: string | null;
 	status: WatchStatus;
 	created_at: string;
+	total_episodes: number | null;
+	release_date: string | null;
+	genre_ids: number[] | null;
 }
 
 export interface Movie {
@@ -111,6 +114,8 @@ export interface MediaItem {
 	genre_ids?: number[];
 	character?: string;
 	watchlistEntry?: WatchlistEntry;
+	userRating?: number | null;
+	addedAt?: string;
 }
 
 export interface Cast {

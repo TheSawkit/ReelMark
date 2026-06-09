@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { UserAvatar } from '@/components/shared/UserAvatar';
 import { DeleteIconButton } from '@/components/ui/DeleteIconButton';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import { notificationMessage } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
 import type { AppNotification } from '@/types/notifications';
@@ -20,7 +21,7 @@ export function NotificationItem({
 	onClick,
 	onDelete,
 }: NotificationItemProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const message = notificationMessage(
 		notification,
 		t.notifications.templates
@@ -68,14 +69,14 @@ export function NotificationItem({
 
 	const itemClassName = cn(
 		'group flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors',
-		'hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+		'hover:bg-surface-2 active:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
 	);
 
 	return (
 		<div className="relative">
 			{notification.url ? (
 				<Link
-					href={notification.url}
+					href={localizedHref(lang, notification.url)}
 					prefetch={false}
 					onClick={() => onClick?.(notification)}
 					className={itemClassName}

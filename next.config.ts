@@ -53,7 +53,7 @@ const nextConfig: NextConfig = {
 		],
 		viewTransition: true,
 		staleTimes: {
-			dynamic: 30,
+			dynamic: 90,
 			static: 180,
 		},
 	},

@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { Play, Star } from 'lucide-react';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { getMediaHref } from '@/lib/media';
+import { getServerLanguage } from '@/lib/i18n/server';
+import { localizedHref } from '@/lib/i18n/utils';
 import { TiltCard } from '@/components/effects/TiltCard';
 import { Aurora } from '@/components/effects/Aurora';
 import { Spotlight } from '@/components/effects/Spotlight';
@@ -30,18 +32,19 @@ interface DashboardHeroProps {
 }
 
 /** Cinematic "resume / discover" hero featuring the user's next title to watch. */
-export function DashboardHero({
+export async function DashboardHero({
 	item,
 	resumeLabel,
 	discoverLabel,
 }: DashboardHeroProps) {
 	const cta = item.resume ? resumeLabel : discoverLabel;
+	const lang = await getServerLanguage();
 
 	return (
 		<div className="mb-10">
 			<TiltCard max={5} radius={24} glow={false}>
 				<Link
-					href={getMediaHref(item)}
+					href={localizedHref(lang, getMediaHref(item))}
 					className="relative block h-104 sm:h-112 overflow-hidden rounded-3xl border border-border shadow-cinema focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 				>
 					{item.backdropPath ? (

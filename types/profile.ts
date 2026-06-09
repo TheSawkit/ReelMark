@@ -37,6 +37,8 @@ export interface Review {
 	poster_path: string | null;
 	rating: number | null;
 	content: string | null;
+	tv_id: number | null;
+	season_number: number | null;
 	created_at: string;
 	updated_at: string;
 }
@@ -62,6 +64,8 @@ export interface PlaylistItem {
 	media_title: string;
 	poster_path: string | null;
 	added_at: string;
+	release_date: string | null;
+	genre_ids: number[] | null;
 }
 
 export type FriendshipStatus = 'pending' | 'accepted' | 'rejected';

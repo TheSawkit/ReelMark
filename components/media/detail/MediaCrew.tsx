@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
+import type { Language } from '@/lib/i18n/translations';
 import type { CreatedBy, GroupedCrew } from '@/types/tmdb';
 
 interface MediaCrewProps {
@@ -28,10 +30,12 @@ function CrewRow({
 	label,
 	people,
 	Icon,
+	lang,
 }: {
 	label: string;
 	people: CrewPerson[];
 	Icon: LucideIcon;
+	lang: Language;
 }) {
 	if (people.length === 0) return null;
 	return (
@@ -44,7 +48,7 @@ function CrewRow({
 				{people.map((person, index) => (
 					<span key={person.id}>
 						<Link
-							href={`/crew/${person.id}`}
+							href={localizedHref(lang, `/crew/${person.id}`)}
 							className="hover:text-gold transition-colors"
 						>
 							{person.name}
@@ -60,7 +64,7 @@ function CrewRow({
 }
 
 export function MediaCrew({ crew, creators }: MediaCrewProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 
 	const lead = creators?.length
 		? { label: t.movie.creator, people: creators }
@@ -87,6 +91,7 @@ export function MediaCrew({ crew, creators }: MediaCrewProps) {
 						label={row.label}
 						people={row.people}
 						Icon={row.Icon}
+						lang={lang}
 					/>
 				))}
 			</dl>

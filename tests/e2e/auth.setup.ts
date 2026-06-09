@@ -19,7 +19,7 @@ setup('authenticate', async ({ page }) => {
 	}
 
 	await page.emulateMedia({ reducedMotion: 'reduce' });
-	await page.goto('/login');
+	await page.goto('/en/login');
 	await page.locator('#email').fill(email);
 	await page.locator('#password').fill(password);
 	await page
@@ -27,7 +27,7 @@ setup('authenticate', async ({ page }) => {
 		.click();
 
 	const navigated = await page
-		.waitForURL('/dashboard', { timeout: 15000 })
+		.waitForURL(/\/(en|fr)\/dashboard/, { timeout: 15000 })
 		.then(() => true)
 		.catch(() => false);
 

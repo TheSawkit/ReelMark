@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import type { Video, MediaType } from '@/types/tmdb';
 import { getMovieDetails, getTvShowDetails } from '@/lib/tmdb';
-import { buildMediaMetadata, BASE_URL } from '@/lib/metadata';
-import { getTranslations } from '@/lib/i18n/server';
+import { buildMediaMetadata } from '@/lib/metadata';
+import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
 
 /** Filters and sorts YouTube trailers/teasers by official status. */
 export function filterTrailers(videos: Video[]): Video[] {
@@ -20,7 +20,10 @@ export async function buildMediaDetailMetadata(
 	type: MediaType,
 	id: number
 ): Promise<Metadata> {
-	const t = await getTranslations();
+	const [t, lang] = await Promise.all([
+		getTranslations(),
+		getServerLanguage(),
+	]);
 	const defaultDesc =
 		type === 'movie'
 			? t.metadata.defaultMovieDescription
@@ -36,7 +39,8 @@ export async function buildMediaDetailMetadata(
 				title: details.title,
 				description,
 				backdropPath: details.backdrop_path,
-				canonical: `${BASE_URL}/movie/${id}`,
+				lang,
+				path: `/movie/${id}`,
 				ogType: 'video.movie',
 			});
 		} else {
@@ -48,7 +52,8 @@ export async function buildMediaDetailMetadata(
 				title: details.name,
 				description,
 				backdropPath: details.backdrop_path,
-				canonical: `${BASE_URL}/tv/${id}`,
+				lang,
+				path: `/tv/${id}`,
 				ogType: 'video.tv_show',
 			});
 		}

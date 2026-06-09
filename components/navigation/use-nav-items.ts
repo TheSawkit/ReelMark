@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Home, Compass, Library, User, type LucideIcon } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref, stripLocale } from '@/lib/i18n/utils';
 
 export interface NavItem {
 	key: string;
@@ -19,37 +20,38 @@ export interface NavItem {
  */
 export function useNavItems(username?: string): NavItem[] {
 	const pathname = usePathname();
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
+	const path = stripLocale(pathname);
 	const profileHref = username ? `/profile/${username}` : '/settings';
 
 	return [
 		{
 			key: 'home',
-			href: '/dashboard',
+			href: localizedHref(lang, '/dashboard'),
 			label: t.navbar.tabs.home,
 			icon: Home,
-			active: pathname === '/dashboard',
+			active: path === '/dashboard',
 		},
 		{
 			key: 'explore',
-			href: '/explorer',
+			href: localizedHref(lang, '/explorer'),
 			label: t.navbar.tabs.explore,
 			icon: Compass,
-			active: pathname.startsWith('/explorer'),
+			active: path.startsWith('/explorer'),
 		},
 		{
 			key: 'library',
-			href: '/library',
+			href: localizedHref(lang, '/library'),
 			label: t.navbar.tabs.library,
 			icon: Library,
-			active: pathname === '/library',
+			active: path === '/library',
 		},
 		{
 			key: 'profile',
-			href: profileHref,
+			href: localizedHref(lang, profileHref),
 			label: t.navbar.tabs.profile,
 			icon: User,
-			active: pathname.startsWith('/profile'),
+			active: path.startsWith('/profile'),
 		},
 	];
 }

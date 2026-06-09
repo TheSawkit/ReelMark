@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Login page', () => {
 	test('renders login form', async ({ page }) => {
-		await page.goto('/login');
+		await page.goto('/en/login');
 		await expect(page.locator('[data-slot="card-title"]')).toBeVisible();
 		await expect(
 			page.getByRole('textbox', { name: /email/i })
@@ -13,7 +13,7 @@ test.describe('Login page', () => {
 	});
 
 	test('shows validation error on empty submit', async ({ page }) => {
-		await page.goto('/login');
+		await page.goto('/en/login');
 		await page
 			.getByRole('button', { name: /connexion|login|sign in/i })
 			.click();
@@ -27,7 +27,7 @@ test.describe('Login page', () => {
 
 test.describe('Signup page', () => {
 	test('renders signup form', async ({ page }) => {
-		await page.goto('/signup');
+		await page.goto('/en/signup');
 		await expect(
 			page.getByRole('textbox', { name: /email/i })
 		).toBeVisible();

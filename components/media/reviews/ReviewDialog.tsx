@@ -24,6 +24,8 @@ interface ReviewDialogProps {
 	mediaType: ReviewMediaType;
 	mediaTitle: string;
 	posterPath: string | null;
+	tvId?: number | null;
+	seasonNumber?: number | null;
 	existingReview?: Review | null;
 	onSave?: (rating: number | null, content: string | null) => void;
 	onDelete?: () => void;
@@ -36,6 +38,8 @@ export function ReviewDialog({
 	mediaType,
 	mediaTitle,
 	posterPath,
+	tvId = null,
+	seasonNumber = null,
 	existingReview,
 	onSave,
 	onDelete,
@@ -60,7 +64,9 @@ export function ReviewDialog({
 					mediaTitle,
 					posterPath,
 					rating,
-					content.trim() || null
+					content.trim() || null,
+					tvId,
+					seasonNumber
 				);
 				toast.success(t.movie.reviewSaved);
 				onSave?.(rating, content.trim() || null);

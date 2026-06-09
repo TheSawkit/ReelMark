@@ -79,6 +79,8 @@ export function EpisodeWatchButton({
 					mediaType="episode"
 					mediaTitle={episodeName}
 					posterPath={stillPath}
+					tvId={tvId}
+					seasonNumber={seasonNumber}
 				/>
 			)}
 		</>

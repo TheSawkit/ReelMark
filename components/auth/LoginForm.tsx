@@ -22,6 +22,7 @@ import Link from 'next/link';
 import { login } from '@/app/auth/actions';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 
 const initialState = { error: '' };
 
@@ -32,7 +33,7 @@ export function LoginForm({
 	const [state, formAction, isPending] = useActionState(login, initialState);
 	const [oauthPending, setOAuthPending] = useState(false);
 	const [oauthError, setOAuthError] = useState('');
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const supabase = createClient();
 
 	const handleOAuthLogin = async (provider: 'google') => {
@@ -111,7 +112,10 @@ export function LoginForm({
 										{t.auth.login.password}
 									</FieldLabel>
 									<Link
-										href="/auth/reset-password"
+										href={localizedHref(
+											lang,
+											'/auth/reset-password'
+										)}
 										className="ml-auto text-sm text-muted hover:text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
 									>
 										{t.auth.login.forgotPassword}
@@ -147,7 +151,7 @@ export function LoginForm({
 								</Button>
 								<FieldDescription className="text-center">
 									{t.auth.login.dontHaveAccount}{' '}
-									<Link href="/signup">
+									<Link href={localizedHref(lang, '/signup')}>
 										{t.auth.login.signup}
 									</Link>
 								</FieldDescription>

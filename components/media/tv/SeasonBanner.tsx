@@ -7,7 +7,7 @@ import { ArrowLeft, Calendar, Layers } from 'lucide-react';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { InfoBadge, RatingBadge } from '@/components/ui/InfoBadge';
 import { useTranslation } from '@/lib/i18n/context';
-import { getLocale } from '@/lib/i18n/utils';
+import { getLocale, localizedHref } from '@/lib/i18n/utils';
 import { formatDate } from '@/lib/format';
 import { useDominantColor } from '@/hooks/useDominantColor';
 import { NavbarGradient } from '@/components/navigation/NavbarGradient';
@@ -91,7 +91,7 @@ export function SeasonBanner({
 			<div className="relative z-10 container mx-auto px-6 lg:px-12 h-full flex flex-col justify-end pb-4 sm:pb-12">
 				<div className="w-full justify-start mb-6 md:mb-8 z-20 hidden md:flex">
 					<Link
-						href={`/tv/${tvId}`}
+						href={localizedHref(lang, `/tv/${tvId}`)}
 						aria-label={`${t.movie.backTo} ${tvName}`}
 						className="h-11 w-11 flex items-center justify-center rounded-full glass-overlay hover:bg-surface-2/20 shrink-0 text-text transition-colors cursor-pointer shadow-card-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
 					>
@@ -112,7 +112,7 @@ export function SeasonBanner({
 
 					<div className="flex-1 max-w-4xl">
 						<Link
-							href={`/tv/${tvId}`}
+							href={localizedHref(lang, `/tv/${tvId}`)}
 							className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-text transition-colors mb-2"
 						>
 							<ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />

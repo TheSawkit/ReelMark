@@ -35,6 +35,7 @@ import type {
 } from '@/types/profile';
 import type { MediaItem } from '@/types/tmdb';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import { cn } from '@/lib/utils';
 import { VisibilitySelector } from '@/components/profile/VisibilitySelector';
 import { BASE_URL } from '@/lib/metadata';
@@ -152,6 +153,8 @@ export function PlaylistEditDialog({
 				media_title: item.title,
 				poster_path: item.poster_path ?? null,
 				added_at: new Date().toISOString(),
+				release_date: item.release_date || null,
+				genre_ids: item.genre_ids ?? null,
 			});
 			setQuery('');
 		} catch {
@@ -372,7 +375,7 @@ function PlaylistGrid({
 	pendingRemove: string | null;
 	onRemove: (item: PlaylistItem) => void;
 }) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 
 	if (items.length === 0) {
 		return (
@@ -405,7 +408,10 @@ function PlaylistGrid({
 				return (
 					<div key={item.id} className={CARD_BASE}>
 						<Link
-							href={`/${item.media_type}/${item.media_id}`}
+							href={localizedHref(
+								lang,
+								`/${item.media_type}/${item.media_id}`
+							)}
 							className="block relative aspect-2/3 w-full overflow-hidden rounded-poster"
 						>
 							{item.poster_path ? (

@@ -7,8 +7,9 @@ import {
 	useCallback,
 	type ReactNode,
 } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { translations, type Language } from './translations';
+import { localizedHref, stripLocale } from './utils';
 
 type Translations = (typeof translations)[Language];
 
@@ -35,6 +36,7 @@ export function LanguageProvider({
 }: LanguageProviderProps) {
 	const [lang, setLangState] = useState<Language>(initialLang);
 	const router = useRouter();
+	const pathname = usePathname();
 
 	const setLang = useCallback(
 		(newLang: Language) => {
@@ -42,9 +44,9 @@ export function LanguageProvider({
 			localStorage.setItem('preferred-language', newLang);
 			const secureFlag = location.protocol === 'https:' ? '; Secure' : '';
 			document.cookie = `preferred-language=${newLang}; path=/; max-age=31536000; SameSite=Lax${secureFlag}`;
-			router.refresh();
+			router.push(localizedHref(newLang, stripLocale(pathname)));
 		},
-		[router]
+		[router, pathname]
 	);
 
 	return (

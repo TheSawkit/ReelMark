@@ -10,6 +10,7 @@ import { Spotlight } from '@/components/effects/Spotlight';
 import { Grain } from '@/components/effects/Grain';
 import type { UserProfile } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 
 interface IconProps {
 	className?: string;
@@ -87,7 +88,7 @@ export function ProfileHero({
 	friendshipButton,
 	optionsMenu,
 }: ProfileHeroProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const displayName = fullName || profile.username;
 	const initials = displayName.slice(0, 2).toUpperCase();
 
@@ -172,7 +173,7 @@ export function ProfileHero({
 					<div className="flex flex-wrap gap-2 sm:pb-1">
 						{isOwnProfile ? (
 							<Button variant="outline" size="sm" asChild>
-								<Link href="/settings">
+								<Link href={localizedHref(lang, '/settings')}>
 									{t.profile.editProfile}
 								</Link>
 							</Button>

@@ -9,6 +9,7 @@ import { BlurredPosterBackdrop } from '@/components/shared/BlurredPosterBackdrop
 import { getImageUrl } from '@/lib/tmdb/images';
 import { BASE_URL } from '@/lib/metadata';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import { cn } from '@/lib/utils';
 import type { Playlist } from '@/types/profile';
 
@@ -23,7 +24,7 @@ export function PlaylistHero({
 	ownerUsername,
 	ownerAvatarUrl,
 }: PlaylistHeroProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const items = playlist.items ?? [];
 	const previewItems = items.slice(0, 5);
 	const backgroundPoster = items[0]?.poster_path;
@@ -52,7 +53,10 @@ export function PlaylistHero({
 					<div className="flex flex-wrap gap-2">
 						{ownerUsername && (
 							<Link
-								href={`/profile/${ownerUsername}`}
+								href={localizedHref(
+									lang,
+									`/profile/${ownerUsername}`
+								)}
 								className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-surface shadow-card-sm text-sm text-muted hover:text-text hover:bg-glass-bg-hover transition-colors"
 							>
 								<span className="relative h-5 w-5 shrink-0 overflow-hidden rounded-full border border-border bg-surface-3">
@@ -93,7 +97,12 @@ export function PlaylistHero({
 								variant="outline"
 								className="glass-surface text-text hover:bg-glass-bg-hover hover:text-text"
 							>
-								<Link href={`/profile/${ownerUsername}`}>
+								<Link
+									href={localizedHref(
+										lang,
+										`/profile/${ownerUsername}`
+									)}
+								>
 									{t.profile.viewProfile}
 								</Link>
 							</Button>

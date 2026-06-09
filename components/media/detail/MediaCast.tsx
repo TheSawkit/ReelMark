@@ -7,10 +7,11 @@ import { HorizontalScroll } from '@/components/shared/HorizontalScroll';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { StaggeredItem } from '@/components/ui/StaggeredItem';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import type { MediaCastProps } from '@/types/components';
 
 export function MediaCast({ cast }: MediaCastProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 
 	if (cast.length === 0) return null;
 
@@ -28,7 +29,7 @@ export function MediaCast({ cast }: MediaCastProps) {
 						className="flex-none w-32 md:w-36 snap-start"
 					>
 						<Link
-							href={`/crew/${member.id}`}
+							href={localizedHref(lang, `/crew/${member.id}`)}
 							className="flex flex-col items-center text-center space-y-2 group w-full"
 						>
 							<div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full glass-overlay shadow-card-sm group-hover:scale-105 group-hover:border-gold/30 group-hover:border-t-gold/50 group-hover:shadow-glow-gold transition-all duration-(--duration-base)">

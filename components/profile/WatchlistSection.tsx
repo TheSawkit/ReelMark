@@ -1,12 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { WatchlistEntry } from '@/types/tmdb';
 import type { PrivacyVisibility } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
 import { watchlistEntryToMediaItem } from '@/lib/mappers';
+import { getMediaKey } from '@/lib/media';
+import { SORT_KEYS } from '@/lib/media-list/controls';
+import { useMediaListControls } from '@/hooks/useMediaListControls';
 import { InfiniteScrollMedia } from '@/components/media/card/InfiniteScrollMedia';
+import { MediaListControls } from '@/components/media/list/MediaListControls';
 import { PrivacyBlock } from '@/components/profile/PrivacyBlock';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -18,6 +22,8 @@ interface WatchlistSectionProps {
 	canView: boolean;
 	isOwnProfile: boolean;
 	sectionKey: string;
+	genreNames: Record<number, string>;
+	ratingByKey: Record<string, number>;
 }
 
 export function WatchlistSection({
@@ -26,9 +32,37 @@ export function WatchlistSection({
 	canView,
 	isOwnProfile,
 	sectionKey,
+	genreNames,
+	ratingByKey,
 }: WatchlistSectionProps) {
 	const { t } = useTranslation();
 	const [mediaType, setMediaType] = useState<MediaTypeFilter>('all');
+
+	const allItems = useMemo(
+		() =>
+			entries.map((entry) => {
+				const item = watchlistEntryToMediaItem(entry);
+				return {
+					...item,
+					userRating: ratingByKey[getMediaKey(item)] ?? null,
+				};
+			}),
+		[entries, ratingByKey]
+	);
+
+	const typeItems = useMemo(
+		() =>
+			mediaType === 'all'
+				? allItems
+				: allItems.filter((item) => item.media_type === mediaType),
+		[allItems, mediaType]
+	);
+
+	const controls = useMediaListControls(
+		typeItems,
+		genreNames,
+		`reelmark:list:${sectionKey}`
+	);
 
 	if (!canView) return <PrivacyBlock visibility={visibility} />;
 
@@ -45,25 +79,26 @@ export function WatchlistSection({
 		);
 	}
 
-	const movieCount = entries.filter((e) => e.media_type === 'movie').length;
-	const tvCount = entries.filter((e) => e.media_type === 'tv').length;
+	const movieCount = allItems.filter((i) => i.media_type === 'movie').length;
+	const tvCount = allItems.filter((i) => i.media_type === 'tv').length;
 
 	const FILTERS: Array<{
 		id: MediaTypeFilter;
 		label: string;
 		count: number;
 	}> = [
-		{ id: 'all', label: t.profile.all, count: entries.length },
+		{ id: 'all', label: t.profile.all, count: allItems.length },
 		{ id: 'movie', label: t.profile.movies, count: movieCount },
 		{ id: 'tv', label: t.profile.series, count: tvCount },
 	];
 
-	const filtered =
-		mediaType === 'all'
-			? entries
-			: entries.filter((e) => e.media_type === mediaType);
-	const items = filtered.map(watchlistEntryToMediaItem);
-	const category = `${sectionKey}-${mediaType}`;
+	const sortKeys =
+		Object.keys(ratingByKey).length > 0
+			? SORT_KEYS
+			: SORT_KEYS.filter((key) => key !== 'rating');
+
+	const processed = controls.items;
+	const category = `${sectionKey}-${mediaType}-${controls.state.sortKey}-${controls.state.sortDir}-${controls.state.genreIds.join('.')}-${controls.state.actorQuery.trim()}`;
 
 	return (
 		<div>
@@ -94,16 +129,20 @@ export function WatchlistSection({
 				))}
 			</div>
 
-			{filtered.length === 0 ? (
-				<p className="text-muted text-sm py-8 text-center">
-					{mediaType === 'movie'
-						? t.profile.noMovies
-						: t.profile.noSeries}
+			<MediaListControls
+				controls={controls}
+				sortKeys={sortKeys}
+				className="mb-5"
+			/>
+
+			{processed.length === 0 ? (
+				<p className="text-muted text-sm py-12 text-center">
+					{t.lists.noResults}
 				</p>
 			) : (
 				<InfiniteScrollMedia
-					initialItems={items.slice(0, 20)}
-					clientSideData={items}
+					initialItems={processed.slice(0, 20)}
+					clientSideData={processed}
 					category={category}
 					hideRating
 					showWatchlistMeta

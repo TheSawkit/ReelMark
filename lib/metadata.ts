@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { getImageUrl } from '@/lib/tmdb/images';
+import { SUPPORTED_LANGUAGES } from '@/lib/i18n/config';
+import type { Language } from '@/lib/i18n/translations';
 
 export const BASE_URL =
 	process.env.NEXT_PUBLIC_BASE_URL || 'https://reelmark.app';
@@ -8,13 +10,28 @@ interface MediaMetadataOptions {
 	title: string;
 	description: string;
 	backdropPath: string | null | undefined;
-	canonical: string;
+	lang: Language;
+	path: string;
 	ogType: 'video.movie' | 'video.tv_show';
 }
 
 interface PageMetadataOptions {
 	isPrivate?: boolean;
 	canonical?: string;
+}
+
+/** Builds locale-aware canonical + hreflang alternates for a locale-agnostic app path (routes live under /[lang]). */
+export function localizedAlternates(
+	lang: Language,
+	path: string
+): NonNullable<Metadata['alternates']> {
+	const url = (l: string) => `${BASE_URL}/${l}${path === '/' ? '' : path}`;
+	return {
+		canonical: url(lang),
+		languages: Object.fromEntries(
+			SUPPORTED_LANGUAGES.map((l) => [l, url(l)])
+		),
+	};
 }
 
 /** Builds standard Next.js Metadata for static app pages, avoiding title/description repetition. */
@@ -46,7 +63,8 @@ export function buildMediaMetadata({
 	title,
 	description,
 	backdropPath,
-	canonical,
+	lang,
+	path,
 	ogType,
 }: MediaMetadataOptions): Metadata {
 	const backdropUrl = backdropPath
@@ -59,7 +77,7 @@ export function buildMediaMetadata({
 	return {
 		title,
 		description,
-		alternates: { canonical },
+		alternates: localizedAlternates(lang, path),
 		openGraph: {
 			title,
 			description,

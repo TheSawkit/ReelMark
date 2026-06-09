@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { Play } from 'lucide-react';
 import Title from '@/components/layout/Title';
 import { getTranslations } from '@/lib/i18n/server';
+import { localizedHref } from '@/lib/i18n/utils';
+import type { Language } from '@/lib/i18n/translations';
 import { Aurora } from '@/components/effects/Aurora';
 import { Spotlight } from '@/components/effects/Spotlight';
 import { Grain } from '@/components/effects/Grain';
@@ -13,10 +15,12 @@ const SLIDE = 'slideUpSubtle var(--duration-slowest) ease-out both';
 
 export default async function HeroSection({
 	posters,
+	lang,
 }: {
 	posters: MediaItem[];
+	lang: Language;
 }) {
-	const t = await getTranslations();
+	const t = await getTranslations(lang);
 
 	return (
 		<section className="relative flex min-h-[90vh] items-center justify-center overflow-hidden px-6 py-24 lg:px-12">
@@ -62,7 +66,7 @@ export default async function HeroSection({
 					}}
 				>
 					<Link
-						href="/signup"
+						href={localizedHref(lang, '/signup')}
 						className="group/cta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl"
 					>
 						<GlowBorder radius={16} pad={1.5}>
@@ -74,7 +78,7 @@ export default async function HeroSection({
 					</Link>
 
 					<Link
-						href="/login"
+						href={localizedHref(lang, '/login')}
 						className="glass-surface inline-flex h-14 items-center justify-center rounded-2xl px-8 text-lg font-semibold text-text transition-colors duration-(--duration-fast) ease-apple hover:bg-glass-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 					>
 						{t.hero.login}

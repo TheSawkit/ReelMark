@@ -12,7 +12,6 @@ import {
 	validateUUID,
 } from '@/lib/validators';
 import { revalidateProfile } from '@/app/actions/_helpers';
-import { getTvShowDetails, getSeasonDetails } from '@/lib/tmdb/tv';
 import { MAX_REVIEW_LENGTH } from '@/types/profile';
 import type {
 	Review,
@@ -67,6 +66,43 @@ export async function getUserReviews(
 }
 
 /**
+ * Returns a `media_key → rating` map of a user's own movie/tv ratings, for sorting lists
+ * by user rating. Reviews RLS restricts direct reads to the user's own rows, so callers
+ * should only request the rating map of the list owner viewing their own profile.
+ *
+ * @param userId - Owner of the reviews.
+ */
+export async function getUserReviewRatings(
+	userId: string
+): Promise<Record<string, number>> {
+	const supabase = await createClient();
+
+	const { data, error } = await supabase
+		.from('reviews')
+		.select('media_id, media_type, rating')
+		.eq('user_id', userId)
+		.in('media_type', ['movie', 'tv'])
+		.not('rating', 'is', null);
+
+	if (error) return {};
+
+	const map: Record<string, number> = {};
+	for (const row of data ?? []) {
+		if (row.rating !== null) {
+			map[`${row.media_type}-${row.media_id}`] = row.rating;
+		}
+	}
+	return map;
+}
+
+/** Returns the authenticated user's own `media_key → rating` map, or an empty map if signed out. */
+export async function getMyReviewRatings(): Promise<Record<string, number>> {
+	const { userId } = await getOptionalUser();
+	if (!userId) return {};
+	return getUserReviewRatings(userId);
+}
+
+/**
  * Returns the authenticated user's review for a specific media item, or null if none.
  */
 export async function getMediaReview(
@@ -105,7 +141,7 @@ export async function getAverageRating(
 }
 
 /**
- * Returns the community average rating for a season, computed from episode ratings.
+ * Returns the community average rating for a season, aggregated from its episode reviews.
  * Returns null if no episode ratings exist for this season.
  */
 export async function getSeasonAverageRating(
@@ -114,18 +150,15 @@ export async function getSeasonAverageRating(
 ): Promise<{ avg: number; count: number } | null> {
 	const supabase = await createClient();
 
-	const season = await getSeasonDetails(tvId, seasonNumber);
-	const episodeIds = season.episodes.map((e) => e.id);
-	if (episodeIds.length === 0) return null;
-
-	const { data } = await supabase.rpc('get_episodes_rating', {
-		p_episode_ids: episodeIds,
+	const { data } = await supabase.rpc('get_season_rating', {
+		p_tv_id: tvId,
+		p_season_number: seasonNumber,
 	});
 	return parseRatingRow(data);
 }
 
 /**
- * Returns the community average rating for a show, computed from all episode ratings.
+ * Returns the community average rating for a show, aggregated from all its episode reviews.
  * Returns null if no ratings exist.
  */
 export async function getShowAverageRating(
@@ -133,23 +166,7 @@ export async function getShowAverageRating(
 ): Promise<{ avg: number; count: number } | null> {
 	const supabase = await createClient();
 
-	const show = await getTvShowDetails(tvId);
-	const regularSeasons =
-		show.seasons?.filter((s) => s.season_number !== 0) ?? [];
-	if (regularSeasons.length === 0) return null;
-
-	const seasonDetails = await Promise.all(
-		regularSeasons.map((s) => getSeasonDetails(tvId, s.season_number))
-	);
-
-	const allEpisodeIds = seasonDetails.flatMap((s) =>
-		s.episodes.map((e) => e.id)
-	);
-	if (allEpisodeIds.length === 0) return null;
-
-	const { data } = await supabase.rpc('get_episodes_rating', {
-		p_episode_ids: allEpisodeIds,
-	});
+	const { data } = await supabase.rpc('get_show_rating', { p_tv_id: tvId });
 	return parseRatingRow(data);
 }
 
@@ -199,7 +216,9 @@ export async function upsertReview(
 	mediaTitle: string,
 	posterPath: string | null,
 	rating: number | null,
-	content: string | null
+	content: string | null,
+	tvId: number | null = null,
+	seasonNumber: number | null = null
 ): Promise<void> {
 	const t = await getTranslations();
 	if (!(['movie', 'tv', 'episode'] as const).includes(mediaType)) {
@@ -215,6 +234,7 @@ export async function upsertReview(
 
 	const { supabase, userId } = await getAuthenticatedUser();
 
+	const isEpisode = mediaType === 'episode';
 	const { error } = await supabase.from('reviews').upsert(
 		{
 			user_id: userId,
@@ -224,6 +244,8 @@ export async function upsertReview(
 			poster_path: posterPath,
 			rating,
 			content: cleanedContent,
+			tv_id: isEpisode ? tvId : null,
+			season_number: isEpisode ? seasonNumber : null,
 			updated_at: new Date().toISOString(),
 		},
 		{ onConflict: 'user_id,media_id,media_type' }

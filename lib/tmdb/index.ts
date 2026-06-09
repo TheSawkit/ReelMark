@@ -20,6 +20,7 @@ export {
 	getOnTheAirTvShows,
 	getTvShowDetails,
 	getTvShowTotalEpisodes,
+	getTvShowsTotalEpisodes,
 	getTvShowCredits,
 	getTvShowVideos,
 	getTvShowImages,
@@ -31,3 +32,6 @@ export {
 export { searchMulti, movieToMediaItem, tvShowToMediaItem } from './search';
 export { selectHeroImage, getImageUrl } from './images';
 export { getCrewDetails, getCrewMovieCredits, getCrewTvCredits } from './crew';
+export { getListMediaMetadata } from './list-metadata';
+export type { ListMediaMetadata } from './list-metadata';
+export { getGenres } from './genres';

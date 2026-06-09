@@ -16,7 +16,7 @@ import {
 	FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { deleteAccount } from '@/app/settings/actions';
+import { deleteAccount } from '@/app/[lang]/(protected)/settings/actions';
 import { useTranslation } from '@/lib/i18n/context';
 
 const initialState = {

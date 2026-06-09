@@ -11,10 +11,13 @@ import {
 	getTrendingTvShows,
 	getAiringTodayTvShows,
 	getOnTheAirTvShows,
+	getMovieCredits,
+	getTvShowCredits,
 	movieToMediaItem,
 	tvShowToMediaItem,
 } from '@/lib/tmdb';
-import type { MediaItem, WatchlistEntry } from '@/types/tmdb';
+import type { MediaItem, MediaType, WatchlistEntry } from '@/types/tmdb';
+import { getMediaKey } from '@/lib/media';
 import { getMediaWatchlistEntries } from './watchlist';
 
 /**
@@ -87,4 +90,64 @@ export async function fetchMoreMedia(
 
 	const items = await fetcher(page);
 	return mergeMediaWithWatchlist(items);
+}
+
+const ACTOR_FILTER_MAX_ITEMS = 300;
+const ACTOR_CREDITS_BATCH_SIZE = 8;
+
+function normalizeName(value: string): string {
+	return value
+		.toLowerCase()
+		.normalize('NFD')
+		.replace(/\p{Diacritic}/gu, '')
+		.trim();
+}
+
+/**
+ * Returns the media keys of the given list items whose cast includes an actor matching
+ * the query. Credits are fetched on demand (cached) only for the current list, so the
+ * heavy cast data is never loaded unless an actor filter is active. Diacritic- and
+ * case-insensitive. Very long lists are capped to bound the number of TMDB calls.
+ *
+ * @param items - The list items currently displayed.
+ * @param query - Actor name fragment to match.
+ * @returns Matching media keys (`"movie-123"`).
+ */
+export async function filterListByActor(
+	items: Array<{ id: number; media_type: MediaType }>,
+	query: string
+): Promise<string[]> {
+	const needle = normalizeName(query);
+	if (needle === '') return items.map((item) => getMediaKey(item));
+
+	const scoped = items.slice(0, ACTOR_FILTER_MAX_ITEMS);
+	if (scoped.length < items.length) {
+		console.warn(
+			`[filterListByActor] Capped actor matching to ${ACTOR_FILTER_MAX_ITEMS}/${items.length} items.`
+		);
+	}
+
+	const matches: string[] = [];
+	for (let i = 0; i < scoped.length; i += ACTOR_CREDITS_BATCH_SIZE) {
+		const batch = scoped.slice(i, i + ACTOR_CREDITS_BATCH_SIZE);
+		const results = await Promise.all(
+			batch.map(async (item) => {
+				try {
+					const credits =
+						item.media_type === 'tv'
+							? await getTvShowCredits(item.id)
+							: await getMovieCredits(item.id);
+					const hit = credits.cast.some((member) =>
+						normalizeName(member.name).includes(needle)
+					);
+					return hit ? getMediaKey(item) : null;
+				} catch {
+					return null;
+				}
+			})
+		);
+		for (const key of results) if (key) matches.push(key);
+	}
+
+	return matches;
 }

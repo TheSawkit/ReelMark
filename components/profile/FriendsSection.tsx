@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { FriendEntry, PrivacyVisibility } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 import { PrivacyBlock } from '@/components/profile/PrivacyBlock';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -18,7 +19,7 @@ export function FriendsSection({
 	visibility,
 	canView,
 }: FriendsSectionProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 
 	if (!canView) return <PrivacyBlock visibility={visibility} />;
 	if (friends.length === 0)
@@ -33,8 +34,8 @@ export function FriendsSection({
 				return (
 					<Link
 						key={friendship.id}
-						href={`/profile/${username}`}
-						className="flex flex-col items-center gap-2 p-3 rounded-lg bg-surface border border-border-subtle shadow-card-sm hover:bg-surface-2 transition-colors"
+						href={localizedHref(lang, `/profile/${username}`)}
+						className="flex flex-col items-center gap-2 p-3 rounded-lg bg-surface border border-border-subtle shadow-card-sm hover:bg-surface-2 transition duration-(--duration-fast) ease-apple active:scale-[0.97]"
 					>
 						{avatarUrl ? (
 							<Image

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { BASE_URL } from '@/lib/metadata';
+import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '@/lib/i18n/config';
 import {
 	getPopularMovies,
 	getTopRatedMovies,
@@ -7,31 +8,46 @@ import {
 	getTopRatedTvShows,
 } from '@/lib/tmdb';
 
+type SitemapEntry = MetadataRoute.Sitemap[number];
+
+/** Builds a sitemap entry on the default locale with hreflang alternates for every supported language. */
+function localizedEntry(
+	path: string,
+	rest: Omit<SitemapEntry, 'url' | 'alternates'>
+): SitemapEntry {
+	const url = (lang: string) => `${BASE_URL}/${lang}${path}`;
+	return {
+		url: url(DEFAULT_LANGUAGE),
+		alternates: {
+			languages: Object.fromEntries(
+				SUPPORTED_LANGUAGES.map((lang) => [lang, url(lang)])
+			),
+		},
+		...rest,
+	};
+}
+
 const STATIC_ROUTES: MetadataRoute.Sitemap = [
-	{
-		url: BASE_URL,
+	localizedEntry('', {
 		lastModified: new Date(),
 		changeFrequency: 'daily',
 		priority: 1,
-	},
-	{
-		url: `${BASE_URL}/login`,
+	}),
+	localizedEntry('/login', {
 		lastModified: new Date(),
 		changeFrequency: 'monthly',
 		priority: 0.4,
-	},
-	{
-		url: `${BASE_URL}/signup`,
+	}),
+	localizedEntry('/signup', {
 		lastModified: new Date(),
 		changeFrequency: 'monthly',
 		priority: 0.4,
-	},
-	{
-		url: `${BASE_URL}/explorer`,
+	}),
+	localizedEntry('/explorer', {
 		lastModified: new Date(),
 		changeFrequency: 'daily',
 		priority: 0.8,
-	},
+	}),
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -59,21 +75,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
 	const movieRoutes: MetadataRoute.Sitemap = [
 		...new Map(movies.map((m) => [m.id, m])).values(),
-	].map((m) => ({
-		url: `${BASE_URL}/movie/${m.id}`,
-		lastModified: new Date(),
-		changeFrequency: 'weekly',
-		priority: 0.7,
-	}));
+	].map((m) =>
+		localizedEntry(`/movie/${m.id}`, {
+			lastModified: new Date(),
+			changeFrequency: 'weekly',
+			priority: 0.7,
+		})
+	);
 
 	const tvRoutes: MetadataRoute.Sitemap = [
 		...new Map(shows.map((s) => [s.id, s])).values(),
-	].map((s) => ({
-		url: `${BASE_URL}/tv/${s.id}`,
-		lastModified: new Date(),
-		changeFrequency: 'weekly',
-		priority: 0.7,
-	}));
+	].map((s) =>
+		localizedEntry(`/tv/${s.id}`, {
+			lastModified: new Date(),
+			changeFrequency: 'weekly',
+			priority: 0.7,
+		})
+	);
 
 	return [...STATIC_ROUTES, ...movieRoutes, ...tvRoutes];
 }

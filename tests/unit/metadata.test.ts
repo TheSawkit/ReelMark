@@ -2,6 +2,7 @@ import { vi, describe, it, expect } from 'vitest';
 import {
 	buildPageMetadata,
 	buildMediaMetadata,
+	localizedAlternates,
 	BASE_URL,
 } from '@/lib/metadata';
 
@@ -68,7 +69,8 @@ describe('buildMediaMetadata', () => {
 		title: 'Interstellar',
 		description: 'A team of explorers travel through a wormhole.',
 		backdropPath: '/interstellar_backdrop.jpg',
-		canonical: 'https://reelmark.app/movie/157336',
+		lang: 'en' as const,
+		path: '/movie/157336',
 		ogType: 'video.movie' as const,
 	};
 
@@ -79,8 +81,12 @@ describe('buildMediaMetadata', () => {
 			'A team of explorers travel through a wormhole.'
 		);
 		expect(meta.alternates?.canonical).toBe(
-			'https://reelmark.app/movie/157336'
+			'https://reelmark.app/en/movie/157336'
 		);
+		expect(meta.alternates?.languages).toMatchObject({
+			en: 'https://reelmark.app/en/movie/157336',
+			fr: 'https://reelmark.app/fr/movie/157336',
+		});
 	});
 
 	it('sets openGraph type from ogType parameter', () => {
@@ -122,5 +128,22 @@ describe('buildMediaMetadata', () => {
 	it('omits images when backdropPath is undefined', () => {
 		const meta = buildMediaMetadata({ ...base, backdropPath: undefined });
 		expect(meta.openGraph?.images).toBeUndefined();
+	});
+});
+
+describe('localizedAlternates', () => {
+	it('builds canonical on the given language with hreflang alternates', () => {
+		const alt = localizedAlternates('fr', '/movie/157336');
+		expect(alt.canonical).toBe('https://reelmark.app/fr/movie/157336');
+		expect(alt.languages).toMatchObject({
+			en: 'https://reelmark.app/en/movie/157336',
+			fr: 'https://reelmark.app/fr/movie/157336',
+		});
+	});
+
+	it('maps the root path to the bare locale prefix', () => {
+		expect(localizedAlternates('en', '/').canonical).toBe(
+			'https://reelmark.app/en'
+		);
 	});
 });
