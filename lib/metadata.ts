@@ -4,7 +4,7 @@ import { SUPPORTED_LANGUAGES } from '@/lib/i18n/config';
 import type { Language } from '@/lib/i18n/translations';
 
 export const BASE_URL =
-	process.env.NEXT_PUBLIC_BASE_URL || 'https://reelmark-silexio.vercel.app';
+	process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost:3000';
 
 interface MediaMetadataOptions {
 	title: string;
