@@ -47,28 +47,18 @@ export async function mergeMediaWithWatchlist(
 
 type CategoryFetcher = (page: number) => Promise<MediaItem[]>;
 
-const CATEGORY_FETCHERS: Record<string, CategoryFetcher> = {
-	popular: (page) =>
-		getPopularMovies(page).then((r) => r.map(movieToMediaItem)),
-	'top-rated': (page) =>
-		getTopRatedMovies(page).then((r) => r.map(movieToMediaItem)),
-	upcoming: (page) =>
-		getUpcomingMovies(page).then((r) => r.map(movieToMediaItem)),
-	'now-playing': (page) =>
-		getNowPlayingMovies(page).then((r) => r.map(movieToMediaItem)),
-	trending: (page) =>
-		getTrendingMovies('week', page).then((r) => r.map(movieToMediaItem)),
-	'tv-popular': (page) =>
-		getPopularTvShows(page).then((r) => r.map(tvShowToMediaItem)),
-	'tv-top-rated': (page) =>
-		getTopRatedTvShows(page).then((r) => r.map(tvShowToMediaItem)),
-	'tv-trending': (page) =>
-		getTrendingTvShows('week', page).then((r) => r.map(tvShowToMediaItem)),
-	'tv-airing-today': (page) =>
-		getAiringTodayTvShows(page).then((r) => r.map(tvShowToMediaItem)),
-	'tv-on-the-air': (page) =>
-		getOnTheAirTvShows(page).then((r) => r.map(tvShowToMediaItem)),
-};
+const CATEGORY_FETCHERS: Map<string, CategoryFetcher> = new Map([
+	['popular', (page) => getPopularMovies(page).then((r) => r.map(movieToMediaItem))],
+	['top-rated', (page) => getTopRatedMovies(page).then((r) => r.map(movieToMediaItem))],
+	['upcoming', (page) => getUpcomingMovies(page).then((r) => r.map(movieToMediaItem))],
+	['now-playing', (page) => getNowPlayingMovies(page).then((r) => r.map(movieToMediaItem))],
+	['trending', (page) => getTrendingMovies('week', page).then((r) => r.map(movieToMediaItem))],
+	['tv-popular', (page) => getPopularTvShows(page).then((r) => r.map(tvShowToMediaItem))],
+	['tv-top-rated', (page) => getTopRatedTvShows(page).then((r) => r.map(tvShowToMediaItem))],
+	['tv-trending', (page) => getTrendingTvShows('week', page).then((r) => r.map(tvShowToMediaItem))],
+	['tv-airing-today', (page) => getAiringTodayTvShows(page).then((r) => r.map(tvShowToMediaItem))],
+	['tv-on-the-air', (page) => getOnTheAirTvShows(page).then((r) => r.map(tvShowToMediaItem))],
+]);
 
 /**
  * Fetches a paginated list of media items for a given category and merges watchlist data.
@@ -77,19 +67,11 @@ const CATEGORY_FETCHERS: Record<string, CategoryFetcher> = {
  * @param page - Page number for pagination.
  * @returns Enriched media items for the requested category and page.
  */
-export async function fetchMoreMedia(
-	category: string,
-	page: number
-): Promise<MediaItem[]> {
-	if (!Object.prototype.hasOwnProperty.call(CATEGORY_FETCHERS, category)) {
-		return [];
-	}
-
-	const fetcher = CATEGORY_FETCHERS[category];
-	if (typeof fetcher !== 'function') return [];
-
-	const items = await fetcher(page);
-	return mergeMediaWithWatchlist(items);
+export async function fetchMoreMedia(category: string, page: number): Promise<MediaItem[]> {
+    if (!CATEGORY_FETCHERS.has(category)) return [];
+    const fetcher = CATEGORY_FETCHERS.get(category)!;
+    const items = await fetcher(page);
+    return mergeMediaWithWatchlist(items);
 }
 
 const ACTOR_FILTER_MAX_ITEMS = 300;
