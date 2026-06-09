@@ -30,7 +30,7 @@ export function PWAInstallPrompt() {
 				'transition-transform duration-(--duration-slow) ease-apple',
 				visible
 					? 'translate-y-0'
-					: '-translate-y-[200%] pointer-events-none'
+					: 'translate-y-[-200%] pointer-events-none'
 			)}
 		>
 			<div className="mx-auto max-w-lg glass-bar border-b border-border/60 px-4 py-3 flex items-center gap-3">

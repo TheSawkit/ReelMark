@@ -53,9 +53,9 @@ describe('buildPageMetadata', () => {
 
 	it('sets alternates.canonical when provided', () => {
 		const meta = buildPageMetadata('Page', 'Desc', {
-			canonical: 'https://reelmark.app/page',
+			canonical: `${BASE_URL}/page`,
 		});
-		expect(meta.alternates?.canonical).toBe('https://reelmark.app/page');
+		expect(meta.alternates?.canonical).toBe(`${BASE_URL}/page`);
 	});
 
 	it('omits alternates when canonical is absent', () => {
@@ -80,12 +80,10 @@ describe('buildMediaMetadata', () => {
 		expect(meta.description).toBe(
 			'A team of explorers travel through a wormhole.'
 		);
-		expect(meta.alternates?.canonical).toBe(
-			'https://reelmark.app/en/movie/157336'
-		);
+		expect(meta.alternates?.canonical).toBe(`${BASE_URL}/en/movie/157336`);
 		expect(meta.alternates?.languages).toMatchObject({
-			en: 'https://reelmark.app/en/movie/157336',
-			fr: 'https://reelmark.app/fr/movie/157336',
+			en: `${BASE_URL}/en/movie/157336`,
+			fr: `${BASE_URL}/fr/movie/157336`,
 		});
 	});
 
@@ -134,16 +132,14 @@ describe('buildMediaMetadata', () => {
 describe('localizedAlternates', () => {
 	it('builds canonical on the given language with hreflang alternates', () => {
 		const alt = localizedAlternates('fr', '/movie/157336');
-		expect(alt.canonical).toBe('https://reelmark.app/fr/movie/157336');
+		expect(alt.canonical).toBe(`${BASE_URL}/fr/movie/157336`);
 		expect(alt.languages).toMatchObject({
-			en: 'https://reelmark.app/en/movie/157336',
-			fr: 'https://reelmark.app/fr/movie/157336',
+			en: `${BASE_URL}/en/movie/157336`,
+			fr: `${BASE_URL}/fr/movie/157336`,
 		});
 	});
 
 	it('maps the root path to the bare locale prefix', () => {
-		expect(localizedAlternates('en', '/').canonical).toBe(
-			'https://reelmark.app/en'
-		);
+		expect(localizedAlternates('en', '/').canonical).toBe(`${BASE_URL}/en`);
 	});
 });

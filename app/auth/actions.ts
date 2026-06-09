@@ -37,7 +37,10 @@ function mapAuthError(message: string, t: AuthTranslations): string {
 async function getOrigin(): Promise<string> {
 	const h = await headers();
 	const proto = h.get('x-forwarded-proto') ?? 'https';
-	const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'reelmark.app';
+	const host =
+		h.get('x-forwarded-host') ??
+		h.get('host') ??
+		'reelmark-silexio.vercel.app';
 	return `${proto}://${host}`;
 }
 
