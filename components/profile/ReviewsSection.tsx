@@ -258,6 +258,8 @@ export function ReviewsSection({
 					mediaType={editingReview.media_type}
 					mediaTitle={editingReview.media_title}
 					posterPath={editingReview.poster_path}
+					tvId={editingReview.tv_id}
+					seasonNumber={editingReview.season_number}
 					existingReview={editingReview}
 					onSave={(rating, content) =>
 						setReviews((prev) =>

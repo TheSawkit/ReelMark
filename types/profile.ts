@@ -37,6 +37,8 @@ export interface Review {
 	poster_path: string | null;
 	rating: number | null;
 	content: string | null;
+	tv_id: number | null;
+	season_number: number | null;
 	created_at: string;
 	updated_at: string;
 }

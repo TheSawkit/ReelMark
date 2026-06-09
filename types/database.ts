@@ -308,6 +308,8 @@ export type Database = {
 					media_type: string;
 					poster_path: string | null;
 					rating: number | null;
+					season_number: number | null;
+					tv_id: number | null;
 					updated_at: string;
 					user_id: string;
 				};
@@ -320,6 +322,8 @@ export type Database = {
 					media_type: string;
 					poster_path?: string | null;
 					rating?: number | null;
+					season_number?: number | null;
+					tv_id?: number | null;
 					updated_at?: string;
 					user_id: string;
 				};
@@ -332,6 +336,8 @@ export type Database = {
 					media_type?: string;
 					poster_path?: string | null;
 					rating?: number | null;
+					season_number?: number | null;
+					tv_id?: number | null;
 					updated_at?: string;
 					user_id?: string;
 				};
@@ -465,6 +471,20 @@ export type Database = {
 					rating: number;
 					user_id: string;
 					username: string;
+				}[];
+			};
+			get_season_rating: {
+				Args: { p_season_number: number; p_tv_id: number };
+				Returns: {
+					avg: number;
+					count: number;
+				}[];
+			};
+			get_show_rating: {
+				Args: { p_tv_id: number };
+				Returns: {
+					avg: number;
+					count: number;
 				}[];
 			};
 		};
