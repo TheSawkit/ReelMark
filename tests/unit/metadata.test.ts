@@ -53,9 +53,9 @@ describe('buildPageMetadata', () => {
 
 	it('sets alternates.canonical when provided', () => {
 		const meta = buildPageMetadata('Page', 'Desc', {
-			canonical: 'https://reelmark.app/page',
+			canonical: 'https://reelmark-silexio.vercel.app/page',
 		});
-		expect(meta.alternates?.canonical).toBe('https://reelmark.app/page');
+		expect(meta.alternates?.canonical).toBe('https://reelmark-silexio.vercel.app/page');
 	});
 
 	it('omits alternates when canonical is absent', () => {
@@ -81,11 +81,11 @@ describe('buildMediaMetadata', () => {
 			'A team of explorers travel through a wormhole.'
 		);
 		expect(meta.alternates?.canonical).toBe(
-			'https://reelmark.app/en/movie/157336'
+			'https://reelmark-silexio.vercel.app/en/movie/157336'
 		);
 		expect(meta.alternates?.languages).toMatchObject({
-			en: 'https://reelmark.app/en/movie/157336',
-			fr: 'https://reelmark.app/fr/movie/157336',
+			en: 'https://reelmark-silexio.vercel.app/en/movie/157336',
+			fr: 'https://reelmark-silexio.vercel.app/fr/movie/157336',
 		});
 	});
 
@@ -134,16 +134,16 @@ describe('buildMediaMetadata', () => {
 describe('localizedAlternates', () => {
 	it('builds canonical on the given language with hreflang alternates', () => {
 		const alt = localizedAlternates('fr', '/movie/157336');
-		expect(alt.canonical).toBe('https://reelmark.app/fr/movie/157336');
+		expect(alt.canonical).toBe('https://reelmark-silexio.vercel.app/fr/movie/157336');
 		expect(alt.languages).toMatchObject({
-			en: 'https://reelmark.app/en/movie/157336',
-			fr: 'https://reelmark.app/fr/movie/157336',
+			en: 'https://reelmark-silexio.vercel.app/en/movie/157336',
+			fr: 'https://reelmark-silexio.vercel.app/fr/movie/157336',
 		});
 	});
 
 	it('maps the root path to the bare locale prefix', () => {
 		expect(localizedAlternates('en', '/').canonical).toBe(
-			'https://reelmark.app/en'
+			'https://reelmark-silexio.vercel.app/en'
 		);
 	});
 });
