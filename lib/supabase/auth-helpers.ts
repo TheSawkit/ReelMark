@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -40,4 +41,13 @@ export async function getOptionalUser() {
 	const { supabase, user } = await getUserContext();
 
 	return { supabase, userId: user?.id ?? null };
+}
+
+/** True when the account has only third-party (OAuth) identities and no email/password identity. */
+export function isOAuthOnly(user: User): boolean {
+	const identities = user.identities ?? [];
+	return (
+		identities.length > 0 &&
+		!identities.some((identity) => identity.provider === 'email')
+	);
 }

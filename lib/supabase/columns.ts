@@ -3,7 +3,7 @@ export const WATCHLIST_COLUMNS =
 export const REVIEW_COLUMNS =
 	'id, user_id, media_id, media_type, media_title, poster_path, rating, content, tv_id, season_number, created_at, updated_at';
 export const USER_PROFILE_COLUMNS =
-	'user_id, username, bio, instagram, tiktok, letterboxd, twitter, website, created_at, updated_at';
+	'user_id, username, bio, instagram, tiktok, letterboxd, twitter, website, avatar_url, onboarding_completed, created_at, updated_at';
 export const PRIVACY_COLUMNS =
 	'user_id, watchlist_visibility, watched_visibility, reviews_visibility, playlists_visibility, friends_visibility';
 export const FRIENDSHIP_COLUMNS =

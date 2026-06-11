@@ -33,9 +33,13 @@ const initialState = {
 
 interface ProfileSettingsProps {
 	user: User | null;
+	profileAvatarUrl?: string | null;
 }
 
-export function ProfileSettings({ user }: ProfileSettingsProps) {
+export function ProfileSettings({
+	user,
+	profileAvatarUrl,
+}: ProfileSettingsProps) {
 	const { t } = useTranslation();
 	const [state, formAction, isPending] = useActionState(
 		updateProfile,
@@ -47,9 +51,9 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
 	);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [avatarFile, setAvatarFile] = useState<File | null>(null);
-	const [avatarPreview, setAvatarPreview] = useState(
-		user?.user_metadata?.avatar_url || ''
-	);
+	const currentAvatarUrl =
+		profileAvatarUrl || user?.user_metadata?.avatar_url || '';
+	const [avatarPreview, setAvatarPreview] = useState(currentAvatarUrl);
 	const [fullNameStr, setFullNameStr] = useState(
 		user?.user_metadata?.full_name || ''
 	);
@@ -146,8 +150,7 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
 										</FieldDescription>
 										{avatarPreview &&
 											avatarPreview !==
-												user?.user_metadata
-													?.avatar_url && (
+												currentAvatarUrl && (
 												<>
 													<Button
 														type="button"

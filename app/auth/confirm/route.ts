@@ -13,23 +13,24 @@ export async function GET(request: NextRequest) {
 	const lang = await getServerLanguage();
 
 	const redirectTo = request.nextUrl.clone();
+	redirectTo.search = '';
 	redirectTo.pathname = localizedHref(lang, next);
-	redirectTo.searchParams.delete('token_hash');
-	redirectTo.searchParams.delete('type');
+
+	const supabase = await createClient();
 
 	if (token_hash && type) {
-		const supabase = await createClient();
-
 		const { error } = await supabase.auth.verifyOtp({
 			type,
 			token_hash,
 		});
-		if (!error) {
-			redirectTo.searchParams.delete('next');
-			return NextResponse.redirect(redirectTo);
-		}
+		if (!error) return NextResponse.redirect(redirectTo);
 		console.error('[auth/confirm] OTP verification failed:', error.message);
 	}
+
+	const {
+		data: { user },
+	} = await supabase.auth.getUser();
+	if (user) return NextResponse.redirect(redirectTo);
 
 	redirectTo.pathname = localizedHref(lang, '/auth/auth-code-error');
 	return NextResponse.redirect(redirectTo);

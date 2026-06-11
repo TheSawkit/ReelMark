@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { isOAuthOnly } from '@/lib/supabase/auth-helpers';
 import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import {
@@ -42,6 +43,10 @@ export async function updateEmail(prevState: unknown, formData: FormData) {
 
 	if (!user) {
 		return { error: t.auth.notAuthenticated, success: false };
+	}
+
+	if (isOAuthOnly(user)) {
+		return { error: t.settings.profile.warningEmail, success: false };
 	}
 
 	const newEmail = validateEmail(formData.get('email'));
@@ -183,18 +188,24 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
 		const fileName = `${user.id}-${Date.now()}.${fileExt}`;
 
 		const buffer = await avatarFile.arrayBuffer();
+		const adminClient = createAdminClient();
 
-		const oldAvatarUrl = user.user_metadata?.avatar_url as
-			| string
-			| undefined;
+		const { data: currentProfile } = await supabase
+			.from('user_profiles')
+			.select('avatar_url')
+			.eq('user_id', user.id)
+			.maybeSingle();
+		const oldAvatarUrl =
+			currentProfile?.avatar_url ??
+			(user.user_metadata?.avatar_url as string | undefined);
 		if (oldAvatarUrl?.includes('/avatars/')) {
 			const oldPath = oldAvatarUrl.split('/avatars/')[1]?.split('?')[0];
 			if (oldPath) {
-				await supabase.storage.from('avatars').remove([oldPath]);
+				await adminClient.storage.from('avatars').remove([oldPath]);
 			}
 		}
 
-		const { error: uploadError } = await supabase.storage
+		const { error: uploadError } = await adminClient.storage
 			.from('avatars')
 			.upload(fileName, buffer, {
 				contentType: avatarFile.type,
@@ -205,18 +216,26 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
 			return { error: uploadError.message, success: false };
 		}
 
-		const { data: publicUrlData } = supabase.storage
+		const { data: publicUrlData } = adminClient.storage
 			.from('avatars')
 			.getPublicUrl(fileName);
 		finalAvatarUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`;
 	}
 
-	const { error } = await supabase.auth.updateUser({
-		data: {
+	const username = user.user_metadata?.username as string | undefined;
+	if (!username) {
+		return { error: t.settings.missingFields, success: false };
+	}
+
+	const { error } = await supabase.from('user_profiles').upsert(
+		{
+			user_id: user.id,
+			username,
 			avatar_url: finalAvatarUrl,
-			picture: finalAvatarUrl,
+			updated_at: new Date().toISOString(),
 		},
-	});
+		{ onConflict: 'user_id' }
+	);
 
 	if (error) {
 		return { error: error.message, success: false };
@@ -255,23 +274,25 @@ export async function deleteAccount(prevState: unknown, formData: FormData) {
 		};
 	}
 
-	if (typeof password !== 'string' || !password) {
-		return {
-			error: t.settings.dangerZone.passwordRequired,
-			success: false,
-		};
-	}
+	if (!isOAuthOnly(user)) {
+		if (typeof password !== 'string' || !password) {
+			return {
+				error: t.settings.dangerZone.passwordRequired,
+				success: false,
+			};
+		}
 
-	const { error: signInError } = await supabase.auth.signInWithPassword({
-		email: user.email!,
-		password,
-	});
+		const { error: signInError } = await supabase.auth.signInWithPassword({
+			email: user.email!,
+			password,
+		});
 
-	if (signInError) {
-		return {
-			error: t.settings.dangerZone.incorrectPassword,
-			success: false,
-		};
+		if (signInError) {
+			return {
+				error: t.settings.dangerZone.incorrectPassword,
+				success: false,
+			};
+		}
 	}
 
 	await supabase.from('episode_watches').delete().eq('user_id', user.id);

@@ -13,7 +13,7 @@
 
 ---
 
-<a name="-english"></a>
+`<a name="-english"></a>`
 
 ## 🇬🇧 English
 
@@ -67,12 +67,16 @@ pnpm install
 **3. Environment variables** — create `.env.local`:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-TMDB_READ_ACCESS_TOKEN=your_tmdb_read_access_token
-WATCHMODE_API_KEY=your_watchmode_api_key
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+TMDB_READ_ACCESS_TOKEN=your-tmdb-read-access-token
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
+WATCHMODE_API_KEY=your-watchmode-api-key
+NEXT_PUBLIC_SENTRY_DSN=http://your-bugsink-dsn@your-bugsink-host/1
+SENTRY_DSN=http://your-bugsink-dsn@your-bugsink-host/1
+TEST_USER_EMAIL=test@email.com
+TEST_USER_PASSWORD=your-test-user-password
 ```
 
 **4. Database setup**
@@ -144,7 +148,7 @@ watchlist/
 
 ---
 
-<a name="-français"></a>
+`<a name="-français"></a>`
 
 ## 🇫🇷 Français
 
@@ -193,12 +197,16 @@ pnpm install
 **3. Variables d'environnement** — crée un `.env.local` :
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-TMDB_READ_ACCESS_TOKEN=your_tmdb_read_access_token
-WATCHMODE_API_KEY=your_watchmode_api_key
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+TMDB_READ_ACCESS_TOKEN=your-tmdb-read-access-token
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
+WATCHMODE_API_KEY=your-watchmode-api-key
+NEXT_PUBLIC_SENTRY_DSN=http://your-bugsink-dsn@your-bugsink-host/1
+SENTRY_DSN=http://your-bugsink-dsn@your-bugsink-host/1
+TEST_USER_EMAIL=test@email.com
+TEST_USER_PASSWORD=your-test-user-password
 ```
 
 **4. Base de données** : Exécute les fichiers `supabase/migrations/*.sql` dans l'ordre depuis ton dashboard Supabase.

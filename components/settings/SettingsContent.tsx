@@ -23,12 +23,14 @@ interface SettingsContentProps {
 	user: User | null;
 	userProfile: UserProfile | null;
 	privacySettings: PrivacySettingsType | null;
+	isOAuthOnly: boolean;
 }
 
 export function SettingsContent({
 	user,
 	userProfile,
 	privacySettings,
+	isOAuthOnly,
 }: SettingsContentProps) {
 	const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
 
@@ -41,11 +43,16 @@ export function SettingsContent({
 			<main className="flex-1 min-w-0">
 				{activeTab === 'profile' && (
 					<div className="space-y-6">
-						<ProfileSettings user={user} />
+						<ProfileSettings
+							user={user}
+							profileAvatarUrl={userProfile?.avatar_url ?? null}
+						/>
 						<SocialLinksSettings profile={userProfile} />
 					</div>
 				)}
-				{activeTab === 'security' && <PasswordSettings />}
+				{activeTab === 'security' && (
+					<PasswordSettings isOAuthOnly={isOAuthOnly} />
+				)}
 				{activeTab === 'notifications' && <NotificationSettings />}
 				{activeTab === 'appearance' && (
 					<div className="space-y-6">
@@ -60,7 +67,7 @@ export function SettingsContent({
 						<LanguageSettings />
 						<RegionalSettings user={user} />
 						<DataSettings />
-						<DangerZone />
+						<DangerZone isOAuthOnly={isOAuthOnly} />
 					</div>
 				)}
 
