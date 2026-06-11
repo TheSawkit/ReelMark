@@ -17,7 +17,7 @@ describe('slugifyUsername', () => {
 	});
 
 	it('collapses non-alphanumeric runs and trims underscores', () => {
-		expect(slugifyUsername('  John   O\'Brien-Smith ')).toBe(
+		expect(slugifyUsername("  John   O'Brien-Smith ")).toBe(
 			'john_o_brien_smith'
 		);
 	});
@@ -48,9 +48,9 @@ describe('suggestUsernameFromMetadata', () => {
 		expect(
 			suggestUsernameFromMetadata({ full_name: 'Marie Curie' }, null)
 		).toBe('marie_curie');
-		expect(suggestUsernameFromMetadata({ name: 'Ada Lovelace' }, null)).toBe(
-			'ada_lovelace'
-		);
+		expect(
+			suggestUsernameFromMetadata({ name: 'Ada Lovelace' }, null)
+		).toBe('ada_lovelace');
 	});
 
 	it('falls back to the email local part', () => {
@@ -97,8 +97,8 @@ describe('needsOnboarding', () => {
 	});
 
 	it('does not trigger when both region and username are present', () => {
-		expect(
-			needsOnboarding({ username: 'jean', region: 'FR' }, false)
-		).toBe(false);
+		expect(needsOnboarding({ username: 'jean', region: 'FR' }, false)).toBe(
+			false
+		);
 	});
 });

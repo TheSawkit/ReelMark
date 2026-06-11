@@ -104,10 +104,7 @@ export function DangerZone({ isOAuthOnly }: DangerZoneProps) {
 							) : (
 								<Field>
 									<FieldLabel htmlFor="delete-password">
-										{
-											t.settings.dangerZone
-												.confirmPassword
-										}
+										{t.settings.dangerZone.confirmPassword}
 									</FieldLabel>
 									<Input
 										id="delete-password"
