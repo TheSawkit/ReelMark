@@ -345,10 +345,12 @@ export type Database = {
 			};
 			user_profiles: {
 				Row: {
+					avatar_url: string | null;
 					bio: string | null;
 					created_at: string;
 					instagram: string | null;
 					letterboxd: string | null;
+					onboarding_completed: boolean;
 					tiktok: string | null;
 					twitter: string | null;
 					updated_at: string;
@@ -357,10 +359,12 @@ export type Database = {
 					website: string | null;
 				};
 				Insert: {
+					avatar_url?: string | null;
 					bio?: string | null;
 					created_at?: string;
 					instagram?: string | null;
 					letterboxd?: string | null;
+					onboarding_completed?: boolean;
 					tiktok?: string | null;
 					twitter?: string | null;
 					updated_at?: string;
@@ -369,10 +373,12 @@ export type Database = {
 					website?: string | null;
 				};
 				Update: {
+					avatar_url?: string | null;
 					bio?: string | null;
 					created_at?: string;
 					instagram?: string | null;
 					letterboxd?: string | null;
+					onboarding_completed?: boolean;
 					tiktok?: string | null;
 					twitter?: string | null;
 					updated_at?: string;

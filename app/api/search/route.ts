@@ -3,6 +3,7 @@ import { searchMulti } from '@/lib/tmdb';
 import { rankMedia } from '@/lib/search/score';
 import { getMediaKey } from '@/lib/media';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { resolveAvatarUrl } from '@/lib/avatar';
 import type { MediaItem } from '@/types/tmdb';
 
 const MAX_RESULTS = 6;
@@ -46,7 +47,7 @@ export async function GET(req: NextRequest) {
 		const supabase = await createClient();
 		const { data: profiles } = await supabase
 			.from('user_profiles')
-			.select('user_id, username, bio')
+			.select('user_id, username, bio, avatar_url')
 			.ilike('username', `%${username}%`)
 			.limit(MAX_USER_RESULTS);
 
@@ -58,10 +59,10 @@ export async function GET(req: NextRequest) {
 				const { data } = await adminClient.auth.admin.getUserById(
 					profile.user_id
 				);
-				const avatarUrl =
-					typeof data.user?.user_metadata?.avatar_url === 'string'
-						? data.user.user_metadata.avatar_url
-						: null;
+				const avatarUrl = resolveAvatarUrl(
+					profile.avatar_url,
+					data.user?.user_metadata?.avatar_url
+				);
 				return { ...profile, avatar_url: avatarUrl };
 			})
 		);

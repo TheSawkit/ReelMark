@@ -863,6 +863,26 @@ export const translations = {
 					'Découvrez les séries TV actuellement en diffusion sur ReelMark.',
 			},
 		},
+		onboarding: {
+			title: 'Complète ton profil',
+			subtitle: 'Encore une étape avant de plonger dans ReelMark.',
+			usernameLabel: 'Pseudo',
+			usernameHint:
+				'Lettres, chiffres et underscores. Tu pourras le changer plus tard.',
+			regionLabel: 'Pays',
+			regionHint:
+				'Utilisé pour les plateformes de streaming et les certifications de ton pays.',
+			submit: 'Continuer',
+			submitting: 'Enregistrement...',
+		},
+		oauth: {
+			createPasswordTitle: 'Créer un mot de passe',
+			createPasswordDescription:
+				'Ton compte utilise Google. Ajoute un mot de passe pour pouvoir aussi te connecter par email.',
+			createPasswordButton: 'Créer le mot de passe',
+			deleteNoPassword:
+				'Compte Google : tape le mot-clé ci-dessus pour confirmer la suppression.',
+		},
 	},
 	en: {
 		common: {
@@ -1709,6 +1729,26 @@ export const translations = {
 				tvOnTheAir:
 					'Discover TV shows currently on the air on ReelMark.',
 			},
+		},
+		onboarding: {
+			title: 'Complete your profile',
+			subtitle: 'One last step before diving into ReelMark.',
+			usernameLabel: 'Username',
+			usernameHint:
+				'Letters, numbers and underscores. You can change it later.',
+			regionLabel: 'Country',
+			regionHint:
+				'Used for streaming platforms and certifications in your country.',
+			submit: 'Continue',
+			submitting: 'Saving...',
+		},
+		oauth: {
+			createPasswordTitle: 'Create a password',
+			createPasswordDescription:
+				'Your account uses Google. Add a password so you can also sign in with email.',
+			createPasswordButton: 'Create password',
+			deleteNoPassword:
+				'Google account: type the keyword above to confirm deletion.',
 		},
 	},
 } as const;

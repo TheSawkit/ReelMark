@@ -7,13 +7,22 @@ export default async function Navbar() {
 	const t = await getTranslations();
 
 	let initialUnreadCount = 0;
+	let avatarUrl: string | null = null;
 	if (user) {
-		const { count } = await supabase
-			.from('notifications')
-			.select('id', { count: 'exact', head: true })
-			.eq('user_id', user.id)
-			.is('read_at', null);
+		const [{ count }, { data: profile }] = await Promise.all([
+			supabase
+				.from('notifications')
+				.select('id', { count: 'exact', head: true })
+				.eq('user_id', user.id)
+				.is('read_at', null),
+			supabase
+				.from('user_profiles')
+				.select('avatar_url')
+				.eq('user_id', user.id)
+				.maybeSingle(),
+		]);
 		initialUnreadCount = count ?? 0;
+		avatarUrl = profile?.avatar_url ?? null;
 	}
 
 	return (
@@ -21,6 +30,7 @@ export default async function Navbar() {
 			user={user}
 			t={t}
 			initialUnreadCount={initialUnreadCount}
+			avatarUrl={avatarUrl}
 		/>
 	);
 }

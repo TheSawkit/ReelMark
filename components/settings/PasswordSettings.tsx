@@ -25,7 +25,11 @@ const initialState = {
 	message: '',
 };
 
-export function PasswordSettings() {
+interface PasswordSettingsProps {
+	isOAuthOnly: boolean;
+}
+
+export function PasswordSettings({ isOAuthOnly }: PasswordSettingsProps) {
 	const { t } = useTranslation();
 	const [state, formAction, isPending] = useActionState(
 		updatePassword,
@@ -35,9 +39,15 @@ export function PasswordSettings() {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>{t.settings.password.title}</CardTitle>
+				<CardTitle>
+					{isOAuthOnly
+						? t.oauth.createPasswordTitle
+						: t.settings.password.title}
+				</CardTitle>
 				<CardDescription>
-					{t.settings.password.description}
+					{isOAuthOnly
+						? t.oauth.createPasswordDescription
+						: t.settings.password.description}
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -87,7 +97,9 @@ export function PasswordSettings() {
 					<Button type="submit" disabled={isPending}>
 						{isPending
 							? t.common.updating
-							: t.settings.password.updatePassword}
+							: isOAuthOnly
+								? t.oauth.createPasswordButton
+								: t.settings.password.updatePassword}
 					</Button>
 				</form>
 			</CardContent>

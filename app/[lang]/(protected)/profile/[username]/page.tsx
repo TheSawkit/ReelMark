@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { requireAuth } from '@/lib/auth';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { resolveAvatarUrl } from '@/lib/avatar';
 import { getTranslations } from '@/lib/i18n/server';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ProfileHero } from '@/components/profile/ProfileHero';
@@ -169,9 +170,8 @@ export default async function ProfilePage({ params }: Props) {
 
 	const ownerMeta = ownerAuth.data.user?.user_metadata;
 	const avatarUrl =
-		typeof ownerMeta?.avatar_url === 'string'
-			? ownerMeta.avatar_url
-			: undefined;
+		resolveAvatarUrl(profile.avatar_url, ownerMeta?.avatar_url) ??
+		undefined;
 	const fullName =
 		typeof ownerMeta?.full_name === 'string'
 			? ownerMeta.full_name

@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { requireAuth } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { isOAuthOnly } from '@/lib/supabase/auth-helpers';
 import { SettingsContent } from '@/components/settings/SettingsContent';
 import { SettingsContentSkeleton } from '@/components/settings/SettingsContentSkeleton';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
@@ -47,6 +48,7 @@ async function SettingsSection({ user }: { user: User }) {
 			user={user}
 			userProfile={userProfile}
 			privacySettings={privacySettings}
+			isOAuthOnly={isOAuthOnly(user)}
 		/>
 	);
 }

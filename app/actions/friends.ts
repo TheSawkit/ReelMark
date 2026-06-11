@@ -3,6 +3,7 @@
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { createAdminClient } from '@/lib/supabase/server';
 import { FRIENDSHIP_COLUMNS } from '@/lib/supabase/columns';
+import { resolveAvatarUrl } from '@/lib/avatar';
 import { revalidateProfile } from '@/app/actions/_helpers';
 import type {
 	Friendship,
@@ -57,7 +58,7 @@ export async function getPendingRequestsWithProfiles(): Promise<
 	const [{ data: profiles }, adminResults] = await Promise.all([
 		supabase
 			.from('user_profiles')
-			.select('user_id, username')
+			.select('user_id, username, avatar_url')
 			.in('user_id', requesterIds),
 		Promise.all(
 			requesterIds.map((id) => adminClient.auth.admin.getUserById(id))
@@ -80,9 +81,10 @@ export async function getPendingRequestsWithProfiles(): Promise<
 			friendship: f,
 			username: profile.username,
 			avatarUrl:
-				typeof adminUser?.user_metadata?.avatar_url === 'string'
-					? adminUser.user_metadata.avatar_url
-					: undefined,
+				resolveAvatarUrl(
+					profile.avatar_url,
+					adminUser?.user_metadata?.avatar_url
+				) ?? undefined,
 			fullName:
 				typeof adminUser?.user_metadata?.full_name === 'string'
 					? adminUser.user_metadata.full_name
@@ -123,7 +125,7 @@ export async function getFriendsWithProfiles(
 	const [{ data: profiles }, adminResults] = await Promise.all([
 		supabase
 			.from('user_profiles')
-			.select('user_id, username')
+			.select('user_id, username, avatar_url')
 			.in('user_id', friendUserIds),
 		Promise.all(
 			friendUserIds.map((id) => adminClient.auth.admin.getUserById(id))
@@ -148,9 +150,10 @@ export async function getFriendsWithProfiles(
 			friendship: f,
 			username: profile.username,
 			avatarUrl:
-				typeof adminUser?.user_metadata?.avatar_url === 'string'
-					? adminUser.user_metadata.avatar_url
-					: undefined,
+				resolveAvatarUrl(
+					profile.avatar_url,
+					adminUser?.user_metadata?.avatar_url
+				) ?? undefined,
 			fullName:
 				typeof adminUser?.user_metadata?.full_name === 'string'
 					? adminUser.user_metadata.full_name

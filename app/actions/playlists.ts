@@ -9,6 +9,7 @@ import { getTranslations } from '@/lib/i18n/server';
 import { revalidateProfile } from '@/app/actions/_helpers';
 import { parseVisibility, isVisibility } from '@/lib/privacy';
 import { getListMediaMetadata } from '@/lib/tmdb';
+import { resolveAvatarUrl } from '@/lib/avatar';
 import type { MediaType } from '@/types/tmdb';
 import type { Playlist, PrivacyVisibility } from '@/types/profile';
 
@@ -59,17 +60,17 @@ export async function getPlaylistById(id: string): Promise<{
 	const [profileResult, ownerAuth] = await Promise.all([
 		supabase
 			.from('user_profiles')
-			.select('username')
+			.select('username, avatar_url')
 			.eq('user_id', data.user_id)
 			.maybeSingle(),
 		adminClient.auth.admin.getUserById(data.user_id),
 	]);
 
 	const ownerUsername = profileResult.data?.username ?? null;
-	const ownerAvatarUrl =
-		typeof ownerAuth.data.user?.user_metadata?.avatar_url === 'string'
-			? ownerAuth.data.user.user_metadata.avatar_url
-			: null;
+	const ownerAvatarUrl = resolveAvatarUrl(
+		profileResult.data?.avatar_url,
+		ownerAuth.data.user?.user_metadata?.avatar_url
+	);
 
 	return {
 		playlist: data as Playlist,

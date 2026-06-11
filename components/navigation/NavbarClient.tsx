@@ -41,12 +41,14 @@ interface NavbarClientProps {
 	user: NavbarUser | null;
 	t: NavbarTranslations;
 	initialUnreadCount: number;
+	avatarUrl?: string | null;
 }
 
 export function NavbarClient({
 	user,
 	t,
 	initialUnreadCount,
+	avatarUrl,
 }: NavbarClientProps) {
 	const { title, scrolled } = useMediaHeader();
 	const { lang } = useTranslation();
@@ -173,6 +175,7 @@ export function NavbarClient({
 												>
 													<UserAvatar
 														picture={
+															avatarUrl ||
 															user.user_metadata
 																.avatar_url ||
 															user.user_metadata
