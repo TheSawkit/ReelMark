@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { getServerLanguage, getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import {
@@ -89,7 +89,7 @@ export async function signup(prevState: unknown, formData: FormData) {
 	if (existingProfile) return { error: t.settings.usernameTaken };
 
 	const origin = await getOrigin();
-	const { error } = await supabase.auth.signUp({
+	const { data, error } = await supabase.auth.signUp({
 		email,
 		password,
 		options: {
@@ -104,6 +104,24 @@ export async function signup(prevState: unknown, formData: FormData) {
 	});
 
 	if (error) return { error: mapAuthError(error.message, t) };
+
+	const isNewUser = (data.user?.identities?.length ?? 0) > 0;
+	if (data.user && isNewUser) {
+		const { error: profileError } = await createAdminClient()
+			.from('user_profiles')
+			.upsert(
+				{
+					user_id: data.user.id,
+					username,
+					updated_at: new Date().toISOString(),
+				},
+				{ onConflict: 'user_id' }
+			);
+
+		if (profileError?.code === '23505')
+			return { error: t.settings.usernameTaken };
+		if (profileError) return { error: profileError.message };
+	}
 
 	revalidatePath('/', 'layout');
 	redirect(localizedHref(await getServerLanguage(), '/dashboard'));
