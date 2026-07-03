@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { BASE_URL } from '@/lib/metadata';
 import { getServerLanguage, getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import {
@@ -37,11 +38,8 @@ function mapAuthError(message: string, t: AuthTranslations): string {
 async function getOrigin(): Promise<string> {
 	const h = await headers();
 	const proto = h.get('x-forwarded-proto') ?? 'https';
-	const host =
-		h.get('x-forwarded-host') ??
-		h.get('host') ??
-		'reelmark-silexio.vercel.app';
-	return `${proto}://${host}`;
+	const host = h.get('x-forwarded-host') ?? h.get('host');
+	return host ? `${proto}://${host}` : BASE_URL;
 }
 
 export async function login(prevState: unknown, formData: FormData) {

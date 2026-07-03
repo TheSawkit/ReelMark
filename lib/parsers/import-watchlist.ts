@@ -94,6 +94,16 @@ function parseTvTimeRefract(arr: unknown[]): ImportItem[] {
 	return items;
 }
 
+function inferGDPRMediaType(
+	e: Record<string, unknown>,
+	meta: Record<string, unknown> | undefined
+): 'movie' | 'tv' | null {
+	const raw = String(e.type ?? e.entity_type ?? meta?.type ?? '').toLowerCase();
+	if (raw.includes('movie') || raw.includes('film')) return 'movie';
+	if (raw.includes('show') || raw.includes('series')) return 'tv';
+	return null;
+}
+
 function parseTvTimeGDPR(obj: Record<string, unknown>): ImportItem[] {
 	const objects = (obj.data as Record<string, unknown> | undefined)?.objects;
 	if (!Array.isArray(objects)) return [];
@@ -104,7 +114,8 @@ function parseTvTimeGDPR(obj: Record<string, unknown>): ImportItem[] {
 		const meta = e.meta as Record<string, unknown> | undefined;
 		const title = meta?.name ? String(meta.name).trim() : null;
 		if (!title) continue;
-		const key = title.toLowerCase();
+		const mediaType = inferGDPRMediaType(e, meta);
+		const key = `${mediaType ?? 'unknown'}:${title.toLowerCase()}`;
 		if (seen.has(key)) continue;
 		seen.add(key);
 		const dateStr = meta?.first_release_date
@@ -115,7 +126,7 @@ function parseTvTimeGDPR(obj: Record<string, unknown>): ImportItem[] {
 			title,
 			year,
 			status: 'watched' as WatchStatus,
-			mediaType: 'tv' as const,
+			mediaType,
 		});
 	}
 	return items;
@@ -140,21 +151,31 @@ function parseTvTimeCSV(text: string): ImportItem[] {
 			h.includes('show') ||
 			h.includes('series')
 	);
-	if (seriesIdx === -1) return [];
+	const movieIdx = headers.findIndex((h) => h.includes('movie'));
+	if (seriesIdx === -1 && movieIdx === -1) return [];
 	const seen = new Set<string>();
 	const items: ImportItem[] = [];
 	for (const line of lines.slice(1)) {
 		const cols = parseCSVLine(line);
-		const title = cols[seriesIdx]?.replace(/^"|"$/g, '').trim() ?? '';
+		const seriesTitle =
+			seriesIdx !== -1
+				? (cols[seriesIdx]?.replace(/^"|"$/g, '').trim() ?? '')
+				: '';
+		const movieTitle =
+			movieIdx !== -1
+				? (cols[movieIdx]?.replace(/^"|"$/g, '').trim() ?? '')
+				: '';
+		const title = seriesTitle || movieTitle;
 		if (!title) continue;
-		const key = title.toLowerCase();
+		const mediaType = seriesTitle ? ('tv' as const) : ('movie' as const);
+		const key = `${mediaType}:${title.toLowerCase()}`;
 		if (seen.has(key)) continue;
 		seen.add(key);
 		items.push({
 			title,
 			year: null,
 			status: 'watched' as WatchStatus,
-			mediaType: 'tv' as const,
+			mediaType,
 		});
 	}
 	return items;
