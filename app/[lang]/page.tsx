@@ -57,11 +57,11 @@ export default async function Home({
 	const showItems = shows.map(tvShowToMediaItem);
 
 	return (
-		<main className="min-h-screen">
+		<div className="min-h-screen">
 			<HeroSection posters={[...movieItems, ...showItems]} lang={lang} />
 			<PreviewSection movies={movieItems} shows={showItems} />
 			<FeaturesSection />
 			<CTASection lang={lang} />
-		</main>
+		</div>
 	);
 }

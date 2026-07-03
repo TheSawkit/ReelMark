@@ -1,6 +1,6 @@
 export default function HomeLoading() {
 	return (
-		<main className="min-h-screen">
+		<div className="min-h-screen">
 			<section className="relative flex min-h-[80vh] flex-col items-center justify-center px-6 py-24 text-center overflow-hidden">
 				<div className="max-w-4xl mx-auto space-y-6 animate-pulse">
 					<div className="h-5 w-24 rounded-full bg-surface-2 mx-auto" />
@@ -18,6 +18,6 @@ export default function HomeLoading() {
 					</div>
 				</div>
 			</section>
-		</main>
+		</div>
 	);
 }

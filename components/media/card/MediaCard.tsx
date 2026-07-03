@@ -75,6 +75,7 @@ export function MediaCard({
 			)}
 			alt={media.title}
 			fill
+			unoptimized
 			loading={priority ? 'eager' : 'lazy'}
 			{...(priority ? { priority: true } : {})}
 			className="object-cover transition-transform duration-(--duration-base) ease-out group-hover:scale-105"
@@ -89,6 +90,7 @@ export function MediaCard({
 	return (
 		<Link
 			href={href}
+			prefetch={false}
 			className={cn(
 				'group relative rounded-poster overflow-hidden bg-surface border border-card-border block focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12',
 				'transition-[transform,scale,box-shadow,border-color] duration-(--duration-medium) ease-apple will-change-transform',

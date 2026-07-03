@@ -163,6 +163,7 @@ function PlaylistCard({
 												)}
 												alt={item.media_title}
 												fill
+												unoptimized
 												sizes="56px"
 												className="object-cover"
 											/>

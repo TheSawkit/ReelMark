@@ -113,6 +113,7 @@ export function EpisodeCard({
 						src={getImageUrl(episode.still_path, 'w780')}
 						alt={episode.name}
 						fill
+						unoptimized
 						className="object-cover group-hover:scale-105 transition-transform duration-(--duration-slow)"
 					/>
 				) : (

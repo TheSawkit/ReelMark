@@ -14,7 +14,7 @@ export function SettingsContentSkeleton() {
 				</nav>
 			</aside>
 
-			<main className="flex-1 min-w-0 space-y-6">
+			<div className="flex-1 min-w-0 space-y-6">
 				{Array.from({ length: 2 }).map((_, i) => (
 					<div
 						key={i}
@@ -27,7 +27,7 @@ export function SettingsContentSkeleton() {
 						<Skeleton className="h-10 w-32" />
 					</div>
 				))}
-			</main>
+			</div>
 		</div>
 	);
 }

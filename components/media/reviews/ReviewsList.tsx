@@ -68,6 +68,7 @@ function ReviewCard({
 			<div className="flex items-center justify-between gap-3">
 				<Link
 					href={localizedHref(lang, `/profile/${review.username}`)}
+					prefetch={false}
 					className="flex items-center gap-2.5 min-w-0 group"
 				>
 					<Avatar

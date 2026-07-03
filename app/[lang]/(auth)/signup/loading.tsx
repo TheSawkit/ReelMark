@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SignupLoading() {
 	return (
-		<main className="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+		<div className="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
 			<div className="flex w-full max-w-sm flex-col gap-6">
 				<div className="flex flex-col items-center gap-2">
 					<Skeleton className="h-8 w-36" />
@@ -39,6 +39,6 @@ export default function SignupLoading() {
 
 				<Skeleton className="h-4 w-48 mx-auto" />
 			</div>
-		</main>
+		</div>
 	);
 }
