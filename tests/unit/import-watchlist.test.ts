@@ -235,8 +235,42 @@ describe('parseImportFile — TV Time', () => {
 			title: 'The Bear',
 			year: 2022,
 			status: 'watched',
-			mediaType: 'tv',
+			mediaType: null,
 		});
+	});
+
+	it('infers media type from GDPR type fields', async () => {
+		const json = JSON.stringify({
+			data: {
+				objects: [
+					{
+						type: 'movie',
+						meta: {
+							name: 'Past Lives',
+							first_release_date: '2023-06-02',
+						},
+					},
+					{
+						type: 'show',
+						meta: {
+							name: 'The Bear',
+							first_release_date: '2022-06-23',
+						},
+					},
+				],
+			},
+		});
+		const items = await parseImportFile(
+			makeFile(json, 'gdpr.json'),
+			'tvtime',
+			'unknown'
+		);
+		expect(items).toHaveLength(2);
+		expect(items[0]).toMatchObject({
+			title: 'Past Lives',
+			mediaType: 'movie',
+		});
+		expect(items[1]).toMatchObject({ title: 'The Bear', mediaType: 'tv' });
 	});
 
 	it('falls back to legacy CSV when JSON parse fails', async () => {
@@ -251,6 +285,21 @@ describe('parseImportFile — TV Time', () => {
 			title: 'Succession',
 			status: 'watched',
 			mediaType: 'tv',
+		});
+	});
+
+	it('parses movie rows from CSV with a movie column', async () => {
+		const csv = 'movie_name,watched_at\nPast Lives,2024-01-01\nTenet,';
+		const items = await parseImportFile(
+			makeFile(csv, 'movies.csv'),
+			'tvtime',
+			'unknown'
+		);
+		expect(items).toHaveLength(2);
+		expect(items[0]).toMatchObject({
+			title: 'Past Lives',
+			mediaType: 'movie',
+			status: 'watched',
 		});
 	});
 });

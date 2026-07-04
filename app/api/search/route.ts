@@ -4,6 +4,8 @@ import { rankMedia } from '@/lib/search/score';
 import { getMediaKey } from '@/lib/media';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { resolveAvatarUrl } from '@/lib/avatar';
+import { DEFAULT_LANGUAGE, isLanguage } from '@/lib/i18n/config';
+import { getLocale } from '@/lib/i18n/utils';
 import type { MediaItem } from '@/types/tmdb';
 
 const MAX_RESULTS = 6;
@@ -11,6 +13,11 @@ const MAX_USER_RESULTS = 5;
 const FALLBACK_MIN_RESULTS = 3;
 const FALLBACK_MIN_QUERY_LEN = 4;
 const MAX_FALLBACK_QUERIES = 2;
+
+const CDN_CACHE_HEADERS = {
+	'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+};
+const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' };
 
 function buildFallbackQueries(query: string): string[] {
 	const candidates: string[] = [];
@@ -35,14 +42,25 @@ function buildFallbackQueries(query: string): string[] {
 export async function GET(req: NextRequest) {
 	const { searchParams } = new URL(req.url);
 	const query = searchParams.get('query')?.trim().slice(0, 200);
+	const langParam = searchParams.get('lang');
+	const locale = getLocale(
+		isLanguage(langParam) ? langParam : DEFAULT_LANGUAGE
+	);
 
 	if (!query || query.length < 2) {
-		return NextResponse.json({ results: [] });
+		return NextResponse.json(
+			{ results: [] },
+			{ headers: CDN_CACHE_HEADERS }
+		);
 	}
 
 	if (query.startsWith('@')) {
 		const username = query.slice(1);
-		if (!username) return NextResponse.json({ users: [] });
+		if (!username)
+			return NextResponse.json(
+				{ users: [] },
+				{ headers: NO_STORE_HEADERS }
+			);
 
 		const supabase = await createClient();
 		const { data: profiles } = await supabase
@@ -51,7 +69,11 @@ export async function GET(req: NextRequest) {
 			.ilike('username', `%${username}%`)
 			.limit(MAX_USER_RESULTS);
 
-		if (!profiles?.length) return NextResponse.json({ users: [] });
+		if (!profiles?.length)
+			return NextResponse.json(
+				{ users: [] },
+				{ headers: NO_STORE_HEADERS }
+			);
 
 		const adminClient = createAdminClient();
 		const users = await Promise.all(
@@ -67,18 +89,18 @@ export async function GET(req: NextRequest) {
 			})
 		);
 
-		return NextResponse.json({ users });
+		return NextResponse.json({ users }, { headers: NO_STORE_HEADERS });
 	}
 
 	try {
-		const results = await searchMulti(query);
+		const results = await searchMulti(query, 1, locale);
 
 		if (results.length < FALLBACK_MIN_RESULTS) {
 			const fallbacks = buildFallbackQueries(query);
 			if (fallbacks.length > 0) {
 				const batches = await Promise.all(
 					fallbacks.map((q) =>
-						searchMulti(q).catch(() => [] as MediaItem[])
+						searchMulti(q, 1, locale).catch(() => [] as MediaItem[])
 					)
 				);
 				const seen = new Set<string>(results.map(getMediaKey));
@@ -95,12 +117,15 @@ export async function GET(req: NextRequest) {
 		}
 
 		const ranked = rankMedia(query, results).slice(0, MAX_RESULTS);
-		return NextResponse.json({ results: ranked });
+		return NextResponse.json(
+			{ results: ranked },
+			{ headers: CDN_CACHE_HEADERS }
+		);
 	} catch (error) {
 		console.error('[api/search] TMDB search failed:', error);
 		return NextResponse.json(
 			{ error: 'Failed to fetch search results' },
-			{ status: 500 }
+			{ status: 500, headers: NO_STORE_HEADERS }
 		);
 	}
 }

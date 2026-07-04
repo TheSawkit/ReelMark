@@ -1,6 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Inter, Bebas_Neue } from 'next/font/google';
 import '@/app/globals.css';
 import Navbar from '@/components/navigation/Navbar';
@@ -335,8 +333,6 @@ export default async function RootLayout({
 			<body
 				className={`${sans.variable} ${display.variable} antialiased bg-background text-text`}
 			>
-				<Analytics />
-				<SpeedInsights />
 				<PreventImageContextMenu />
 				<Providers initialLang={lang}>
 					<ScrollToTop />

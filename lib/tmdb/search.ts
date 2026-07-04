@@ -25,15 +25,21 @@ interface TMDBMultiResult {
  *
  * @param query - Search string.
  * @param page - Page number (default: 1).
+ * @param language - TMDB locale override; defaults to the request-resolved locale.
  * @returns Filtered and normalized list of matching movies and TV shows.
  */
 export async function searchMulti(
 	query: string,
-	page: number = 1
+	page: number = 1,
+	language?: string
 ): Promise<MediaItem[]> {
 	const { results } = await fetchTMDB<{ results: TMDBMultiResult[] }>(
 		'/search/multi',
-		{ query, page: page.toString() }
+		{
+			query,
+			page: page.toString(),
+			...(language ? { language } : {}),
+		}
 	);
 
 	return results

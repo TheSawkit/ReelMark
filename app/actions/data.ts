@@ -180,6 +180,27 @@ async function findByImdbId(
 	}
 }
 
+const RESOLVE_CONCURRENCY = 6;
+
+async function mapLimit<T, R>(
+	arr: T[],
+	limit: number,
+	fn: (item: T) => Promise<R>
+): Promise<R[]> {
+	const out = new Array<R>(arr.length);
+	let next = 0;
+	await Promise.all(
+		Array.from({ length: Math.min(limit, arr.length) }, async () => {
+			for (;;) {
+				const i = next++;
+				if (i >= arr.length) return;
+				out[i] = await fn(arr[i]);
+			}
+		})
+	);
+	return out;
+}
+
 async function findByTvdbId(tvdbId: number): Promise<FindResult | null> {
 	try {
 		const data = await fetchTMDB<{
@@ -215,8 +236,10 @@ export async function importBatch(
 
 	type Resolved = { row: WatchlistRow; rating: number | null } | null;
 
-	const resolved = await Promise.all(
-		items.map(async (item): Promise<Resolved> => {
+	const resolved = await mapLimit(
+		items,
+		RESOLVE_CONCURRENCY,
+		async (item): Promise<Resolved> => {
 			try {
 				const status = VALID_STATUSES.has(item.status)
 					? item.status
@@ -320,7 +343,7 @@ export async function importBatch(
 			} catch {
 				return null;
 			}
-		})
+		}
 	);
 
 	const hits = resolved.filter((r): r is NonNullable<Resolved> => r !== null);

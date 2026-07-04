@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Image from 'next/image';
+import { Play } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import type { MediaTrailersProps } from '@/types/components';
@@ -52,6 +54,8 @@ function TrailerEmbed({
 	onError: (key: string) => void;
 	unsupportedLabel: string;
 }) {
+	const [isPlaying, setIsPlaying] = useState(false);
+
 	if (site !== 'YouTube') {
 		return (
 			<div className="relative aspect-video glass-overlay rounded-xl overflow-hidden shadow-card">
@@ -64,15 +68,41 @@ function TrailerEmbed({
 
 	return (
 		<div className="relative aspect-video glass-overlay rounded-xl overflow-hidden shadow-card transition-all duration-(--duration-base) hover:shadow-glow-gold hover:border-gold/30 hover:border-t-gold/50">
-			<iframe
-				src={`https://www.youtube.com/embed/${videoKey}?rel=0&modestbranding=1`}
-				title={title}
-				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-				allowFullScreen
-				loading="lazy"
-				className="w-full h-full"
-				onError={() => onError(videoKey)}
-			/>
+			{isPlaying ? (
+				<iframe
+					src={`https://www.youtube-nocookie.com/embed/${videoKey}?rel=0&modestbranding=1&autoplay=1`}
+					title={title}
+					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+					allowFullScreen
+					className="w-full h-full"
+					onError={() => onError(videoKey)}
+				/>
+			) : (
+				<button
+					type="button"
+					onClick={() => setIsPlaying(true)}
+					aria-label={title}
+					className="group/trailer relative block w-full h-full cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+				>
+					<Image
+						src={`https://i.ytimg.com/vi/${videoKey}/hqdefault.jpg`}
+						alt={title}
+						fill
+						unoptimized
+						className="object-cover transition-transform duration-(--duration-base) group-hover/trailer:scale-105"
+						sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+					/>
+					<span className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
+					<span className="absolute inset-0 flex items-center justify-center">
+						<span className="flex h-14 w-14 items-center justify-center rounded-full bg-poster-overlay backdrop-blur-md border border-white/10 shadow-card-sm transition-all duration-(--duration-base) group-hover/trailer:scale-110 group-hover/trailer:bg-primary">
+							<Play
+								className="h-6 w-6 fill-current text-white"
+								aria-hidden="true"
+							/>
+						</span>
+					</span>
+				</button>
+			)}
 		</div>
 	);
 }

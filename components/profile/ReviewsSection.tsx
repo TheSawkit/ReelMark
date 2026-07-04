@@ -107,6 +107,7 @@ export function ReviewsSection({
 									lang,
 									`/${review.media_type}/${review.media_id}`
 								)}
+								prefetch={false}
 								className="shrink-0"
 							>
 								<div className="relative w-12 aspect-2/3 rounded-poster overflow-hidden bg-surface-2">
@@ -118,6 +119,7 @@ export function ReviewsSection({
 											)}
 											alt={review.media_title}
 											fill
+											unoptimized
 											sizes="48px"
 											className="object-cover"
 										/>
@@ -136,6 +138,7 @@ export function ReviewsSection({
 										)}
 										alt={review.media_title}
 										fill
+										unoptimized
 										sizes="48px"
 										className="object-cover"
 									/>
@@ -152,6 +155,7 @@ export function ReviewsSection({
 										lang,
 										`/${review.media_type}/${review.media_id}`
 									)}
+									prefetch={false}
 								>
 									<p className="font-medium text-sm text-text hover:text-primary transition-colors truncate">
 										{review.media_title}

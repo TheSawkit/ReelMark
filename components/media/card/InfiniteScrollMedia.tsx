@@ -39,7 +39,6 @@ export function InfiniteScrollMedia({
 	const isLoaderVisible = useInView(loaderRef, {
 		rootMargin: '0px 0px 800px 0px',
 	});
-	const prefetchRef = useRef<Promise<MediaItem[]> | null>(null);
 	const { t } = useTranslation();
 
 	const prevCategoryRef = useRef(category);
@@ -50,7 +49,6 @@ export function InfiniteScrollMedia({
 			setPage(2);
 			setHasMore(computeHasMore(clientSideData, initialItems));
 			setLoadError(false);
-			prefetchRef.current = null;
 			prevCategoryRef.current = category;
 		} else {
 			setItems((prev) => {
@@ -78,12 +76,6 @@ export function InfiniteScrollMedia({
 		}
 	}, [category, initialItems, clientSideData]);
 
-	useEffect(() => {
-		if (!clientSideData) {
-			prefetchRef.current = fetchMoreMedia(category, 2).catch(() => []);
-		}
-	}, [category, clientSideData]);
-
 	const loadMore = useCallback(() => {
 		if (isPending || !hasMore || loadError) return;
 
@@ -96,9 +88,7 @@ export function InfiniteScrollMedia({
 					const start = (page - 1) * pageSize;
 					newItems = clientSideData.slice(start, start + pageSize);
 				} else {
-					newItems = await (prefetchRef.current ??
-						fetchMoreMedia(category, page));
-					prefetchRef.current = null;
+					newItems = await fetchMoreMedia(category, page);
 				}
 
 				if (newItems.length === 0) {
@@ -131,16 +121,8 @@ export function InfiniteScrollMedia({
 					return merged;
 				});
 				setPage((prev) => prev + 1);
-
-				if (!clientSideData) {
-					prefetchRef.current = fetchMoreMedia(
-						category,
-						page + 1
-					).catch(() => []);
-				}
 			} catch {
 				setLoadError(true);
-				prefetchRef.current = null;
 			}
 		});
 	}, [isPending, hasMore, loadError, page, clientSideData, category]);

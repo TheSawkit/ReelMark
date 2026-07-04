@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/lib/i18n/context';
 import type { MediaItem } from '@/types/tmdb';
 
 export interface UserSearchResult {
@@ -15,6 +16,7 @@ export interface UserSearchResult {
  * Queries starting with '@' search user profiles instead of media.
  */
 export function useSearchSuggestions(query: string) {
+	const { lang } = useTranslation();
 	const [results, setResults] = useState<MediaItem[]>([]);
 	const [users, setUsers] = useState<UserSearchResult[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
@@ -40,7 +42,7 @@ export function useSearchSuggestions(query: string) {
 		const timer = setTimeout(async () => {
 			try {
 				const response = await fetch(
-					`/api/search?query=${encodeURIComponent(query)}`,
+					`/api/search?query=${encodeURIComponent(query)}&lang=${lang}`,
 					{ signal: controller.signal }
 				);
 				if (!response.ok)
@@ -72,7 +74,7 @@ export function useSearchSuggestions(query: string) {
 			clearTimeout(timer);
 			controller.abort();
 		};
-	}, [query]);
+	}, [query, lang]);
 
 	return { results, users, isLoading, isOpen, setIsOpen };
 }

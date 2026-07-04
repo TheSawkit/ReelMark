@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAutoResetError } from '@/hooks/useAutoResetError';
 
 interface UseAsyncActionResult {
@@ -10,11 +9,10 @@ interface UseAsyncActionResult {
 	execute: <T>(action: () => Promise<T>) => Promise<T | undefined>;
 }
 
-/** Handles loading/error state and router refresh for async server action calls. */
+/** Handles loading/error state for server action calls; UI updates come from the action's own revalidatePath. */
 export function useAsyncAction(): UseAsyncActionResult {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useAutoResetError();
-	const router = useRouter();
 
 	async function execute<T>(
 		action: () => Promise<T>
@@ -22,9 +20,7 @@ export function useAsyncAction(): UseAsyncActionResult {
 		setLoading(true);
 		setError(false);
 		try {
-			const result = await action();
-			router.refresh();
-			return result;
+			return await action();
 		} catch {
 			setError(true);
 			return undefined;

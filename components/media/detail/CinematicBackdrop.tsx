@@ -16,6 +16,7 @@ export function CinematicBackdrop({ src, alt }: CinematicBackdropProps) {
 				src={src}
 				alt={alt}
 				fill
+				priority
 				style={{
 					paddingTop: 'calc(4rem + env(safe-area-inset-top))',
 				}}

@@ -13,7 +13,7 @@ const cspDirectives = [
 	"worker-src 'self'",
 	`script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.youtube.com https://s.ytimg.com`,
 	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-	"img-src 'self' data: blob: https://image.tmdb.org https://lh3.googleusercontent.com https://api.dicebear.com https://*.supabase.co https://cdn.watchmode.com https://*.mzstatic.com",
+	"img-src 'self' data: blob: https://image.tmdb.org https://i.ytimg.com https://lh3.googleusercontent.com https://api.dicebear.com https://*.supabase.co https://cdn.watchmode.com https://*.mzstatic.com",
 	"font-src 'self' data: https://fonts.gstatic.com",
 	'frame-src https://www.youtube.com https://www.youtube-nocookie.com',
 	`connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://www.youtube.com${isDev ? ' ws: wss:' : ' wss:'}`,
@@ -69,7 +69,8 @@ const nextConfig: NextConfig = {
 		];
 	},
 	images: {
-		formats: ['image/avif', 'image/webp'],
+		formats: ['image/webp'],
+		minimumCacheTTL: 2678400,
 		remotePatterns: [
 			{
 				protocol: 'https',

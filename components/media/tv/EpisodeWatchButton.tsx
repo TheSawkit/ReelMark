@@ -35,13 +35,17 @@ export function EpisodeWatchButton({
 	async function handleToggle(e: React.MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
+		const previous = watched;
+		setWatched(!previous);
 		const newState = await execute(() =>
 			toggleEpisodeWatch(tvId, seasonNumber, episodeNumber)
 		);
-		if (newState !== undefined) {
-			setWatched(newState);
-			if (newState) setReviewOpen(true);
+		if (newState === undefined) {
+			setWatched(previous);
+			return;
 		}
+		setWatched(newState);
+		if (newState && !previous) setReviewOpen(true);
 	}
 
 	const Icon = loading ? Loader2 : error ? XCircle : watched ? Check : Eye;

@@ -40,6 +40,7 @@ export async function SeasonCard({
 					lang,
 					`/tv/${tvId}/season/${season.season_number}`
 				)}
+				prefetch={false}
 				className={cn(
 					'flex gap-4 bg-surface-2 rounded-xl p-4 transition-all duration-(--duration-base) hover:bg-surface-3 hover:shadow-cinema border cursor-pointer',
 					isComplete
@@ -53,6 +54,7 @@ export async function SeasonCard({
 							src={getImageUrl(season.poster_path, 'w342')}
 							alt={season.name}
 							fill
+							unoptimized
 							className="object-cover group-hover:scale-105 transition-transform duration-(--duration-slow)"
 							sizes="96px"
 						/>

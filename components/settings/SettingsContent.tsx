@@ -40,7 +40,7 @@ export function SettingsContent({
 				<SettingsNav activeTab={activeTab} onTabChange={setActiveTab} />
 			</aside>
 
-			<main className="flex-1 min-w-0">
+			<div className="flex-1 min-w-0">
 				{activeTab === 'profile' && (
 					<div className="space-y-6">
 						<ProfileSettings
@@ -74,7 +74,7 @@ export function SettingsContent({
 				<div className="mt-6 rounded-(--radius-xl) border border-border bg-surface p-4">
 					<SignoutButton />
 				</div>
-			</main>
+			</div>
 		</div>
 	);
 }

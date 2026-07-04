@@ -49,6 +49,7 @@ function CrewRow({
 					<span key={person.id}>
 						<Link
 							href={localizedHref(lang, `/crew/${person.id}`)}
+							prefetch={false}
 							className="hover:text-gold transition-colors"
 						>
 							{person.name}
