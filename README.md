@@ -84,6 +84,7 @@ TEST_USER_PASSWORD=your-test-user-password
 Run the SQL migrations in order from your Supabase SQL Editor:
 
 1. `supabase/migrations/001_profile_features.sql` — creates `user_profiles`, `privacy_settings`, `reviews`, `playlists`, `playlist_items`, `friendships` with RLS policies.
+2. `supabase/migrations/002_fix_friend_request_notification_trigger.sql` — fixes a bad column reference (`actor_id` → `sender_id`) in the friendship notification trigger that caused friend requests to fail.
 
 **5. Launch**
 
