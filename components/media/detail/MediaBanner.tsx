@@ -97,6 +97,7 @@ export function MediaBanner({
 								src={getImageUrl(posterPath, 'w500')}
 								alt={title}
 								fill
+								priority
 								className="object-cover"
 								sizes="(max-width: 768px) 128px, 224px"
 							/>

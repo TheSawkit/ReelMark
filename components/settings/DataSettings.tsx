@@ -24,10 +24,7 @@ import { useTranslation } from '@/lib/i18n/context';
 import { siLetterboxd, siTrakt, siTvtime } from 'simple-icons';
 import { exportUserData, importBatch } from '@/app/actions/data';
 import type { ImportItem } from '@/app/actions/data';
-import {
-	parseImportFile,
-	type Platform,
-} from '@/lib/parsers/import-watchlist';
+import { parseImportFile, type Platform } from '@/lib/parsers/import-watchlist';
 
 type TranslationData = ReturnType<
 	typeof useTranslation

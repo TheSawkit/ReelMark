@@ -98,7 +98,9 @@ function inferGDPRMediaType(
 	e: Record<string, unknown>,
 	meta: Record<string, unknown> | undefined
 ): 'movie' | 'tv' | null {
-	const raw = String(e.type ?? e.entity_type ?? meta?.type ?? '').toLowerCase();
+	const raw = String(
+		e.type ?? e.entity_type ?? meta?.type ?? ''
+	).toLowerCase();
 	if (raw.includes('movie') || raw.includes('film')) return 'movie';
 	if (raw.includes('show') || raw.includes('series')) return 'tv';
 	return null;

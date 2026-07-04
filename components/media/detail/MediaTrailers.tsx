@@ -82,7 +82,7 @@ function TrailerEmbed({
 					type="button"
 					onClick={() => setIsPlaying(true)}
 					aria-label={title}
-					className="group/trailer relative block w-full h-full cursor-pointer"
+					className="group/trailer relative block w-full h-full cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
 				>
 					<Image
 						src={`https://i.ytimg.com/vi/${videoKey}/hqdefault.jpg`}
