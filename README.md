@@ -36,14 +36,14 @@
 
 ### 🛠️ Tech Stack
 
-| Layer          | Technology                                 |
-| :------------- | :----------------------------------------- |
-| **Frontend**   | Next.js 16.2.6 (App Router) + React 19     |
+| Layer          | Technology                                     |
+| :------------- | :--------------------------------------------- |
+| **Frontend**   | Next.js 16.2.6 (App Router) + React 19         |
 | **Styling**    | Tailwind CSS 4.3.2 (token-based design system) |
-| **Auth & DB**  | Supabase (PostgreSQL + RLS)                |
-| **Media data** | TMDB API                                   |
-| **Streaming**  | Watchmode API                              |
-| **PWA**        | Serwist (Service Worker + precaching)      |
+| **Auth & DB**  | Supabase (PostgreSQL + RLS)                    |
+| **Media data** | TMDB API                                       |
+| **Streaming**  | Watchmode API                                  |
+| **PWA**        | Serwist (Service Worker + precaching)          |
 
 ---
 
@@ -174,7 +174,7 @@ watchlist/
 | Couche            | Technologie                            |
 | :---------------- | :------------------------------------- |
 | **Frontend**      | Next.js 16.2.6 (App Router) + React 19 |
-| **Styles**        | Tailwind CSS 4.3.2 (système de tokens)     |
+| **Styles**        | Tailwind CSS 4.3.2 (système de tokens) |
 | **Auth & DB**     | Supabase (PostgreSQL + RLS)            |
 | **Données média** | TMDB API                               |
 | **Streaming**     | Watchmode API                          |

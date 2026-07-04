@@ -3,14 +3,7 @@ import type { MediaImagesResponse } from '@/types/tmdb';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/';
 
 export type TMDBImageSize =
-	| 'w92'
-	| 'w154'
-	| 'w185'
-	| 'w342'
-	| 'w500'
-	| 'w780'
-	| 'w1280'
-	| 'original';
+	'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'w1280' | 'original';
 
 /** Builds a full TMDB image URL; returns the placeholder SVG when path is null or empty. */
 export function getImageUrl(path: string | null, size: TMDBImageSize = 'w500') {

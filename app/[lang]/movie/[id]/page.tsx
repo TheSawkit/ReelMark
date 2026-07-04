@@ -82,12 +82,10 @@ export default async function MoviePage(props: MoviePageProps) {
 			await fetchTMDB(`/tv/${movieId}`, {}, 86400);
 			isTvShow = true;
 		} catch (probeError) {
-			if (
-				!(
-					probeError instanceof Error &&
-					probeError.message.includes('404')
-				)
-			)
+			if (!(
+				probeError instanceof Error &&
+				probeError.message.includes('404')
+			))
 				throw probeError;
 		}
 		if (isTvShow)
