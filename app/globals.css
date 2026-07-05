@@ -459,13 +459,13 @@ a {
 }
 
 @layer components {
-	/* var() indirection keeps lightningcss from collapsing the standard
-	   property into the -webkit- prefix (Chrome 2026 dropped the alias). */
+	/* -webkit- MUST come before the standard property: lightningcss merges the
+	   pair and keeps only the LAST form (Chrome 2026 dropped the -webkit- alias). */
 	.glass-surface {
 		--glass-filter: blur(24px) saturate(150%);
 		background-color: var(--glass-bg-hover);
-		backdrop-filter: var(--glass-filter);
 		-webkit-backdrop-filter: var(--glass-filter);
+		backdrop-filter: var(--glass-filter);
 		border: 1px solid var(--glass-border-hover);
 	}
 
@@ -473,16 +473,16 @@ a {
 	.glass-bar {
 		--glass-filter: blur(40px) saturate(150%);
 		background-color: color-mix(in srgb, var(--surface) 70%, transparent);
-		backdrop-filter: var(--glass-filter);
 		-webkit-backdrop-filter: var(--glass-filter);
+		backdrop-filter: var(--glass-filter);
 	}
 
 	/* Glass layered over media / dark backdrops (cards, buttons on posters). */
 	.glass-overlay {
 		--glass-filter: blur(40px) saturate(150%);
 		background-color: color-mix(in srgb, var(--surface) 22%, transparent);
-		backdrop-filter: var(--glass-filter);
 		-webkit-backdrop-filter: var(--glass-filter);
+		backdrop-filter: var(--glass-filter);
 		border: 1px solid var(--border);
 		border-top-color: var(--glass-border-hover);
 	}

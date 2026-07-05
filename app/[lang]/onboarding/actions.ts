@@ -42,6 +42,7 @@ export async function completeOnboarding(
 		{
 			user_id: userId,
 			username,
+			full_name: fullName,
 			onboarding_completed: true,
 			updated_at: new Date().toISOString(),
 		},

@@ -6,7 +6,7 @@ export default function SeasonLoading() {
 				style={{ marginTop: 'calc(-4rem - env(safe-area-inset-top))' }}
 			>
 				<div className="absolute inset-0 bg-linear-to-t from-app-bg via-app-bg/40 to-transparent" />
-				<div className="relative z-10 container mx-auto px-6 lg:px-12 pb-8 sm:pb-12">
+				<div className="relative z-10 container mx-auto px-6 lg:px-12 pb-4 sm:pb-12">
 					<div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start md:items-end">
 						<div className="aspect-2/3 w-20 sm:w-40 md:w-48 lg:w-56 shrink-0 rounded-lg bg-surface-3" />
 						<div className="flex-1 space-y-4">
@@ -22,7 +22,7 @@ export default function SeasonLoading() {
 				</div>
 			</div>
 
-			<div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-12">
+			<div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16">
 				<div className="space-y-4 max-w-4xl">
 					<div className="h-8 w-44 bg-surface-2 rounded animate-pulse" />
 					<div className="h-4 w-full bg-surface-2 rounded animate-pulse" />

@@ -4,9 +4,9 @@ import { MediaCardSkeleton } from '@/components/media/card/MediaCardSkeleton';
 export default function PlaylistLoading() {
 	return (
 		<>
-			<div className="relative -mt-16 min-h-[55vh] flex flex-col justify-end bg-surface-2 animate-pulse">
-				<div className="container mx-auto px-6 lg:px-12 pt-32 pb-10 md:pb-14 flex flex-col lg:flex-row lg:items-end gap-8 lg:gap-12">
-					<div className="flex-1 space-y-5">
+			<div className="relative -mt-16 min-h-[20vh] md:min-h-[50vh] flex flex-col justify-end bg-surface-2 animate-pulse">
+				<div className="container mx-auto px-6 lg:px-12 pt-28 md:pt-32 pb-8 md:pb-14 flex flex-col lg:flex-row lg:items-end gap-6 lg:gap-12">
+					<div className="flex-1 space-y-4 md:space-y-5">
 						<div className="flex gap-2">
 							<div className="h-8 w-10 rounded-full bg-surface-3" />
 							<div className="h-8 w-20 rounded-full bg-surface-3" />

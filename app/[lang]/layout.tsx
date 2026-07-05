@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Bebas_Neue } from 'next/font/google';
 import '@/app/globals.css';
+import { Suspense } from 'react';
 import Navbar from '@/components/navigation/Navbar';
+import { NavbarFallback } from '@/components/navigation/NavbarFallback';
 import { PageTopGradient } from '@/components/navigation/PageTopGradient';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from '@/app/providers';
@@ -352,7 +354,9 @@ export default async function RootLayout({
 						speed={200}
 						zIndex={9999}
 					/>
-					<Navbar />
+					<Suspense fallback={<NavbarFallback />}>
+						<Navbar />
+					</Suspense>
 					<PageTopGradient />
 					<main
 						id="main-content"

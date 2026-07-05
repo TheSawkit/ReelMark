@@ -9,7 +9,7 @@ export default function MovieLoading() {
 		<div className="min-h-screen">
 			<DetailBannerSkeleton />
 
-			<div className="container mx-auto px-6 lg:px-12 py-8 space-y-12">
+			<div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16">
 				<DescriptionSkeleton />
 
 				<CastRowSkeleton />

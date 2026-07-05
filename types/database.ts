@@ -348,6 +348,7 @@ export type Database = {
 					avatar_url: string | null;
 					bio: string | null;
 					created_at: string;
+					full_name: string | null;
 					instagram: string | null;
 					letterboxd: string | null;
 					onboarding_completed: boolean;
@@ -362,6 +363,7 @@ export type Database = {
 					avatar_url?: string | null;
 					bio?: string | null;
 					created_at?: string;
+					full_name?: string | null;
 					instagram?: string | null;
 					letterboxd?: string | null;
 					onboarding_completed?: boolean;
@@ -376,6 +378,7 @@ export type Database = {
 					avatar_url?: string | null;
 					bio?: string | null;
 					created_at?: string;
+					full_name?: string | null;
 					instagram?: string | null;
 					letterboxd?: string | null;
 					onboarding_completed?: boolean;

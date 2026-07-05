@@ -66,6 +66,15 @@ export default async function MoviePage(props: MoviePageProps) {
 
 	if (isNaN(movieId)) notFound();
 
+	const userDataPromise = Promise.all([
+		getMediaWatchlistEntry(movieId, 'movie'),
+		getAverageRating(movieId, 'movie'),
+		getMediaReview(movieId, 'movie'),
+		getTranslations(),
+		getServerLocale(),
+	]);
+	userDataPromise.catch(() => {});
+
 	let movieDetails, credits, images;
 	try {
 		[movieDetails, credits, images] = await Promise.all([
@@ -96,13 +105,7 @@ export default async function MoviePage(props: MoviePageProps) {
 	}
 
 	const [watchlistEntry, movieRating, userReview, t, locale] =
-		await Promise.all([
-			getMediaWatchlistEntry(movieId, 'movie'),
-			getAverageRating(movieId, 'movie'),
-			getMediaReview(movieId, 'movie'),
-			getTranslations(),
-			getServerLocale(),
-		]);
+		await userDataPromise;
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, movieDetails.backdrop_path),

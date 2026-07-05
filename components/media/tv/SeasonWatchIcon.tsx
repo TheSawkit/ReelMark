@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Eye, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { markSeasonWatched } from '@/app/actions/episodes';
-import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n/context';
 
 interface SeasonWatchIconProps {
@@ -23,13 +22,21 @@ export function SeasonWatchIcon({
 	releaseDate,
 }: SeasonWatchIconProps) {
 	const [loading, setLoading] = useState(false);
-	const router = useRouter();
+	const [optimistic, setOptimistic] = useState<{
+		base: number;
+		value: number;
+	} | null>(null);
 	const { t } = useTranslation();
+
+	const count =
+		optimistic && optimistic.base === watchedCount
+			? optimistic.value
+			: watchedCount;
 
 	const isUnreleased = releaseDate
 		? new Date(releaseDate) > new Date()
 		: false;
-	const allWatched = watchedCount === totalEpisodes && totalEpisodes > 0;
+	const allWatched = count === totalEpisodes && totalEpisodes > 0;
 
 	if (isUnreleased && !allWatched) {
 		return null;
@@ -39,9 +46,14 @@ export function SeasonWatchIcon({
 		e.preventDefault();
 		e.stopPropagation();
 		setLoading(true);
+		setOptimistic({
+			base: watchedCount,
+			value: allWatched ? 0 : totalEpisodes,
+		});
 		try {
 			await markSeasonWatched(tvId, seasonNumber, totalEpisodes);
-			router.refresh();
+		} catch {
+			setOptimistic(null);
 		} finally {
 			setLoading(false);
 		}

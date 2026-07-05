@@ -1,7 +1,9 @@
+import { PageLayout } from '@/components/layout/PageLayout';
+
 export default function LibraryLoading() {
 	return (
-		<div className="container mx-auto py-12 px-6">
-			<div className="mb-10 space-y-3">
+		<PageLayout>
+			<div className="mb-12 md:mb-16 space-y-3">
 				<div className="h-9 w-56 rounded-lg bg-surface-2 animate-pulse" />
 				<div className="h-4 w-36 rounded bg-surface-2 animate-pulse" />
 			</div>
@@ -24,6 +26,6 @@ export default function LibraryLoading() {
 					/>
 				))}
 			</div>
-		</div>
+		</PageLayout>
 	);
 }

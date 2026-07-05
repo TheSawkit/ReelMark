@@ -70,6 +70,16 @@ export default async function TvShowPage(props: TvPageProps) {
 
 	if (isNaN(tvId)) notFound();
 
+	const userDataPromise = Promise.all([
+		getMediaWatchlistEntry(tvId, 'tv'),
+		getTvShowWatchProgress(tvId),
+		getShowAverageRating(tvId),
+		getMediaReview(tvId, 'tv'),
+		getTranslations(),
+		getServerLocale(),
+	]);
+	userDataPromise.catch(() => {});
+
 	let tvDetails, credits, images;
 	try {
 		[tvDetails, credits, images] = await Promise.all([
@@ -100,14 +110,7 @@ export default async function TvShowPage(props: TvPageProps) {
 	}
 
 	const [watchlistEntry, watchProgress, showRating, userReview, t, locale] =
-		await Promise.all([
-			getMediaWatchlistEntry(tvId, 'tv'),
-			getTvShowWatchProgress(tvId),
-			getShowAverageRating(tvId),
-			getMediaReview(tvId, 'tv'),
-			getTranslations(),
-			getServerLocale(),
-		]);
+		await userDataPromise;
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, tvDetails.backdrop_path),

@@ -232,7 +232,7 @@ export async function upsertReview(
 	}
 	const cleanedContent = validateReviewContent(content);
 
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const isEpisode = mediaType === 'episode';
 	const { error } = await supabase.from('reviews').upsert(
@@ -252,7 +252,7 @@ export async function upsertReview(
 	);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase);
+	await revalidateProfile(supabase, user);
 }
 
 /**
@@ -261,7 +261,7 @@ export async function upsertReview(
 export async function deleteReview(reviewId: string): Promise<void> {
 	if (validateUUID(reviewId) === null) throw new Error('Invalid review ID');
 
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const { error } = await supabase
 		.from('reviews')
@@ -270,5 +270,5 @@ export async function deleteReview(reviewId: string): Promise<void> {
 		.eq('user_id', userId);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase);
+	await revalidateProfile(supabase, user);
 }

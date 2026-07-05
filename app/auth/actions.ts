@@ -111,6 +111,7 @@ export async function signup(prevState: unknown, formData: FormData) {
 				{
 					user_id: data.user.id,
 					username,
+					full_name: username,
 					updated_at: new Date().toISOString(),
 				},
 				{ onConflict: 'user_id' }

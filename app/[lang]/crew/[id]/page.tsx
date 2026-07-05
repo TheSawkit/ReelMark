@@ -153,7 +153,7 @@ export default async function CrewPage(props: CrewPageProps) {
 		<div className="min-h-screen">
 			<CrewBanner crew={crew} />
 
-			<div className="container mx-auto px-6 lg:px-12 py-8 space-y-12">
+			<div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16">
 				<CrewBio biography={crew.biography} />
 
 				<Suspense fallback={<FilmographySkeleton />}>
