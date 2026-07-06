@@ -11,14 +11,8 @@ export default async function NotFound() {
 	]);
 
 	return (
-		<div className="min-h-[80vh] flex items-center justify-center p-6">
-			<div
-				className="max-w-md w-full text-center space-y-6 glass-surface rounded-(--radius-xl) shadow-cinema p-8"
-				style={{
-					animation:
-						'scaleIn var(--duration-slow) var(--ease-apple) both',
-				}}
-			>
+		<div className="centered-section">
+			<div className="max-w-md w-full text-center space-y-6 glass-surface rounded-(--radius-xl) shadow-cinema p-8 animate-scale-in">
 				<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/15 text-primary mb-4">
 					<Film className="w-10 h-10" />
 				</div>

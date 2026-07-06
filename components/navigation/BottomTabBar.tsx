@@ -13,13 +13,7 @@ export function BottomTabBar({ username }: BottomTabBarProps) {
 	const tabs = useNavItems(username);
 
 	return (
-		<nav
-			className="fixed inset-x-0 bottom-0 z-50 md:hidden"
-			style={{
-				paddingBottom: 'env(safe-area-inset-bottom)',
-				viewTransitionName: 'bottom-nav',
-			}}
-		>
+		<nav className="fixed inset-x-0 bottom-0 z-50 md:hidden bottom-nav-safe-area">
 			<div
 				aria-hidden="true"
 				className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-background to-transparent"
@@ -36,11 +30,7 @@ export function BottomTabBar({ username }: BottomTabBarProps) {
 						{active && (
 							<span
 								aria-hidden="true"
-								className="absolute top-2 h-9 w-9 rounded-xl"
-								style={{
-									background:
-										'radial-gradient(circle, var(--spotlight), transparent 70%)',
-								}}
+								className="absolute top-2 h-9 w-9 rounded-xl tab-spotlight"
 							/>
 						)}
 						<Icon

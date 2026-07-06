@@ -1,3 +1,4 @@
+import { Skeleton } from '@/components/ui/skeleton';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
@@ -128,7 +129,7 @@ async function CrewFilmographySection({
 function FilmographySkeleton() {
 	return (
 		<div className="space-y-6">
-			<div className="h-8 w-40 rounded bg-surface-2 animate-pulse" />
+			<Skeleton className="h-8 w-40 rounded" />
 			<PosterGridSkeleton />
 		</div>
 	);
@@ -153,7 +154,7 @@ export default async function CrewPage(props: CrewPageProps) {
 		<div className="min-h-screen">
 			<CrewBanner crew={crew} />
 
-			<div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16">
+			<div className="detail-container">
 				<CrewBio biography={crew.biography} />
 
 				<Suspense fallback={<FilmographySkeleton />}>

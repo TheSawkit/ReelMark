@@ -78,13 +78,7 @@ export function SeasonBanner({
 	}, []);
 
 	return (
-		<div
-			className="relative w-full -mt-16 min-h-[70vh] md:min-h-[80vh] flex flex-col justify-end pt-20 sm:pt-32 pb-6 sm:pb-12 overflow-hidden"
-			style={{
-				marginTop: 'calc(-4rem - env(safe-area-inset-top))',
-				paddingTop: 'calc(5rem + env(safe-area-inset-top))',
-			}}
-		>
+		<div className="relative w-full min-h-[70vh] md:min-h-[80vh] flex flex-col justify-end pb-6 sm:pb-12 overflow-hidden banner-pull-top banner-safe-pad">
 			<NavbarGradient color={dominantColor} />
 			<CinematicBackdrop src={backdropUrl} alt={seasonName} />
 

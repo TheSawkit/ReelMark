@@ -1,12 +1,13 @@
 packages:
-    - .
+  - .
 allowBuilds:
-    '@sentry/cli': true
-    esbuild: true
-    sharp: true
-    unrs-resolver: true
+  '@sentry/cli': true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+  workerd: true
 ignoredBuiltDependencies:
-    - sharp
-    - unrs-resolver
+  - sharp
+  - unrs-resolver
 overrides:
-    postcss: '>=8.5.10'
+  postcss: '>=8.5.10'

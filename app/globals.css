@@ -83,6 +83,14 @@
 	--ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
 	--ease-apple-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 	--ease-apple-out: cubic-bezier(0, 0, 0.58, 1);
+
+	--animate-fade-in: fadeIn var(--duration-medium) ease-out forwards;
+	--animate-slide-up: slideUp var(--duration-slower) ease-out forwards;
+	--animate-slide-up-subtle: slideUpSubtle var(--duration-slower)
+		var(--ease-apple) both;
+	--animate-slide-down: slideDown var(--duration-base) ease-out;
+	--animate-scale-in: scaleIn var(--duration-slow) var(--ease-apple) both;
+	--animate-shimmer: shimmer 2s linear infinite;
 }
 
 :root {
@@ -327,11 +335,11 @@ a {
 
 @keyframes shimmer {
 	0% {
-		backgroundposition: -200% 0;
+		background-position: -200% 0;
 	}
 
 	100% {
-		backgroundposition: 200% 0;
+		background-position: 200% 0;
 	}
 }
 
@@ -485,6 +493,65 @@ a {
 		backdrop-filter: var(--glass-filter);
 		border: 1px solid var(--border);
 		border-top-color: var(--glass-border-hover);
+	}
+
+	.top-nav-safe-area {
+		padding-left: env(safe-area-inset-left);
+		padding-right: env(safe-area-inset-right);
+		padding-top: env(safe-area-inset-top);
+		view-transition-name: top-nav;
+	}
+
+	.bottom-nav-safe-area {
+		padding-bottom: env(safe-area-inset-bottom);
+		view-transition-name: bottom-nav;
+	}
+
+	.tab-spotlight {
+		background: radial-gradient(circle, var(--spotlight), transparent 70%);
+	}
+
+	.banner-pull-top {
+		margin-top: calc(-4rem - env(safe-area-inset-top));
+	}
+
+	.banner-safe-pad {
+		padding-top: calc(5rem + env(safe-area-inset-top));
+	}
+
+	.page-top-offset {
+		padding-top: calc(4rem + env(safe-area-inset-top));
+	}
+
+	.skeleton-sheen {
+		background-image: linear-gradient(
+			90deg,
+			var(--color-surface-2) 0%,
+			var(--color-surface-3) 50%,
+			var(--color-surface-2) 100%
+		);
+		background-size: 200% 100%;
+	}
+
+	.detail-container {
+		@apply container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16;
+	}
+
+	.eyebrow {
+		@apply text-xs font-semibold text-muted uppercase tracking-wider;
+	}
+
+	.centered-screen {
+		@apply flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10;
+	}
+
+	.centered-section {
+		@apply min-h-[80vh] flex items-center justify-center p-6;
+	}
+
+	.media-grid-cell {
+		content-visibility: auto;
+		contain-intrinsic-size: auto 320px;
 	}
 }
 

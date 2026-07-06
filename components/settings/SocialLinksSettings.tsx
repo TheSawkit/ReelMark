@@ -58,9 +58,7 @@ export function SocialLinksSettings({ profile }: SocialLinksSettingsProps) {
 								{t.settings.social.instagram}
 							</FieldLabel>
 							<div className="flex items-center">
-								<span className="px-3 py-2 text-sm text-muted bg-surface-2 border border-r-0 border-border rounded-l-md">
-									instagram.com/
-								</span>
+								<InputPrefix>instagram.com/</InputPrefix>
 								<Input
 									id="instagram"
 									name="instagram"
@@ -78,9 +76,7 @@ export function SocialLinksSettings({ profile }: SocialLinksSettingsProps) {
 								{t.settings.social.tiktok}
 							</FieldLabel>
 							<div className="flex items-center">
-								<span className="px-3 py-2 text-sm text-muted bg-surface-2 border border-r-0 border-border rounded-l-md">
-									tiktok.com/@
-								</span>
+								<InputPrefix>tiktok.com/@</InputPrefix>
 								<Input
 									id="tiktok"
 									name="tiktok"
@@ -98,9 +94,7 @@ export function SocialLinksSettings({ profile }: SocialLinksSettingsProps) {
 								{t.settings.social.letterboxd}
 							</FieldLabel>
 							<div className="flex items-center">
-								<span className="px-3 py-2 text-sm text-muted bg-surface-2 border border-r-0 border-border rounded-l-md">
-									letterboxd.com/
-								</span>
+								<InputPrefix>letterboxd.com/</InputPrefix>
 								<Input
 									id="letterboxd"
 									name="letterboxd"
@@ -118,9 +112,7 @@ export function SocialLinksSettings({ profile }: SocialLinksSettingsProps) {
 								{t.settings.social.twitter}
 							</FieldLabel>
 							<div className="flex items-center">
-								<span className="px-3 py-2 text-sm text-muted bg-surface-2 border border-r-0 border-border rounded-l-md">
-									x.com/
-								</span>
+								<InputPrefix>x.com/</InputPrefix>
 								<Input
 									id="twitter"
 									name="twitter"
@@ -164,5 +156,13 @@ export function SocialLinksSettings({ profile }: SocialLinksSettingsProps) {
 				</form>
 			</CardContent>
 		</Card>
+	);
+}
+
+function InputPrefix({ children }: { children: React.ReactNode }) {
+	return (
+		<span className="px-3 py-2 text-sm text-muted bg-surface-2 border border-r-0 border-border rounded-l-md">
+			{children}
+		</span>
 	);
 }

@@ -15,6 +15,7 @@ import {
 	FieldGroup,
 	FieldLabel,
 } from '@/components/ui/field';
+import { FormError } from '@/components/ui/FormError';
 import { Input } from '@/components/ui/input';
 import { SelectInput } from '@/components/ui/SelectInput';
 import { completeOnboarding } from '@/app/[lang]/onboarding/actions';
@@ -34,7 +35,7 @@ export function OnboardingForm({ initialUsername }: OnboardingFormProps) {
 	);
 
 	return (
-		<div className="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+		<div className="centered-screen">
 			<Card className="w-full max-w-md">
 				<CardHeader className="text-center">
 					<CardTitle className="text-xl">
@@ -95,12 +96,7 @@ export function OnboardingForm({ initialUsername }: OnboardingFormProps) {
 								</FieldDescription>
 							</Field>
 							{state?.error && (
-								<p
-									role="alert"
-									className="text-sm text-red-2 text-center"
-								>
-									{state.error}
-								</p>
+								<FormError>{state.error}</FormError>
 							)}
 							<Field>
 								<Button type="submit" loading={isPending}>

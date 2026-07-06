@@ -6,11 +6,10 @@ export function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
 	return (
 		<div
-			className={cn('rounded-md bg-surface-2 animate-shimmer', className)}
-			style={{
-				backgroundImage: `linear-gradient(90deg, var(--color-surface-2) 0%, var(--color-surface-3) 50%, var(--color-surface-2) 100%)`,
-				backgroundSize: '200% 100%',
-			}}
+			className={cn(
+				'rounded-md bg-surface-2 animate-shimmer skeleton-sheen',
+				className
+			)}
 			{...props}
 		/>
 	);

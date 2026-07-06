@@ -346,7 +346,7 @@ export default async function RootLayout({
 						{t.common.skipToMainContent}
 					</a>
 					<NextTopLoader
-						color="#B9090B"
+						color="var(--color-primary)"
 						height={2}
 						showSpinner={false}
 						shadow={'sm'}
@@ -358,13 +358,7 @@ export default async function RootLayout({
 						<Navbar />
 					</Suspense>
 					<PageTopGradient />
-					<main
-						id="main-content"
-						className="pt-12"
-						style={{
-							paddingTop: 'calc(4rem + env(safe-area-inset-top))',
-						}}
-					>
+					<main id="main-content" className="page-top-offset">
 						<ViewTransition>{children}</ViewTransition>
 					</main>
 					<footer className="border-t border-border-subtle mt-auto">

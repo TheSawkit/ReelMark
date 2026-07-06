@@ -17,10 +17,7 @@ export function CinematicBackdrop({ src, alt }: CinematicBackdropProps) {
 				alt={alt}
 				fill
 				priority
-				style={{
-					paddingTop: 'calc(4rem + env(safe-area-inset-top))',
-				}}
-				className="pt-20 object-cover object-top"
+				className="page-top-offset object-cover object-top"
 				sizes="100vw"
 			/>
 			<Aurora intensity={0.4} />

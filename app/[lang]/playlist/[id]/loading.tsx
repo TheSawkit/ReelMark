@@ -1,10 +1,11 @@
 import { PageLayout } from '@/components/layout/PageLayout';
 import { MediaCardSkeleton } from '@/components/media/card/MediaCardSkeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PlaylistLoading() {
 	return (
 		<>
-			<div className="relative -mt-16 min-h-[20vh] md:min-h-[50vh] flex flex-col justify-end bg-surface-2 animate-pulse">
+			<Skeleton className="relative -mt-16 min-h-[20vh] md:min-h-[50vh] flex flex-col justify-end rounded-none">
 				<div className="container mx-auto px-6 lg:px-12 pt-28 md:pt-32 pb-8 md:pb-14 flex flex-col lg:flex-row lg:items-end gap-6 lg:gap-12">
 					<div className="flex-1 space-y-4 md:space-y-5">
 						<div className="flex gap-2">
@@ -32,7 +33,7 @@ export default function PlaylistLoading() {
 						))}
 					</div>
 				</div>
-			</div>
+			</Skeleton>
 			<PageLayout className="pt-8 md:pt-12">
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6 lg:gap-8">
 					{Array.from({ length: 12 }).map((_, i) => (

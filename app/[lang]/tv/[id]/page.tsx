@@ -1,3 +1,4 @@
+import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, redirect } from 'next/navigation';
 import { fetchTMDB } from '@/lib/tmdb/client';
 import { Suspense } from 'react';
@@ -257,11 +258,7 @@ export default async function TvShowPage(props: TvPageProps) {
 			}
 			rating={showRating}
 			reviews={
-				<Suspense
-					fallback={
-						<div className="h-32 rounded-xl bg-surface/20 animate-pulse" />
-					}
-				>
+				<Suspense fallback={<Skeleton className="h-32 rounded-xl" />}>
 					<PublicReviewsSection mediaId={tvId} mediaType="tv" />
 				</Suspense>
 			}

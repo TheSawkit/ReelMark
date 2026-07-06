@@ -17,6 +17,7 @@ import {
 	FieldLabel,
 	FieldSeparator,
 } from '@/components/ui/field';
+import { FormError } from '@/components/ui/FormError';
 import { Input } from '@/components/ui/input';
 import { SelectInput } from '@/components/ui/SelectInput';
 import Link from 'next/link';
@@ -205,12 +206,9 @@ export function SignupForm({
 								</FieldDescription>
 							</Field>
 							{(oauthError || state?.error) && (
-								<p
-									role="alert"
-									className="text-sm text-red-2 text-center"
-								>
+								<FormError>
 									{oauthError || state?.error}
-								</p>
+								</FormError>
 							)}
 							<Field>
 								<Button

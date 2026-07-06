@@ -13,6 +13,7 @@ import { localizedHref } from '@/lib/i18n/utils';
 import { useInView } from '@/hooks/useInView';
 import { PrivacyBlock } from '@/components/profile/PrivacyBlock';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { FormError } from '@/components/ui/FormError';
 import { StarRating } from '@/components/ui/StarRating';
 import { DeleteIconButton } from '@/components/ui/DeleteIconButton';
 import { Button } from '@/components/ui/button';
@@ -247,11 +248,7 @@ export function ReviewsSection({
 					/>
 				</div>
 			)}
-			{loadError && (
-				<p role="alert" className="text-sm text-red-2 text-center py-2">
-					{loadError}
-				</p>
-			)}
+			{loadError && <FormError className="py-2">{loadError}</FormError>}
 
 			{editingReview && (
 				<ReviewDialog

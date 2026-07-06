@@ -1,3 +1,4 @@
+import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import {
@@ -167,7 +168,7 @@ async function UpcomingSection({
 function SpotlightTrendingSkeleton() {
 	return (
 		<>
-			<div className="mb-10 h-52 w-full rounded-[22px] bg-surface-2 animate-pulse sm:h-56" />
+			<Skeleton className="mb-10 h-52 w-full rounded-[22px] sm:h-56" />
 			<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
 		</>
 	);
