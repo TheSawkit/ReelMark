@@ -1,6 +1,8 @@
 'use server';
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
+import { createAdminClient } from '@/lib/supabase/server';
+import { getPrivacySettings } from '@/app/actions/profile';
 import { FRIENDSHIP_COLUMNS } from '@/lib/supabase/columns';
 import { resolveAvatarUrl } from '@/lib/avatar';
 import { revalidateProfile } from '@/app/actions/_helpers';
@@ -84,7 +86,18 @@ export async function getPendingRequestsWithProfiles(): Promise<
 export async function getFriendsWithProfiles(
 	userId: string
 ): Promise<FriendEntry[]> {
-	const { supabase } = await getAuthenticatedUser();
+	const { userId: viewerId } = await getAuthenticatedUser();
+
+	if (viewerId !== userId) {
+		const { friends_visibility } = await getPrivacySettings(userId);
+		if (friends_visibility === 'private') return [];
+		if (friends_visibility === 'friends') {
+			const friendship = await getFriendshipStatus(userId);
+			if (friendship?.status !== 'accepted') return [];
+		}
+	}
+
+	const supabase = createAdminClient();
 
 	const { data: rawFriends, error } = await supabase
 		.from('friendships')

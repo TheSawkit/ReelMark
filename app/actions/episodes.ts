@@ -171,7 +171,7 @@ export async function markSeasonWatched(
 		.eq('season_number', seasonNumber);
 
 	const watchedSet = new Set((existing ?? []).map((e) => e.episode_number));
-	const allWatched = watchedSet.size === totalEpisodes;
+	const allWatched = watchedSet.size >= totalEpisodes;
 
 	if (allWatched) {
 		await supabase

@@ -251,30 +251,6 @@ a {
 	}
 }
 
-@keyframes backdropBlur {
-	from {
-		backdrop-filter: blur(0px);
-		opacity: 0;
-	}
-
-	to {
-		backdrop-filter: blur(4px);
-		opacity: 1;
-	}
-}
-
-@keyframes slideInFromLeft {
-	from {
-		transform: translateX(-100%);
-		opacity: 0;
-	}
-
-	to {
-		transform: translateX(0);
-		opacity: 1;
-	}
-}
-
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -340,30 +316,6 @@ a {
 
 	100% {
 		background-position: 200% 0;
-	}
-}
-
-@keyframes spotlightPulse {
-	0%,
-	100% {
-		opacity: 0.4;
-	}
-
-	50% {
-		opacity: 1;
-	}
-}
-
-@keyframes spotlightDrift {
-	0%,
-	100% {
-		transform: translateX(-8%);
-		opacity: 0.6;
-	}
-
-	50% {
-		transform: translateX(8%);
-		opacity: 1;
 	}
 }
 
