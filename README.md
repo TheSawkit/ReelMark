@@ -21,23 +21,23 @@ A bilingual (EN/FR), installable PWA to track movies and TV shows episode-by-epi
 
 ### ✨ Features
 
-|      | Feature                          | Description                                                                   |
-| ---- | -------------------------------- | ----------------------------------------------------------------------------- |
-| 🎞️ | **Personal tracking**      | Complete history of your movies, shows, and episodes across every season      |
-| 📺   | **Episode-level tracking** | Track every episode — never ask "did we watch this one?" again               |
-| 🔍   | **Smart exploration**      | Browse 700k+ titles from the TMDB catalog with intelligent regional filtering |
-| ⭐   | **Ratings & reviews**      | Rate on a 1–10 scale and write reviews visible on your public profile        |
-| 📁   | **Playlists**              | Create themed collections and share them publicly                             |
-| 👥   | **Friends & community**    | Send friend requests, follow friends' watchlists and reviews                  |
-| 🎭   | **Crew profiles**          | Full filmographies, biographies, and credits for every crew member            |
-| 📱   | **Installable PWA**        | Works on iPhone, Android, Mac, Windows, and Linux — no app store required    |
-| 🌍   | **Native bilingualism**    | Instant EN/FR switching with server-side language detection                   |
-| 🔒   | **Privacy controls**       | Per-section visibility: public, friends only, or private                      |
+|     | Feature                    | Description                                                                   |
+| --- | -------------------------- | ----------------------------------------------------------------------------- |
+| 🎞️  | **Personal tracking**      | Complete history of your movies, shows, and episodes across every season      |
+| 📺  | **Episode-level tracking** | Track every episode — never ask "did we watch this one?" again                |
+| 🔍  | **Smart exploration**      | Browse 700k+ titles from the TMDB catalog with intelligent regional filtering |
+| ⭐  | **Ratings & reviews**      | Rate on a 1–10 scale and write reviews visible on your public profile         |
+| 📁  | **Playlists**              | Create themed collections and share them publicly                             |
+| 👥  | **Friends & community**    | Send friend requests, follow friends' watchlists and reviews                  |
+| 🎭  | **Crew profiles**          | Full filmographies, biographies, and credits for every crew member            |
+| 📱  | **Installable PWA**        | Works on iPhone, Android, Mac, Windows, and Linux — no app store required     |
+| 🌍  | **Native bilingualism**    | Instant EN/FR switching with server-side language detection                   |
+| 🔒  | **Privacy controls**       | Per-section visibility: public, friends only, or private                      |
 
 ### 🛠️ Tech Stack
 
-| Layer                 | Technology                                            |
-| :-------------------- | :---------------------------------------------------- |
+| Layer           | Technology                                            |
+| :-------------- | :---------------------------------------------------- |
 | **Frontend**    | Next.js 16 (App Router) + React 19                    |
 | **Language**    | TypeScript 6 (strict)                                 |
 | **Styling**     | Tailwind CSS 4 (CSS-first, token-based design system) |
@@ -45,9 +45,9 @@ A bilingual (EN/FR), installable PWA to track movies and TV shows episode-by-epi
 | **Media data**  | TMDB API                                              |
 | **Streaming**   | Watchmode API                                         |
 | **PWA**         | Serwist (Service Worker + precaching)                 |
-| **Errors**      | Sentry SDK → self-hosted Bugsink                     |
-| **UI**          | Radix UI · shadcn/ui · lucide-react · sonner       |
-| **Tests**       | Vitest (unit) · Playwright (E2E)                     |
+| **Errors**      | Sentry SDK → self-hosted Bugsink                      |
+| **UI**          | Radix UI · shadcn/ui · lucide-react · sonner          |
+| **Tests**       | Vitest (unit) · Playwright (E2E)                      |
 | **Package mgr** | pnpm 11                                               |
 
 ### 📋 Prerequisites
@@ -73,31 +73,31 @@ Database: run the SQL migrations in order from the Supabase SQL Editor — start
 
 All variables live in `.env.local` (see `.env.example`). `NEXT_PUBLIC_*` are exposed to the browser; the rest are server-only.
 
-| Variable                                     | Scope  | Description                                         |
-| :------------------------------------------- | :----- | :-------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`                 | public | Supabase project URL                                |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`            | public | Supabase anon/publishable key                       |
-| `SUPABASE_SERVICE_ROLE_KEY`                | server | Supabase admin key —**never** exposed client |
-| `TMDB_READ_ACCESS_TOKEN`                   | server | TMDB API v4 read access token                       |
-| `WATCHMODE_API_KEY`                        | server | Watchmode API key (streaming providers)             |
-| `NEXT_PUBLIC_BASE_URL`                     | public | Site base URL (e.g.`https://reelmark.silexio.be`) |
-| `NEXT_PUBLIC_SENTRY_DSN`                   | public | Bugsink DSN (browser) —**must be `https`** |
-| `SENTRY_DSN`                               | server | Bugsink DSN (server)                                |
-| `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` | test   | Credentials for authenticated E2E tests             |
+| Variable                                 | Scope  | Description                                       |
+| :--------------------------------------- | :----- | :------------------------------------------------ |
+| `NEXT_PUBLIC_SUPABASE_URL`               | public | Supabase project URL                              |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`          | public | Supabase anon/publishable key                     |
+| `SUPABASE_SERVICE_ROLE_KEY`              | server | Supabase admin key —**never** exposed client      |
+| `TMDB_READ_ACCESS_TOKEN`                 | server | TMDB API v4 read access token                     |
+| `WATCHMODE_API_KEY`                      | server | Watchmode API key (streaming providers)           |
+| `NEXT_PUBLIC_BASE_URL`                   | public | Site base URL (e.g.`https://reelmark.silexio.be`) |
+| `NEXT_PUBLIC_SENTRY_DSN`                 | public | Bugsink DSN (browser) —**must be `https`**        |
+| `SENTRY_DSN`                             | server | Bugsink DSN (server)                              |
+| `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` | test   | Credentials for authenticated E2E tests           |
 
 ### 📦 Available Scripts
 
-| Command              | Description                                                                  |
-| :------------------- | :--------------------------------------------------------------------------- |
-| `pnpm dev`         | Start the dev server                                                         |
+| Command            | Description                                                         |
+| :----------------- | :------------------------------------------------------------------ |
+| `pnpm dev`         | Start the dev server                                                |
 | `pnpm build`       | Production build (**`next build --webpack`** — required by Serwist) |
-| `pnpm start`       | Start the production server                                                  |
-| `pnpm lint`        | Run ESLint                                                                   |
-| `pnpm format`      | Format with Prettier                                                         |
-| `pnpm test`        | Unit tests (Vitest)                                                          |
-| `pnpm test:watch`  | Unit tests in watch mode                                                     |
-| `pnpm test:e2e`    | E2E tests (Playwright)                                                       |
-| `pnpm test:e2e:ui` | E2E tests with the Playwright UI                                             |
+| `pnpm start`       | Start the production server                                         |
+| `pnpm lint`        | Run ESLint                                                          |
+| `pnpm format`      | Format with Prettier                                                |
+| `pnpm test`        | Unit tests (Vitest)                                                 |
+| `pnpm test:watch`  | Unit tests in watch mode                                            |
+| `pnpm test:e2e`    | E2E tests (Playwright)                                              |
+| `pnpm test:e2e:ui` | E2E tests with the Playwright UI                                    |
 
 > **Build note:** the build **must** use webpack (`next build --webpack`). `@serwist/next` does not support Turbopack — a Turbopack build produces no `sw.js` and no service-worker registration.
 
@@ -159,32 +159,32 @@ PWA installable et bilingue (FR/EN) pour suivre films et séries épisode par é
 
 ### ✨ Fonctionnalités
 
-|      | Fonctionnalité                         | Description                                                                 |
-| ---- | --------------------------------------- | --------------------------------------------------------------------------- |
-| 🎞️ | **Suivi personnel**               | Historique complet de tes films, séries et épisodes, saison par saison    |
-| 📺   | **Suivi par épisode**            | Suis ta progression réelle — plus jamais "on en était où ?"             |
-| 🔍   | **Exploration intelligente**      | 700k+ titres du catalogue TMDB avec filtrage régional pertinent            |
-| ⭐   | **Notes et avis**                 | Note de 1 à 10 et écris des critiques visibles sur ton profil public      |
-| 📁   | **Playlists**                     | Crée des collections thématiques et partage-les                           |
-| 👥   | **Amis & communauté**            | Envoie des demandes d'amis, suis les listes et critiques de tes amis        |
-| 🎭   | **Profils d'équipe**             | Filmographies complètes, biographies et crédits pour chaque intervenant   |
-| 📱   | **PWA installable**               | Fonctionne sur iPhone, Android, Mac, Windows et Linux — aucun store requis |
-| 🌍   | **Bilingue natif**                | Bascule EN/FR instantanée avec détection de langue côté serveur         |
-| 🔒   | **Contrôle de confidentialité** | Visibilité par section : public, amis uniquement, ou privé                |
+|     | Fonctionnalité                  | Description                                                                |
+| --- | ------------------------------- | -------------------------------------------------------------------------- |
+| 🎞️  | **Suivi personnel**             | Historique complet de tes films, séries et épisodes, saison par saison     |
+| 📺  | **Suivi par épisode**           | Suis ta progression réelle — plus jamais "on en était où ?"                |
+| 🔍  | **Exploration intelligente**    | 700k+ titres du catalogue TMDB avec filtrage régional pertinent            |
+| ⭐  | **Notes et avis**               | Note de 1 à 10 et écris des critiques visibles sur ton profil public       |
+| 📁  | **Playlists**                   | Crée des collections thématiques et partage-les                            |
+| 👥  | **Amis & communauté**           | Envoie des demandes d'amis, suis les listes et critiques de tes amis       |
+| 🎭  | **Profils d'équipe**            | Filmographies complètes, biographies et crédits pour chaque intervenant    |
+| 📱  | **PWA installable**             | Fonctionne sur iPhone, Android, Mac, Windows et Linux — aucun store requis |
+| 🌍  | **Bilingue natif**              | Bascule EN/FR instantanée avec détection de langue côté serveur            |
+| 🔒  | **Contrôle de confidentialité** | Visibilité par section : public, amis uniquement, ou privé                 |
 
 ### 🛠️ Stack technique
 
-| Couche                    | Technologie                                    |
-| :------------------------ | :--------------------------------------------- |
-| **Frontend**        | Next.js 16 (App Router) + React 19             |
-| **Langage**         | TypeScript 6 (strict)                          |
-| **Styles**          | Tailwind CSS 4 (CSS-first, système de tokens) |
-| **Auth & BDD**      | Supabase (PostgreSQL + RLS)                    |
-| **Données média** | TMDB API                                       |
-| **Streaming**       | Watchmode API                                  |
-| **PWA**             | Serwist (Service Worker + précaching)         |
-| **Erreurs**         | SDK Sentry → Bugsink auto-hébergé           |
-| **Tests**           | Vitest (unitaires) · Playwright (E2E)         |
+| Couche            | Technologie                                   |
+| :---------------- | :-------------------------------------------- |
+| **Frontend**      | Next.js 16 (App Router) + React 19            |
+| **Langage**       | TypeScript 6 (strict)                         |
+| **Styles**        | Tailwind CSS 4 (CSS-first, système de tokens) |
+| **Auth & BDD**    | Supabase (PostgreSQL + RLS)                   |
+| **Données média** | TMDB API                                      |
+| **Streaming**     | Watchmode API                                 |
+| **PWA**           | Serwist (Service Worker + précaching)         |
+| **Erreurs**       | SDK Sentry → Bugsink auto-hébergé             |
+| **Tests**         | Vitest (unitaires) · Playwright (E2E)         |
 
 ### 📋 Prérequis
 

@@ -75,10 +75,10 @@ kubectl -n ingress-nginx get svc ingress-nginx-controller -o wide
 
 1. **DNS** : enregistrement `A` `reelmark.silexio.be` → IP du LB Octavia, **proxy activé (orange)**.
 2. **SSL/TLS** : mode **Full (strict)**. Créer un **Origin Certificate** (Cloudflare → SSL/TLS → Origin Server), puis :
-   ```bash
-   kubectl -n reelmark create secret tls reelmark-tls \
-     --cert=origin.pem --key=origin.key
-   ```
+    ```bash
+    kubectl -n reelmark create secret tls reelmark-tls \
+      --cert=origin.pem --key=origin.key
+    ```
 3. **Images** : activer **Polish** (WebP/AVIF auto) + **Cache** — remplace l'optim in-pod (voir note images plus bas).
 4. **WAF** : activer les règles managées de base.
 
@@ -120,12 +120,12 @@ kubectl -n reelmark rollout status deployment/reelmark
 
 **Secrets GitHub à définir** (Settings → Secrets → Actions) :
 
-| Secret                            | Rôle                         |
-| --------------------------------- | ----------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | build-arg (client)            |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | build-arg (client)            |
-| `NEXT_PUBLIC_BASE_URL`          | build-arg (client)            |
-| `NEXT_PUBLIC_SENTRY_DSN`        | build-arg (client, https)     |
+| Secret                          | Rôle                        |
+| ------------------------------- | --------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | build-arg (client)          |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | build-arg (client)          |
+| `NEXT_PUBLIC_BASE_URL`          | build-arg (client)          |
+| `NEXT_PUBLIC_SENTRY_DSN`        | build-arg (client, https)   |
 | `KUBECONFIG_B64`                | `base64 -w0 ~/.kube/config` |
 
 Les secrets **serveur** (`SUPABASE_SERVICE_ROLE_KEY`, `SENTRY_DSN`, `TMDB_READ_ACCESS_TOKEN`, `WATCHMODE_API_KEY`) vivent **uniquement** dans le secret K8s `reelmark-secrets`, jamais dans l'image.
