@@ -40,6 +40,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+	output: 'standalone',
 	experimental: {
 		optimizePackageImports: [
 			'lucide-react',
@@ -68,6 +69,7 @@ const nextConfig: NextConfig = {
 		];
 	},
 	images: {
+		unoptimized: true,
 		formats: ['image/avif', 'image/webp'],
 		minimumCacheTTL: 2678400,
 		remotePatterns: [

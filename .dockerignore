@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.github
+.claude
+tests
+playwright-report
+test-results
+coverage
+k8s
+*.md
+.env*
+Dockerfile
+.dockerignore
+.vscode
+.DS_Store
