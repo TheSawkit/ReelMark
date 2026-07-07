@@ -210,6 +210,14 @@ export async function removeFromWatchlist(
 
 	if (error) throw new Error(error.message);
 
+	if (mediaType === 'tv') {
+		await supabase
+			.from('episode_watches')
+			.delete()
+			.eq('user_id', userId)
+			.eq('tv_id', mediaId);
+	}
+
 	revalidateWatchlistPaths(mediaType, mediaId);
 }
 

@@ -50,13 +50,7 @@ export function SearchModal() {
 							onClick={() => setIsOpen(false)}
 							aria-hidden="true"
 						/>
-						<div
-							className="fixed inset-0 z-101 flex items-start justify-center pt-32 px-6 pointer-events-none"
-							style={{
-								animation:
-									'slideInFromTop var(--duration-base) ease-out',
-							}}
-						>
+						<div className="fixed inset-0 z-101 flex items-start justify-center pt-32 px-6 pointer-events-none animate-slide-down">
 							<div className="w-full max-w-3xl relative pointer-events-auto">
 								<SearchBar
 									onClose={() => setIsOpen(false)}

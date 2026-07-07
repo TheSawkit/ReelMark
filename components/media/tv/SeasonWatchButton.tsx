@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { CheckCheck, Loader2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { markSeasonWatched } from '@/app/actions/episodes';
@@ -19,15 +20,28 @@ export function SeasonWatchButton({
 	totalEpisodes,
 	watchedCount,
 }: SeasonWatchButtonProps) {
+	const [optimistic, setOptimistic] = useState<{
+		base: number;
+		value: number;
+	} | null>(null);
 	const { loading, error, execute } = useAsyncAction();
 	const { t } = useTranslation();
 
-	const allWatched = watchedCount === totalEpisodes && totalEpisodes > 0;
+	const count =
+		optimistic && optimistic.base === watchedCount
+			? optimistic.value
+			: watchedCount;
+	const allWatched = count === totalEpisodes && totalEpisodes > 0;
 
 	async function handleClick() {
-		await execute(() =>
+		setOptimistic({
+			base: watchedCount,
+			value: allWatched ? 0 : totalEpisodes,
+		});
+		const result = await execute(() =>
 			markSeasonWatched(tvId, seasonNumber, totalEpisodes)
 		);
+		if (result === undefined) setOptimistic(null);
 	}
 
 	const Icon = loading ? Loader2 : error ? XCircle : CheckCheck;
@@ -47,8 +61,8 @@ export function SeasonWatchButton({
 			{error
 				? t.common.actionError
 				: allWatched
-					? `${t.movie.seasonComplete} (${watchedCount}/${totalEpisodes})`
-					: `${t.movie.markAllWatched} (${watchedCount}/${totalEpisodes})`}
+					? `${t.movie.seasonComplete} (${count}/${totalEpisodes})`
+					: `${t.movie.markAllWatched} (${count}/${totalEpisodes})`}
 		</button>
 	);
 }

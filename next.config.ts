@@ -3,9 +3,7 @@ import withSerwist from '@serwist/next';
 
 const isDev = process.env.NODE_ENV === 'development';
 const supabaseHost = new URL(
-	process.env.NEXT_PUBLIC_SUPABASE_URL ||
-		'https://localhost' ||
-		'https://192.168.1.57'
+	process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://localhost'
 ).hostname;
 
 const cspDirectives = [
@@ -16,7 +14,7 @@ const cspDirectives = [
 	"img-src 'self' data: blob: https://image.tmdb.org https://i.ytimg.com https://lh3.googleusercontent.com https://api.dicebear.com https://*.supabase.co https://cdn.watchmode.com https://*.mzstatic.com",
 	"font-src 'self' data: https://fonts.gstatic.com",
 	'frame-src https://www.youtube.com https://www.youtube-nocookie.com',
-	`connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://www.youtube.com${isDev ? ' ws: wss:' : ' wss:'}`,
+	`connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://www.youtube.com https://sentry.silexio.be${isDev ? ' ws: wss:' : ' wss:'}`,
 	"object-src 'none'",
 	"base-uri 'self'",
 ];
@@ -42,9 +40,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+	output: 'standalone',
 	experimental: {
 		optimizePackageImports: [
 			'lucide-react',
+			'simple-icons',
 			'@radix-ui/react-dialog',
 			'@radix-ui/react-dropdown-menu',
 			'@radix-ui/react-label',
@@ -69,7 +69,8 @@ const nextConfig: NextConfig = {
 		];
 	},
 	images: {
-		formats: ['image/webp'],
+		unoptimized: true,
+		formats: ['image/avif', 'image/webp'],
 		minimumCacheTTL: 2678400,
 		remotePatterns: [
 			{

@@ -117,23 +117,19 @@ export async function toggleEpisodeWatch(
 ): Promise<boolean> {
 	const { supabase, userId } = await getAuthenticatedUser();
 
-	const { data: existing } = await supabase
+	const { data: deleted, error: deleteError } = await supabase
 		.from('episode_watches')
-		.select('id')
+		.delete()
 		.eq('user_id', userId)
 		.eq('tv_id', tvId)
 		.eq('season_number', seasonNumber)
 		.eq('episode_number', episodeNumber)
-		.maybeSingle();
+		.select('id');
+	if (deleteError) throw new Error(deleteError.message);
 
 	let result: boolean;
 
-	if (existing) {
-		const { error: deleteError } = await supabase
-			.from('episode_watches')
-			.delete()
-			.eq('id', existing.id);
-		if (deleteError) throw new Error(deleteError.message);
+	if (deleted && deleted.length > 0) {
 		result = false;
 	} else {
 		const { error } = await supabase.from('episode_watches').insert({
@@ -175,7 +171,7 @@ export async function markSeasonWatched(
 		.eq('season_number', seasonNumber);
 
 	const watchedSet = new Set((existing ?? []).map((e) => e.episode_number));
-	const allWatched = watchedSet.size === totalEpisodes;
+	const allWatched = watchedSet.size >= totalEpisodes;
 
 	if (allWatched) {
 		await supabase
@@ -241,7 +237,7 @@ export async function getTvShowWatchProgress(
 
 	const { data: watches } = await supabase
 		.from('episode_watches')
-		.select('season_number, episode_number')
+		.select('season_number')
 		.eq('user_id', userId)
 		.eq('tv_id', tvId);
 
@@ -262,7 +258,7 @@ export async function getAllTvShowsWatchProgress(
 
 	const { data: watches } = await supabase
 		.from('episode_watches')
-		.select('tv_id, episode_number')
+		.select('tv_id')
 		.eq('user_id', userId)
 		.in('tv_id', tvIds);
 

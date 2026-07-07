@@ -16,13 +16,7 @@ export function MediaGrid({
 				const enableSharedTransition = !seenKeys.has(key);
 				seenKeys.add(key);
 				return (
-					<div
-						key={key}
-						style={{
-							contentVisibility: 'auto',
-							containIntrinsicSize: 'auto 320px',
-						}}
-					>
+					<div key={key} className="media-grid-cell">
 						<StaggeredItem index={index} animation="fadeIn">
 							<MediaCard
 								media={media}

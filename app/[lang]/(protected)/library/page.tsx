@@ -1,3 +1,4 @@
+import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
 import { getAllTvShowsWatchProgress } from '@/app/actions/episodes';
 import { getCachedUserWatchlist } from '@/lib/data/watchlist';
@@ -109,8 +110,8 @@ function LibraryGridSkeleton() {
 	return (
 		<>
 			<div className="flex gap-2 border-b border-border pb-0 mb-8">
-				<div className="h-10 w-24 rounded-t-lg bg-surface-2 animate-pulse" />
-				<div className="h-10 w-20 rounded-t-lg bg-surface-2 animate-pulse" />
+				<Skeleton className="h-10 w-24 rounded-t-lg" />
+				<Skeleton className="h-10 w-20 rounded-t-lg" />
 			</div>
 			<PosterGridSkeleton count={6} />
 		</>
@@ -130,7 +131,7 @@ export default async function LibraryPage({ searchParams }: Props) {
 				subtitle={
 					<Suspense
 						fallback={
-							<span className="inline-block h-5 w-40 max-w-full animate-pulse rounded bg-surface-2 align-middle" />
+							<span className="inline-block h-5 w-40 max-w-full rounded bg-surface-2 align-middle animate-shimmer skeleton-sheen" />
 						}
 					>
 						<LibrarySubtitle type={type} t={t} />

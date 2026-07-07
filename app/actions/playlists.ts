@@ -4,7 +4,6 @@ import {
 	getAuthenticatedUser,
 	getOptionalUser,
 } from '@/lib/supabase/auth-helpers';
-import { createAdminClient } from '@/lib/supabase/server';
 import { getTranslations } from '@/lib/i18n/server';
 import { revalidateProfile } from '@/app/actions/_helpers';
 import { parseVisibility, isVisibility } from '@/lib/privacy';
@@ -56,21 +55,14 @@ export async function getPlaylistById(id: string): Promise<{
 
 	if (!data) return null;
 
-	const adminClient = createAdminClient();
-	const [profileResult, ownerAuth] = await Promise.all([
-		supabase
-			.from('user_profiles')
-			.select('username, avatar_url')
-			.eq('user_id', data.user_id)
-			.maybeSingle(),
-		adminClient.auth.admin.getUserById(data.user_id),
-	]);
+	const { data: ownerProfile } = await supabase
+		.from('user_profiles')
+		.select('username, avatar_url')
+		.eq('user_id', data.user_id)
+		.maybeSingle();
 
-	const ownerUsername = profileResult.data?.username ?? null;
-	const ownerAvatarUrl = resolveAvatarUrl(
-		profileResult.data?.avatar_url,
-		ownerAuth.data.user?.user_metadata?.avatar_url
-	);
+	const ownerUsername = ownerProfile?.username ?? null;
+	const ownerAvatarUrl = resolveAvatarUrl(ownerProfile?.avatar_url, null);
 
 	return {
 		playlist: data as Playlist,
@@ -99,7 +91,7 @@ export async function createPlaylist(
 	if (description && description.length > 500)
 		throw new Error(t.profile.errors.descriptionTooLong);
 
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	let resolvedVisibility: PrivacyVisibility;
 	if (visibility && isVisibility(visibility)) {
@@ -124,7 +116,7 @@ export async function createPlaylist(
 	});
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase);
+	await revalidateProfile(supabase, user);
 }
 
 /**
@@ -148,7 +140,7 @@ export async function updatePlaylist(
 	if (description && description.length > 500)
 		throw new Error(t.profile.errors.descriptionTooLong);
 
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const { error } = await supabase
 		.from('playlists')
@@ -163,7 +155,7 @@ export async function updatePlaylist(
 		.eq('user_id', userId);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase);
+	await revalidateProfile(supabase, user);
 }
 
 /**
@@ -180,7 +172,7 @@ export async function updatePlaylistVisibility(
 	if (!isVisibility(visibility))
 		throw new Error(t.profile.errors.invalidVisibility);
 
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const { error } = await supabase
 		.from('playlists')
@@ -189,7 +181,7 @@ export async function updatePlaylistVisibility(
 		.eq('user_id', userId);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase);
+	await revalidateProfile(supabase, user);
 }
 
 /**
@@ -198,7 +190,7 @@ export async function updatePlaylistVisibility(
  * @param playlistId - UUID of the playlist.
  */
 export async function deletePlaylist(playlistId: string): Promise<void> {
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const { error } = await supabase
 		.from('playlists')
@@ -207,7 +199,7 @@ export async function deletePlaylist(playlistId: string): Promise<void> {
 		.eq('user_id', userId);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase);
+	await revalidateProfile(supabase, user);
 }
 
 /**
@@ -227,7 +219,7 @@ export async function addToPlaylist(
 	posterPath: string | null
 ): Promise<void> {
 	const t = await getTranslations();
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const { data: playlist } = await supabase
 		.from('playlists')
@@ -257,7 +249,7 @@ export async function addToPlaylist(
 	);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase);
+	await revalidateProfile(supabase, user);
 }
 
 /**
@@ -273,7 +265,7 @@ export async function removeFromPlaylist(
 	mediaType: MediaType
 ): Promise<void> {
 	const t = await getTranslations();
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const { data: playlist } = await supabase
 		.from('playlists')
@@ -292,5 +284,5 @@ export async function removeFromPlaylist(
 		.eq('media_type', mediaType);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase);
+	await revalidateProfile(supabase, user);
 }

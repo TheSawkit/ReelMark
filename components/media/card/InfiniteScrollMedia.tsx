@@ -37,7 +37,7 @@ export function InfiniteScrollMedia({
 	const [loadError, setLoadError] = useState(false);
 	const loaderRef = useRef<HTMLDivElement>(null);
 	const isLoaderVisible = useInView(loaderRef, {
-		rootMargin: '0px 0px 800px 0px',
+		rootMargin: '0px 0px 300px 0px',
 	});
 	const { t } = useTranslation();
 
@@ -127,11 +127,21 @@ export function InfiniteScrollMedia({
 		});
 	}, [isPending, hasMore, loadError, page, clientSideData, category]);
 
+	const lastLoadAt = useRef(0);
+
 	useEffect(() => {
-		if (isLoaderVisible && hasMore && !isPending) {
+		if (!isLoaderVisible || !hasMore || isPending || loadError) return;
+		const cooldown = 350;
+		const wait = Math.max(
+			0,
+			cooldown - (performance.now() - lastLoadAt.current)
+		);
+		const id = setTimeout(() => {
+			lastLoadAt.current = performance.now();
 			loadMore();
-		}
-	}, [isLoaderVisible, hasMore, isPending, loadMore]);
+		}, wait);
+		return () => clearTimeout(id);
+	}, [isLoaderVisible, hasMore, isPending, loadError, loadMore]);
 
 	return (
 		<>

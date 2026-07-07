@@ -109,9 +109,7 @@ export function ReviewDialog({
 
 				<div className="px-5 py-5 space-y-5">
 					<div className="space-y-2">
-						<span className="text-xs font-semibold text-muted uppercase tracking-wider">
-							{t.movie.yourRating}
-						</span>
+						<span className="eyebrow">{t.movie.yourRating}</span>
 						<div className="flex items-center gap-3">
 							<StarRating
 								value={rating}
@@ -130,9 +128,7 @@ export function ReviewDialog({
 					</div>
 
 					<div className="space-y-2">
-						<span className="text-xs font-semibold text-muted uppercase tracking-wider">
-							{t.movie.writeReview}
-						</span>
+						<span className="eyebrow">{t.movie.writeReview}</span>
 						<textarea
 							value={content}
 							onChange={(e) => setContent(e.target.value)}

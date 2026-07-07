@@ -18,12 +18,18 @@ import {
 async function syncUserProfile(
 	supabase: Awaited<ReturnType<typeof createClient>>,
 	userId: string,
-	username: string
+	username: string,
+	fullName?: string | null
 ): Promise<string | null> {
 	const { error } = await supabase
 		.from('user_profiles')
 		.upsert(
-			{ user_id: userId, username, updated_at: new Date().toISOString() },
+			{
+				user_id: userId,
+				username,
+				...(fullName !== undefined && { full_name: fullName }),
+				updated_at: new Date().toISOString(),
+			},
 			{ onConflict: 'user_id' }
 		)
 		.select('username');
@@ -141,7 +147,12 @@ export async function updateProfile(prevState: unknown, formData: FormData) {
 		return { error: error.message, success: false };
 	}
 
-	const syncError = await syncUserProfile(supabase, user.id, username);
+	const syncError = await syncUserProfile(
+		supabase,
+		user.id,
+		username,
+		fullName ?? null
+	);
 	if (syncError === 'USERNAME_TAKEN')
 		return { error: t.settings.usernameTaken, success: false };
 	if (syncError) return { error: syncError, success: false };

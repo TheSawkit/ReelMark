@@ -28,13 +28,7 @@ interface PageHeaderProps {
 /** Animated page header with a title and an optional subtitle. */
 export function PageHeader({ title, subtitle }: PageHeaderProps) {
 	return (
-		<div
-			className="mb-12 md:mb-16"
-			style={{
-				animation:
-					'slideUpSubtle var(--duration-slower) var(--ease-apple) both',
-			}}
-		>
+		<div className="mb-12 md:mb-16 animate-slide-up-subtle">
 			<h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-text tracking-tight">
 				{title}
 			</h1>

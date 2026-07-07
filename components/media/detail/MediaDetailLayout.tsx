@@ -43,7 +43,7 @@ export function MediaDetailLayout({
 		<div className="min-h-screen">
 			{banner}
 			{actionsBar && <MediaActionsBar>{actionsBar}</MediaActionsBar>}
-			<div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16">
+			<div className="detail-container">
 				<MediaDescription description={description} />
 				{watchProviders}
 				{rating && (

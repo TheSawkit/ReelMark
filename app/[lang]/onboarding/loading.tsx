@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function OnboardingLoading() {
 	return (
-		<div className="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+		<div className="centered-screen">
 			<Card className="w-full max-w-md">
 				<CardHeader className="space-y-2 text-center">
 					<Skeleton className="mx-auto h-6 w-44" />

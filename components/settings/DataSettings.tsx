@@ -63,9 +63,7 @@ function PlatformInstructions({
 			platform === 'letterboxd' ? td.steps.letterboxd : td.steps.trakt;
 		return (
 			<div className="rounded-xl border border-border/20 bg-surface-2/20 p-4 space-y-3">
-				<p className="text-xs font-semibold text-muted uppercase tracking-wider">
-					{td.howToGet}
-				</p>
+				<p className="eyebrow">{td.howToGet}</p>
 				<StepList steps={steps} />
 			</div>
 		);
@@ -74,9 +72,7 @@ function PlatformInstructions({
 	// TV Time — two methods
 	return (
 		<div className="rounded-xl border border-border/20 bg-surface-2/20 p-4 space-y-4">
-			<p className="text-xs font-semibold text-muted uppercase tracking-wider">
-				{td.howToGet}
-			</p>
+			<p className="eyebrow">{td.howToGet}</p>
 
 			<div className="space-y-2">
 				<div className="flex items-center gap-2 flex-wrap">
@@ -307,7 +303,7 @@ export function DataSettings() {
 					{phase.type !== 'done' && (
 						<>
 							<div className="space-y-2">
-								<p className="text-xs font-semibold text-muted uppercase tracking-wider">
+								<p className="eyebrow">
 									{td.importSelectPlatform}
 								</p>
 								<div className="flex flex-wrap gap-2">

@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: reelmark
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: reelmark
+    namespace: reelmark
+    labels:
+        app: reelmark
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            app: reelmark
+    template:
+        metadata:
+            labels:
+                app: reelmark
+        spec:
+            imagePullSecrets:
+                - name: ghcr-pull
+            containers:
+                - name: reelmark
+                  image: ghcr.io/thesawkit/reelmark:latest
+                  ports:
+                      - containerPort: 3000
+                  envFrom:
+                      - secretRef:
+                            name: reelmark-secrets
+                  resources:
+                      requests:
+                          cpu: '100m'
+                          memory: '256Mi'
+                      limits:
+                          cpu: '500m'
+                          memory: '512Mi'
+                  readinessProbe:
+                      httpGet:
+                          path: /api/health
+                          port: 3000
+                      initialDelaySeconds: 5
+                      periodSeconds: 10
+                  livenessProbe:
+                      httpGet:
+                          path: /api/health
+                          port: 3000
+                      initialDelaySeconds: 15
+                      periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: reelmark
+    namespace: reelmark
+spec:
+    type: ClusterIP
+    selector:
+        app: reelmark
+    ports:
+        - port: 80
+          targetPort: 3000
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+    name: reelmark
+    namespace: reelmark
+spec:
+    scaleTargetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: reelmark
+    minReplicas: 2
+    maxReplicas: 5
+    metrics:
+        - type: Resource
+          resource:
+              name: cpu
+              target:
+                  type: Utilization
+                  averageUtilization: 70

@@ -133,11 +133,7 @@ export function LibraryTabs({
 				<div
 					role="tabpanel"
 					id={`panel-${activeTab}`}
-					className="flex flex-col items-center justify-center py-32"
-					style={{
-						animation:
-							'fadeIn var(--duration-medium) ease-out forwards',
-					}}
+					className="flex flex-col items-center justify-center py-32 animate-fade-in"
 				>
 					<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/10 mb-6">
 						<current.icon className="h-10 w-10 text-muted/50" />

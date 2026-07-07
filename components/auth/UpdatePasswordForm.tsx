@@ -15,6 +15,7 @@ import {
 	FieldGroup,
 	FieldLabel,
 } from '@/components/ui/field';
+import { FormError } from '@/components/ui/FormError';
 import { Input } from '@/components/ui/input';
 import { updatePassword } from '@/app/auth/actions';
 import { useTranslation } from '@/lib/i18n/context';
@@ -80,12 +81,7 @@ export function UpdatePasswordForm({
 								/>
 							</Field>
 							{state?.error && (
-								<p
-									role="alert"
-									className="text-sm text-red-2 text-center"
-								>
-									{state.error}
-								</p>
+								<FormError>{state.error}</FormError>
 							)}
 							<Field>
 								<Button type="submit" loading={isPending}>

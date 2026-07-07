@@ -156,7 +156,7 @@ export default async function SeasonPage(props: SeasonPageProps) {
 				/>
 			</MediaActionsBar>
 
-			<div className="container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16">
+			<div className="detail-container">
 				{seasonDetails.overview && (
 					<div className="max-w-4xl space-y-4">
 						<SectionHeading>{t.explorer.overview}</SectionHeading>

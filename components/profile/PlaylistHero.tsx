@@ -42,13 +42,7 @@ export function PlaylistHero({
 				variant="banner"
 			/>
 
-			<div
-				className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-12 pt-28 md:pt-32 pb-8 md:pb-14 flex flex-col lg:flex-row lg:items-end gap-6 lg:gap-12"
-				style={{
-					animation:
-						'slideUpSubtle var(--duration-slower) var(--ease-apple) both',
-				}}
-			>
+			<div className="relative z-10 container mx-auto px-6 lg:px-12 pt-28 md:pt-32 pb-8 md:pb-14 flex flex-col lg:flex-row lg:items-end gap-6 lg:gap-12 animate-slide-up-subtle">
 				<div className="flex-1 min-w-0 space-y-4 md:space-y-5">
 					<div className="flex flex-wrap gap-2">
 						{ownerUsername && (

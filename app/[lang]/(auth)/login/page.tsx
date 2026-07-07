@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { AuthPageShell } from '@/components/auth/AuthPageShell';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -45,8 +46,8 @@ export default async function LoginPage() {
 	}
 
 	return (
-		<div className="flex w-full max-w-sm flex-col gap-6">
+		<AuthPageShell>
 			<LoginForm />
-		</div>
+		</AuthPageShell>
 	);
 }

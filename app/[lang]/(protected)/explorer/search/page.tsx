@@ -65,14 +65,7 @@ export default async function SearchResultsPage({
 
 	return (
 		<PageLayout>
-			<div
-				className="mb-10"
-				style={{
-					animation:
-						'slideUp var(--duration-slower) ease-out forwards',
-					opacity: 0,
-				}}
-			>
+			<div className="mb-10 opacity-0 animate-slide-up">
 				<h1 className="text-3xl font-bold mb-2">
 					{t.pages.search.title} &quot;{query}&quot;
 				</h1>

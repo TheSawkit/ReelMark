@@ -144,7 +144,7 @@ export async function updatePrivacySettings(
 	formData: FormData
 ) {
 	const t = await getTranslations();
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const settings = {
 		user_id: userId,
@@ -174,7 +174,7 @@ export async function updatePrivacySettings(
 
 	if (error) return { error: error.message, success: false };
 
-	await revalidateProfile(supabase);
+	await revalidateProfile(supabase, user);
 	return {
 		error: undefined,
 		success: true,

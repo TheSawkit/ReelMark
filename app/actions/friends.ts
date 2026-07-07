@@ -2,6 +2,7 @@
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { createAdminClient } from '@/lib/supabase/server';
+import { getPrivacySettings } from '@/app/actions/profile';
 import { FRIENDSHIP_COLUMNS } from '@/lib/supabase/columns';
 import { resolveAvatarUrl } from '@/lib/avatar';
 import { revalidateProfile } from '@/app/actions/_helpers';
@@ -40,7 +41,6 @@ export async function getPendingRequestsWithProfiles(): Promise<
 	PendingRequestEntry[]
 > {
 	const { supabase, userId } = await getAuthenticatedUser();
-	const adminClient = createAdminClient();
 
 	const { data: rawPending, error } = await supabase
 		.from('friendships')
@@ -55,40 +55,22 @@ export async function getPendingRequestsWithProfiles(): Promise<
 	const pending = rawPending as Friendship[];
 	const requesterIds = pending.map((f) => f.requester_id);
 
-	const [{ data: profiles }, adminResults] = await Promise.all([
-		supabase
-			.from('user_profiles')
-			.select('user_id, username, avatar_url')
-			.in('user_id', requesterIds),
-		Promise.all(
-			requesterIds.map((id) => adminClient.auth.admin.getUserById(id))
-		),
-	]);
+	const { data: profiles } = await supabase
+		.from('user_profiles')
+		.select('user_id, username, avatar_url, full_name')
+		.in('user_id', requesterIds);
 
 	const profileByUserId = new Map(profiles?.map((p) => [p.user_id, p]) ?? []);
-	const adminByUserId = new Map(
-		adminResults.flatMap((r) =>
-			r.data.user ? [[r.data.user.id, r.data.user]] : []
-		)
-	);
 
 	const entries: PendingRequestEntry[] = [];
 	for (const f of pending) {
 		const profile = profileByUserId.get(f.requester_id);
 		if (!profile) continue;
-		const adminUser = adminByUserId.get(f.requester_id);
 		entries.push({
 			friendship: f,
 			username: profile.username,
-			avatarUrl:
-				resolveAvatarUrl(
-					profile.avatar_url,
-					adminUser?.user_metadata?.avatar_url
-				) ?? undefined,
-			fullName:
-				typeof adminUser?.user_metadata?.full_name === 'string'
-					? adminUser.user_metadata.full_name
-					: undefined,
+			avatarUrl: resolveAvatarUrl(profile.avatar_url, null) ?? undefined,
+			fullName: profile.full_name ?? undefined,
 		});
 	}
 
@@ -104,8 +86,18 @@ export async function getPendingRequestsWithProfiles(): Promise<
 export async function getFriendsWithProfiles(
 	userId: string
 ): Promise<FriendEntry[]> {
-	const { supabase } = await getAuthenticatedUser();
-	const adminClient = createAdminClient();
+	const { userId: viewerId } = await getAuthenticatedUser();
+
+	if (viewerId !== userId) {
+		const { friends_visibility } = await getPrivacySettings(userId);
+		if (friends_visibility === 'private') return [];
+		if (friends_visibility === 'friends') {
+			const friendship = await getFriendshipStatus(userId);
+			if (friendship?.status !== 'accepted') return [];
+		}
+	}
+
+	const supabase = createAdminClient();
 
 	const { data: rawFriends, error } = await supabase
 		.from('friendships')
@@ -122,22 +114,12 @@ export async function getFriendsWithProfiles(
 		f.requester_id === userId ? f.addressee_id : f.requester_id
 	);
 
-	const [{ data: profiles }, adminResults] = await Promise.all([
-		supabase
-			.from('user_profiles')
-			.select('user_id, username, avatar_url')
-			.in('user_id', friendUserIds),
-		Promise.all(
-			friendUserIds.map((id) => adminClient.auth.admin.getUserById(id))
-		),
-	]);
+	const { data: profiles } = await supabase
+		.from('user_profiles')
+		.select('user_id, username, avatar_url, full_name')
+		.in('user_id', friendUserIds);
 
 	const profileByUserId = new Map(profiles?.map((p) => [p.user_id, p]) ?? []);
-	const adminByUserId = new Map(
-		adminResults.flatMap((r) =>
-			r.data.user ? [[r.data.user.id, r.data.user]] : []
-		)
-	);
 
 	const entries: FriendEntry[] = [];
 	for (const f of friends) {
@@ -145,19 +127,11 @@ export async function getFriendsWithProfiles(
 			f.requester_id === userId ? f.addressee_id : f.requester_id;
 		const profile = profileByUserId.get(otherId);
 		if (!profile) continue;
-		const adminUser = adminByUserId.get(otherId);
 		entries.push({
 			friendship: f,
 			username: profile.username,
-			avatarUrl:
-				resolveAvatarUrl(
-					profile.avatar_url,
-					adminUser?.user_metadata?.avatar_url
-				) ?? undefined,
-			fullName:
-				typeof adminUser?.user_metadata?.full_name === 'string'
-					? adminUser.user_metadata.full_name
-					: undefined,
+			avatarUrl: resolveAvatarUrl(profile.avatar_url, null) ?? undefined,
+			fullName: profile.full_name ?? undefined,
 		});
 	}
 
@@ -174,7 +148,7 @@ export async function cancelFriendRequest(
 	friendshipId: string,
 	addresseeId?: string
 ): Promise<void> {
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const { error } = await supabase
 		.from('friendships')
@@ -185,7 +159,7 @@ export async function cancelFriendRequest(
 
 	if (error) throw new Error(error.message);
 
-	await revalidateProfile(supabase, addresseeId);
+	await revalidateProfile(supabase, user, addresseeId);
 }
 
 /**
@@ -219,7 +193,7 @@ export async function getFriendshipStatus(
  * @throws Error('DUPLICATE_REQUEST') if a request already exists.
  */
 export async function sendFriendRequest(addresseeId: string): Promise<void> {
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	if (addresseeId === userId) throw new Error('SELF_REQUEST');
 
@@ -232,7 +206,7 @@ export async function sendFriendRequest(addresseeId: string): Promise<void> {
 		throw new Error(error.message);
 	}
 
-	await revalidateProfile(supabase, addresseeId);
+	await revalidateProfile(supabase, user, addresseeId);
 }
 
 /**
@@ -245,7 +219,7 @@ export async function acceptFriendRequest(
 	friendshipId: string,
 	requesterId?: string
 ): Promise<void> {
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const { error } = await supabase
 		.from('friendships')
@@ -256,7 +230,7 @@ export async function acceptFriendRequest(
 
 	if (error) throw new Error(error.message);
 
-	await revalidateProfile(supabase, requesterId);
+	await revalidateProfile(supabase, user, requesterId);
 }
 
 /**
@@ -269,7 +243,7 @@ export async function rejectFriendRequest(
 	friendshipId: string,
 	requesterId?: string
 ): Promise<void> {
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const { error } = await supabase
 		.from('friendships')
@@ -280,7 +254,7 @@ export async function rejectFriendRequest(
 
 	if (error) throw new Error(error.message);
 
-	await revalidateProfile(supabase, requesterId);
+	await revalidateProfile(supabase, user, requesterId);
 }
 
 /**
@@ -293,7 +267,7 @@ export async function removeFriend(
 	friendshipId: string,
 	otherUserId?: string
 ): Promise<void> {
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const { error } = await supabase
 		.from('friendships')
@@ -303,5 +277,5 @@ export async function removeFriend(
 
 	if (error) throw new Error(error.message);
 
-	await revalidateProfile(supabase, otherUserId);
+	await revalidateProfile(supabase, user, otherUserId);
 }

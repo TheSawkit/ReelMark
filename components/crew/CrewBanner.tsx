@@ -85,44 +85,52 @@ export function CrewBanner({ crew }: CrewBannerProps) {
 
 						<div className="flex flex-wrap justify-center md:justify-start items-center gap-3 md:gap-4">
 							{crew.birthday && (
-								<div className="flex items-center gap-2 glass-surface px-3 py-1.5 rounded-full">
+								<InfoPill>
 									<Calendar className="h-4 w-4 text-muted" />
 									<span className="text-sm text-text">
 										{formatDate(crew.birthday, locale)}
 										{age !== null &&
 											` (${age} ${t.common.age})`}
 									</span>
-								</div>
+								</InfoPill>
 							)}
 
 							{crew.deathday && (
-								<div className="flex items-center gap-2 glass-surface px-3 py-1.5 rounded-full">
+								<InfoPill>
 									<Calendar className="h-4 w-4 text-red-2" />
 									<span className="text-sm text-text">
 										† {formatDate(crew.deathday, locale)}
 									</span>
-								</div>
+								</InfoPill>
 							)}
 
 							{crew.place_of_birth && (
-								<div className="flex items-center gap-2 glass-surface px-3 py-1.5 rounded-full">
+								<InfoPill>
 									<MapPin className="h-4 w-4 text-muted" />
 									<span className="text-sm text-text">
 										{crew.place_of_birth}
 									</span>
-								</div>
+								</InfoPill>
 							)}
 
-							<div className="flex items-center gap-2 glass-surface px-3 py-1.5 rounded-full">
+							<InfoPill>
 								<Star className="h-4 w-4 fill-gold text-gold" />
 								<span className="text-sm font-semibold text-text">
 									{(crew.popularity || 0).toFixed(0)}
 								</span>
-							</div>
+							</InfoPill>
 						</div>
 					</div>
 				</div>
 			</div>
+		</div>
+	);
+}
+
+function InfoPill({ children }: { children: React.ReactNode }) {
+	return (
+		<div className="flex items-center gap-2 glass-surface px-3 py-1.5 rounded-full">
+			{children}
 		</div>
 	);
 }

@@ -1,3 +1,4 @@
+import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, redirect } from 'next/navigation';
 import { fetchTMDB } from '@/lib/tmdb/client';
 import { Suspense } from 'react';
@@ -66,6 +67,15 @@ export default async function MoviePage(props: MoviePageProps) {
 
 	if (isNaN(movieId)) notFound();
 
+	const userDataPromise = Promise.all([
+		getMediaWatchlistEntry(movieId, 'movie'),
+		getAverageRating(movieId, 'movie'),
+		getMediaReview(movieId, 'movie'),
+		getTranslations(),
+		getServerLocale(),
+	]);
+	userDataPromise.catch(() => {});
+
 	let movieDetails, credits, images;
 	try {
 		[movieDetails, credits, images] = await Promise.all([
@@ -96,13 +106,7 @@ export default async function MoviePage(props: MoviePageProps) {
 	}
 
 	const [watchlistEntry, movieRating, userReview, t, locale] =
-		await Promise.all([
-			getMediaWatchlistEntry(movieId, 'movie'),
-			getAverageRating(movieId, 'movie'),
-			getMediaReview(movieId, 'movie'),
-			getTranslations(),
-			getServerLocale(),
-		]);
+		await userDataPromise;
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, movieDetails.backdrop_path),
@@ -220,11 +224,7 @@ export default async function MoviePage(props: MoviePageProps) {
 			}
 			rating={movieRating}
 			reviews={
-				<Suspense
-					fallback={
-						<div className="h-32 rounded-xl bg-surface/20 animate-pulse" />
-					}
-				>
+				<Suspense fallback={<Skeleton className="h-32 rounded-xl" />}>
 					<PublicReviewsSection mediaId={movieId} mediaType="movie" />
 				</Suspense>
 			}

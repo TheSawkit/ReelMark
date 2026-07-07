@@ -1,10 +1,11 @@
-import { MediaCardSkeleton } from '@/components/media/card/MediaCardSkeleton';
+import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CrewLoading() {
 	return (
 		<div className="min-h-screen">
 			<div className="relative w-full overflow-hidden">
-				<div className="absolute inset-0 bg-surface-2 animate-pulse" />
+				<Skeleton className="absolute inset-0 rounded-none" />
 				<div className="relative z-10 container mx-auto px-6 lg:px-12 py-12 md:py-16">
 					<div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-start">
 						<div className="w-32 h-32 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 shrink-0 rounded-full bg-surface/50 border-4 border-border/20" />
@@ -24,25 +25,21 @@ export default function CrewLoading() {
 				</div>
 			</div>
 
-			<div className="container mx-auto px-6 lg:px-12 py-8 space-y-12">
+			<div className="detail-container">
 				<div className="space-y-4">
-					<div className="h-8 w-32 bg-surface-2 rounded animate-pulse" />
-					<div className="h-4 w-full bg-surface-2 rounded animate-pulse" />
-					<div className="h-4 w-full bg-surface-2 rounded animate-pulse" />
-					<div className="h-4 w-3/4 bg-surface-2 rounded animate-pulse" />
+					<Skeleton className="h-8 w-32 rounded" />
+					<Skeleton className="h-4 w-full rounded" />
+					<Skeleton className="h-4 w-full rounded" />
+					<Skeleton className="h-4 w-3/4 rounded" />
 				</div>
 
 				<div className="space-y-6">
-					<div className="h-8 w-48 bg-surface-2 rounded animate-pulse" />
+					<Skeleton className="h-8 w-48 rounded" />
 					<div className="flex gap-2">
-						<div className="h-10 w-28 rounded-lg bg-surface-2 animate-pulse" />
-						<div className="h-10 w-28 rounded-lg bg-surface-2 animate-pulse" />
+						<Skeleton className="h-10 w-28 rounded-lg" />
+						<Skeleton className="h-10 w-28 rounded-lg" />
 					</div>
-					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-						{Array.from({ length: 12 }).map((_, i) => (
-							<MediaCardSkeleton key={i} />
-						))}
-					</div>
+					<PosterGridSkeleton />
 				</div>
 			</div>
 		</div>

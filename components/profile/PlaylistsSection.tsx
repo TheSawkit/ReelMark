@@ -175,10 +175,7 @@ function PlaylistCard({
 									</div>
 								))}
 								{items.length > 4 && (
-									<div
-										className="relative w-14 aspect-2/3 rounded-poster bg-surface-2/70 border-2 border-black -ml-4.5 shrink-0 flex items-center justify-center"
-										style={{ zIndex: 0 }}
-									>
+									<div className="relative w-14 aspect-2/3 rounded-poster bg-surface-2/70 border-2 border-black -ml-4.5 shrink-0 flex items-center justify-center z-0">
 										<span className="text-xs text-white/50 font-medium">
 											+{items.length - 4}
 										</span>

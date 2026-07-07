@@ -17,14 +17,13 @@ export function CinematicBackdrop({ src, alt }: CinematicBackdropProps) {
 				alt={alt}
 				fill
 				priority
-				style={{
-					paddingTop: 'calc(4rem + env(safe-area-inset-top))',
-				}}
-				className="pt-20 object-cover object-top"
+				className="page-top-offset object-cover object-top"
 				sizes="100vw"
 			/>
-			<Aurora intensity={0.4} />
-			<Spotlight />
+			<div className="hidden md:contents">
+				<Aurora intensity={0.4} />
+				<Spotlight />
+			</div>
 			<div className="absolute inset-0 bg-linear-to-t from-app-bg via-app-bg/40 to-transparent" />
 			<div className="absolute inset-0 bg-linear-to-r from-app-bg via-app-bg/40 to-transparent" />
 			<Grain opacity={0.06} />
