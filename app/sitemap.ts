@@ -38,6 +38,16 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
 		changeFrequency: 'monthly',
 		priority: 0.4,
 	}),
+	localizedEntry('/terms', {
+		lastModified: new Date(),
+		changeFrequency: 'yearly',
+		priority: 0.2,
+	}),
+	localizedEntry('/privacy', {
+		lastModified: new Date(),
+		changeFrequency: 'yearly',
+		priority: 0.2,
+	}),
 	localizedEntry('/signup', {
 		lastModified: new Date(),
 		changeFrequency: 'monthly',

@@ -21,9 +21,15 @@ test.describe('Back-to-top button on InfiniteScroll views', () => {
 			undefined,
 			{ timeout: 15000 }
 		);
-		await page.evaluate(() => window.scrollTo(0, 2000));
 		await expect
-			.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 })
+			.poll(
+				() =>
+					page.evaluate(() => {
+						window.scrollTo({ top: 2000, behavior: 'instant' });
+						return window.scrollY;
+					}),
+				{ timeout: 5000 }
+			)
 			.toBeGreaterThan(300);
 		await expect(button).toHaveAttribute('data-state', 'visible');
 
