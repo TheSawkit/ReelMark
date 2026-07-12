@@ -19,7 +19,7 @@ export interface WatchmodeTitleSource {
 	price: number | null;
 }
 
-export interface WatchmodeTitleResult {
+interface WatchmodeTitleResult {
 	id: number;
 	name: string;
 	type: string;

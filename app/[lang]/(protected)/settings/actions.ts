@@ -7,7 +7,6 @@ import { isOAuthOnly } from '@/lib/supabase/auth-helpers';
 import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import {
-	validateEmail,
 	validatePassword,
 	validateUsername,
 	validateRegion,
@@ -37,43 +36,6 @@ async function syncUserProfile(
 	if (error?.code === '23505') return 'USERNAME_TAKEN';
 	if (error) return error.message;
 	return null;
-}
-
-export async function updateEmail(prevState: unknown, formData: FormData) {
-	const supabase = await createClient();
-	const t = await getTranslations();
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
-
-	if (!user) {
-		return { error: t.auth.notAuthenticated, success: false };
-	}
-
-	if (isOAuthOnly(user)) {
-		return { error: t.settings.profile.warningEmail, success: false };
-	}
-
-	const newEmail = validateEmail(formData.get('email'));
-
-	if (!newEmail) {
-		return { error: t.settings.profile.newEmail, success: false };
-	}
-
-	const { error } = await supabase.auth.updateUser({
-		email: newEmail,
-	});
-
-	if (error) {
-		return { error: error.message, success: false };
-	}
-
-	return {
-		error: undefined,
-		success: true,
-		message: t.settings.profile.confirmNewEmail,
-	};
 }
 
 export async function updatePassword(prevState: unknown, formData: FormData) {

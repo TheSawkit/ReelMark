@@ -107,7 +107,7 @@ export async function getTvShowDetails(id: number): Promise<TvShowDetails> {
  * @param id - TMDB TV show ID.
  * @returns Total number of episodes.
  */
-export async function getTvShowTotalEpisodes(id: number): Promise<number> {
+async function getTvShowTotalEpisodes(id: number): Promise<number> {
 	try {
 		const details = await fetchTMDB<TvShowDetails>(`/tv/${id}`, {}, 86400);
 		return (details.seasons ?? [])

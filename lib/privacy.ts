@@ -1,6 +1,6 @@
 import type { PrivacyVisibility } from '@/types/profile';
 
-export const VALID_VISIBILITY = new Set<PrivacyVisibility>([
+const VALID_VISIBILITY = new Set<PrivacyVisibility>([
 	'public',
 	'friends',
 	'private',

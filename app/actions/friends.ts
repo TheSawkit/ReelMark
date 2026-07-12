@@ -13,26 +13,6 @@ import type {
 } from '@/types/profile';
 
 /**
- * Returns accepted friendships for a given user (both directions), up to 100.
- *
- * @param userId - Supabase user ID.
- * @returns Array of accepted Friendship records.
- */
-export async function getFriends(userId: string): Promise<Friendship[]> {
-	const { supabase } = await getAuthenticatedUser();
-
-	const { data, error } = await supabase
-		.from('friendships')
-		.select(FRIENDSHIP_COLUMNS)
-		.or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
-		.eq('status', 'accepted')
-		.limit(100);
-
-	if (error) throw new Error(error.message);
-	return (data as Friendship[]) ?? [];
-}
-
-/**
  * Returns pending friend requests addressed to the authenticated user, enriched with profile data.
  *
  * @returns Array of PendingRequestEntry records with username and optional avatar/fullName.

@@ -37,7 +37,7 @@ ReelMark implements several security measures to protect user data:
 ### How to Report
 
 1. **Do NOT create a public GitHub issue** for the vulnerability
-2. **Email the maintainer** at your earliest convenience with:
+2. **Open a private security advisory**: [github.com/TheSawkit/ReelMark/security/advisories/new](https://github.com/TheSawkit/ReelMark/security/advisories/new) — also referenced by [`/.well-known/security.txt`](https://reelmark.silexio.be/.well-known/security.txt) (RFC 9116). Include:
     - A clear description of the vulnerability
     - Steps to reproduce (if applicable)
     - Potential impact
@@ -58,7 +58,7 @@ ReelMark implements several security measures to protect user data:
 
 ### Supported Channels
 
-For now, please reach out through the GitHub repository or contact the maintainer directly. A formal security contact will be established soon.
+GitHub private vulnerability reporting (link above) is the official channel. The machine-readable contact lives at [`/.well-known/security.txt`](https://reelmark.silexio.be/.well-known/security.txt).
 
 ---
 
@@ -69,7 +69,7 @@ ReelMark uses the following key dependencies (see `package.json` for complete li
 | Package      | Version | Purpose         |
 | ------------ | ------- | --------------- |
 | Next.js      | 16.2.6  | React framework |
-| TypeScript   | 5.9     | Type safety     |
+| TypeScript   | 6       | Type safety     |
 | Supabase     | Latest  | Auth & database |
 | React        | 19      | UI library      |
 | Tailwind CSS | 4       | Styling         |
@@ -140,5 +140,5 @@ If you have general security questions about ReelMark, feel free to:
 
 ---
 
-**Last Updated**: 2026-05-26
+**Last Updated**: 2026-07-12
 **Maintainer**: [SAWKIT](https://github.com/TheSawkit)

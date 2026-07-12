@@ -67,7 +67,7 @@ cp .env.example .env.local   # then fill in the values (see Configuration)
 pnpm dev                     # http://localhost:3000
 ```
 
-Database: run the SQL migrations in order from the Supabase SQL Editor — start with `supabase/migrations/001_profile_features.sql` (creates `user_profiles`, `privacy_settings`, `reviews`, `playlists`, `playlist_items`, `friendships` with RLS policies).
+Database: the schema lives on the Supabase project (12 tables, RLS everywhere). To recreate it from scratch, follow [docs/DATA-MODEL.md](./docs/DATA-MODEL.md) in the Supabase SQL Editor.
 
 ### ⚙️ Configuration
 
@@ -116,9 +116,8 @@ ReelMark/
 ├── lib/                    # tmdb/ · supabase/ · i18n/ · search/ · validators.ts · metadata.ts …
 ├── hooks/                  # Reusable client hooks
 ├── types/                  # Shared TypeScript types (database.ts, tmdb.ts, profile.ts)
-├── supabase/migrations/    # SQL schema migrations
 ├── k8s/                    # Kubernetes manifests (deployment, service, ingress, HPA)
-├── docs/                   # Project documentation (deployment, security)
+├── docs/                   # Developer documentation (architecture, setup, data model, debugging)
 ├── Dockerfile              # Multi-stage production image (output: standalone)
 └── tests/                  # unit/ (Vitest) · e2e/ (Playwright)
 ```
@@ -127,17 +126,18 @@ ReelMark/
 
 Production runs on **Infomaniak Public Cloud (managed Kubernetes)** behind **Cloudflare** (TLS · CDN · WAF). The container image lives on **ghcr.io**; CI/CD is handled by GitHub Actions.
 
-**Full step-by-step runbook → [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).**
+**Full step-by-step runbook → [DEPLOYMENT.md](./DEPLOYMENT.md).**
 
 - `Dockerfile` — multi-stage, `output: standalone`. Build stays `next build --webpack`.
 - `k8s/` — `app.yaml` (deployment · service · HPA), `ingress.yaml`, `secret.example.yaml`.
 - `.github/workflows/deploy.yml` — push to `main` → build → push to ghcr.io → rollout.
-- ⚠️ **Cluster bootstrap:** Infomaniak provides only the control plane. You must install **Cilium (CNI) + OpenStack CCM** first ([docs/DEPLOYMENT.md § 2](./docs/DEPLOYMENT.md)), otherwise nodes stay `NotReady` and nothing schedules.
+- ⚠️ **Cluster bootstrap:** Infomaniak provides only the control plane. You must install **Cilium (CNI) + OpenStack CCM** first ([DEPLOYMENT.md § 2](./DEPLOYMENT.md)), otherwise nodes stay `NotReady` and nothing schedules.
 
 ### 📚 Documentation
 
-- **[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)** — Infomaniak Kubernetes deployment runbook
-- **[docs/SECURITY.md](./docs/SECURITY.md)** — security policy
+- **[docs/](./docs/README.md)** — developer documentation: [architecture](./docs/ARCHITECTURE.md) · [setup from scratch](./docs/SETUP.md) · [data model](./docs/DATA-MODEL.md) · [debugging](./docs/DEBUGGING.md)
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** — Infomaniak Kubernetes deployment runbook
+- **[SECURITY.md](./SECURITY.md)** — security policy · **[CONTRIBUTING.md](./CONTRIBUTING.md)** — contribution guide
 
 ### 🤝 Contributing
 
@@ -201,7 +201,7 @@ cp .env.example .env.local   # puis remplis les valeurs (voir Configuration en a
 pnpm dev                     # http://localhost:3000
 ```
 
-BDD : exécute les migrations SQL dans l'ordre depuis l'éditeur Supabase, en commençant par `supabase/migrations/001_profile_features.sql`.
+BDD : le schéma vit sur le projet Supabase (12 tables, RLS partout). Pour le recréer : [docs/DATA-MODEL.md](./docs/DATA-MODEL.md).
 
 ### 📦 Scripts
 
@@ -209,13 +209,13 @@ Voir le tableau **Available Scripts** dans la section anglaise. Note : le build 
 
 ### 🚢 Déploiement
 
-Production sur **Infomaniak Public Cloud (Kubernetes managé)** derrière **Cloudflare** (TLS · CDN · WAF), image sur **ghcr.io**, CI/CD via GitHub Actions. Runbook complet → **[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)**.
+Production sur **Infomaniak Public Cloud (Kubernetes managé)** derrière **Cloudflare** (TLS · CDN · WAF), image sur **ghcr.io**, CI/CD via GitHub Actions. Runbook complet → **[DEPLOYMENT.md](./DEPLOYMENT.md)**.
 
-> ⚠️ Infomaniak ne fournit que le control plane : il faut installer **Cilium (CNI) + CCM OpenStack** soi-même (voir `docs/DEPLOYMENT.md` § 2), sinon les nodes restent `NotReady`.
+> ⚠️ Infomaniak ne fournit que le control plane : il faut installer **Cilium (CNI) + CCM OpenStack** soi-même (voir `DEPLOYMENT.md` § 2), sinon les nodes restent `NotReady`.
 
 ### 📚 Documentation & Contribution
 
-- Docs : [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) · [`docs/SECURITY.md`](./docs/SECURITY.md)
+- Docs : [`docs/`](./docs/README.md) (architecture · setup · data model · debugging) · [`DEPLOYMENT.md`](./DEPLOYMENT.md) · [`SECURITY.md`](./SECURITY.md)
 - Contribution : branche depuis `dev`, PR vers `main`, commits conventionnels, `pnpm lint && pnpm test && pnpm test:e2e` avant toute PR.
 
 ### 📄 Licence

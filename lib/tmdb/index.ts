@@ -19,7 +19,6 @@ export {
 	getAiringTodayTvShows,
 	getOnTheAirTvShows,
 	getTvShowDetails,
-	getTvShowTotalEpisodes,
 	getTvShowsTotalEpisodes,
 	getTvShowCredits,
 	getTvShowVideos,

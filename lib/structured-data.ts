@@ -51,9 +51,7 @@ export function movieJsonLd(
 			director: directors.map((d) => person(d.name)),
 		}),
 		...(credits.cast.length > 0 && {
-			actor: credits.cast
-				.slice(0, MAX_ACTORS)
-				.map((c) => person(c.name)),
+			actor: credits.cast.slice(0, MAX_ACTORS).map((c) => person(c.name)),
 		}),
 		...(rating && { aggregateRating: rating }),
 	};
@@ -82,9 +80,7 @@ export function tvSeriesJsonLd(
 			creator: tv.created_by.map((c) => person(c.name)),
 		}),
 		...(credits.cast.length > 0 && {
-			actor: credits.cast
-				.slice(0, MAX_ACTORS)
-				.map((c) => person(c.name)),
+			actor: credits.cast.slice(0, MAX_ACTORS).map((c) => person(c.name)),
 		}),
 		...(rating && { aggregateRating: rating }),
 	};
