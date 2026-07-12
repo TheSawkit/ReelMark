@@ -5,6 +5,11 @@ metadata:
     namespace: reelmark
     annotations:
         nginx.ingress.kubernetes.io/proxy-body-size: '10m'
+        nginx.ingress.kubernetes.io/affinity: 'cookie'
+        nginx.ingress.kubernetes.io/affinity-mode: 'persistent'
+        nginx.ingress.kubernetes.io/session-cookie-name: 'reelmark-affinity'
+        nginx.ingress.kubernetes.io/session-cookie-max-age: '172800'
+        nginx.ingress.kubernetes.io/session-cookie-samesite: 'Lax'
 spec:
     ingressClassName: nginx
     tls:

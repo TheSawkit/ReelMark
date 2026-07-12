@@ -11,7 +11,7 @@ metadata:
     labels:
         app: reelmark
 spec:
-    replicas: 2
+    replicas: 1
     selector:
         matchLabels:
             app: reelmark
@@ -73,7 +73,7 @@ spec:
         apiVersion: apps/v1
         kind: Deployment
         name: reelmark
-    minReplicas: 2
+    minReplicas: 1
     maxReplicas: 5
     metrics:
         - type: Resource
