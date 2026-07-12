@@ -10,6 +10,8 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
 	});
 }
 
+export const dynamic = 'force-dynamic';
+
 export default function OfflinePage() {
 	const { t } = useTranslation();
 	return (

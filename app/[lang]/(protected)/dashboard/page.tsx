@@ -42,6 +42,8 @@ import { getWatchlistWithProgress } from '@/lib/data/watchlist';
 import { buildPageMetadata } from '@/lib/metadata';
 import type { Movie, TvShow, MediaType } from '@/types/tmdb';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
 	const t = await getTranslations();
 	return buildPageMetadata(

@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
 	const t = await getTranslations();
 	return {
