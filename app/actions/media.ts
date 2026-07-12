@@ -27,7 +27,7 @@ import { getMediaWatchlistEntries } from './watchlist';
  * @param items - Media items to enrich.
  * @returns The same items with `watchlistEntry` injected where a match exists.
  */
-export async function mergeMediaWithWatchlist(
+async function mergeMediaWithWatchlist(
 	items: MediaItem[]
 ): Promise<MediaItem[]> {
 	if (items.length === 0) return [];

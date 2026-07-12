@@ -6,7 +6,7 @@ export default function CrewLoading() {
 		<div className="min-h-screen">
 			<div className="relative w-full overflow-hidden">
 				<Skeleton className="absolute inset-0 rounded-none" />
-				<div className="relative z-10 container mx-auto px-6 lg:px-12 py-12 md:py-16">
+				<div className="relative z-10 container mx-auto px-6 lg:px-12 py-section md:py-section-md">
 					<div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-start">
 						<div className="w-32 h-32 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 shrink-0 rounded-full bg-surface/50 border-4 border-border/20" />
 						<div className="flex-1 space-y-4 text-center md:text-left">

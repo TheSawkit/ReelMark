@@ -31,7 +31,7 @@ export function CrewBio({ biography }: CrewBioProps) {
 		<section className="space-y-4">
 			<SectionHeading>{t.movie.biography}</SectionHeading>
 
-			<p className="text-lg text-muted leading-relaxed max-w-4xl whitespace-pre-line">
+			<p className="text-lg text-muted leading-relaxed max-w-prose whitespace-pre-line">
 				{displayedText}
 			</p>
 

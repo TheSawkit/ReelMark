@@ -4,8 +4,6 @@ import { translations, type Language } from './translations';
 import { getLocale } from './utils';
 import { DEFAULT_LANGUAGE, isLanguage } from './config';
 
-export { getLocale };
-
 /**
  * Resolves the request's preferred language (cookie → Accept-Language → default).
  * Fallback for Server Actions and route handlers; localized pages should pass the

@@ -1,6 +1,6 @@
 import type { MediaItem } from '@/types/tmdb';
 
-export type FilmographyDepartmentKey =
+type FilmographyDepartmentKey =
 	'directing' | 'writing' | 'production' | 'camera' | 'sound' | 'editing';
 
 export type FilmographyTabKey = 'acting' | FilmographyDepartmentKey;

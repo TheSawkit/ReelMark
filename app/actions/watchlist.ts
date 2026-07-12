@@ -11,11 +11,7 @@ import {
 import { VALID_STATUSES, VALID_MEDIA_TYPES } from '@/lib/validators';
 import type { WatchStatus, WatchlistEntry, MediaType } from '@/types/tmdb';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
-import {
-	getTvShowsTotalEpisodes,
-	getListMediaMetadata,
-	type ListMediaMetadata,
-} from '@/lib/tmdb';
+import { getListMediaMetadata, type ListMediaMetadata } from '@/lib/tmdb';
 
 function revalidateWatchlistPaths(mediaType: MediaType, mediaId: number) {
 	SHARED_REVALIDATE_PATHS.forEach(revalidateLocalized);
@@ -56,38 +52,6 @@ export async function addToWatchlist(
 	if (error) throw new Error(error.message);
 
 	revalidateWatchlistPaths(mediaType, mediaId);
-}
-
-/** One-shot backfill: fills total_episodes for the caller's TV watchlist rows that lack it (library cold-load → instant). */
-export async function backfillTvTotals(): Promise<{ updated: number }> {
-	const { supabase, userId } = await getAuthenticatedUser();
-
-	const { data: rows } = await supabase
-		.from('watchlist')
-		.select('media_id')
-		.eq('user_id', userId)
-		.eq('media_type', 'tv')
-		.is('total_episodes', null);
-
-	const ids = (rows ?? []).map((r) => r.media_id);
-	if (ids.length === 0) return { updated: 0 };
-
-	const totals = await getTvShowsTotalEpisodes(ids);
-	let updated = 0;
-	await Promise.all(
-		ids.map(async (id) => {
-			const total = totals[id];
-			if (!total) return;
-			await supabase
-				.from('watchlist')
-				.update({ total_episodes: total })
-				.eq('user_id', userId)
-				.eq('media_id', id)
-				.eq('media_type', 'tv');
-			updated++;
-		})
-	);
-	return { updated };
 }
 
 const META_BATCH_SIZE = 8;

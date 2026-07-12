@@ -113,7 +113,7 @@ export function validateAvatarFile(
 	return { valid: true, ext };
 }
 
-export const VALID_NOTIFICATION_TYPES = new Set<string>(NOTIFICATION_TYPES);
+const VALID_NOTIFICATION_TYPES = new Set<string>(NOTIFICATION_TYPES);
 
 export function isValidNotificationType(
 	value: unknown

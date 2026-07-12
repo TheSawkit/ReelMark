@@ -20,7 +20,7 @@ export function DeleteIconButton({
 			size="sm"
 			disabled={disabled}
 			onClick={onClick}
-			className="shrink-0 h-8 w-8 p-0 text-muted hover:text-red"
+			className="shrink-0 h-8 w-8 p-0 text-muted hover:text-red relative before:absolute before:-inset-2 before:content-['']"
 			aria-label={ariaLabel}
 		>
 			<Trash2 className="h-4 w-4" />

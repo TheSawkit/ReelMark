@@ -12,7 +12,7 @@ export function MediaDescription({ description }: MediaDescriptionProps) {
 		<section className="space-y-6">
 			<SectionHeading>{t.movie.description}</SectionHeading>
 			{description ? (
-				<p className="text-lg text-muted leading-relaxed max-w-4xl">
+				<p className="text-lg text-muted leading-relaxed max-w-prose">
 					{description}
 				</p>
 			) : (

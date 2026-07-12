@@ -2,7 +2,7 @@ import type { MediaItem } from '@/types/tmdb';
 import { getMediaKey } from '@/lib/media';
 
 export type SortKey = 'added' | 'year' | 'title' | 'rating';
-export type SortDir = 'asc' | 'desc';
+type SortDir = 'asc' | 'desc';
 
 export interface ListControlsState {
 	sortKey: SortKey;

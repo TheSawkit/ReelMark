@@ -18,7 +18,7 @@ export default async function CTASection({ lang }: { lang: Language }) {
 				<div className="absolute inset-0 bg-linear-to-t from-background/40 to-transparent" />
 
 				<div className="relative z-10">
-					<h2 className="mb-6 font-display text-4xl font-normal text-text md:text-6xl">
+					<h2 className="mb-6 heading-display leading-none text-4xl text-text md:text-6xl">
 						{t.home.cta.title}
 					</h2>
 					<p className="mx-auto mb-10 max-w-xl text-lg text-muted md:text-xl">

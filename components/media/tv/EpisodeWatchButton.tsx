@@ -1,12 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Eye, Check, Loader2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toggleEpisodeWatch } from '@/app/actions/episodes';
 import { useTranslation } from '@/lib/i18n/context';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-import { ReviewDialog } from '@/components/media/reviews/ReviewDialog';
+
+const ReviewDialog = dynamic(
+	() =>
+		import('@/components/media/reviews/ReviewDialog').then(
+			(m) => m.ReviewDialog
+		),
+	{ ssr: false }
+);
 
 interface EpisodeWatchButtonProps {
 	tvId: number;

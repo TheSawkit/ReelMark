@@ -36,7 +36,7 @@ pnpm build       # next build --webpack (Serwist requires webpack, not Turbopack
 
 ## Database changes
 
-Add a new migration in `supabase/migrations/` (never edit an applied one). Apply via the Supabase SQL editor or CLI. Respect Row-Level Security — see [`context-ai/SECURITY.md`](../context-ai/SECURITY.md) for the visibility model.
+The schema lives on the Supabase project (applied via SQL editor or MCP — no versioned .sql files in the repo). Document any schema change in [`docs/DATA-MODEL.md`](./docs/DATA-MODEL.md) and regenerate `types/database.ts`. Respect Row-Level Security — see the visibility model in that same document.
 
 ## Tests
 
@@ -45,4 +45,8 @@ Add a new migration in `supabase/migrations/` (never edit an applied one). Apply
 
 ## Deployment
 
-Production deployment (Infomaniak Kubernetes) is documented in [`docs/DEPLOYMENT.md`](./DEPLOYMENT.md). A push to `main` triggers the CI build + rollout.
+Production deployment (Infomaniak Kubernetes) is documented in [`DEPLOYMENT.md`](./DEPLOYMENT.md). A push to `main` triggers the CI build + rollout.
+
+## Project documentation
+
+New to the codebase? Start with [`docs/`](./docs/README.md): architecture, full setup from scratch, data model, and a catalog of known pitfalls for debugging.

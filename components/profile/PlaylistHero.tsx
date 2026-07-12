@@ -63,7 +63,7 @@ export function PlaylistHero({
 											className="object-cover"
 										/>
 									) : (
-										<span className="flex h-full w-full items-center justify-center text-[9px] font-medium transition-colors">
+										<span className="flex h-full w-full items-center justify-center text-[10px] font-medium transition-colors">
 											{ownerUsername[0].toUpperCase()}
 										</span>
 									)}
@@ -73,7 +73,7 @@ export function PlaylistHero({
 						)}
 					</div>
 
-					<h1 className="font-display text-3xl sm:text-4xl lg:text-6xl font-normal uppercase tracking-wide leading-none text-text">
+					<h1 className="heading-display leading-none text-3xl sm:text-4xl lg:text-6xl uppercase tracking-wide text-text">
 						{playlist.name}
 					</h1>
 

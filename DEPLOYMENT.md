@@ -1,6 +1,6 @@
-# Migration ReelMark → Infomaniak Public Cloud (Kubernetes)
+# Déploiement ReelMark — Infomaniak Public Cloud (Kubernetes)
 
-Architecture cible :
+Architecture :
 
 ```
 Cloudflare (DNS + proxy: TLS, CDN, Polish/AVIF, WAF)
@@ -51,11 +51,35 @@ helm install cilium cilium/cilium -n kube-system \
   --set k8sServicePort=<PORT_API>
 ```
 
-**b) OpenStack cloud-controller-manager (CCM)** — crée un secret `cloud-config` depuis ton `clouds.yaml` (Manager Infomaniak → identifiants OpenStack / application credentials), puis applique le CCM. Il **retire le taint** `uninitialized` **et** provisionne les LoadBalancer **Octavia** (sans lui, `EXTERNAL-IP` reste `<pending>` pour toujours).
+**b) OpenStack cloud-controller-manager (CCM)** — il **retire le taint** `uninitialized`, pose les `providerID`/INTERNAL-IP des nodes **et** provisionne les LoadBalancer **Octavia** (sans lui, `EXTERNAL-IP` reste `<pending>` pour toujours).
 
-> Les manifests exacts + le format `cloud.conf` adaptés à Infomaniak sont dans leur repo, dossier `manifest/` : [github.com/Infomaniak/Public_Cloud_Kubernetes](https://github.com/Infomaniak/Public_Cloud_Kubernetes). En cas de doute sur "auto vs manuel", un ticket support Infomaniak confirme le flux.
+Pièges vécus en production (2026-07) :
 
-Vérifier avant de continuer : `kubectl get nodes` → **`Ready`**, et `kubectl get pods -n kube-system` → `cilium-*` + `openstack-cloud-controller-manager-*` en `Running`.
+- Le `clouds.yaml` téléchargé depuis le Manager Infomaniak a un **`password` vide par design** → le remplir à la main, sinon le CCM crash-loop en 401.
+- L'`auth-url` du fichier omet le suffixe de version → utiliser `https://api.pub1.infomaniak.cloud/identity/v3`.
+- La section `[LoadBalancer]` du `cloud.conf` doit pointer : `floating-network-id` = ID du réseau externe `ext-floating1`, `subnet-id` = ID du subnet du cluster (`k8s-clusterapi-cluster-<id>`, 172.21.0.0/16). Les deux se trouvent via l'API Neutron ou Horizon.
+
+```bash
+kubectl -n kube-system create secret generic cloud-config --from-file=cloud.conf
+
+helm repo add cpo https://kubernetes.github.io/cloud-provider-openstack
+helm install openstack-ccm cpo/openstack-cloud-controller-manager -n kube-system \
+  --set cluster.name=<nom-cluster> \
+  --set 'nodeSelector=null' \
+  --set secret.enabled=true --set secret.name=cloud-config --set secret.create=false
+```
+
+(`nodeSelector=null` car le chart cible par défaut les nodes control-plane, invisibles sur un cluster managé.)
+
+Vérifier avant de continuer : `kubectl get nodes -o wide` → **`Ready` + INTERNAL-IP renseignée**, et `kubectl get pods -n kube-system` → `cilium-*` + `openstack-cloud-controller-manager-*` en `Running`.
+
+**c) metrics-server** — requis par le HPA (`k8s/app.yaml`), non fourni :
+
+```bash
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+```
+
+Sans lui, `kubectl get hpa -n reelmark` affiche `cpu: <unknown>` et l'autoscaling est inactif.
 
 ## 3. Ingress + LoadBalancer
 
@@ -71,7 +95,7 @@ Le Service `LoadBalancer` provisionne un **LB Octavia** (facturé). Récupérer 
 kubectl -n ingress-nginx get svc ingress-nginx-controller -o wide
 ```
 
-## 3. Cloudflare (edge)
+## 4. Cloudflare (edge)
 
 1. **DNS** : enregistrement `A` `reelmark.silexio.be` → IP du LB Octavia, **proxy activé (orange)**.
 2. **SSL/TLS** : mode **Full (strict)**. Créer un **Origin Certificate** (Cloudflare → SSL/TLS → Origin Server), puis :
@@ -82,7 +106,7 @@ kubectl -n ingress-nginx get svc ingress-nginx-controller -o wide
 3. **Images** : activer **Polish** (WebP/AVIF auto) + **Cache** — remplace l'optim in-pod (voir note images plus bas).
 4. **WAF** : activer les règles managées de base.
 
-## 4. Registry ghcr.io — pull secret
+## 5. Registry ghcr.io — pull secret
 
 Rendre le package public (simple) **ou** créer un pull secret :
 
@@ -93,7 +117,7 @@ kubectl -n reelmark create secret docker-registry ghcr-pull \
   --docker-password=YOUR_GITHUB_PAT   # scope read:packages
 ```
 
-## 5. Secrets applicatifs (runtime)
+## 6. Secrets applicatifs (runtime)
 
 Créer le secret `reelmark-secrets` (ne pas committer les vraies valeurs — cf. `k8s/secret.example.yaml`) :
 
@@ -104,7 +128,7 @@ kubectl -n reelmark create secret generic reelmark-secrets \
 
 `.env.production` contient les mêmes clés que `.env.local` (DSN Sentry en **https**).
 
-## 6. Déployer les manifests
+## 7. Déployer les manifests
 
 L'image est déjà réglée (`ghcr.io/thesawkit/reelmark`). Déployer :
 
@@ -114,7 +138,7 @@ kubectl apply -f k8s/ingress.yaml
 kubectl -n reelmark rollout status deployment/reelmark
 ```
 
-## 7. CI/CD (GitHub Actions)
+## 8. CI/CD (GitHub Actions)
 
 `.github/workflows/deploy.yml` build l'image, la push sur ghcr.io et roll le déploiement à chaque push sur `main`.
 
@@ -130,7 +154,7 @@ kubectl -n reelmark rollout status deployment/reelmark
 
 Les secrets **serveur** (`SUPABASE_SERVICE_ROLE_KEY`, `SENTRY_DSN`, `TMDB_READ_ACCESS_TOKEN`, `WATCHMODE_API_KEY`) vivent **uniquement** dans le secret K8s `reelmark-secrets`, jamais dans l'image.
 
-## 8. Vérifier
+## 9. Vérifier
 
 ```bash
 kubectl -n reelmark get pods,svc,ingress,hpa

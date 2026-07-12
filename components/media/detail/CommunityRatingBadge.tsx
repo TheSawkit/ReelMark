@@ -2,11 +2,19 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { Star } from 'lucide-react';
-import { ReviewDialog } from '@/components/media/reviews/ReviewDialog';
 import { useTranslation } from '@/lib/i18n/context';
 import { cn } from '@/lib/utils';
 import type { Review, ReviewMediaType } from '@/types/profile';
+
+const ReviewDialog = dynamic(
+	() =>
+		import('@/components/media/reviews/ReviewDialog').then(
+			(m) => m.ReviewDialog
+		),
+	{ ssr: false }
+);
 
 interface CommunityRatingBadgeProps {
 	rating: { avg: number; count: number } | null;

@@ -56,7 +56,7 @@ export async function SpotlightPick({
 							<Sparkles className="h-3.5 w-3.5" />
 							{badgeLabel}
 						</span>
-						<h2 className="font-display text-3xl leading-none text-white drop-shadow-text sm:text-4xl">
+						<h2 className="heading-display leading-none text-3xl text-white drop-shadow-text sm:text-4xl">
 							{item.title}
 						</h2>
 						{item.overview && (

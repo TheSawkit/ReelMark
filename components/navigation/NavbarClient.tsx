@@ -60,7 +60,7 @@ export function NavbarClient({
 	const logo = (
 		<Link
 			href={localizedHref(lang, '/')}
-			className="font-display text-2xl font-normal text-text transform transition-transform duration-(--duration-fast) hover:scale-105 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 flex items-center"
+			className="heading-display leading-none text-2xl text-text transform transition-transform duration-(--duration-fast) hover:scale-105 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 flex items-center"
 		>
 			<Title className="inline-block h-[0.7em] align-baseline mr-[0.03em] text-text" />
 		</Link>
@@ -276,7 +276,7 @@ export function NavbarClient({
 						<div className="mx-auto max-w-7xl px-6 md:px-12 h-12 flex items-center gap-2 border-t border-border/20">
 							<button
 								onClick={() => router.back()}
-								className="h-8 w-8 shrink-0 flex items-center justify-center rounded-full hover:bg-surface-2/50 text-text transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+								className="h-8 w-8 shrink-0 flex items-center justify-center rounded-full hover:bg-surface-2/50 text-text transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none relative before:absolute before:-inset-2 before:content-['']"
 								aria-label={t.common.goBack}
 							>
 								<ArrowLeft className="h-4 w-4" />
