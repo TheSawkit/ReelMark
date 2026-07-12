@@ -27,6 +27,7 @@ import { getTvShowWatchProgress } from '@/app/actions/episodes';
 import { getShowAverageRating, getMediaReview } from '@/app/actions/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
+import { tvSeriesJsonLd, serializeJsonLd } from '@/lib/structured-data';
 import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import {
@@ -112,6 +113,7 @@ export default async function TvShowPage(props: TvPageProps) {
 
 	const [watchlistEntry, watchProgress, showRating, userReview, t, locale] =
 		await userDataPromise;
+	const lang = await getServerLanguage();
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, tvDetails.backdrop_path),
@@ -245,30 +247,42 @@ export default async function TvShowPage(props: TvPageProps) {
 		) : null;
 
 	return (
-		<MediaDetailLayout
-			banner={banner}
-			actionsBar={actionsBar}
-			description={tvDetails.overview}
-			crew={crew}
-			creators={tvDetails.created_by}
-			watchProviders={
-				<Suspense fallback={<DetailSectionSkeleton />}>
-					<TvProvidersSection tvId={tvId} />
-				</Suspense>
-			}
-			rating={showRating}
-			reviews={
-				<Suspense fallback={<Skeleton className="h-32 rounded-xl" />}>
-					<PublicReviewsSection mediaId={tvId} mediaType="tv" />
-				</Suspense>
-			}
-			extraSections={seasonsSection}
-			trailers={
-				<Suspense fallback={<DetailSectionSkeleton />}>
-					<TvTrailersSection tvId={tvId} />
-				</Suspense>
-			}
-			cast={credits.cast}
-		/>
+		<>
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{
+					__html: serializeJsonLd(
+						tvSeriesJsonLd(tvDetails, credits, lang)
+					),
+				}}
+			/>
+			<MediaDetailLayout
+				banner={banner}
+				actionsBar={actionsBar}
+				description={tvDetails.overview}
+				crew={crew}
+				creators={tvDetails.created_by}
+				watchProviders={
+					<Suspense fallback={<DetailSectionSkeleton />}>
+						<TvProvidersSection tvId={tvId} />
+					</Suspense>
+				}
+				rating={showRating}
+				reviews={
+					<Suspense
+						fallback={<Skeleton className="h-32 rounded-xl" />}
+					>
+						<PublicReviewsSection mediaId={tvId} mediaType="tv" />
+					</Suspense>
+				}
+				extraSections={seasonsSection}
+				trailers={
+					<Suspense fallback={<DetailSectionSkeleton />}>
+						<TvTrailersSection tvId={tvId} />
+					</Suspense>
+				}
+				cast={credits.cast}
+			/>
+		</>
 	);
 }

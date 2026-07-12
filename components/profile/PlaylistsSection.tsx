@@ -18,8 +18,16 @@ import type {
 } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { PlaylistEditDialog } from '@/components/profile/PlaylistEditDialog';
+import dynamic from 'next/dynamic';
 import { VisibilitySelector } from '@/components/profile/VisibilitySelector';
+
+const PlaylistEditDialog = dynamic(
+	() =>
+		import('@/components/profile/PlaylistEditDialog').then(
+			(m) => m.PlaylistEditDialog
+		),
+	{ ssr: false }
+);
 
 interface PlaylistsSectionProps {
 	playlists: Playlist[];
@@ -117,7 +125,7 @@ function PlaylistCard({
 
 				<div className="relative z-10 flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 py-4 gap-3 sm:gap-6">
 					<div className="min-w-0 sm:flex-none sm:max-w-60 flex flex-col justify-center gap-1 max-sm:pr-14">
-						<h3 className="font-display text-2xl sm:text-3xl font-normal leading-none uppercase tracking-wide text-white truncate">
+						<h3 className="heading-display leading-none text-2xl sm:text-3xl uppercase tracking-wide text-white truncate">
 							{playlist.name}
 						</h3>
 						{playlist.description && (

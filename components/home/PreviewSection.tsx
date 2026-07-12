@@ -36,7 +36,7 @@ export default async function PreviewSection({
 	return (
 		<section className="py-16 md:py-24">
 			<div className="mx-auto mb-10 max-w-4xl px-6 text-center lg:px-12">
-				<h2 className="mb-3 font-display text-4xl font-normal text-text md:text-5xl">
+				<h2 className="mb-3 heading-display leading-none text-4xl text-text md:text-5xl">
 					{t.home.preview.title}
 				</h2>
 				<p className="text-lg text-muted">{t.home.preview.subtitle}</p>

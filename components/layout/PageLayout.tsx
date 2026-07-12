@@ -11,7 +11,7 @@ export function PageLayout({ children, className }: PageLayoutProps) {
 	return (
 		<div
 			className={cn(
-				'container mx-auto py-12 md:py-16 lg:py-20 px-6 lg:px-12',
+				'container mx-auto py-section md:py-section-md lg:py-section-lg px-6 lg:px-12',
 				className
 			)}
 		>

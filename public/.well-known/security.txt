@@ -1,0 +1,4 @@
+Contact: https://github.com/TheSawkit/ReelMark/security/advisories/new
+Expires: 2027-07-12T00:00:00.000Z
+Preferred-Languages: fr, en
+Canonical: https://reelmark.silexio.be/.well-known/security.txt

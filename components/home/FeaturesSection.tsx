@@ -49,7 +49,7 @@ export default async function FeaturesSection() {
 	return (
 		<section className="px-6 py-20 lg:px-12">
 			<div className="mx-auto max-w-6xl">
-				<h2 className="mb-12 text-center font-display text-5xl font-normal text-text md:text-6xl animate-slide-up-subtle">
+				<h2 className="mb-12 text-center heading-display leading-none text-5xl text-text md:text-6xl animate-slide-up-subtle">
 					{t.home.features.title}
 				</h2>
 				<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">

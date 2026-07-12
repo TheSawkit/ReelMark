@@ -76,7 +76,8 @@
 	--spacing-page-x: 1.5rem;
 	--spacing-page-x-lg: 3rem;
 	--spacing-section: 3rem;
-	--spacing-section-lg: 4.5rem;
+	--spacing-section-md: 4rem;
+	--spacing-section-lg: 5rem;
 
 	--shadow-search-dropdown: var(--shadow-search-dropdown);
 
@@ -461,6 +462,12 @@ a {
 
 	.tab-spotlight {
 		background: radial-gradient(circle, var(--spotlight), transparent 70%);
+	}
+
+	/* Canonical display-heading recipe — pair with leading-none + a text-* size. */
+	.heading-display {
+		font-family: var(--font-display);
+		font-weight: 400;
 	}
 
 	.banner-pull-top {

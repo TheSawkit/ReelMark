@@ -33,7 +33,7 @@ export default async function HeroSection({
 
 			<div className="relative z-10 mx-auto max-w-4xl text-center">
 				<h1
-					className="mb-6 font-display text-6xl font-normal tracking-tight text-text sm:text-7xl md:text-8xl lg:text-9xl"
+					className="mb-6 heading-display leading-none text-6xl text-text sm:text-7xl md:text-8xl lg:text-9xl"
 					style={{ animation: SLIDE }}
 				>
 					<Title className="inline-block h-[1em] w-auto text-text drop-shadow-text" />

@@ -23,6 +23,7 @@ import { getMediaWatchlistEntry } from '@/app/actions/watchlist';
 import { getAverageRating, getMediaReview } from '@/app/actions/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
+import { movieJsonLd, serializeJsonLd } from '@/lib/structured-data';
 import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import { Eye } from 'lucide-react';
@@ -107,6 +108,7 @@ export default async function MoviePage(props: MoviePageProps) {
 
 	const [watchlistEntry, movieRating, userReview, t, locale] =
 		await userDataPromise;
+	const lang = await getServerLanguage();
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, movieDetails.backdrop_path),
@@ -212,28 +214,43 @@ export default async function MoviePage(props: MoviePageProps) {
 	);
 
 	return (
-		<MediaDetailLayout
-			banner={banner}
-			actionsBar={actionsBar}
-			description={movieDetails.overview}
-			crew={crew}
-			watchProviders={
-				<Suspense fallback={<DetailSectionSkeleton />}>
-					<MovieProvidersSection movieId={movieId} />
-				</Suspense>
-			}
-			rating={movieRating}
-			reviews={
-				<Suspense fallback={<Skeleton className="h-32 rounded-xl" />}>
-					<PublicReviewsSection mediaId={movieId} mediaType="movie" />
-				</Suspense>
-			}
-			trailers={
-				<Suspense fallback={<DetailSectionSkeleton />}>
-					<MovieTrailersSection movieId={movieId} />
-				</Suspense>
-			}
-			cast={credits.cast}
-		/>
+		<>
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{
+					__html: serializeJsonLd(
+						movieJsonLd(movieDetails, credits, lang)
+					),
+				}}
+			/>
+			<MediaDetailLayout
+				banner={banner}
+				actionsBar={actionsBar}
+				description={movieDetails.overview}
+				crew={crew}
+				watchProviders={
+					<Suspense fallback={<DetailSectionSkeleton />}>
+						<MovieProvidersSection movieId={movieId} />
+					</Suspense>
+				}
+				rating={movieRating}
+				reviews={
+					<Suspense
+						fallback={<Skeleton className="h-32 rounded-xl" />}
+					>
+						<PublicReviewsSection
+							mediaId={movieId}
+							mediaType="movie"
+						/>
+					</Suspense>
+				}
+				trailers={
+					<Suspense fallback={<DetailSectionSkeleton />}>
+						<MovieTrailersSection movieId={movieId} />
+					</Suspense>
+				}
+				cast={credits.cast}
+			/>
+		</>
 	);
 }

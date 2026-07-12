@@ -44,7 +44,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
 	return (
 		<div className="w-80 max-w-[calc(100vw-2rem)] p-2">
 			<div className="flex items-center justify-between px-2 py-1.5">
-				<span className="font-display text-lg text-text">
+				<span className="heading-display leading-none text-lg text-text">
 					{t.notifications.title}
 				</span>
 				<button

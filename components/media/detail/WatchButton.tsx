@@ -1,13 +1,21 @@
 'use client';
 
 import { useState, useOptimistic, useTransition } from 'react';
+import dynamic from 'next/dynamic';
 import { Eye, Plus, Check, Loader2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { addToWatchlist, removeFromWatchlist } from '@/app/actions/watchlist';
 import { useTranslation } from '@/lib/i18n/context';
 import { useAutoResetError } from '@/hooks/useAutoResetError';
-import { ReviewDialog } from '@/components/media/reviews/ReviewDialog';
 import type { WatchButtonProps } from '@/types/components';
+
+const ReviewDialog = dynamic(
+	() =>
+		import('@/components/media/reviews/ReviewDialog').then(
+			(m) => m.ReviewDialog
+		),
+	{ ssr: false }
+);
 
 export function WatchButton({
 	mediaId,

@@ -38,7 +38,7 @@ export function BentoStats({
 							<div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
 								<Icon className="h-5 w-5" />
 							</div>
-							<div className="font-display text-3xl leading-none text-text sm:text-4xl">
+							<div className="heading-display leading-none text-3xl text-text sm:text-4xl">
 								{value}
 							</div>
 							<div className="mt-1.5 text-xs text-muted sm:text-sm">

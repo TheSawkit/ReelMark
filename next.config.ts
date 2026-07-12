@@ -107,8 +107,14 @@ const nextConfig: NextConfig = {
 	},
 };
 
+const offlineRevision = crypto.randomUUID();
+
 export default withSerwist({
 	swSrc: 'app/service-worker.ts',
 	swDest: 'public/sw.js',
 	disable: isDev,
+	additionalPrecacheEntries: [
+		{ url: '/en/offline', revision: offlineRevision },
+		{ url: '/fr/offline', revision: offlineRevision },
+	],
 })(nextConfig);

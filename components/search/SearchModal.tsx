@@ -2,10 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import dynamic from 'next/dynamic';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SearchBar } from '@/components/search/SearchBar';
 import { useTranslation } from '@/lib/i18n/context';
+
+const SearchBar = dynamic(
+	() => import('@/components/search/SearchBar').then((m) => m.SearchBar),
+	{ ssr: false }
+);
 
 export function SearchModal() {
 	const [isOpen, setIsOpen] = useState(false);

@@ -10,7 +10,7 @@ export default function FeatureCard({
 			<div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border-subtle bg-glass-bg-hover">
 				{icon}
 			</div>
-			<h3 className="mb-3 font-display text-2xl font-normal text-text">
+			<h3 className="mb-3 heading-display leading-none text-2xl text-text">
 				{title}
 			</h3>
 			<p className="text-muted">{description}</p>

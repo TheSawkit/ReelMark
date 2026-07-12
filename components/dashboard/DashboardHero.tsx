@@ -89,7 +89,7 @@ export async function DashboardHero({
 							</div>
 						)}
 
-						<h2 className="font-display text-4xl leading-none text-white drop-shadow-text sm:text-5xl">
+						<h2 className="heading-display leading-none text-4xl text-white drop-shadow-text sm:text-5xl">
 							{item.title}
 						</h2>
 
