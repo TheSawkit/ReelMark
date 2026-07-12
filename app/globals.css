@@ -457,6 +457,11 @@ a {
 
 	.bottom-nav-safe-area {
 		padding-bottom: env(safe-area-inset-bottom);
+	}
+
+	/* On the glass island itself (NOT an ancestor): naming an ancestor isolates
+	   it as backdrop root and silently disables descendants' backdrop-filter. */
+	.bottom-nav-bar {
 		view-transition-name: bottom-nav;
 	}
 

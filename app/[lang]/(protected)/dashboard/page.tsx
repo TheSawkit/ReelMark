@@ -157,10 +157,12 @@ async function TrendingSection({ t }: { t: Translations }) {
 		getTrendingTvShows().catch((): TvShow[] => []),
 	]);
 
-	const trendingItems = [
-		...trendingMovies.slice(0, 10).map(movieToMediaItem),
-		...trendingTv.slice(0, 10).map(tvShowToMediaItem),
-	].slice(0, 16);
+	const trendingItems = await mergeWithWatchlist(
+		[
+			...trendingMovies.slice(0, 10).map(movieToMediaItem),
+			...trendingTv.slice(0, 10).map(tvShowToMediaItem),
+		].slice(0, 16)
+	);
 
 	return (
 		<TrendingMarquee

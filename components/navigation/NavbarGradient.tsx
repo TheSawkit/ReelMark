@@ -9,8 +9,8 @@ export function NavbarGradient({ color }: NavbarGradientProps) {
 			style={{
 				height: 'calc(4rem + env(safe-area-inset-top))',
 				background: color
-					? `linear-gradient(to right, var(--color-surface), ${color})`
-					: `linear-gradient(to right, var(--color-surface), var(--color-background))`,
+					? `linear-gradient(to right, color-mix(in srgb, var(--color-surface) 60%, transparent), color-mix(in srgb, ${color} 60%, transparent))`
+					: `linear-gradient(to right, color-mix(in srgb, var(--color-surface) 60%, transparent), color-mix(in srgb, var(--color-background) 60%, transparent))`,
 				transition: 'background var(--duration-base) ease-out',
 			}}
 			aria-hidden="true"

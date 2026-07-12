@@ -23,8 +23,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/context';
 import { siLetterboxd, siTrakt, siTvtime } from 'simple-icons';
-import { exportUserData, importBatch } from '@/app/actions/data';
-import type { ImportItem } from '@/app/actions/data';
+import { exportUserData, importBatch, importLists } from '@/app/actions/data';
+import type { ImportItem, ImportedList } from '@/app/actions/data';
 import { parseImportFile, type Platform } from '@/lib/parsers/import-watchlist';
 
 type TranslationData = ReturnType<
@@ -149,11 +149,41 @@ const PLATFORMS: Array<{ id: Platform; label: string; logo: React.ReactNode }> =
 
 type ImportPhase =
 	| { type: 'idle' }
-	| { type: 'ready'; items: ImportItem[] }
+	| { type: 'ready'; items: ImportItem[]; lists: ImportedList[] }
 	| { type: 'importing'; total: number; done: number }
 	| { type: 'done'; imported: number; failed: string[] };
 
+function countImportEntries(items: ImportItem[], lists: ImportedList[]) {
+	return (
+		items.length +
+		lists.reduce((sum, list) => sum + list.items.length, 0)
+	);
+}
+
 const BATCH_SIZE = 20;
+const EPISODES_PER_BATCH = 1500;
+
+function chunkImportItems(items: ImportItem[]): ImportItem[][] {
+	const chunks: ImportItem[][] = [];
+	let current: ImportItem[] = [];
+	let currentEpisodes = 0;
+	for (const item of items) {
+		const episodeCount = item.watchedEpisodes?.length ?? 0;
+		const overflows =
+			current.length >= BATCH_SIZE ||
+			(current.length > 0 &&
+				currentEpisodes + episodeCount > EPISODES_PER_BATCH);
+		if (overflows) {
+			chunks.push(current);
+			current = [];
+			currentEpisodes = 0;
+		}
+		current.push(item);
+		currentEpisodes += episodeCount;
+	}
+	if (current.length > 0) chunks.push(current);
+	return chunks;
+}
 
 export function DataSettings() {
 	const { t } = useTranslation();
@@ -198,13 +228,14 @@ export function DataSettings() {
 		async (file: File) => {
 			if (!platform) return;
 			try {
-				const items = await parseImportFile(
+				const { items, lists } = await parseImportFile(
 					file,
 					platform,
 					td.importUnknownFormat
 				);
-				if (items.length === 0) throw new Error(td.importNoItems);
-				setPhase({ type: 'ready', items });
+				if (countImportEntries(items, lists) === 0)
+					throw new Error(td.importNoItems);
+				setPhase({ type: 'ready', items, lists });
 			} catch (err) {
 				toast.error(
 					err instanceof Error ? err.message : t.common.actionError
@@ -234,16 +265,24 @@ export function DataSettings() {
 
 	async function handleImport() {
 		if (phase.type !== 'ready') return;
-		const { items } = phase;
-		const chunks: ImportItem[][] = [];
-		for (let i = 0; i < items.length; i += BATCH_SIZE) {
-			chunks.push(items.slice(i, i + BATCH_SIZE));
-		}
+		const { items, lists } = phase;
+		const chunks = chunkImportItems(items);
+		const total = countImportEntries(items, lists);
 
-		setPhase({ type: 'importing', total: items.length, done: 0 });
+		setPhase({ type: 'importing', total, done: 0 });
 
 		let totalImported = 0;
 		const allFailed: string[] = [];
+
+		const advance = (count: number) =>
+			setPhase((prev) =>
+				prev.type === 'importing'
+					? {
+							...prev,
+							done: Math.min(prev.done + count, prev.total),
+						}
+					: prev
+			);
 
 		for (const chunk of chunks) {
 			try {
@@ -253,17 +292,18 @@ export function DataSettings() {
 			} catch {
 				allFailed.push(...chunk.map((i) => i.title));
 			}
-			setPhase((prev) =>
-				prev.type === 'importing'
-					? {
-							...prev,
-							done: Math.min(
-								prev.done + chunk.length,
-								prev.total
-							),
-						}
-					: prev
-			);
+			advance(chunk.length);
+		}
+
+		for (const list of lists) {
+			try {
+				const result = await importLists([list]);
+				totalImported += result.imported;
+				allFailed.push(...result.failed);
+			} catch {
+				allFailed.push(...list.items.map((i) => i.title));
+			}
+			advance(list.items.length);
 		}
 
 		setPhase({ type: 'done', imported: totalImported, failed: allFailed });
@@ -386,7 +426,10 @@ export function DataSettings() {
 											<div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface-2/30 border border-border/20">
 												<FileJson className="h-5 w-5 text-primary shrink-0" />
 												<span className="text-sm text-text font-medium">
-													{phase.items.length}{' '}
+													{countImportEntries(
+														phase.items,
+														phase.lists
+													)}{' '}
 													{td.importFileReady}
 												</span>
 												<button

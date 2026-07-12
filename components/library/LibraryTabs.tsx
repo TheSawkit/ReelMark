@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { MediaCard } from '@/components/media/card/MediaCard';
 import { MediaListControls } from '@/components/media/list/MediaListControls';
-import { BookMarked, Eye, ChevronDown } from 'lucide-react';
+import { BookMarked, Eye, Loader2 } from 'lucide-react';
+import { useProgressiveReveal } from '@/hooks/useProgressiveReveal';
 import { useTranslation } from '@/lib/i18n/context';
 import type { MediaItem, WatchlistEntry } from '@/types/tmdb';
 import { watchlistEntryToMediaItem } from '@/lib/mappers';
@@ -41,7 +42,6 @@ export function LibraryTabs({
 	ratingByKey,
 }: LibraryTabsProps) {
 	const [activeTab, setActiveTab] = useState<Tab>('to_watch');
-	const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 	const { t } = useTranslation();
 
 	const toWatchItems = useMemo(
@@ -74,12 +74,16 @@ export function LibraryTabs({
 		`reelmark:list:library:${activeTab}`
 	);
 
+	const processed = controls.items;
+	const { visibleCount, hasMore, loaderRef, reset } = useProgressiveReveal(
+		processed.length,
+		PAGE_SIZE
+	);
+
 	function switchTab(tab: Tab) {
 		setActiveTab(tab);
-		setVisibleCount(PAGE_SIZE);
+		reset();
 	}
-
-	const processed = controls.items;
 
 	return (
 		<div>
@@ -172,31 +176,32 @@ export function LibraryTabs({
 											? tvProgress[item.id]
 											: undefined;
 									return (
-										<MediaCard
+										<div
 											key={entry?.id ?? getMediaKey(item)}
-											media={item}
-											watchlistEntry={entry}
-											hideRating
-											priority={index < 6}
-											tvProgress={progress}
-										/>
+											className="media-grid-cell"
+										>
+											<MediaCard
+												media={item}
+												watchlistEntry={entry}
+												hideRating
+												priority={index < 6}
+												tvProgress={progress}
+											/>
+										</div>
 									);
 								})}
 						</div>
 					)}
 
-					{visibleCount < processed.length && (
-						<div className="flex justify-center mt-10">
-							<button
-								onClick={() =>
-									setVisibleCount((c) => c + PAGE_SIZE)
-								}
-								className="flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-2 border border-border text-sm font-medium text-muted hover:text-text hover:bg-surface-3 transition duration-(--duration-fast) active:scale-95"
-							>
-								<ChevronDown className="h-4 w-4" />
-								{t.library.loadMore} (
-								{processed.length - visibleCount})
-							</button>
+					<div ref={loaderRef} aria-hidden="true" />
+
+					{hasMore && (
+						<div
+							className="flex justify-center py-8"
+							role="status"
+							aria-label={t.common.loading}
+						>
+							<Loader2 className="h-6 w-6 animate-spin text-muted" />
 						</div>
 					)}
 				</>

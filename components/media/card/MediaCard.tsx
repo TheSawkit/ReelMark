@@ -55,6 +55,7 @@ export function MediaCard({
 
 	const href = localizedHref(lang, getMediaHref(media));
 	const isWatched = watchlistEntry?.status === 'watched';
+	const badgeEntry = watchlistEntry ?? media.watchlistEntry;
 	const resolvedStatus =
 		media.media_type === 'tv'
 			? 'to_watch'
@@ -114,6 +115,22 @@ export function MediaCard({
 							'opacity-0 group-hover:opacity-100'
 						)}
 					/>
+				)}
+
+				{compact && badgeEntry && (
+					<div className="absolute top-1.5 right-1.5 z-10 grid size-6 place-items-center rounded-full glass-overlay shadow-card-sm">
+						{badgeEntry.status === 'watched' ? (
+							<Eye
+								className="h-3 w-3 text-success"
+								aria-hidden="true"
+							/>
+						) : (
+							<Clock
+								className="h-3 w-3 text-gold"
+								aria-hidden="true"
+							/>
+						)}
+					</div>
 				)}
 
 				{tvProgress && tvProgress.total > 0 && (

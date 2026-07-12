@@ -4,6 +4,8 @@ import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { fetchTMDB } from '@/lib/tmdb/client';
 import { searchMulti } from '@/lib/tmdb/search';
+import { parseVisibility } from '@/lib/privacy';
+import { revalidateProfile } from '@/app/actions/_helpers';
 import {
 	VALID_STATUSES,
 	VALID_MEDIA_TYPES,
@@ -137,6 +139,7 @@ export interface ImportItem {
 	tvdbId?: number | null;
 	mediaType?: 'movie' | 'tv' | null;
 	posterPath?: string | null;
+	watchedEpisodes?: Array<{ season: number; episode: number }> | null;
 }
 
 export interface ImportBatchResult {
@@ -232,6 +235,79 @@ async function findByTvdbId(tvdbId: number): Promise<FindResult | null> {
 	}
 }
 
+async function resolveImportMedia(item: ImportItem): Promise<{
+	id: number;
+	type: 'movie' | 'tv';
+	title: string;
+	poster_path: string | null;
+} | null> {
+	const mediaType: 'movie' | 'tv' =
+		item.mediaType && VALID_MEDIA_TYPES.has(item.mediaType)
+			? item.mediaType
+			: 'movie';
+	const fallbackTitle = String(item.title).slice(0, 500);
+
+	if (item.tmdbId && Number.isInteger(item.tmdbId) && item.tmdbId > 0) {
+		try {
+			const verified = await verifyTmdbType(item.tmdbId, mediaType);
+			if (!verified) return null;
+			return {
+				id: item.tmdbId,
+				type: verified.type,
+				title: verified.title || fallbackTitle,
+				poster_path: verified.poster_path,
+			};
+		} catch {
+			return {
+				id: item.tmdbId,
+				type: mediaType,
+				title: fallbackTitle,
+				poster_path: item.posterPath ?? null,
+			};
+		}
+	}
+
+	if (item.imdbId && /^tt\d+$/.test(item.imdbId)) {
+		const found = await findByImdbId(item.imdbId, mediaType);
+		if (found)
+			return {
+				id: found.id,
+				type: mediaType,
+				title: found.title,
+				poster_path: found.poster_path,
+			};
+	}
+
+	if (item.tvdbId && Number.isInteger(item.tvdbId) && item.tvdbId > 0) {
+		const found = await findByTvdbId(item.tvdbId);
+		if (found)
+			return {
+				id: found.id,
+				type: 'tv',
+				title: found.title,
+				poster_path: found.poster_path,
+			};
+	}
+
+	const results = await searchMulti(String(item.title).slice(0, 200));
+	const candidates = item.mediaType
+		? results.filter((r) => r.media_type === item.mediaType)
+		: results;
+	const match = item.year
+		? (candidates.find((r) =>
+				r.release_date?.startsWith(String(item.year))
+			) ?? candidates[0])
+		: candidates[0];
+
+	if (!match) return null;
+	return {
+		id: match.id,
+		type: match.media_type as 'movie' | 'tv',
+		title: match.title || fallbackTitle,
+		poster_path: match.poster_path,
+	};
+}
+
 /**
  * Imports a batch of media items into the user's watchlist, resolving TMDB IDs in priority order:
  * direct TMDB ID → IMDb ID → TVDB ID → title+year search fallback.
@@ -243,10 +319,20 @@ export async function importBatch(
 	if (!Array.isArray(items) || items.length === 0)
 		return { imported: 0, failed: [] };
 	if (items.length > 50) throw new Error('Batch size exceeds limit (50)');
+	const totalEpisodes = items.reduce(
+		(sum, item) => sum + (item.watchedEpisodes?.length ?? 0),
+		0
+	);
+	if (totalEpisodes > 5000)
+		throw new Error('Episode batch size exceeds limit (5000)');
 
 	const { supabase, userId } = await getAuthenticatedUser();
 
-	type Resolved = { row: WatchlistRow; rating: number | null } | null;
+	type Resolved = {
+		row: WatchlistRow;
+		rating: number | null;
+		episodes: Array<{ season: number; episode: number }>;
+	} | null;
 
 	const resolved = await mapLimit(
 		items,
@@ -256,102 +342,29 @@ export async function importBatch(
 				const status = VALID_STATUSES.has(item.status)
 					? item.status
 					: 'watched';
-				const mediaType: 'movie' | 'tv' =
-					item.mediaType && VALID_MEDIA_TYPES.has(item.mediaType)
-						? item.mediaType
-						: 'movie';
 				const rating = validateRating(item.rating);
+				const validEpisodes = (item.watchedEpisodes ?? []).filter(
+					(ep) =>
+						Number.isInteger(ep.season) &&
+						ep.season >= 1 &&
+						Number.isInteger(ep.episode) &&
+						ep.episode >= 1
+				);
 
-				const fallbackTitle = String(item.title).slice(0, 500);
-				const resolve = (
-					id: number,
-					type: 'movie' | 'tv',
-					title: string,
-					poster: string | null
-				) => ({
+				const media = await resolveImportMedia(item);
+				if (!media) return null;
+				return {
 					row: {
 						user_id: userId,
-						media_id: id,
-						media_type: type,
-						media_title: title || fallbackTitle,
-						poster_path: poster,
+						media_id: media.id,
+						media_type: media.type,
+						media_title: media.title,
+						poster_path: media.poster_path,
 						status,
 					},
 					rating,
-				});
-
-				if (
-					item.tmdbId &&
-					Number.isInteger(item.tmdbId) &&
-					item.tmdbId > 0
-				) {
-					try {
-						const verified = await verifyTmdbType(
-							item.tmdbId,
-							mediaType
-						);
-						if (!verified) return null;
-						return resolve(
-							item.tmdbId,
-							verified.type,
-							verified.title || fallbackTitle,
-							verified.poster_path
-						);
-					} catch {
-						return resolve(
-							item.tmdbId,
-							mediaType,
-							fallbackTitle,
-							item.posterPath ?? null
-						);
-					}
-				}
-
-				if (item.imdbId && /^tt\d+$/.test(item.imdbId)) {
-					const found = await findByImdbId(item.imdbId, mediaType);
-					if (found)
-						return resolve(
-							found.id,
-							mediaType,
-							found.title,
-							found.poster_path
-						);
-				}
-
-				if (
-					item.tvdbId &&
-					Number.isInteger(item.tvdbId) &&
-					item.tvdbId > 0
-				) {
-					const found = await findByTvdbId(item.tvdbId);
-					if (found)
-						return resolve(
-							found.id,
-							'tv',
-							found.title,
-							found.poster_path
-						);
-				}
-
-				const results = await searchMulti(
-					String(item.title).slice(0, 200)
-				);
-				const candidates = item.mediaType
-					? results.filter((r) => r.media_type === item.mediaType)
-					: results;
-				const match = item.year
-					? (candidates.find((r) =>
-							r.release_date?.startsWith(String(item.year))
-						) ?? candidates[0])
-					: candidates[0];
-
-				if (!match) return null;
-				return resolve(
-					match.id,
-					match.media_type as 'movie' | 'tv',
-					match.title,
-					match.poster_path
-				);
+					episodes: media.type === 'tv' ? validEpisodes : [],
+				};
 			} catch {
 				return null;
 			}
@@ -412,5 +425,134 @@ export async function importBatch(
 		});
 	}
 
+	const episodeRows = hits
+		.filter((h) => h.row.media_type === 'tv' && h.episodes.length > 0)
+		.flatMap((h) =>
+			h.episodes.map((ep) => ({
+				user_id: userId,
+				tv_id: h.row.media_id,
+				season_number: ep.season,
+				episode_number: ep.episode,
+			}))
+		);
+	const EPISODE_UPSERT_CHUNK = 1000;
+	for (let i = 0; i < episodeRows.length; i += EPISODE_UPSERT_CHUNK) {
+		await supabase
+			.from('episode_watches')
+			.upsert(episodeRows.slice(i, i + EPISODE_UPSERT_CHUNK), {
+				onConflict: 'user_id,tv_id,season_number,episode_number',
+				ignoreDuplicates: true,
+			});
+	}
+
 	return { imported: rows.length, failed };
+}
+
+export interface ImportedList {
+	name: string;
+	description: string | null;
+	items: ImportItem[];
+}
+
+/**
+ * Imports external lists as playlists: finds or creates each playlist by name, then
+ * resolves items against TMDB and inserts them, skipping duplicates.
+ */
+export async function importLists(
+	lists: ImportedList[]
+): Promise<ImportBatchResult> {
+	if (!Array.isArray(lists) || lists.length === 0)
+		return { imported: 0, failed: [] };
+	if (lists.length > 20) throw new Error('Too many lists (20 max)');
+
+	const { supabase, userId, user } = await getAuthenticatedUser();
+
+	const { data: privacyData } = await supabase
+		.from('privacy_settings')
+		.select('playlists_visibility')
+		.eq('user_id', userId)
+		.maybeSingle();
+	const visibility = parseVisibility(
+		privacyData?.playlists_visibility,
+		'private'
+	);
+
+	let imported = 0;
+	const failed: string[] = [];
+
+	for (const list of lists) {
+		const name = String(list.name ?? '')
+			.trim()
+			.slice(0, 100);
+		if (!name) continue;
+		const items = Array.isArray(list.items) ? list.items.slice(0, 200) : [];
+
+		const resolved = await mapLimit(
+			items,
+			RESOLVE_CONCURRENCY,
+			async (item) => resolveImportMedia(item).catch(() => null)
+		);
+		failed.push(
+			...items.filter((_, i) => resolved[i] === null).map((i) => i.title)
+		);
+
+		const { data: existing } = await supabase
+			.from('playlists')
+			.select('id')
+			.eq('user_id', userId)
+			.eq('name', name)
+			.maybeSingle();
+
+		let playlistId = existing?.id ?? null;
+		if (!playlistId) {
+			const { data: created, error } = await supabase
+				.from('playlists')
+				.insert({
+					user_id: userId,
+					name,
+					description: list.description
+						? String(list.description).slice(0, 500)
+						: null,
+					visibility,
+				})
+				.select('id')
+				.single();
+			if (error || !created) {
+				failed.push(
+					...items
+						.filter((_, i) => resolved[i] !== null)
+						.map((i) => i.title)
+				);
+				continue;
+			}
+			playlistId = created.id;
+		}
+
+		const rows = resolved
+			.filter((m): m is NonNullable<typeof m> => m !== null)
+			.map((m) => ({
+				playlist_id: playlistId,
+				media_id: m.id,
+				media_type: m.type,
+				media_title: m.title,
+				poster_path: m.poster_path,
+			}));
+
+		if (rows.length > 0) {
+			const { error } = await supabase
+				.from('playlist_items')
+				.upsert(rows, {
+					onConflict: 'playlist_id,media_id,media_type',
+					ignoreDuplicates: true,
+				});
+			if (error) {
+				failed.push(...rows.map((r) => r.media_title));
+			} else {
+				imported += rows.length;
+			}
+		}
+	}
+
+	await revalidateProfile(supabase, user);
+	return { imported, failed };
 }

@@ -15,7 +15,7 @@ describe('parseImportFile — Letterboxd CSV', () => {
 			'2024-02-10,"Oppenheimer",2023,uri,5,No,,2024-02-10',
 		].join('\n');
 
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(csv, 'diary.csv'),
 			'letterboxd',
 			'unknown'
@@ -44,7 +44,7 @@ describe('parseImportFile — Letterboxd CSV', () => {
 			'2024-01-15,"Conclave",2024,uri',
 		].join('\n');
 
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(csv, 'watchlist.csv'),
 			'letterboxd',
 			'unknown'
@@ -62,7 +62,7 @@ describe('parseImportFile — Letterboxd CSV', () => {
 
 	it("returns empty array for headers without 'name'", async () => {
 		const csv = 'Year\n2024';
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(csv, 'x.csv'),
 			'letterboxd',
 			'unknown'
@@ -71,7 +71,7 @@ describe('parseImportFile — Letterboxd CSV', () => {
 	});
 
 	it('returns empty array for empty file', async () => {
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile('', 'x.csv'),
 			'letterboxd',
 			'unknown'
@@ -88,7 +88,7 @@ describe('parseImportFile — Trakt JSON', () => {
 				last_watched_at: '2024-01-01',
 			},
 		]);
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(json, 'movies-watched.json'),
 			'trakt',
 			'unknown'
@@ -114,7 +114,7 @@ describe('parseImportFile — Trakt JSON', () => {
 				last_watched_at: '2024-01-01',
 			},
 		]);
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(json, 'shows-watched.json'),
 			'trakt',
 			'unknown'
@@ -135,7 +135,7 @@ describe('parseImportFile — Trakt JSON', () => {
 				listed_at: '2024-01-01',
 			},
 		]);
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(json, 'watchlist.json'),
 			'trakt',
 			'unknown'
@@ -147,7 +147,7 @@ describe('parseImportFile — Trakt JSON', () => {
 		const json = JSON.stringify([
 			{ movie: { title: 'No TMDB', ids: { imdb: 'tt0000000' } } },
 		]);
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(json, 'x.json'),
 			'trakt',
 			'unknown'
@@ -166,7 +166,7 @@ describe('parseImportFile — TV Time', () => {
 				id: { tvdb: 371980 },
 			},
 		]);
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(json, 'series.json'),
 			'tvtime',
 			'unknown'
@@ -180,6 +180,48 @@ describe('parseImportFile — TV Time', () => {
 		});
 	});
 
+	it('extracts watched episodes from Refract seasons, skipping specials', async () => {
+		const json = JSON.stringify([
+			{
+				title: 'Dark',
+				status: 'continuing',
+				id: { tvdb: 297069 },
+				seasons: [
+					{
+						number: 0,
+						is_specials: true,
+						episodes: [{ number: 1, is_watched: true }],
+					},
+					{
+						number: 1,
+						episodes: [
+							{ number: 1, is_watched: true },
+							{ number: 2, is_watched: false },
+							{ number: 3, is_watched: true },
+						],
+					},
+				],
+			},
+			{
+				title: 'Empty Show',
+				status: 'not_started_yet',
+				seasons: [{ number: 1, episodes: [] }],
+				id: { tvdb: 1 },
+			},
+		]);
+		const { items } = await parseImportFile(
+			makeFile(json, 'series.json'),
+			'tvtime',
+			'unknown'
+		);
+		expect(items[0].status).toBe('to_watch');
+		expect(items[0].watchedEpisodes).toEqual([
+			{ season: 1, episode: 1 },
+			{ season: 1, episode: 3 },
+		]);
+		expect(items[1].watchedEpisodes).toBeUndefined();
+	});
+
 	it('parses Refract movies with is_watched flag', async () => {
 		const json = JSON.stringify([
 			{
@@ -190,7 +232,7 @@ describe('parseImportFile — TV Time', () => {
 			},
 			{ title: 'Anatomy of a Fall', year: 2023, is_watched: false },
 		]);
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(json, 'movies.json'),
 			'tvtime',
 			'unknown'
@@ -204,6 +246,44 @@ describe('parseImportFile — TV Time', () => {
 			title: 'Anatomy of a Fall',
 			status: 'to_watch',
 		});
+	});
+
+	it('parses lists export format into playlists payload', async () => {
+		const json = JSON.stringify([
+			{
+				name: 'Halloween',
+				description: '',
+				is_public: true,
+				items: [
+					{ type: 'movie', name: '[REC]', custom_order: 0 },
+					{ type: 'series', name: 'The Haunting', custom_order: 1 },
+					{ type: 'movie', name: '', custom_order: 2 },
+				],
+			},
+		]);
+		const { items, lists } = await parseImportFile(
+			makeFile(json, 'lists.json'),
+			'tvtime',
+			'unknown'
+		);
+		expect(items).toEqual([]);
+		expect(lists).toHaveLength(1);
+		expect(lists[0].name).toBe('Halloween');
+		expect(lists[0].description).toBeNull();
+		expect(lists[0].items).toEqual([
+			{
+				title: '[REC]',
+				year: null,
+				status: 'to_watch',
+				mediaType: 'movie',
+			},
+			{
+				title: 'The Haunting',
+				year: null,
+				status: 'to_watch',
+				mediaType: 'tv',
+			},
+		]);
 	});
 
 	it('parses GDPR export format', async () => {
@@ -225,7 +305,7 @@ describe('parseImportFile — TV Time', () => {
 				],
 			},
 		});
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(json, 'gdpr.json'),
 			'tvtime',
 			'unknown'
@@ -260,7 +340,7 @@ describe('parseImportFile — TV Time', () => {
 				],
 			},
 		});
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(json, 'gdpr.json'),
 			'tvtime',
 			'unknown'
@@ -275,7 +355,7 @@ describe('parseImportFile — TV Time', () => {
 
 	it('falls back to legacy CSV when JSON parse fails', async () => {
 		const csv = 'show_name,episode\nSuccession,S01E01\nSuccession,S01E02';
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(csv, 'seen.csv'),
 			'tvtime',
 			'unknown'
@@ -290,7 +370,7 @@ describe('parseImportFile — TV Time', () => {
 
 	it('parses movie rows from CSV with a movie column', async () => {
 		const csv = 'movie_name,watched_at\nPast Lives,2024-01-01\nTenet,';
-		const items = await parseImportFile(
+		const { items } = await parseImportFile(
 			makeFile(csv, 'movies.csv'),
 			'tvtime',
 			'unknown'

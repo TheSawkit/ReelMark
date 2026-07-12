@@ -1,10 +1,12 @@
 'use client';
 
 import { useMemo } from 'react';
+import { Loader2 } from 'lucide-react';
 import type { MediaItem } from '@/types/tmdb';
 import { getMediaKey } from '@/lib/media';
 import { SORT_KEYS } from '@/lib/media-list/controls';
 import { useMediaListControls } from '@/hooks/useMediaListControls';
+import { useProgressiveReveal } from '@/hooks/useProgressiveReveal';
 import { MediaGrid } from '@/components/media/card/MediaGrid';
 import { MediaListControls } from '@/components/media/list/MediaListControls';
 import { useTranslation } from '@/lib/i18n/context';
@@ -34,6 +36,9 @@ export function PlaylistItemsView({
 	);
 
 	const controls = useMediaListControls(enriched, genreNames, storageKey);
+	const { visibleCount, hasMore, loaderRef } = useProgressiveReveal(
+		controls.items.length
+	);
 
 	const sortKeys =
 		Object.keys(ratingByKey).length > 0
@@ -48,7 +53,20 @@ export function PlaylistItemsView({
 					{t.lists.noResults}
 				</p>
 			) : (
-				<MediaGrid items={controls.items} hideRating />
+				<MediaGrid
+					items={controls.items.slice(0, visibleCount)}
+					hideRating
+				/>
+			)}
+			<div ref={loaderRef} aria-hidden="true" />
+			{hasMore && (
+				<div
+					className="flex justify-center py-8"
+					role="status"
+					aria-label={t.common.loading}
+				>
+					<Loader2 className="h-6 w-6 animate-spin text-muted" />
+				</div>
 			)}
 		</div>
 	);
