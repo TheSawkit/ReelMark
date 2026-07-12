@@ -3,13 +3,15 @@ import { createClient } from '@/lib/supabase/server';
 import { sanitizeRedirectPath } from '@/lib/validators';
 import { getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
-import { BASE_URL } from '@/lib/metadata';
 
 export async function GET(request: Request) {
-	const { searchParams, origin } = new URL(request.url);
+	const { searchParams, origin, host } = new URL(request.url);
 	const code = searchParams.get('code');
 	const next = sanitizeRedirectPath(searchParams.get('next'), '/dashboard');
-	const baseUrl = process.env.NODE_ENV === 'development' ? origin : BASE_URL;
+	const baseUrl =
+		request.headers.get('x-forwarded-proto') === 'https'
+			? `https://${host}`
+			: origin;
 	const lang = await getServerLanguage();
 	const errorUrl = `${baseUrl}${localizedHref(lang, '/auth/auth-code-error')}`;
 
