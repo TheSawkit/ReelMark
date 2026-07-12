@@ -15,4 +15,3 @@ Documents à la racine du repo :
 - [`DEPLOYMENT.md`](../DEPLOYMENT.md) — runbook Kubernetes Infomaniak complet
 - [`CONTRIBUTING.md`](../CONTRIBUTING.md) — workflow de contribution et conventions
 - [`SECURITY.md`](../SECURITY.md) — politique de sécurité et signalement de vulnérabilités
-- [`CLAUDE.md`](../CLAUDE.md) et [`context-ai/`](../context-ai/) — contexte pour les agents IA (ne pas confondre avec cette documentation, destinée aux humains)
