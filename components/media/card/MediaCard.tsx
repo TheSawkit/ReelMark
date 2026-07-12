@@ -175,18 +175,16 @@ export function MediaCard({
 
 							{watchlistEntry ? (
 								<div className="flex items-center gap-1.5 mt-1">
-									{media.media_type === 'tv' ? (
-										<Clock className="h-3 w-3 text-white/80 shrink-0" />
-									) : isWatched ? (
+									{isWatched ? (
 										<Eye className="h-3 w-3 text-white/80 shrink-0" />
 									) : (
 										<Clock className="h-3 w-3 text-white/80 shrink-0" />
 									)}
 									<span className="text-xs text-white/60 leading-tight">
-										{media.media_type === 'tv'
-											? t.movie.startedOn
-											: isWatched
-												? t.movie.watchedOn
+										{isWatched
+											? t.movie.watchedOn
+											: media.media_type === 'tv'
+												? t.movie.startedOn
 												: t.movie.addedOn}{' '}
 										{formatShortDate(
 											watchlistEntry.created_at,

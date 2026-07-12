@@ -9,6 +9,7 @@ import {
 	SHARED_REVALIDATE_PATHS,
 	revalidateLocalized,
 } from '@/app/actions/_helpers';
+import { fetchAllRows } from '@/lib/supabase/pagination';
 import { getTvShowDetails } from '@/lib/tmdb';
 import type { SupabaseServerClient } from '@/lib/supabase/server';
 
@@ -256,14 +257,23 @@ export async function getAllTvShowsWatchProgress(
 	const { supabase, userId } = await getOptionalUser();
 	if (!userId) return {};
 
-	const { data: watches } = await supabase
-		.from('episode_watches')
-		.select('tv_id')
-		.eq('user_id', userId)
-		.in('tv_id', tvIds);
+	let watches: Array<{ tv_id: number }>;
+	try {
+		watches = await fetchAllRows((from, to) =>
+			supabase
+				.from('episode_watches')
+				.select('tv_id')
+				.eq('user_id', userId)
+				.in('tv_id', tvIds)
+				.order('id')
+				.range(from, to)
+		);
+	} catch {
+		return {};
+	}
 
 	const totals: Record<number, number> = {};
-	for (const w of watches ?? []) {
+	for (const w of watches) {
 		totals[w.tv_id] = (totals[w.tv_id] ?? 0) + 1;
 	}
 	return totals;

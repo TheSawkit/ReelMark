@@ -11,6 +11,7 @@ import {
 import { VALID_STATUSES, VALID_MEDIA_TYPES } from '@/lib/validators';
 import type { WatchStatus, WatchlistEntry, MediaType } from '@/types/tmdb';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
+import { fetchAllRows } from '@/lib/supabase/pagination';
 import { getListMediaMetadata, type ListMediaMetadata } from '@/lib/tmdb';
 
 function revalidateWatchlistPaths(mediaType: MediaType, mediaId: number) {
@@ -190,16 +191,17 @@ export async function getUserWatchlist(): Promise<WatchlistEntry[]> {
 
 	if (!userId) return [];
 
-	const { data: entries, error } = await supabase
-		.from('watchlist')
-		.select(WATCHLIST_COLUMNS)
-		.eq('user_id', userId)
-		.order('created_at', { ascending: false })
-		.limit(1000);
+	const entries = await fetchAllRows((from, to) =>
+		supabase
+			.from('watchlist')
+			.select(WATCHLIST_COLUMNS)
+			.eq('user_id', userId)
+			.order('created_at', { ascending: false })
+			.order('id')
+			.range(from, to)
+	);
 
-	if (error) throw new Error(error.message);
-
-	return (entries as WatchlistEntry[]) ?? [];
+	return entries as WatchlistEntry[];
 }
 
 export async function getMediaWatchlistEntry(

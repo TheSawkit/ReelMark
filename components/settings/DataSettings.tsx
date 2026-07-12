@@ -10,6 +10,7 @@ import {
 	AlertCircle,
 	ChevronDown,
 	ChevronUp,
+	Copy,
 } from 'lucide-react';
 import {
 	Card,
@@ -460,19 +461,35 @@ export function DataSettings() {
 
 							{phase.failed.length > 0 && (
 								<div className="space-y-2">
-									<button
-										onClick={() => setShowFailed((v) => !v)}
-										className="flex items-center gap-1.5 text-xs font-medium text-muted hover:text-text transition-colors cursor-pointer"
-									>
-										{showFailed ? (
-											<ChevronUp className="h-3.5 w-3.5" />
-										) : (
-											<ChevronDown className="h-3.5 w-3.5" />
-										)}
-										{showFailed
-											? td.hideFailed
-											: td.showFailed}
-									</button>
+									<div className="flex items-center gap-4">
+										<button
+											onClick={() =>
+												setShowFailed((v) => !v)
+											}
+											className="flex items-center gap-1.5 text-xs font-medium text-muted hover:text-text transition-colors cursor-pointer"
+										>
+											{showFailed ? (
+												<ChevronUp className="h-3.5 w-3.5" />
+											) : (
+												<ChevronDown className="h-3.5 w-3.5" />
+											)}
+											{showFailed
+												? td.hideFailed
+												: td.showFailed}
+										</button>
+										<button
+											onClick={async () => {
+												await navigator.clipboard.writeText(
+													phase.failed.join('\n')
+												);
+												toast.success(td.failedCopied);
+											}}
+											className="flex items-center gap-1.5 text-xs font-medium text-muted hover:text-text transition-colors cursor-pointer"
+										>
+											<Copy className="h-3.5 w-3.5" />
+											{td.copyFailed}
+										</button>
+									</div>
 									{showFailed && (
 										<div className="rounded-lg bg-surface-2/30 border border-border/20 p-3 max-h-40 overflow-y-auto space-y-1">
 											{phase.failed.map((title, i) => (

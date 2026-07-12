@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { searchMulti } from '@/lib/tmdb';
+import { mergeWithWatchlist } from '@/lib/data/watchlist';
 import { MediaGrid } from '@/components/media/card/MediaGrid';
 import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -28,7 +29,9 @@ export async function generateMetadata({
 }
 
 async function SearchResults({ query, t }: { query: string; t: Translations }) {
-	const results = query ? await searchMulti(query) : [];
+	const results = query
+		? await mergeWithWatchlist(await searchMulti(query))
+		: [];
 
 	const foundMessage = `${t.pages.search.found} ${t.pages.search.foundCount.replace('${count}', String(results.length))}`;
 

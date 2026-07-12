@@ -1,6 +1,7 @@
 'use server';
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
+import { fetchAllRows } from '@/lib/supabase/pagination';
 import { fetchTMDB } from '@/lib/tmdb/client';
 import { searchMulti } from '@/lib/tmdb/search';
 import {
@@ -84,34 +85,45 @@ export interface ExportData {
 export async function exportUserData(): Promise<ExportData> {
 	const { supabase, userId } = await getAuthenticatedUser();
 
-	const [watchlistRes, reviewsRes, episodesRes] = await Promise.all([
-		supabase
-			.from('watchlist')
-			.select(
-				'media_id,media_type,media_title,poster_path,status,created_at'
-			)
-			.eq('user_id', userId)
-			.order('created_at', { ascending: false }),
-		supabase
-			.from('reviews')
-			.select(
-				'media_id,media_type,media_title,poster_path,rating,content,created_at'
-			)
-			.eq('user_id', userId)
-			.order('created_at', { ascending: false }),
-		supabase
-			.from('episode_watches')
-			.select('tv_id,season_number,episode_number,watched_at')
-			.eq('user_id', userId),
+	const [watchlistRows, reviewRows, episodeRows] = await Promise.all([
+		fetchAllRows((from, to) =>
+			supabase
+				.from('watchlist')
+				.select(
+					'media_id,media_type,media_title,poster_path,status,created_at'
+				)
+				.eq('user_id', userId)
+				.order('created_at', { ascending: false })
+				.order('id')
+				.range(from, to)
+		),
+		fetchAllRows((from, to) =>
+			supabase
+				.from('reviews')
+				.select(
+					'media_id,media_type,media_title,poster_path,rating,content,created_at'
+				)
+				.eq('user_id', userId)
+				.order('created_at', { ascending: false })
+				.order('id')
+				.range(from, to)
+		),
+		fetchAllRows((from, to) =>
+			supabase
+				.from('episode_watches')
+				.select('tv_id,season_number,episode_number,watched_at')
+				.eq('user_id', userId)
+				.order('id')
+				.range(from, to)
+		),
 	]);
 
 	return {
 		version: 1,
 		exported_at: new Date().toISOString(),
-		watchlist: (watchlistRes.data ?? []) as ExportData['watchlist'],
-		reviews: (reviewsRes.data ?? []) as ExportData['reviews'],
-		episode_watches: (episodesRes.data ??
-			[]) as ExportData['episode_watches'],
+		watchlist: watchlistRows as ExportData['watchlist'],
+		reviews: reviewRows as ExportData['reviews'],
+		episode_watches: episodeRows as ExportData['episode_watches'],
 	};
 }
 
