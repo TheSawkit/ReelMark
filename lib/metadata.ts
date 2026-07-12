@@ -3,8 +3,12 @@ import { getImageUrl } from '@/lib/tmdb/images';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n/config';
 import type { Language } from '@/lib/i18n/translations';
 
-export const BASE_URL =
-	process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost:3000';
+export const BASE_URL = (() => {
+	const raw = process.env.NEXT_PUBLIC_BASE_URL?.trim();
+	if (raw && raw.startsWith('http')) return raw;
+	return 'https://reelmark.silexio.be';
+  })();
+  
 
 interface MediaMetadataOptions {
 	title: string;
