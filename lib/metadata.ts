@@ -7,8 +7,7 @@ export const BASE_URL = (() => {
 	const raw = process.env.NEXT_PUBLIC_BASE_URL?.trim();
 	if (raw && raw.startsWith('http')) return raw;
 	return 'https://reelmark.silexio.be';
-  })();
-  
+})();
 
 interface MediaMetadataOptions {
 	title: string;
