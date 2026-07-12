@@ -233,13 +233,19 @@ export function SignupForm({
 			</Card>
 			<FieldDescription className="px-6 text-center">
 				{t.auth.terms}{' '}
-				<span className="underline cursor-default">
+				<Link
+					href={localizedHref(lang, '/terms')}
+					className="underline hover:text-text transition-colors"
+				>
 					{t.auth.termsLink}
-				</span>{' '}
+				</Link>{' '}
 				{t.common.and}{' '}
-				<span className="underline cursor-default">
+				<Link
+					href={localizedHref(lang, '/privacy')}
+					className="underline hover:text-text transition-colors"
+				>
 					{t.auth.privacyLink}
-				</span>
+				</Link>
 				.
 			</FieldDescription>
 		</div>

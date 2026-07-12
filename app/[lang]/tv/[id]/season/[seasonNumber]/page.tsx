@@ -24,7 +24,7 @@ import { SectionHeading } from '@/components/ui/SectionHeading';
 import { CommunityRating } from '@/components/media/detail/CommunityRating';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
 import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
-import { EpisodeCard } from '@/components/media/tv/EpisodeCard';
+import { SeasonEpisodesList } from '@/components/media/tv/SeasonEpisodesList';
 import { localizedAlternates } from '@/lib/metadata';
 
 export const dynamic = 'force-dynamic';
@@ -188,27 +188,20 @@ export default async function SeasonPage(props: SeasonPageProps) {
 							({seasonDetails.episodes.length})
 						</span>
 					</SectionHeading>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						{seasonDetails.episodes.map((episode) => (
-							<EpisodeCard
-								key={episode.id}
-								tvId={tvId}
-								seasonNumber={seasonNumber}
-								episode={episode}
-								isWatched={watchedEpisodes.has(
-									episode.episode_number
-								)}
-								locale={locale}
-								reviews={
-									reviewsByEpisodeId.get(episode.id) ?? []
-								}
-								labels={{
-									noImage: t.movie.noImage,
-									noDescription: t.movie.noDescription,
-								}}
-							/>
-						))}
-					</div>
+					<SeasonEpisodesList
+						tvId={tvId}
+						seasonNumber={seasonNumber}
+						episodes={seasonDetails.episodes}
+						watchedEpisodeNumbers={Array.from(watchedEpisodes)}
+						reviewsByEpisodeId={Object.fromEntries(
+							reviewsByEpisodeId
+						)}
+						locale={locale}
+						labels={{
+							noImage: t.movie.noImage,
+							noDescription: t.movie.noDescription,
+						}}
+					/>
 				</section>
 			</div>
 		</div>

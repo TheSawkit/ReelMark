@@ -256,15 +256,12 @@ export async function getAllTvShowsWatchProgress(
 	const { supabase, userId } = await getOptionalUser();
 	if (!userId) return {};
 
-	const { data: watches } = await supabase
-		.from('episode_watches')
-		.select('tv_id')
-		.eq('user_id', userId)
-		.in('tv_id', tvIds);
+	const { data: counts } = await supabase.rpc('episode_watch_counts');
 
+	const wanted = new Set(tvIds);
 	const totals: Record<number, number> = {};
-	for (const w of watches ?? []) {
-		totals[w.tv_id] = (totals[w.tv_id] ?? 0) + 1;
+	for (const row of counts ?? []) {
+		if (wanted.has(row.tv_id)) totals[row.tv_id] = row.watched_count;
 	}
 	return totals;
 }

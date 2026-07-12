@@ -38,7 +38,10 @@ import {
 	BentoStatsSkeleton,
 	TrendingMarqueeSkeleton,
 } from '@/components/dashboard/DashboardSkeletons';
-import { getWatchlistWithProgress } from '@/lib/data/watchlist';
+import {
+	getWatchlistWithProgress,
+	mergeWithWatchlist,
+} from '@/lib/data/watchlist';
 import { buildPageMetadata } from '@/lib/metadata';
 import type { Movie, TvShow, MediaType } from '@/types/tmdb';
 
@@ -154,10 +157,12 @@ async function TrendingSection({ t }: { t: Translations }) {
 		getTrendingTvShows().catch((): TvShow[] => []),
 	]);
 
-	const trendingItems = [
-		...trendingMovies.slice(0, 10).map(movieToMediaItem),
-		...trendingTv.slice(0, 10).map(tvShowToMediaItem),
-	].slice(0, 16);
+	const trendingItems = await mergeWithWatchlist(
+		[
+			...trendingMovies.slice(0, 10).map(movieToMediaItem),
+			...trendingTv.slice(0, 10).map(tvShowToMediaItem),
+		].slice(0, 16)
+	);
 
 	return (
 		<TrendingMarquee
@@ -174,13 +179,26 @@ async function LibraryContentSection({
 	type: MediaType;
 	t: Translations;
 }) {
-	const { watchlist } = await getWatchlistWithProgress();
+	const { watchlist, tvProgress } = await getWatchlistWithProgress();
 
 	const toWatch = watchlist
 		.filter(
 			(entry) => entry.media_type === type && entry.status === 'to_watch'
 		)
 		.slice(0, 10);
+
+	const tvProgressMap: Record<number, { watched: number; total: number }> =
+		{};
+	if (type === 'tv') {
+		for (const entry of toWatch) {
+			if (entry.total_episodes) {
+				tvProgressMap[entry.media_id] = {
+					watched: tvProgress[entry.media_id] ?? 0,
+					total: entry.total_episodes,
+				};
+			}
+		}
+	}
 	const watched = watchlist.filter(
 		(entry) => entry.media_type === type && entry.status === 'watched'
 	);
@@ -228,7 +246,14 @@ async function LibraryContentSection({
 		}))
 		.filter((section) => section.items.length > 0);
 
-	const allSections = [...recommendationSections, ...similarSections];
+	const allSections = await Promise.all(
+		[...recommendationSections, ...similarSections].map(
+			async (section) => ({
+				...section,
+				items: await mergeWithWatchlist(section.items),
+			})
+		)
+	);
 	const isEmpty =
 		watchlist.filter((entry) => entry.media_type === type).length === 0;
 	const lang = await getServerLanguage();
@@ -240,6 +265,7 @@ async function LibraryContentSection({
 					title={t.pages.dashboard.nextWatchings}
 					entries={toWatch}
 					categoryUrl="/library"
+					tvProgress={tvProgressMap}
 				/>
 			)}
 

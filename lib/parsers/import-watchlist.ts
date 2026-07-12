@@ -1,7 +1,12 @@
-import type { ImportItem } from '@/app/actions/data';
+import type { ImportItem, ImportedList } from '@/app/actions/data';
 import type { WatchStatus } from '@/types/tmdb';
 
 export type Platform = 'letterboxd' | 'trakt' | 'tvtime';
+
+export interface ImportPayload {
+	items: ImportItem[];
+	lists: ImportedList[];
+}
 
 function parseCSVLine(line: string): string[] {
 	const result: string[] = [];
@@ -57,6 +62,37 @@ function parseLetterboxd(text: string): ImportItem[] {
 	});
 }
 
+function parseWatchedEpisodes(
+	seasons: unknown[]
+): Array<{ season: number; episode: number }> {
+	const watched: Array<{ season: number; episode: number }> = [];
+	for (const season of seasons) {
+		if (typeof season !== 'object' || season === null) continue;
+		const s = season as Record<string, unknown>;
+		const seasonNumber = typeof s.number === 'number' ? s.number : null;
+		if (
+			!seasonNumber ||
+			seasonNumber < 1 ||
+			s.is_specials === true ||
+			!Array.isArray(s.episodes)
+		)
+			continue;
+		for (const episode of s.episodes) {
+			if (typeof episode !== 'object' || episode === null) continue;
+			const ep = episode as Record<string, unknown>;
+			if (
+				ep.is_watched === true &&
+				typeof ep.number === 'number' &&
+				Number.isInteger(ep.number) &&
+				ep.number >= 1
+			) {
+				watched.push({ season: seasonNumber, episode: ep.number });
+			}
+		}
+	}
+	return watched;
+}
+
 function parseTvTimeRefract(arr: unknown[]): ImportItem[] {
 	const items: ImportItem[] = [];
 	for (const entry of arr) {
@@ -76,12 +112,15 @@ function parseTvTimeRefract(arr: unknown[]): ImportItem[] {
 			const yearInTitle = title.match(/^(.+?)\s*\((\d{4})\)\s*$/);
 			const cleanTitle = yearInTitle ? yearInTitle[1].trim() : title;
 			const seriesYear = yearInTitle ? parseInt(yearInTitle[2]) : year;
+			const watchedEpisodes = parseWatchedEpisodes(e.seasons);
 			items.push({
 				title: cleanTitle,
 				year: seriesYear,
 				status,
 				mediaType: 'tv',
 				tvdbId,
+				watchedEpisodes:
+					watchedEpisodes.length > 0 ? watchedEpisodes : undefined,
 			});
 		} else if ('is_watched' in e) {
 			const status: WatchStatus =
@@ -134,11 +173,70 @@ function parseTvTimeGDPR(obj: Record<string, unknown>): ImportItem[] {
 	return items;
 }
 
-function parseTvTimeJSON(obj: unknown): ImportItem[] {
-	if (Array.isArray(obj)) return parseTvTimeRefract(obj);
+function isTvTimeLists(arr: unknown[]): boolean {
+	return arr.some((entry) => {
+		if (typeof entry !== 'object' || entry === null) return false;
+		const e = entry as Record<string, unknown>;
+		return (
+			typeof e.name === 'string' &&
+			Array.isArray(e.items) &&
+			!('seasons' in e) &&
+			!('is_watched' in e)
+		);
+	});
+}
+
+function parseTvTimeLists(arr: unknown[]): ImportedList[] {
+	const lists: ImportedList[] = [];
+	for (const entry of arr) {
+		if (typeof entry !== 'object' || entry === null) continue;
+		const e = entry as Record<string, unknown>;
+		const name = typeof e.name === 'string' ? e.name.trim() : '';
+		if (!name || !Array.isArray(e.items)) continue;
+		const items: ImportItem[] = [];
+		for (const raw of e.items) {
+			if (typeof raw !== 'object' || raw === null) continue;
+			const it = raw as Record<string, unknown>;
+			const title = typeof it.name === 'string' ? it.name.trim() : '';
+			if (!title) continue;
+			const type = typeof it.type === 'string' ? it.type : '';
+			const mediaType =
+				type === 'series' || type === 'show' || type === 'tv'
+					? ('tv' as const)
+					: type === 'movie'
+						? ('movie' as const)
+						: null;
+			items.push({
+				title,
+				year: null,
+				status: 'to_watch',
+				mediaType,
+			});
+		}
+		lists.push({
+			name,
+			description:
+				typeof e.description === 'string' && e.description.trim()
+					? e.description.trim()
+					: null,
+			items,
+		});
+	}
+	return lists;
+}
+
+function parseTvTimeJSON(obj: unknown): ImportPayload {
+	if (Array.isArray(obj)) {
+		if (isTvTimeLists(obj))
+			return { items: [], lists: parseTvTimeLists(obj) };
+		return { items: parseTvTimeRefract(obj), lists: [] };
+	}
 	if (typeof obj === 'object' && obj !== null)
-		return parseTvTimeGDPR(obj as Record<string, unknown>);
-	return [];
+		return {
+			items: parseTvTimeGDPR(obj as Record<string, unknown>),
+			lists: [],
+		};
+	return { items: [], lists: [] };
 }
 
 function parseTvTimeCSV(text: string): ImportItem[] {
@@ -228,17 +326,18 @@ export async function parseImportFile(
 	file: File,
 	platform: Platform,
 	unknownFormatMsg: string
-): Promise<ImportItem[]> {
+): Promise<ImportPayload> {
 	const text = await file.text();
-	if (platform === 'letterboxd') return parseLetterboxd(text);
+	if (platform === 'letterboxd')
+		return { items: parseLetterboxd(text), lists: [] };
 	if (platform === 'tvtime') {
 		try {
 			return parseTvTimeJSON(JSON.parse(text));
 		} catch {
-			return parseTvTimeCSV(text);
+			return { items: parseTvTimeCSV(text), lists: [] };
 		}
 	}
 	const obj = JSON.parse(text);
-	if (platform === 'trakt') return parseTrakt(obj);
+	if (platform === 'trakt') return { items: parseTrakt(obj), lists: [] };
 	throw new Error(unknownFormatMsg);
 }

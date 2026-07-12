@@ -438,6 +438,13 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
+			episode_watch_counts: {
+				Args: never;
+				Returns: {
+					tv_id: number;
+					watched_count: number;
+				}[];
+			};
 			get_episodes_rating: {
 				Args: { p_episode_ids: number[] };
 				Returns: {

@@ -17,6 +17,7 @@ interface LibrarySectionProps {
 	title: string;
 	entries: WatchlistEntry[];
 	categoryUrl: string;
+	tvProgress?: Record<number, { watched: number; total: number }>;
 }
 
 const CARD_ANIMATION_DELAY_MS = 50;
@@ -88,6 +89,7 @@ export function LibraryMediaSection({
 	title,
 	entries,
 	categoryUrl,
+	tvProgress,
 }: LibrarySectionProps) {
 	const { t, lang } = useTranslation();
 	const visibleEntries = entries.slice(0, SECTION_ITEM_LIMIT);
@@ -115,6 +117,7 @@ export function LibraryMediaSection({
 					<MediaCard
 						media={mediaItems[index]}
 						watchlistEntry={entry}
+						tvProgress={tvProgress?.[entry.media_id]}
 						hideRating
 						priority={index < 4}
 						className="h-full"

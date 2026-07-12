@@ -11,6 +11,7 @@ import {
 import { VALID_STATUSES, VALID_MEDIA_TYPES } from '@/lib/validators';
 import type { WatchStatus, WatchlistEntry, MediaType } from '@/types/tmdb';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
+import { fetchAllRows } from '@/lib/supabase/pagination';
 import { getListMediaMetadata, type ListMediaMetadata } from '@/lib/tmdb';
 
 function revalidateWatchlistPaths(mediaType: MediaType, mediaId: number) {
@@ -56,10 +57,13 @@ export async function addToWatchlist(
 
 const META_BATCH_SIZE = 8;
 
+const BACKFILL_RUN_LIMIT = 200;
+
 /**
- * One-shot backfill: fills release_date + genre_ids for the caller's watchlist and
+ * Incremental backfill: fills release_date + genre_ids for the caller's watchlist and
  * playlist rows that predate the sort/filter migration, so lists can sort by year and
- * filter by genre. Targets rows where genre_ids is null (new rows are populated on insert).
+ * filter by genre. Bounded per run to avoid TMDB bursts on large libraries — it
+ * converges across visits. Targets rows where genre_ids is null.
  */
 export async function backfillListMetadata(): Promise<{
 	watchlist: number;
@@ -72,7 +76,8 @@ export async function backfillListMetadata(): Promise<{
 			.from('watchlist')
 			.select('media_id, media_type')
 			.eq('user_id', userId)
-			.is('genre_ids', null),
+			.is('genre_ids', null)
+			.limit(BACKFILL_RUN_LIMIT),
 		supabase.from('playlists').select('id').eq('user_id', userId),
 	]);
 
@@ -85,6 +90,7 @@ export async function backfillListMetadata(): Promise<{
 				.select('media_id, media_type')
 				.in('playlist_id', playlistIds)
 				.is('genre_ids', null)
+				.limit(BACKFILL_RUN_LIMIT)
 		: null;
 	const playlistRows = playlistItemsResult?.data ?? [];
 
@@ -190,16 +196,17 @@ export async function getUserWatchlist(): Promise<WatchlistEntry[]> {
 
 	if (!userId) return [];
 
-	const { data: entries, error } = await supabase
-		.from('watchlist')
-		.select(WATCHLIST_COLUMNS)
-		.eq('user_id', userId)
-		.order('created_at', { ascending: false })
-		.limit(1000);
+	const entries = await fetchAllRows((from, to) =>
+		supabase
+			.from('watchlist')
+			.select(WATCHLIST_COLUMNS)
+			.eq('user_id', userId)
+			.order('created_at', { ascending: false })
+			.order('id')
+			.range(from, to)
+	);
 
-	if (error) throw new Error(error.message);
-
-	return (entries as WatchlistEntry[]) ?? [];
+	return entries as WatchlistEntry[];
 }
 
 export async function getMediaWatchlistEntry(

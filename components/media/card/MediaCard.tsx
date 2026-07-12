@@ -55,6 +55,7 @@ export function MediaCard({
 
 	const href = localizedHref(lang, getMediaHref(media));
 	const isWatched = watchlistEntry?.status === 'watched';
+	const badgeEntry = watchlistEntry ?? media.watchlistEntry;
 	const resolvedStatus =
 		media.media_type === 'tv'
 			? 'to_watch'
@@ -116,6 +117,22 @@ export function MediaCard({
 					/>
 				)}
 
+				{compact && badgeEntry && (
+					<div className="absolute top-1.5 right-1.5 z-10 grid size-6 place-items-center rounded-full glass-overlay shadow-card-sm">
+						{badgeEntry.status === 'watched' ? (
+							<Eye
+								className="h-3 w-3 text-success"
+								aria-hidden="true"
+							/>
+						) : (
+							<Clock
+								className="h-3 w-3 text-gold"
+								aria-hidden="true"
+							/>
+						)}
+					</div>
+				)}
+
 				{tvProgress && tvProgress.total > 0 && (
 					<div className="absolute bottom-0 inset-x-0 z-20">
 						<div className="w-full h-1 bg-surface/10">
@@ -175,18 +192,16 @@ export function MediaCard({
 
 							{watchlistEntry ? (
 								<div className="flex items-center gap-1.5 mt-1">
-									{media.media_type === 'tv' ? (
-										<Clock className="h-3 w-3 text-white/80 shrink-0" />
-									) : isWatched ? (
+									{isWatched ? (
 										<Eye className="h-3 w-3 text-white/80 shrink-0" />
 									) : (
 										<Clock className="h-3 w-3 text-white/80 shrink-0" />
 									)}
 									<span className="text-xs text-white/60 leading-tight">
-										{media.media_type === 'tv'
-											? t.movie.startedOn
-											: isWatched
-												? t.movie.watchedOn
+										{isWatched
+											? t.movie.watchedOn
+											: media.media_type === 'tv'
+												? t.movie.startedOn
 												: t.movie.addedOn}{' '}
 										{formatShortDate(
 											watchlistEntry.created_at,

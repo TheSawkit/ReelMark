@@ -201,7 +201,7 @@ export function EpisodeCard({
 					aria-modal="true"
 					aria-labelledby={`episode-title-${episode.episode_number}`}
 					onKeyDown={handleDialogKeyDown}
-					className="absolute inset-0 z-30 glass-overlay flex flex-col p-6 animate-in fade-in duration-(--duration-base) cursor-pointer"
+					className="absolute inset-0 z-30 glass-bar flex flex-col p-6 animate-in fade-in duration-(--duration-base) cursor-pointer"
 				>
 					<div className="flex justify-between items-start mb-4 gap-4">
 						<h3
