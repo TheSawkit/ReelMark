@@ -155,8 +155,7 @@ type ImportPhase =
 
 function countImportEntries(items: ImportItem[], lists: ImportedList[]) {
 	return (
-		items.length +
-		lists.reduce((sum, list) => sum + list.items.length, 0)
+		items.length + lists.reduce((sum, list) => sum + list.items.length, 0)
 	);
 }
 

@@ -29,10 +29,7 @@ export function useProgressiveReveal(
 		return () => clearTimeout(id);
 	}, [isLoaderVisible, hasMore, pageSize]);
 
-	const reset = useCallback(
-		() => setVisibleCount(pageSize),
-		[pageSize]
-	);
+	const reset = useCallback(() => setVisibleCount(pageSize), [pageSize]);
 
 	return { visibleCount, hasMore, loaderRef, reset };
 }
