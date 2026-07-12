@@ -16,6 +16,8 @@ import {
 } from '@/lib/tmdb';
 import type { Movie, TvShow } from '@/types/tmdb';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
 	const t = await getTranslations();
 	return {

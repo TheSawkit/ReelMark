@@ -5,13 +5,14 @@ import { getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 
 export async function GET(request: Request) {
-	const { searchParams, origin, host } = new URL(request.url);
+	const { searchParams, origin } = new URL(request.url);
 	const code = searchParams.get('code');
 	const next = sanitizeRedirectPath(searchParams.get('next'), '/dashboard');
 	const baseUrl =
-		request.headers.get('x-forwarded-proto') === 'https'
-			? `https://${host}`
-			: origin;
+		process.env.NEXT_PUBLIC_BASE_URL ??
+		(request.headers.get('x-forwarded-proto') === 'https'
+			? `https://${request.headers.get('x-forwarded-host')}`
+			: origin);
 	const lang = await getServerLanguage();
 	const errorUrl = `${baseUrl}${localizedHref(lang, '/auth/auth-code-error')}`;
 

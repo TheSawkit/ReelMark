@@ -38,6 +38,8 @@ import {
 import { localizedHref } from '@/lib/i18n/utils';
 import type { Season } from '@/types/tmdb';
 
+export const dynamic = 'force-dynamic';
+
 type TvPageParams = Promise<{ id: string }>;
 interface TvPageProps {
 	params: TvPageParams;

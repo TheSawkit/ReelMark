@@ -27,6 +27,8 @@ import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkel
 import { EpisodeCard } from '@/components/media/tv/EpisodeCard';
 import { localizedAlternates } from '@/lib/metadata';
 
+export const dynamic = 'force-dynamic';
+
 type SeasonPageParams = Promise<{ id: string; seasonNumber: string }>;
 interface SeasonPageProps {
 	params: SeasonPageParams;

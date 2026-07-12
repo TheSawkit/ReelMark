@@ -26,6 +26,8 @@ import { ListMetadataBackfill } from '@/components/library/ListMetadataBackfill'
 import type { WatchlistEntry } from '@/types/tmdb';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
 	params: Promise<{ username: string }>;
 }

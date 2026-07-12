@@ -7,6 +7,8 @@ import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import { localizedAlternates } from '@/lib/metadata';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
 	const [t, lang] = await Promise.all([
 		getTranslations(),

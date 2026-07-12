@@ -4,6 +4,8 @@ import { getNotifications } from '@/app/actions/notifications';
 import { NotificationsList } from '@/components/notifications/NotificationsList';
 import { BASE_URL, buildPageMetadata } from '@/lib/metadata';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata() {
 	const t = await getTranslations();
 	return buildPageMetadata(t.notifications.title, t.notifications.title, {

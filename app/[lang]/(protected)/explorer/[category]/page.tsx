@@ -13,6 +13,8 @@ interface CategoryPageProps {
 	params: CategoryPageParams;
 }
 
+export const dynamic = 'force-dynamic';
+
 type CategoryMeta = { title: string; description: string };
 
 function buildCategoryMap(

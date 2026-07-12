@@ -10,6 +10,8 @@ import { USER_PROFILE_COLUMNS, PRIVACY_COLUMNS } from '@/lib/supabase/columns';
 import type { UserProfile, PrivacySettings } from '@/types/profile';
 import type { User } from '@supabase/supabase-js';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata() {
 	const t = await getTranslations();
 	return {

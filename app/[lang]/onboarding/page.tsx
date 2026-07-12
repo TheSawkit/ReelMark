@@ -10,6 +10,8 @@ import {
 } from '@/lib/onboarding';
 import { OnboardingForm } from '@/components/onboarding/OnboardingForm';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata() {
 	const t = await getTranslations();
 	return {

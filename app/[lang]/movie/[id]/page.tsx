@@ -39,6 +39,8 @@ interface MoviePageProps {
 	params: MoviePageParams;
 }
 
+export const dynamic = 'force-dynamic';
+
 async function MovieProvidersSection({ movieId }: { movieId: number }) {
 	const providers = await getMovieWatchProviders(movieId).catch(() => null);
 	return <WatchProviders providers={providers} />;

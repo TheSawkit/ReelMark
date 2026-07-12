@@ -3,6 +3,8 @@ import { AuthPageShell } from '@/components/auth/AuthPageShell';
 import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm';
 import { getTranslations } from '@/lib/i18n/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
 	const t = await getTranslations();
 	return {
