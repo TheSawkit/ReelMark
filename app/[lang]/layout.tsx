@@ -39,6 +39,7 @@ export const viewport: Viewport = {
 	userScalable: false,
 	viewportFit: 'cover',
 	interactiveWidget: 'resizes-content',
+	colorScheme: 'dark light',
 	themeColor: [
 		{ media: '(prefers-color-scheme: dark)', color: '#000000' },
 		{ media: '(prefers-color-scheme: light)', color: '#F5F5F7' },
@@ -324,6 +325,8 @@ export default async function RootLayout({
 			data-scroll-behavior="smooth"
 		>
 			<head>
+				{/* Next n'émet plus que `mobile-web-app-capable` (vercel/next.js#70363) ; Safari iOS exige encore celle-ci pour afficher la launch image (vercel/next.js#74524, closed as not planned). */}
+				<meta name="apple-mobile-web-app-capable" content="yes" />
 				<link rel="dns-prefetch" href="https://image.tmdb.org" />
 				<style>{`#nprogress .bar { top: calc(4rem + env(safe-area-inset-top)) !important; }`}</style>
 				<script

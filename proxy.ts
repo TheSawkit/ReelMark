@@ -29,6 +29,16 @@ function detectLocale(request: NextRequest): Language {
 	return DEFAULT_LANGUAGE;
 }
 
+function hasSessionCookie(request: NextRequest): boolean {
+	return request.cookies
+		.getAll()
+		.some(
+			(cookie) =>
+				cookie.name.startsWith('sb-') &&
+				cookie.name.includes('-auth-token')
+		);
+}
+
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
@@ -65,8 +75,12 @@ export async function proxy(request: NextRequest) {
 
 	if (!isLanguage(firstSegment)) {
 		const locale = detectLocale(request);
+		const isRoot = pathname === '/';
 		const url = request.nextUrl.clone();
-		url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`;
+		url.pathname =
+			isRoot && hasSessionCookie(request)
+				? `/${locale}/dashboard`
+				: `/${locale}${isRoot ? '' : pathname}`;
 		return NextResponse.redirect(url);
 	}
 
