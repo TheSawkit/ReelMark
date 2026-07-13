@@ -45,7 +45,6 @@ export function SeasonCard({
 					lang,
 					`/tv/${tvId}/season/${season.season_number}`
 				)}
-				prefetch={false}
 				className={cn(
 					'flex gap-4 bg-surface-2 rounded-xl p-4 transition-all duration-(--duration-base) hover:bg-surface-3 hover:shadow-cinema border cursor-pointer',
 					isComplete
