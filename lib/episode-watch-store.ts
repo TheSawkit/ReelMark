@@ -94,6 +94,21 @@ export const episodeWatchStore = {
 		return seasons.get(seasonKey(tvId, seasonNumber));
 	},
 
+	clearShow(tvId: number) {
+		const prefix = `${tvId}:`;
+		let changed = false;
+		for (const key of seasons.keys()) {
+			if (!key.startsWith(prefix)) continue;
+			seasons.set(key, {
+				count: 0,
+				episodes: new Set(),
+				dirty: true,
+			});
+			changed = true;
+		}
+		if (changed) notify();
+	},
+
 	restore(
 		tvId: number,
 		seasonNumber: number,

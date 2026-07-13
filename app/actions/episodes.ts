@@ -7,10 +7,19 @@ import {
 } from '@/lib/supabase/auth-helpers';
 import {
 	SHARED_REVALIDATE_PATHS,
-	revalidateLocalized,
+	revalidateLocalizedAfterResponse,
 } from '@/app/actions/_helpers';
 import { getTvShowDetails } from '@/lib/tmdb';
 import type { SupabaseServerClient } from '@/lib/supabase/server';
+import type { WatchStatus } from '@/types/tmdb';
+
+/** Watchlist status of a TV show after an episode change — 'none' when the show is not in the list. */
+export type TvWatchlistStatus = WatchStatus | 'none';
+
+export interface EpisodeWatchResult {
+	watched: boolean;
+	tvStatus: TvWatchlistStatus;
+}
 
 const getCachedTvShowDetails = unstable_cache(
 	(tvId: number) => getTvShowDetails(tvId),
@@ -25,7 +34,7 @@ async function syncTvShowWatchlistStatus(
 	supabase: SupabaseServerClient,
 	userId: string,
 	tvId: number
-) {
+): Promise<TvWatchlistStatus> {
 	const details = await getCachedTvShowDetails(tvId).catch(() => null);
 
 	let totalEpisodes = (details?.seasons ?? [])
@@ -53,7 +62,7 @@ async function syncTvShowWatchlistStatus(
 			tvId,
 			'episode total unknown'
 		);
-		return;
+		return readTvWatchlistStatus(supabase, userId, tvId);
 	}
 
 	const { error } = await supabase.rpc('sync_tv_watchlist_status', {
@@ -65,6 +74,24 @@ async function syncTvShowWatchlistStatus(
 	if (error) {
 		console.warn('[episodes] Sync failed for tvId:', tvId, error.message);
 	}
+
+	return readTvWatchlistStatus(supabase, userId, tvId);
+}
+
+async function readTvWatchlistStatus(
+	supabase: SupabaseServerClient,
+	userId: string,
+	tvId: number
+): Promise<TvWatchlistStatus> {
+	const { data } = await supabase
+		.from('watchlist')
+		.select('status')
+		.eq('user_id', userId)
+		.eq('media_id', tvId)
+		.eq('media_type', 'tv')
+		.maybeSingle();
+
+	return (data?.status as WatchStatus | undefined) ?? 'none';
 }
 
 /**
@@ -75,14 +102,14 @@ async function syncTvShowWatchlistStatus(
  * @param seasonNumber - Season number (1-based).
  * @param episodeNumber - Episode number within the season.
  * @param watched - Target state to persist.
- * @returns The applied state, echoing `watched`.
+ * @returns The applied state and the show's resulting watchlist status.
  */
 export async function setEpisodeWatched(
 	tvId: number,
 	seasonNumber: number,
 	episodeNumber: number,
 	watched: boolean
-): Promise<boolean> {
+): Promise<EpisodeWatchResult> {
 	const { supabase, userId } = await getAuthenticatedUser();
 
 	if (watched) {
@@ -107,9 +134,9 @@ export async function setEpisodeWatched(
 		if (error) throw new Error(error.message);
 	}
 
-	await syncTvShowWatchlistStatus(supabase, userId, tvId);
-	SHARED_REVALIDATE_PATHS.forEach(revalidateLocalized);
-	return watched;
+	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
+	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
+	return { watched, tvStatus };
 }
 
 /**
@@ -120,14 +147,14 @@ export async function setEpisodeWatched(
  * @param seasonNumber - Season number (1-based).
  * @param totalEpisodes - Total number of episodes in the season.
  * @param watched - Target state to persist for every episode.
- * @returns The applied state, echoing `watched`.
+ * @returns The applied state and the show's resulting watchlist status.
  */
 export async function setSeasonWatched(
 	tvId: number,
 	seasonNumber: number,
 	totalEpisodes: number,
 	watched: boolean
-): Promise<boolean> {
+): Promise<EpisodeWatchResult> {
 	if (
 		!Number.isInteger(totalEpisodes) ||
 		totalEpisodes <= 0 ||
@@ -160,9 +187,9 @@ export async function setSeasonWatched(
 		if (error) throw new Error(error.message);
 	}
 
-	await syncTvShowWatchlistStatus(supabase, userId, tvId);
-	SHARED_REVALIDATE_PATHS.forEach(revalidateLocalized);
-	return watched;
+	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
+	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
+	return { watched, tvStatus };
 }
 
 /**

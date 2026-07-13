@@ -1,12 +1,16 @@
 'use client';
 
-import { useRef, useState, useOptimistic, useTransition } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Eye, Plus, Check, Loader2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { addToWatchlist, removeFromWatchlist } from '@/app/actions/watchlist';
 import { useTranslation } from '@/lib/i18n/context';
-import { useAutoResetError } from '@/hooks/useAutoResetError';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { mediaWatchStore, useMediaWatch } from '@/lib/media-watch-store';
+import { episodeWatchStore } from '@/lib/episode-watch-store';
+import { mediaRatingStore } from '@/lib/media-rating-store';
 import type { WatchButtonProps } from '@/types/components';
 
 const ReviewDialog = dynamic(
@@ -29,13 +33,14 @@ export function WatchButton({
 	fallbackStatus,
 	releaseDate,
 }: WatchButtonProps) {
-	const [isPending, startTransition] = useTransition();
-	const [isActive, setIsActive] = useOptimistic(initialIsActive);
-	const [error, setError] = useAutoResetError();
-	const inFlightRef = useRef(false);
+	const { loading, error, execute } = useAsyncAction();
 	const [reviewOpen, setReviewOpen] = useState(false);
 	const { t } = useTranslation();
+	const router = useRouter();
+	const storedStatus = useMediaWatch(mediaType, mediaId);
 
+	const isActive =
+		storedStatus !== undefined ? storedStatus === status : initialIsActive;
 	const isUnreleased = releaseDate
 		? new Date(releaseDate) > new Date()
 		: false;
@@ -52,50 +57,48 @@ export function WatchButton({
 			mediaType={mediaType}
 			mediaTitle={mediaTitle}
 			posterPath={posterPath}
+			onSave={(saved) => {
+				mediaRatingStore.setMyReview(mediaType, mediaId, saved);
+				mediaRatingStore.invalidateRating(mediaType, mediaId);
+				router.refresh();
+			}}
 		/>
 	) : null;
 
-	function handleClick(e: React.MouseEvent) {
+	async function handleClick(e: React.MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
-		if (inFlightRef.current) return;
-		inFlightRef.current = true;
 
-		startTransition(async () => {
-			const previousIsActive = isActive;
-			setIsActive(!isActive);
-			try {
-				if (previousIsActive) {
-					if (fallbackStatus) {
-						await addToWatchlist(
-							mediaId,
-							mediaTitle,
-							posterPath,
-							fallbackStatus,
-							mediaType
-						);
-					} else {
-						await removeFromWatchlist(mediaId, mediaType);
-					}
-				} else {
-					await addToWatchlist(
-						mediaId,
-						mediaTitle,
-						posterPath,
-						status,
-						mediaType
-					);
-					if (status === 'watched') setReviewOpen(true);
-				}
-			} catch {
-				setError(true);
-			} finally {
-				inFlightRef.current = false;
+		const previous = mediaWatchStore.get(mediaType, mediaId);
+		const target = isActive ? (fallbackStatus ?? 'none') : status;
+		mediaWatchStore.set(mediaType, mediaId, target);
+
+		const applied = await execute(async () => {
+			if (target === 'none') {
+				await removeFromWatchlist(mediaId, mediaType);
+			} else {
+				await addToWatchlist(
+					mediaId,
+					mediaTitle,
+					posterPath,
+					target,
+					mediaType
+				);
 			}
+			return true;
 		});
+
+		if (!applied) {
+			mediaWatchStore.restore(mediaType, mediaId, previous);
+			return;
+		}
+		if (mediaType === 'tv' && target === 'none') {
+			episodeWatchStore.clearShow(mediaId);
+		}
+		if (target === 'watched') setReviewOpen(true);
 	}
 
-	const Icon = isPending
+	const Icon = loading
 		? Loader2
 		: error
 			? XCircle
@@ -120,7 +123,7 @@ export function WatchButton({
 			<>
 				<button
 					onClick={handleClick}
-					disabled={isPending}
+					disabled={loading}
 					aria-label={stateLabel}
 					className={cn(
 						'h-12 w-12 md:h-auto md:w-auto md:min-h-11 md:px-4 md:py-2.5',
@@ -136,7 +139,7 @@ export function WatchButton({
 					<Icon
 						className={cn(
 							'h-4 w-4 shrink-0',
-							isPending && 'animate-spin'
+							loading && 'animate-spin'
 						)}
 					/>
 					<span className="hidden md:inline">{stateLabel}</span>
@@ -151,7 +154,7 @@ export function WatchButton({
 			<>
 				<button
 					onClick={handleClick}
-					disabled={isPending}
+					disabled={loading}
 					className={cn(
 						'flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11 w-full shrink-0',
 						isActive
@@ -162,7 +165,7 @@ export function WatchButton({
 					)}
 				>
 					<Icon
-						className={cn('h-4 w-4', isPending && 'animate-spin')}
+						className={cn('h-4 w-4', loading && 'animate-spin')}
 					/>
 					{stateLabel}
 				</button>
@@ -175,7 +178,7 @@ export function WatchButton({
 		<>
 			<button
 				onClick={handleClick}
-				disabled={isPending}
+				disabled={loading}
 				aria-label={stateLabel}
 				title={stateLabel}
 				className={cn(
@@ -186,7 +189,7 @@ export function WatchButton({
 						: 'bg-surface/20 text-muted border-border/10 border-t-border/20 hover:text-text hover:bg-surface-2/20 shadow-card-sm hover:border-border'
 				)}
 			>
-				<Icon className={cn('h-4 w-4', isPending && 'animate-spin')} />
+				<Icon className={cn('h-4 w-4', loading && 'animate-spin')} />
 			</button>
 			{reviewDialog}
 		</>

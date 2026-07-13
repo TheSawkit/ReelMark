@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { getPrivacySettings } from '@/app/actions/profile';
 import { FRIENDSHIP_COLUMNS } from '@/lib/supabase/columns';
 import { resolveAvatarUrl } from '@/lib/avatar';
-import { revalidateProfile } from '@/app/actions/_helpers';
+import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
 import type {
 	Friendship,
 	FriendEntry,
@@ -139,7 +139,7 @@ export async function cancelFriendRequest(
 
 	if (error) throw new Error(error.message);
 
-	await revalidateProfile(supabase, user, addresseeId);
+	revalidateProfileAfterResponse(supabase, user, addresseeId);
 }
 
 /**
@@ -186,7 +186,7 @@ export async function sendFriendRequest(addresseeId: string): Promise<void> {
 		throw new Error(error.message);
 	}
 
-	await revalidateProfile(supabase, user, addresseeId);
+	revalidateProfileAfterResponse(supabase, user, addresseeId);
 }
 
 /**
@@ -210,7 +210,7 @@ export async function acceptFriendRequest(
 
 	if (error) throw new Error(error.message);
 
-	await revalidateProfile(supabase, user, requesterId);
+	revalidateProfileAfterResponse(supabase, user, requesterId);
 }
 
 /**
@@ -234,7 +234,7 @@ export async function rejectFriendRequest(
 
 	if (error) throw new Error(error.message);
 
-	await revalidateProfile(supabase, user, requesterId);
+	revalidateProfileAfterResponse(supabase, user, requesterId);
 }
 
 /**
@@ -257,5 +257,5 @@ export async function removeFriend(
 
 	if (error) throw new Error(error.message);
 
-	await revalidateProfile(supabase, user, otherUserId);
+	revalidateProfileAfterResponse(supabase, user, otherUserId);
 }

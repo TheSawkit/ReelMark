@@ -27,7 +27,7 @@ interface ReviewDialogProps {
 	tvId?: number | null;
 	seasonNumber?: number | null;
 	existingReview?: Review | null;
-	onSave?: (rating: number | null, content: string | null) => void;
+	onSave?: (review: Review) => void;
 	onDelete?: () => void;
 }
 
@@ -58,7 +58,7 @@ export function ReviewDialog({
 	function handleSubmit() {
 		startTransition(async () => {
 			try {
-				await upsertReview(
+				const saved = await upsertReview(
 					mediaId,
 					mediaType,
 					mediaTitle,
@@ -69,7 +69,7 @@ export function ReviewDialog({
 					seasonNumber
 				);
 				toast.success(t.movie.reviewSaved);
-				onSave?.(rating, content.trim() || null);
+				onSave?.(saved);
 				onClose();
 			} catch (err) {
 				toast.error(
