@@ -12,7 +12,14 @@ import {
 	type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { InfiniteScrollMedia } from '@/components/media/card/InfiniteScrollMedia';
+import { MediaCard } from '@/components/media/card/MediaCard';
+import {
+	MEDIA_GRID_COLUMNS,
+	MEDIA_GRID_ROW_CLASS,
+	VirtualMediaGrid,
+} from '@/components/media/card/VirtualMediaGrid';
+import { BackToTopButton } from '@/components/shared/BackToTopButton';
+import { getMediaKey } from '@/lib/media';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { useTranslation } from '@/lib/i18n/context';
 import type { CrewFilmographyProps } from '@/types/components';
@@ -71,12 +78,23 @@ export function CrewFilmography({ departments }: CrewFilmographyProps) {
 				</div>
 			)}
 
-			<InfiniteScrollMedia
+			<VirtualMediaGrid
 				key={current.key}
-				initialItems={current.items.slice(0, 20)}
-				category={current.key}
-				clientSideData={current.items}
+				items={current.items}
+				columns={MEDIA_GRID_COLUMNS}
+				rowClassName={MEDIA_GRID_ROW_CLASS}
+				renderItem={(item, index) => (
+					<div key={getMediaKey(item)} className="media-grid-cell">
+						<MediaCard
+							media={item}
+							imageSize="grid"
+							priority={index < 6}
+							enableSharedTransition
+						/>
+					</div>
+				)}
 			/>
+			<BackToTopButton />
 		</section>
 	);
 }

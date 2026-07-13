@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useOptimistic, useTransition } from 'react';
+import { useRef, useState, useOptimistic, useTransition } from 'react';
 import dynamic from 'next/dynamic';
 import { Eye, Plus, Check, Loader2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -32,6 +32,7 @@ export function WatchButton({
 	const [isPending, startTransition] = useTransition();
 	const [isActive, setIsActive] = useOptimistic(initialIsActive);
 	const [error, setError] = useAutoResetError();
+	const inFlightRef = useRef(false);
 	const [reviewOpen, setReviewOpen] = useState(false);
 	const { t } = useTranslation();
 
@@ -57,6 +58,8 @@ export function WatchButton({
 	function handleClick(e: React.MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
+		if (inFlightRef.current) return;
+		inFlightRef.current = true;
 
 		startTransition(async () => {
 			const previousIsActive = isActive;
@@ -86,6 +89,8 @@ export function WatchButton({
 				}
 			} catch {
 				setError(true);
+			} finally {
+				inFlightRef.current = false;
 			}
 		});
 	}

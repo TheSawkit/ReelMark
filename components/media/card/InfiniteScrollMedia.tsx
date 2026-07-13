@@ -13,26 +13,17 @@ import type { InfiniteScrollMediaProps } from '@/types/components';
 
 const MAX_RENDERED_ITEMS = 80;
 
-function computeHasMore(
-	clientSideData: MediaItem[] | undefined,
-	initialItems: MediaItem[]
-): boolean {
-	if (clientSideData) return clientSideData.length > initialItems.length;
-	return initialItems.length < MAX_RENDERED_ITEMS;
-}
-
 export function InfiniteScrollMedia({
 	initialItems,
 	category,
-	clientSideData,
 	hideRating,
 	showWatchlistMeta,
 }: InfiniteScrollMediaProps) {
 	const [items, setItems] = useState<MediaItem[]>(initialItems);
 	const [page, setPage] = useState(2);
 	const [isPending, startTransition] = useTransition();
-	const [hasMore, setHasMore] = useState(() =>
-		computeHasMore(clientSideData, initialItems)
+	const [hasMore, setHasMore] = useState(
+		() => initialItems.length < MAX_RENDERED_ITEMS
 	);
 	const [loadError, setLoadError] = useState(false);
 	const loaderRef = useRef<HTMLDivElement>(null);
@@ -47,7 +38,7 @@ export function InfiniteScrollMedia({
 		if (prevCategoryRef.current !== category) {
 			setItems(initialItems);
 			setPage(2);
-			setHasMore(computeHasMore(clientSideData, initialItems));
+			setHasMore(initialItems.length < MAX_RENDERED_ITEMS);
 			setLoadError(false);
 			prevCategoryRef.current = category;
 		} else {
@@ -74,22 +65,14 @@ export function InfiniteScrollMedia({
 				return changed ? next : prev;
 			});
 		}
-	}, [category, initialItems, clientSideData]);
+	}, [category, initialItems]);
 
 	const loadMore = useCallback(() => {
 		if (isPending || !hasMore || loadError) return;
 
 		startTransition(async () => {
 			try {
-				let newItems: MediaItem[];
-
-				if (clientSideData) {
-					const pageSize = 20;
-					const start = (page - 1) * pageSize;
-					newItems = clientSideData.slice(start, start + pageSize);
-				} else {
-					newItems = await fetchMoreMedia(category, page);
-				}
+				const newItems = await fetchMoreMedia(category, page);
 
 				if (newItems.length === 0) {
 					setHasMore(false);
@@ -106,16 +89,7 @@ export function InfiniteScrollMedia({
 						return prev;
 					}
 					const merged = [...prev, ...uniqueItems];
-					if (
-						clientSideData &&
-						merged.length >= clientSideData.length
-					) {
-						setHasMore(false);
-					}
-					if (
-						!clientSideData &&
-						merged.length >= MAX_RENDERED_ITEMS
-					) {
+					if (merged.length >= MAX_RENDERED_ITEMS) {
 						setHasMore(false);
 					}
 					return merged;
@@ -125,7 +99,7 @@ export function InfiniteScrollMedia({
 				setLoadError(true);
 			}
 		});
-	}, [isPending, hasMore, loadError, page, clientSideData, category]);
+	}, [isPending, hasMore, loadError, page, category]);
 
 	const lastLoadAt = useRef(0);
 

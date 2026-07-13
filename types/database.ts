@@ -503,6 +503,15 @@ export type Database = {
 					count: number;
 				}[];
 			};
+			sync_tv_watchlist_status: {
+				Args: {
+					p_poster?: string;
+					p_title?: string;
+					p_total: number;
+					p_tv_id: number;
+				};
+				Returns: undefined;
+			};
 		};
 		Enums: {
 			[_ in never]: never;

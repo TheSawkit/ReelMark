@@ -38,7 +38,6 @@ export interface InfiniteScrollMediaProps {
 	initialItems: MediaItem[];
 	category: string;
 	mediaType?: MediaType;
-	clientSideData?: MediaItem[];
 	hideRating?: boolean;
 	showWatchlistMeta?: boolean;
 }

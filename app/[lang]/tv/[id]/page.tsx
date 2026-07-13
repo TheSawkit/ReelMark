@@ -19,7 +19,7 @@ import { WatchProviders } from '@/components/media/detail/WatchProviders';
 import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
 import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { SeasonCard } from '@/components/media/tv/SeasonCard';
-import { ProgressBar } from '@/components/shared/ProgressBar';
+import { TvWatchSummary } from '@/components/media/tv/TvWatchSummary';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { PublicReviewsSection } from '@/components/media/reviews/PublicReviewsSection';
 import { getMediaWatchlistEntry } from '@/app/actions/watchlist';
@@ -128,14 +128,10 @@ export default async function TvShowPage(props: TvPageProps) {
 		(sum: number, s: { episode_count: number }) => sum + s.episode_count,
 		0
 	);
-	const totalWatched = Array.from(watchProgress.values()).reduce(
-		(sum, count) => sum + count,
-		0
-	);
-	const overallPercent =
-		totalEpisodes > 0
-			? Math.round((totalWatched / totalEpisodes) * 100)
-			: 0;
+	const seasonWatchFallbacks = standardSeasons.map((s: Season) => ({
+		seasonNumber: s.season_number,
+		watched: watchProgress.get(s.season_number) ?? 0,
+	}));
 
 	const isWatched = watchlistEntry?.status === 'watched';
 
@@ -183,25 +179,11 @@ export default async function TvShowPage(props: TvPageProps) {
 							releaseDate={tvDetails.first_air_date}
 						/>
 					</div>
-					{totalWatched > 0 && (
-						<div className="hidden sm:flex items-center gap-3 px-4 py-2 rounded-md glass-overlay">
-							<div className="flex flex-col gap-1">
-								<span className="text-xs font-medium text-muted">
-									{totalWatched}/{totalEpisodes}{' '}
-									{t.movie.episodes}
-								</span>
-								<ProgressBar
-									watched={totalWatched}
-									total={totalEpisodes}
-									className="w-24 sm:w-32 h-1.5 bg-surface-3 rounded-full"
-									innerClassName="bg-linear-to-r from-primary to-gold rounded-full"
-								/>
-							</div>
-							<span className="text-sm font-bold text-text">
-								{overallPercent}%
-							</span>
-						</div>
-					)}
+					<TvWatchSummary
+						tvId={tvId}
+						totalEpisodes={totalEpisodes}
+						seasons={seasonWatchFallbacks}
+					/>
 				</div>
 			}
 		/>
@@ -236,12 +218,6 @@ export default async function TvShowPage(props: TvPageProps) {
 								watchProgress.get(season.season_number) ?? 0
 							}
 							locale={locale}
-							labels={{
-								episodes: t.movie.episodes,
-								completed: `✓ ${t.movie.completed}`,
-								watchedProgress: (w, total) =>
-									`${w}/${total} ${t.movie.watchedCount}`,
-							}}
 						/>
 					))}
 				</div>

@@ -3,16 +3,19 @@
 import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { MediaCard } from '@/components/media/card/MediaCard';
+import { VirtualMediaGrid } from '@/components/media/card/VirtualMediaGrid';
 import { MediaListControls } from '@/components/media/list/MediaListControls';
-import { BookMarked, Eye, Loader2 } from 'lucide-react';
-import { useProgressiveReveal } from '@/hooks/useProgressiveReveal';
+import { BookMarked, Eye } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
+import type { GridColumns } from '@/hooks/useGridColumns';
 import type { MediaItem, WatchlistEntry } from '@/types/tmdb';
 import { watchlistEntryToMediaItem } from '@/lib/mappers';
 import { getMediaKey } from '@/lib/media';
 import { useMediaListControls } from '@/hooks/useMediaListControls';
 
-const PAGE_SIZE = 24;
+const LIBRARY_COLUMNS: GridColumns = { base: 2, sm: 3, md: 4, lg: 5, xl: 6 };
+const LIBRARY_ROW_CLASS =
+	'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6 pb-3 sm:pb-4 md:pb-6';
 
 interface LibraryTabsProps {
 	toWatch: WatchlistEntry[];
@@ -75,14 +78,9 @@ export function LibraryTabs({
 	);
 
 	const processed = controls.items;
-	const { visibleCount, hasMore, loaderRef, reset } = useProgressiveReveal(
-		processed.length,
-		PAGE_SIZE
-	);
 
 	function switchTab(tab: Tab) {
 		setActiveTab(tab);
-		reset();
 	}
 
 	return (
@@ -162,14 +160,12 @@ export function LibraryTabs({
 							{t.lists.noResults}
 						</p>
 					) : (
-						<div
-							role="tabpanel"
-							id={`panel-${activeTab}`}
-							className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6"
-						>
-							{processed
-								.slice(0, visibleCount)
-								.map((item, index) => {
+						<div role="tabpanel" id={`panel-${activeTab}`}>
+							<VirtualMediaGrid
+								items={processed}
+								columns={LIBRARY_COLUMNS}
+								rowClassName={LIBRARY_ROW_CLASS}
+								renderItem={(item, index) => {
 									const entry = item.watchlistEntry;
 									const progress =
 										item.media_type === 'tv'
@@ -189,19 +185,8 @@ export function LibraryTabs({
 											/>
 										</div>
 									);
-								})}
-						</div>
-					)}
-
-					<div ref={loaderRef} aria-hidden="true" />
-
-					{hasMore && (
-						<div
-							className="flex justify-center py-8"
-							role="status"
-							aria-label={t.common.loading}
-						>
-							<Loader2 className="h-6 w-6 animate-spin text-muted" />
+								}}
+							/>
 						</div>
 					)}
 				</>
