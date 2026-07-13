@@ -4,6 +4,7 @@ import { Eye, Check, Loader2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { setSeasonWatched } from '@/app/actions/episodes';
 import { episodeWatchStore, useSeasonWatch } from '@/lib/episode-watch-store';
+import { mediaWatchStore } from '@/lib/media-watch-store';
 import { useTranslation } from '@/lib/i18n/context';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 
@@ -46,9 +47,11 @@ export function SeasonWatchIcon({
 		const result = await execute(() =>
 			setSeasonWatched(tvId, seasonNumber, totalEpisodes, target)
 		);
-		if (result === undefined) {
+		if (!result) {
 			episodeWatchStore.restore(tvId, seasonNumber, previous);
+			return;
 		}
+		mediaWatchStore.set('tv', tvId, result.tvStatus);
 	}
 
 	const Icon = loading ? Loader2 : error ? XCircle : allWatched ? Check : Eye;

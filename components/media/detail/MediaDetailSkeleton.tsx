@@ -31,6 +31,29 @@ export function DetailSectionSkeleton() {
 	return <Skeleton className="h-28 rounded-xl" />;
 }
 
+/** Placeholder for the watch buttons while the viewer's watchlist status streams in. */
+export function WatchActionsSkeleton({
+	variant,
+}: {
+	variant: 'banner' | 'bar';
+}) {
+	if (variant === 'bar') {
+		return (
+			<>
+				<Skeleton className="h-12 w-12 md:h-11 md:w-32 rounded-full md:rounded-lg shrink-0" />
+				<Skeleton className="h-12 w-12 md:h-11 md:w-40 rounded-full md:rounded-lg shrink-0" />
+			</>
+		);
+	}
+
+	return (
+		<div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+			<Skeleton className="h-11 w-full sm:w-40 rounded-lg" />
+			<Skeleton className="h-11 w-full sm:w-48 rounded-lg" />
+		</div>
+	);
+}
+
 export function DescriptionSkeleton() {
 	return (
 		<div className="space-y-4">

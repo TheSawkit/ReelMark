@@ -5,7 +5,7 @@ import {
 	getOptionalUser,
 } from '@/lib/supabase/auth-helpers';
 import { getTranslations } from '@/lib/i18n/server';
-import { revalidateProfile } from '@/app/actions/_helpers';
+import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
 import { parseVisibility, isVisibility } from '@/lib/privacy';
 import { getListMediaMetadata } from '@/lib/tmdb';
 import { resolveAvatarUrl } from '@/lib/avatar';
@@ -116,7 +116,7 @@ export async function createPlaylist(
 	});
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase, user);
+	revalidateProfileAfterResponse(supabase, user);
 }
 
 /**
@@ -155,7 +155,7 @@ export async function updatePlaylist(
 		.eq('user_id', userId);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase, user);
+	revalidateProfileAfterResponse(supabase, user);
 }
 
 /**
@@ -181,7 +181,7 @@ export async function updatePlaylistVisibility(
 		.eq('user_id', userId);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase, user);
+	revalidateProfileAfterResponse(supabase, user);
 }
 
 /**
@@ -199,7 +199,7 @@ export async function deletePlaylist(playlistId: string): Promise<void> {
 		.eq('user_id', userId);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase, user);
+	revalidateProfileAfterResponse(supabase, user);
 }
 
 /**
@@ -249,7 +249,7 @@ export async function addToPlaylist(
 	);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase, user);
+	revalidateProfileAfterResponse(supabase, user);
 }
 
 /**
@@ -284,5 +284,5 @@ export async function removeFromPlaylist(
 		.eq('media_type', mediaType);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase, user);
+	revalidateProfileAfterResponse(supabase, user);
 }

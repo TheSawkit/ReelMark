@@ -1,14 +1,16 @@
+'use client';
+
 import { StarRating } from '@/components/ui/StarRating';
 import { SectionHeading } from '@/components/ui/SectionHeading';
-import { getTranslations } from '@/lib/i18n/server';
+import { useTranslation } from '@/lib/i18n/context';
 
 interface CommunityRatingProps {
 	avg: number;
 	count: number;
 }
 
-export async function CommunityRating({ avg, count }: CommunityRatingProps) {
-	const t = await getTranslations();
+export function CommunityRating({ avg, count }: CommunityRatingProps) {
+	const { t } = useTranslation();
 
 	return (
 		<div className="flex flex-col gap-3">

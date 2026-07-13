@@ -262,12 +262,10 @@ export function ReviewsSection({
 					tvId={editingReview.tv_id}
 					seasonNumber={editingReview.season_number}
 					existingReview={editingReview}
-					onSave={(rating, content) =>
+					onSave={(saved) =>
 						setReviews((prev) =>
 							prev.map((r) =>
-								r.id === editingReview.id
-									? { ...r, rating, content }
-									: r
+								r.id === editingReview.id ? saved : r
 							)
 						)
 					}

@@ -5,7 +5,7 @@ import { fetchAllRows } from '@/lib/supabase/pagination';
 import { fetchTMDB } from '@/lib/tmdb/client';
 import { searchMulti } from '@/lib/tmdb/search';
 import { parseVisibility } from '@/lib/privacy';
-import { revalidateProfile } from '@/app/actions/_helpers';
+import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
 import {
 	VALID_STATUSES,
 	VALID_MEDIA_TYPES,
@@ -553,6 +553,6 @@ export async function importLists(
 		}
 	}
 
-	await revalidateProfile(supabase, user);
+	revalidateProfileAfterResponse(supabase, user);
 	return { imported, failed };
 }

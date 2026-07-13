@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { MediaDescription } from '@/components/media/detail/MediaDescription';
-import { CommunityRating } from '@/components/media/detail/CommunityRating';
 import { MediaCast } from '@/components/media/detail/MediaCast';
 import { MediaCrew } from '@/components/media/detail/MediaCrew';
 import { MediaActionsBar } from '@/components/media/detail/MediaActionsBar';
@@ -13,7 +12,7 @@ interface MediaDetailLayoutProps {
 	crew?: GroupedCrew;
 	creators?: CreatedBy[];
 	watchProviders: ReactNode;
-	rating: { avg: number; count: number } | null;
+	rating: ReactNode;
 	reviews: ReactNode;
 	extraSections?: ReactNode;
 	trailers: ReactNode;
@@ -46,9 +45,7 @@ export function MediaDetailLayout({
 			<div className="detail-container">
 				<MediaDescription description={description} />
 				{watchProviders}
-				{rating && (
-					<CommunityRating avg={rating.avg} count={rating.count} />
-				)}
+				{rating}
 				{reviews}
 				{extraSections}
 				{trailers}

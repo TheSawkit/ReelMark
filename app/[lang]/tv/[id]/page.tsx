@@ -13,12 +13,16 @@ import {
 	getTvShowWatchProviders,
 } from '@/lib/tmdb';
 import { MediaBanner } from '@/components/media/detail/MediaBanner';
-import { WatchButton } from '@/components/media/detail/WatchButton';
+import { TvWatchActions } from '@/components/media/detail/TvWatchActions';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
 import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
-import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
+import {
+	DetailSectionSkeleton,
+	WatchActionsSkeleton,
+} from '@/components/media/detail/MediaDetailSkeleton';
 import { SeasonCard } from '@/components/media/tv/SeasonCard';
+import { SeasonCardSkeleton } from '@/components/media/tv/SeasonCardSkeleton';
 import { TvWatchSummary } from '@/components/media/tv/TvWatchSummary';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { PublicReviewsSection } from '@/components/media/reviews/PublicReviewsSection';
@@ -26,6 +30,7 @@ import { getMediaWatchlistEntry } from '@/app/actions/watchlist';
 import { getTvShowWatchProgress } from '@/app/actions/episodes';
 import { getShowAverageRating, getMediaReview } from '@/app/actions/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
+import { MediaCommunityRating } from '@/components/media/detail/MediaCommunityRating';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
 import { tvSeriesJsonLd, serializeJsonLd } from '@/lib/structured-data';
 import { groupCrew } from '@/lib/crew';
@@ -36,7 +41,7 @@ import {
 	getServerLanguage,
 } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
-import type { Season } from '@/types/tmdb';
+import type { Season, TvShowDetails } from '@/types/tmdb';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,6 +49,20 @@ type TvPageParams = Promise<{ id: string }>;
 interface TvPageProps {
 	params: TvPageParams;
 }
+
+type TvUserData = Awaited<ReturnType<typeof loadTvUserData>>;
+
+function loadTvUserData(tvId: number) {
+	return Promise.all([
+		getMediaWatchlistEntry(tvId, 'tv'),
+		getTvShowWatchProgress(tvId),
+		getShowAverageRating(tvId),
+		getMediaReview(tvId, 'tv'),
+	]);
+}
+
+const SEASON_GRID_CLASS =
+	'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
 
 async function TvProvidersSection({ tvId }: { tvId: number }) {
 	const providers = await getTvShowWatchProviders(tvId).catch(() => null);
@@ -55,6 +74,117 @@ async function TvTrailersSection({ tvId }: { tvId: number }) {
 	const trailers = await filterAvailableVideos(filterTrailers(videos));
 	if (trailers.length === 0) return null;
 	return <MediaTrailers trailers={trailers} />;
+}
+
+async function TvUserActions({
+	userData,
+	show,
+	variant,
+}: {
+	userData: Promise<TvUserData>;
+	show: TvShowDetails;
+	variant: 'banner' | 'bar';
+}) {
+	const [watchlistEntry] = await userData;
+	return (
+		<TvWatchActions
+			mediaId={show.id}
+			mediaTitle={show.name}
+			posterPath={show.poster_path}
+			releaseDate={show.first_air_date}
+			initialStatus={watchlistEntry?.status ?? 'none'}
+			variant={variant}
+		/>
+	);
+}
+
+async function TvCommunityBadge({
+	userData,
+	show,
+}: {
+	userData: Promise<TvUserData>;
+	show: TvShowDetails;
+}) {
+	const [watchlistEntry, , rating, userReview] = await userData;
+	return (
+		<CommunityRatingBadge
+			rating={rating}
+			isWatched={watchlistEntry?.status === 'watched'}
+			mediaId={show.id}
+			mediaType="tv"
+			mediaTitle={show.name}
+			posterPath={show.poster_path}
+			initialReview={userReview}
+		/>
+	);
+}
+
+async function TvRatingSection({
+	userData,
+	tvId,
+}: {
+	userData: Promise<TvUserData>;
+	tvId: number;
+}) {
+	const [, , rating] = await userData;
+	return (
+		<MediaCommunityRating
+			mediaId={tvId}
+			mediaType="tv"
+			initialRating={rating}
+		/>
+	);
+}
+
+async function TvProgressSummary({
+	userData,
+	tvId,
+	totalEpisodes,
+	seasons,
+}: {
+	userData: Promise<TvUserData>;
+	tvId: number;
+	totalEpisodes: number;
+	seasons: Season[];
+}) {
+	const [, watchProgress] = await userData;
+	return (
+		<TvWatchSummary
+			tvId={tvId}
+			totalEpisodes={totalEpisodes}
+			seasons={seasons.map((season) => ({
+				seasonNumber: season.season_number,
+				watched: watchProgress.get(season.season_number) ?? 0,
+			}))}
+		/>
+	);
+}
+
+async function TvSeasonsGrid({
+	userData,
+	tvId,
+	seasons,
+	locale,
+}: {
+	userData: Promise<TvUserData>;
+	tvId: number;
+	seasons: Season[];
+	locale: string;
+}) {
+	const [, watchProgress] = await userData;
+	return (
+		<div className={SEASON_GRID_CLASS}>
+			{seasons.map((season) => (
+				<SeasonCard
+					key={season.id}
+					tvId={tvId}
+					season={season}
+					seasonWatched={watchProgress.get(season.season_number) ?? 0}
+					locale={locale}
+				/>
+			))}
+		</div>
+	);
 }
 
 export async function generateMetadata({
@@ -74,15 +204,8 @@ export default async function TvShowPage(props: TvPageProps) {
 
 	if (isNaN(tvId)) notFound();
 
-	const userDataPromise = Promise.all([
-		getMediaWatchlistEntry(tvId, 'tv'),
-		getTvShowWatchProgress(tvId),
-		getShowAverageRating(tvId),
-		getMediaReview(tvId, 'tv'),
-		getTranslations(),
-		getServerLocale(),
-	]);
-	userDataPromise.catch(() => {});
+	const userData = loadTvUserData(tvId);
+	userData.catch(() => {});
 
 	let tvDetails, credits, images;
 	try {
@@ -113,9 +236,11 @@ export default async function TvShowPage(props: TvPageProps) {
 		notFound();
 	}
 
-	const [watchlistEntry, watchProgress, showRating, userReview, t, locale] =
-		await userDataPromise;
-	const lang = await getServerLanguage();
+	const [t, locale, lang] = await Promise.all([
+		getTranslations(),
+		getServerLocale(),
+		getServerLanguage(),
+	]);
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, tvDetails.backdrop_path),
@@ -128,12 +253,6 @@ export default async function TvShowPage(props: TvPageProps) {
 		(sum: number, s: { episode_count: number }) => sum + s.episode_count,
 		0
 	);
-	const seasonWatchFallbacks = standardSeasons.map((s: Season) => ({
-		seasonNumber: s.season_number,
-		watched: watchProgress.get(s.season_number) ?? 0,
-	}));
-
-	const isWatched = watchlistEntry?.status === 'watched';
 
 	const crew = groupCrew(credits.crew);
 
@@ -151,76 +270,64 @@ export default async function TvShowPage(props: TvPageProps) {
 			certification={tvDetails.certification}
 			genres={tvDetails.genres}
 			communityBadge={
-				<CommunityRatingBadge
-					rating={showRating}
-					isWatched={isWatched}
-					mediaId={tvDetails.id}
-					mediaType="tv"
-					mediaTitle={tvDetails.name}
-					posterPath={tvDetails.poster_path}
-					initialReview={userReview}
-				/>
+				<Suspense fallback={null}>
+					<TvCommunityBadge userData={userData} show={tvDetails} />
+				</Suspense>
 			}
 			actions={
 				<div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
 					<div className="w-full sm:w-auto">
-						<WatchButton
-							mediaId={tvDetails.id}
-							mediaTitle={tvDetails.name}
-							mediaType="tv"
-							posterPath={tvDetails.poster_path}
-							status={
-								watchlistEntry?.status === 'watched'
-									? 'watched'
-									: 'to_watch'
+						<Suspense
+							fallback={
+								<Skeleton className="h-11 w-full sm:w-40 rounded-lg" />
 							}
-							variant="full"
-							initialIsActive={!!watchlistEntry}
-							releaseDate={tvDetails.first_air_date}
-						/>
+						>
+							<TvUserActions
+								userData={userData}
+								show={tvDetails}
+								variant="banner"
+							/>
+						</Suspense>
 					</div>
-					<TvWatchSummary
-						tvId={tvId}
-						totalEpisodes={totalEpisodes}
-						seasons={seasonWatchFallbacks}
-					/>
+					<Suspense fallback={null}>
+						<TvProgressSummary
+							userData={userData}
+							tvId={tvId}
+							totalEpisodes={totalEpisodes}
+							seasons={standardSeasons}
+						/>
+					</Suspense>
 				</div>
 			}
 		/>
 	);
 
 	const actionsBar = (
-		<WatchButton
-			mediaId={tvDetails.id}
-			mediaTitle={tvDetails.name}
-			mediaType="tv"
-			posterPath={tvDetails.poster_path}
-			status={
-				watchlistEntry?.status === 'watched' ? 'watched' : 'to_watch'
-			}
-			variant="responsive"
-			initialIsActive={!!watchlistEntry}
-			releaseDate={tvDetails.first_air_date}
-		/>
+		<Suspense fallback={<WatchActionsSkeleton variant="bar" />}>
+			<TvUserActions userData={userData} show={tvDetails} variant="bar" />
+		</Suspense>
 	);
 
 	const seasonsSection =
 		standardSeasons.length > 0 ? (
 			<section className="space-y-6">
 				<SectionHeading>{t.movie.seasons}</SectionHeading>
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-					{standardSeasons.map((season: Season) => (
-						<SeasonCard
-							key={season.id}
-							tvId={tvId}
-							season={season}
-							seasonWatched={
-								watchProgress.get(season.season_number) ?? 0
-							}
-							locale={locale}
-						/>
-					))}
-				</div>
+				<Suspense
+					fallback={
+						<div className={SEASON_GRID_CLASS}>
+							{standardSeasons.map((season: Season) => (
+								<SeasonCardSkeleton key={season.id} />
+							))}
+						</div>
+					}
+				>
+					<TvSeasonsGrid
+						userData={userData}
+						tvId={tvId}
+						seasons={standardSeasons}
+						locale={locale}
+					/>
+				</Suspense>
 			</section>
 		) : null;
 
@@ -245,7 +352,11 @@ export default async function TvShowPage(props: TvPageProps) {
 						<TvProvidersSection tvId={tvId} />
 					</Suspense>
 				}
-				rating={showRating}
+				rating={
+					<Suspense fallback={null}>
+						<TvRatingSection userData={userData} tvId={tvId} />
+					</Suspense>
+				}
 				reviews={
 					<Suspense
 						fallback={<Skeleton className="h-32 rounded-xl" />}

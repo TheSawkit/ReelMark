@@ -10,8 +10,8 @@ import {
 	rejectFriendRequest,
 	cancelFriendRequest,
 } from '@/app/actions/friends';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Friendship } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
 
@@ -31,13 +31,31 @@ export function FriendshipButton({
 	const [localFriendship, setLocalFriendship] = useState<Friendship | null>(
 		friendship
 	);
-	const router = useRouter();
 	const supabase = useMemo(() => createClient(), []);
 
 	useEffect(() => {
+		const applyChange = (
+			payload: RealtimePostgresChangesPayload<Friendship>
+		) => {
+			if (payload.eventType === 'DELETE') {
+				const deletedId = payload.old.id;
+				setLocalFriendship((prev) =>
+					prev && prev.id === deletedId ? null : prev
+				);
+				return;
+			}
+			const row = payload.new;
+			if (
+				row.requester_id !== targetUserId &&
+				row.addressee_id !== targetUserId
+			)
+				return;
+			setLocalFriendship(row);
+		};
+
 		const channel = supabase
 			.channel(`friendship-${currentUserId}`)
-			.on(
+			.on<Friendship>(
 				'postgres_changes',
 				{
 					event: '*',
@@ -45,9 +63,9 @@ export function FriendshipButton({
 					table: 'friendships',
 					filter: `requester_id=eq.${currentUserId}`,
 				},
-				() => router.refresh()
+				applyChange
 			)
-			.on(
+			.on<Friendship>(
 				'postgres_changes',
 				{
 					event: '*',
@@ -55,14 +73,14 @@ export function FriendshipButton({
 					table: 'friendships',
 					filter: `addressee_id=eq.${currentUserId}`,
 				},
-				() => router.refresh()
+				applyChange
 			)
 			.subscribe();
 
 		return () => {
 			supabase.removeChannel(channel);
 		};
-	}, [currentUserId, supabase, router]);
+	}, [currentUserId, targetUserId, supabase]);
 
 	const handleSendRequest = () => {
 		startTransition(async () => {

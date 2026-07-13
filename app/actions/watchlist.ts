@@ -6,7 +6,7 @@ import {
 } from '@/lib/supabase/auth-helpers';
 import {
 	SHARED_REVALIDATE_PATHS,
-	revalidateLocalized,
+	revalidateLocalizedAfterResponse,
 } from '@/app/actions/_helpers';
 import { VALID_STATUSES, VALID_MEDIA_TYPES } from '@/lib/validators';
 import type { WatchStatus, WatchlistEntry, MediaType } from '@/types/tmdb';
@@ -15,8 +15,10 @@ import { fetchAllRows } from '@/lib/supabase/pagination';
 import { getListMediaMetadata, type ListMediaMetadata } from '@/lib/tmdb';
 
 function revalidateWatchlistPaths(mediaType: MediaType, mediaId: number) {
-	SHARED_REVALIDATE_PATHS.forEach(revalidateLocalized);
-	revalidateLocalized(`/${mediaType}/${mediaId}`);
+	revalidateLocalizedAfterResponse([
+		...SHARED_REVALIDATE_PATHS,
+		`/${mediaType}/${mediaId}`,
+	]);
 }
 
 export async function addToWatchlist(

@@ -6,6 +6,12 @@ import dynamic from 'next/dynamic';
 import { Star } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
 import { cn } from '@/lib/utils';
+import { useMediaWatch } from '@/lib/media-watch-store';
+import {
+	mediaRatingStore,
+	useMediaRating,
+	useMyReview,
+} from '@/lib/media-rating-store';
 import type { Review, ReviewMediaType } from '@/types/profile';
 
 const ReviewDialog = dynamic(
@@ -41,11 +47,16 @@ export function CommunityRatingBadge({
 	const { t } = useTranslation();
 	const router = useRouter();
 	const [open, setOpen] = useState(false);
+	const review = useMyReview(mediaType, mediaId, initialReview);
+	const liveRating = useMediaRating(mediaType, mediaId, rating);
+	const watchStatus = useMediaWatch(mediaType, mediaId);
+	const watched =
+		watchStatus !== undefined ? watchStatus === 'watched' : isWatched;
 
-	if (!rating && !isWatched) return null;
+	if (!liveRating && !watched) return null;
 
-	const score = rating ? (rating.avg / 2).toFixed(1) : '—';
-	const ariaLabel = initialReview
+	const score = liveRating ? (liveRating.avg / 2).toFixed(1) : '—';
+	const ariaLabel = review
 		? t.movie.editReview
 		: mediaType === 'tv'
 			? t.movie.rateTvShow
@@ -56,16 +67,16 @@ export function CommunityRatingBadge({
 			<Star className="h-5 w-5 fill-primary text-primary" />
 			<span className="font-semibold text-text tabular-nums">
 				{score}
-				{rating && rating.count > 0 && (
+				{liveRating && liveRating.count > 0 && (
 					<span className="text-muted text-xs font-normal ml-1.5">
-						({rating.count})
+						({liveRating.count})
 					</span>
 				)}
 			</span>
 		</>
 	);
 
-	if (!isWatched) {
+	if (!watched) {
 		return <div className={BADGE_CLASSES}>{content}</div>;
 	}
 
@@ -91,9 +102,29 @@ export function CommunityRatingBadge({
 					mediaType={mediaType}
 					mediaTitle={mediaTitle}
 					posterPath={posterPath}
-					existingReview={initialReview}
-					onSave={() => router.refresh()}
-					onDelete={() => router.refresh()}
+					existingReview={review}
+					onSave={(saved) => {
+						mediaRatingStore.applyUserRating(
+							mediaType,
+							mediaId,
+							liveRating,
+							review?.rating ?? null,
+							saved.rating
+						);
+						mediaRatingStore.setMyReview(mediaType, mediaId, saved);
+						router.refresh();
+					}}
+					onDelete={() => {
+						mediaRatingStore.applyUserRating(
+							mediaType,
+							mediaId,
+							liveRating,
+							review?.rating ?? null,
+							null
+						);
+						mediaRatingStore.setMyReview(mediaType, mediaId, null);
+						router.refresh();
+					}}
 				/>
 			)}
 		</>

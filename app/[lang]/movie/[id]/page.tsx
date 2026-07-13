@@ -13,33 +13,43 @@ import {
 	getMovieWatchProviders,
 } from '@/lib/tmdb';
 import { MediaBanner } from '@/components/media/detail/MediaBanner';
-import { WatchButton } from '@/components/media/detail/WatchButton';
+import { MovieWatchActions } from '@/components/media/detail/MovieWatchActions';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
 import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
-import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
+import {
+	DetailSectionSkeleton,
+	WatchActionsSkeleton,
+} from '@/components/media/detail/MediaDetailSkeleton';
 import { PublicReviewsSection } from '@/components/media/reviews/PublicReviewsSection';
 import { getMediaWatchlistEntry } from '@/app/actions/watchlist';
 import { getAverageRating, getMediaReview } from '@/app/actions/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
+import { MediaCommunityRating } from '@/components/media/detail/MediaCommunityRating';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
 import { movieJsonLd, serializeJsonLd } from '@/lib/structured-data';
 import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
-import { Eye } from 'lucide-react';
-import {
-	getTranslations,
-	getServerLocale,
-	getServerLanguage,
-} from '@/lib/i18n/server';
+import { getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
-import { formatDate } from '@/lib/format';
+import type { MovieDetails } from '@/types/tmdb';
+
 type MoviePageParams = Promise<{ id: string }>;
 interface MoviePageProps {
 	params: MoviePageParams;
 }
 
 export const dynamic = 'force-dynamic';
+
+type MovieUserData = Awaited<ReturnType<typeof loadMovieUserData>>;
+
+function loadMovieUserData(movieId: number) {
+	return Promise.all([
+		getMediaWatchlistEntry(movieId, 'movie'),
+		getAverageRating(movieId, 'movie'),
+		getMediaReview(movieId, 'movie'),
+	]);
+}
 
 async function MovieProvidersSection({ movieId }: { movieId: number }) {
 	const providers = await getMovieWatchProviders(movieId).catch(() => null);
@@ -51,6 +61,67 @@ async function MovieTrailersSection({ movieId }: { movieId: number }) {
 	const trailers = await filterAvailableVideos(filterTrailers(videos));
 	if (trailers.length === 0) return null;
 	return <MediaTrailers trailers={trailers} />;
+}
+
+async function MovieUserActions({
+	userData,
+	movie,
+	variant,
+}: {
+	userData: Promise<MovieUserData>;
+	movie: MovieDetails;
+	variant: 'banner' | 'bar';
+}) {
+	const [watchlistEntry] = await userData;
+	return (
+		<MovieWatchActions
+			mediaId={movie.id}
+			mediaTitle={movie.title}
+			posterPath={movie.poster_path}
+			releaseDate={movie.release_date}
+			initialStatus={watchlistEntry?.status ?? 'none'}
+			watchedAt={watchlistEntry?.created_at ?? null}
+			variant={variant}
+		/>
+	);
+}
+
+async function MovieCommunityBadge({
+	userData,
+	movie,
+}: {
+	userData: Promise<MovieUserData>;
+	movie: MovieDetails;
+}) {
+	const [watchlistEntry, rating, userReview] = await userData;
+	return (
+		<CommunityRatingBadge
+			rating={rating}
+			isWatched={watchlistEntry?.status === 'watched'}
+			mediaId={movie.id}
+			mediaType="movie"
+			mediaTitle={movie.title}
+			posterPath={movie.poster_path}
+			initialReview={userReview}
+		/>
+	);
+}
+
+async function MovieRatingSection({
+	userData,
+	movieId,
+}: {
+	userData: Promise<MovieUserData>;
+	movieId: number;
+}) {
+	const [, rating] = await userData;
+	return (
+		<MediaCommunityRating
+			mediaId={movieId}
+			mediaType="movie"
+			initialRating={rating}
+		/>
+	);
 }
 
 export async function generateMetadata({
@@ -70,14 +141,8 @@ export default async function MoviePage(props: MoviePageProps) {
 
 	if (isNaN(movieId)) notFound();
 
-	const userDataPromise = Promise.all([
-		getMediaWatchlistEntry(movieId, 'movie'),
-		getAverageRating(movieId, 'movie'),
-		getMediaReview(movieId, 'movie'),
-		getTranslations(),
-		getServerLocale(),
-	]);
-	userDataPromise.catch(() => {});
+	const userData = loadMovieUserData(movieId);
+	userData.catch(() => {});
 
 	let movieDetails, credits, images;
 	try {
@@ -108,15 +173,12 @@ export default async function MoviePage(props: MoviePageProps) {
 		notFound();
 	}
 
-	const [watchlistEntry, movieRating, userReview, t, locale] =
-		await userDataPromise;
 	const lang = await getServerLanguage();
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, movieDetails.backdrop_path),
 		'original'
 	);
-	const isWatched = watchlistEntry?.status === 'watched';
 
 	const crew = groupCrew(credits.crew);
 
@@ -134,85 +196,33 @@ export default async function MoviePage(props: MoviePageProps) {
 			certification={movieDetails.certification}
 			genres={movieDetails.genres}
 			communityBadge={
-				<CommunityRatingBadge
-					rating={movieRating}
-					isWatched={isWatched}
-					mediaId={movieDetails.id}
-					mediaType="movie"
-					mediaTitle={movieDetails.title}
-					posterPath={movieDetails.poster_path}
-					initialReview={userReview}
-				/>
+				<Suspense fallback={null}>
+					<MovieCommunityBadge
+						userData={userData}
+						movie={movieDetails}
+					/>
+				</Suspense>
 			}
 			actions={
-				<div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-					{!isWatched && (
-						<div className="w-full sm:w-auto">
-							<WatchButton
-								mediaId={movieDetails.id}
-								mediaTitle={movieDetails.title}
-								mediaType="movie"
-								posterPath={movieDetails.poster_path}
-								status="to_watch"
-								variant="full"
-								initialIsActive={
-									watchlistEntry?.status === 'to_watch'
-								}
-							/>
-						</div>
-					)}
-					<div className="w-full sm:w-auto">
-						<WatchButton
-							mediaId={movieDetails.id}
-							mediaTitle={movieDetails.title}
-							mediaType="movie"
-							posterPath={movieDetails.poster_path}
-							status="watched"
-							variant="full"
-							initialIsActive={isWatched}
-							fallbackStatus="to_watch"
-							releaseDate={movieDetails.release_date}
-						/>
-					</div>
-					{isWatched && watchlistEntry?.created_at && (
-						<div className="flex items-center gap-2 px-4 py-2 rounded-md glass-overlay text-muted animate-in fade-in slide-in-from-left-4 duration-(--duration-slow)">
-							<Eye className="h-4 w-4 shrink-0" />
-							<span className="text-sm font-medium">
-								{t.movie.watchedOn}{' '}
-								{formatDate(watchlistEntry.created_at, locale)}
-							</span>
-						</div>
-					)}
-				</div>
+				<Suspense fallback={<WatchActionsSkeleton variant="banner" />}>
+					<MovieUserActions
+						userData={userData}
+						movie={movieDetails}
+						variant="banner"
+					/>
+				</Suspense>
 			}
 		/>
 	);
 
 	const actionsBar = (
-		<>
-			{!isWatched && (
-				<WatchButton
-					mediaId={movieDetails.id}
-					mediaTitle={movieDetails.title}
-					mediaType="movie"
-					posterPath={movieDetails.poster_path}
-					status="to_watch"
-					variant="responsive"
-					initialIsActive={watchlistEntry?.status === 'to_watch'}
-				/>
-			)}
-			<WatchButton
-				mediaId={movieDetails.id}
-				mediaTitle={movieDetails.title}
-				mediaType="movie"
-				posterPath={movieDetails.poster_path}
-				status="watched"
-				variant="responsive"
-				initialIsActive={isWatched}
-				fallbackStatus="to_watch"
-				releaseDate={movieDetails.release_date}
+		<Suspense fallback={<WatchActionsSkeleton variant="bar" />}>
+			<MovieUserActions
+				userData={userData}
+				movie={movieDetails}
+				variant="bar"
 			/>
-		</>
+		</Suspense>
 	);
 
 	return (
@@ -235,7 +245,14 @@ export default async function MoviePage(props: MoviePageProps) {
 						<MovieProvidersSection movieId={movieId} />
 					</Suspense>
 				}
-				rating={movieRating}
+				rating={
+					<Suspense fallback={null}>
+						<MovieRatingSection
+							userData={userData}
+							movieId={movieId}
+						/>
+					</Suspense>
+				}
 				reviews={
 					<Suspense
 						fallback={<Skeleton className="h-32 rounded-xl" />}

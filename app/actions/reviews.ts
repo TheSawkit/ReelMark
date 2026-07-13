@@ -11,7 +11,7 @@ import {
 	validateReviewContent,
 	validateUUID,
 } from '@/lib/validators';
-import { revalidateProfile } from '@/app/actions/_helpers';
+import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
 import { MAX_REVIEW_LENGTH } from '@/types/profile';
 import type {
 	Review,
@@ -208,7 +208,8 @@ export async function getPublicEpisodeReviews(
 }
 
 /**
- * Creates or updates a review. Rating stored as 1–10 integer; display as 0.5–5.0 stars.
+ * Creates or updates a review and returns the stored row. Rating stored as 1–10 integer;
+ * display as 0.5–5.0 stars.
  */
 export async function upsertReview(
 	mediaId: number,
@@ -219,7 +220,7 @@ export async function upsertReview(
 	content: string | null,
 	tvId: number | null = null,
 	seasonNumber: number | null = null
-): Promise<void> {
+): Promise<Review> {
 	const t = await getTranslations();
 	if (!(['movie', 'tv', 'episode'] as const).includes(mediaType)) {
 		throw new Error('Invalid media type');
@@ -235,24 +236,29 @@ export async function upsertReview(
 	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	const isEpisode = mediaType === 'episode';
-	const { error } = await supabase.from('reviews').upsert(
-		{
-			user_id: userId,
-			media_id: mediaId,
-			media_type: mediaType,
-			media_title: mediaTitle,
-			poster_path: posterPath,
-			rating,
-			content: cleanedContent,
-			tv_id: isEpisode ? tvId : null,
-			season_number: isEpisode ? seasonNumber : null,
-			updated_at: new Date().toISOString(),
-		},
-		{ onConflict: 'user_id,media_id,media_type' }
-	);
+	const { data, error } = await supabase
+		.from('reviews')
+		.upsert(
+			{
+				user_id: userId,
+				media_id: mediaId,
+				media_type: mediaType,
+				media_title: mediaTitle,
+				poster_path: posterPath,
+				rating,
+				content: cleanedContent,
+				tv_id: isEpisode ? tvId : null,
+				season_number: isEpisode ? seasonNumber : null,
+				updated_at: new Date().toISOString(),
+			},
+			{ onConflict: 'user_id,media_id,media_type' }
+		)
+		.select(REVIEW_COLUMNS)
+		.single();
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase, user);
+	revalidateProfileAfterResponse(supabase, user);
+	return data as Review;
 }
 
 /**
@@ -270,5 +276,5 @@ export async function deleteReview(reviewId: string): Promise<void> {
 		.eq('user_id', userId);
 
 	if (error) throw new Error(error.message);
-	await revalidateProfile(supabase, user);
+	revalidateProfileAfterResponse(supabase, user);
 }

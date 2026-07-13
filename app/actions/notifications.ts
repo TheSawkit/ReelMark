@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateLocalized } from '@/app/actions/_helpers';
+import { revalidateLocalizedAfterResponse } from '@/app/actions/_helpers';
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { rowToAppNotification } from '@/lib/notifications';
 import {
@@ -46,7 +46,7 @@ export async function markNotificationRead(id: string): Promise<void> {
 		.eq('user_id', userId)
 		.is('read_at', null);
 	if (error) throw new Error(error.message);
-	revalidateLocalized('/notifications');
+	revalidateLocalizedAfterResponse(['/notifications']);
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
@@ -57,7 +57,7 @@ export async function markAllNotificationsRead(): Promise<void> {
 		.eq('user_id', userId)
 		.is('read_at', null);
 	if (error) throw new Error(error.message);
-	revalidateLocalized('/notifications');
+	revalidateLocalizedAfterResponse(['/notifications']);
 }
 
 export async function deleteNotification(id: string): Promise<void> {
@@ -68,7 +68,7 @@ export async function deleteNotification(id: string): Promise<void> {
 		.eq('id', id)
 		.eq('user_id', userId);
 	if (error) throw new Error(error.message);
-	revalidateLocalized('/notifications');
+	revalidateLocalizedAfterResponse(['/notifications']);
 }
 
 export async function getNotificationPreferences(): Promise<NotificationPreferences> {
@@ -89,5 +89,5 @@ export async function updateNotificationPreferences(
 		.from('notification_preferences')
 		.upsert({ user_id: userId, ...prefs }, { onConflict: 'user_id' });
 	if (error) throw new Error(error.message);
-	revalidateLocalized('/settings');
+	revalidateLocalizedAfterResponse(['/settings']);
 }

@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Eye, Check, Loader2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { setEpisodeWatched } from '@/app/actions/episodes';
 import { episodeWatchStore, useSeasonWatch } from '@/lib/episode-watch-store';
+import { mediaWatchStore } from '@/lib/media-watch-store';
 import { useTranslation } from '@/lib/i18n/context';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 
@@ -39,6 +41,7 @@ export function EpisodeWatchButton({
 	const [reviewOpen, setReviewOpen] = useState(false);
 	const { loading, error, execute } = useAsyncAction();
 	const { t } = useTranslation();
+	const router = useRouter();
 
 	const seasonState = useSeasonWatch(tvId, seasonNumber);
 	const watched = seasonState?.episodes
@@ -54,7 +57,7 @@ export function EpisodeWatchButton({
 		const result = await execute(() =>
 			setEpisodeWatched(tvId, seasonNumber, episodeNumber, target)
 		);
-		if (result === undefined) {
+		if (!result) {
 			episodeWatchStore.setEpisode(
 				tvId,
 				seasonNumber,
@@ -63,6 +66,7 @@ export function EpisodeWatchButton({
 			);
 			return;
 		}
+		mediaWatchStore.set('tv', tvId, result.tvStatus);
 		if (target) setReviewOpen(true);
 	}
 
@@ -103,6 +107,7 @@ export function EpisodeWatchButton({
 					posterPath={stillPath}
 					tvId={tvId}
 					seasonNumber={seasonNumber}
+					onSave={() => router.refresh()}
 				/>
 			)}
 		</>
