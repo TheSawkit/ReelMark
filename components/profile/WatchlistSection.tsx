@@ -9,7 +9,13 @@ import { watchlistEntryToMediaItem } from '@/lib/mappers';
 import { getMediaKey } from '@/lib/media';
 import { SORT_KEYS } from '@/lib/media-list/controls';
 import { useMediaListControls } from '@/hooks/useMediaListControls';
-import { InfiniteScrollMedia } from '@/components/media/card/InfiniteScrollMedia';
+import { MediaCard } from '@/components/media/card/MediaCard';
+import {
+	MEDIA_GRID_COLUMNS,
+	MEDIA_GRID_ROW_CLASS,
+	VirtualMediaGrid,
+} from '@/components/media/card/VirtualMediaGrid';
+import { BackToTopButton } from '@/components/shared/BackToTopButton';
 import { MediaListControls } from '@/components/media/list/MediaListControls';
 import { PrivacyBlock } from '@/components/profile/PrivacyBlock';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -98,7 +104,6 @@ export function WatchlistSection({
 			: SORT_KEYS.filter((key) => key !== 'rating');
 
 	const processed = controls.items;
-	const category = `${sectionKey}-${mediaType}-${controls.state.sortKey}-${controls.state.sortDir}-${controls.state.genreIds.join('.')}-${controls.state.actorQuery.trim()}`;
 
 	return (
 		<div>
@@ -140,13 +145,29 @@ export function WatchlistSection({
 					{t.lists.noResults}
 				</p>
 			) : (
-				<InfiniteScrollMedia
-					initialItems={processed.slice(0, 20)}
-					clientSideData={processed}
-					category={category}
-					hideRating
-					showWatchlistMeta
-				/>
+				<>
+					<VirtualMediaGrid
+						items={processed}
+						columns={MEDIA_GRID_COLUMNS}
+						rowClassName={MEDIA_GRID_ROW_CLASS}
+						renderItem={(item, index) => (
+							<div
+								key={getMediaKey(item)}
+								className="media-grid-cell"
+							>
+								<MediaCard
+									media={item}
+									watchlistEntry={item.watchlistEntry}
+									hideRating
+									imageSize="grid"
+									priority={index < 6}
+									enableSharedTransition
+								/>
+							</div>
+						)}
+					/>
+					<BackToTopButton />
+				</>
 			)}
 		</div>
 	);

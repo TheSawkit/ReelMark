@@ -39,7 +39,8 @@
 		"serwist": "^9.5.11",
 		"simple-icons": "^16.24.1",
 		"sonner": "^2.0.7",
-		"tailwind-merge": "^3.6.0"
+		"tailwind-merge": "^3.6.0",
+		"virtua": "^0.49.3"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.61.1",

@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { EpisodeCard } from '@/components/media/tv/EpisodeCard';
+import { episodeWatchStore } from '@/lib/episode-watch-store';
 import { useProgressiveReveal } from '@/hooks/useProgressiveReveal';
 import { useTranslation } from '@/lib/i18n/context';
 import type { Episode } from '@/types/tmdb';
@@ -38,6 +40,15 @@ export function SeasonEpisodesList({
 		EPISODES_PAGE_SIZE
 	);
 	const watched = new Set(watchedEpisodeNumbers);
+
+	useEffect(() => {
+		episodeWatchStore.seed(
+			tvId,
+			seasonNumber,
+			watchedEpisodeNumbers.length,
+			watchedEpisodeNumbers
+		);
+	}, [tvId, seasonNumber, watchedEpisodeNumbers]);
 
 	return (
 		<>

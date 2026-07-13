@@ -15,6 +15,7 @@ import { CinematicBackdrop } from '@/components/media/detail/CinematicBackdrop';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { SeasonWatchButton } from '@/components/media/tv/SeasonWatchButton';
 import { mediaHeaderStore } from '@/lib/media-header-store';
+import { useSeasonWatch } from '@/lib/episode-watch-store';
 
 interface SeasonBannerProps {
 	tvId: number;
@@ -53,6 +54,7 @@ export function SeasonBanner({
 	const locale = getLocale(lang);
 	const dominantColor = useDominantColor(backdropUrl);
 	const bottomRef = useRef<HTMLDivElement>(null);
+	const liveCount = useSeasonWatch(tvId, seasonNumber)?.count ?? watchedCount;
 
 	useEffect(() => {
 		mediaHeaderStore.setMedia(seasonName);
@@ -164,21 +166,21 @@ export function SeasonBanner({
 								totalEpisodes={totalEpisodes}
 								watchedCount={watchedCount}
 							/>
-							{watchedCount > 0 && (
+							{liveCount > 0 && (
 								<div className="flex items-center gap-3 px-4 py-2 rounded-full glass-surface shadow-card-sm">
 									<span className="text-xs uppercase tracking-wider font-bold text-muted">
-										{watchedCount}/{totalEpisodes}{' '}
+										{liveCount}/{totalEpisodes}{' '}
 										{t.movie.episodes}
 									</span>
 									<ProgressBar
-										watched={watchedCount}
+										watched={liveCount}
 										total={totalEpisodes}
 										className="w-20 sm:w-28 h-1 bg-border-subtle rounded-full"
 										innerClassName="bg-linear-to-r from-primary to-gold rounded-full"
 									/>
 									<span className="text-sm font-bold text-text tabular-nums">
 										{Math.round(
-											(watchedCount / totalEpisodes) * 100
+											(liveCount / totalEpisodes) * 100
 										)}
 										%
 									</span>

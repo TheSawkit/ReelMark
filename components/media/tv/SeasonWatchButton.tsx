@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { CheckCheck, Loader2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { markSeasonWatched } from '@/app/actions/episodes';
+import { setSeasonWatched } from '@/app/actions/episodes';
+import { episodeWatchStore, useSeasonWatch } from '@/lib/episode-watch-store';
 import { useTranslation } from '@/lib/i18n/context';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 
@@ -20,28 +20,23 @@ export function SeasonWatchButton({
 	totalEpisodes,
 	watchedCount,
 }: SeasonWatchButtonProps) {
-	const [optimistic, setOptimistic] = useState<{
-		base: number;
-		value: number;
-	} | null>(null);
 	const { loading, error, execute } = useAsyncAction();
 	const { t } = useTranslation();
 
-	const count =
-		optimistic && optimistic.base === watchedCount
-			? optimistic.value
-			: watchedCount;
-	const allWatched = count === totalEpisodes && totalEpisodes > 0;
+	const count = useSeasonWatch(tvId, seasonNumber)?.count ?? watchedCount;
+	const allWatched = count >= totalEpisodes && totalEpisodes > 0;
 
 	async function handleClick() {
-		setOptimistic({
-			base: watchedCount,
-			value: allWatched ? 0 : totalEpisodes,
-		});
+		if (loading) return;
+		const target = !allWatched;
+		const previous = episodeWatchStore.get(tvId, seasonNumber);
+		episodeWatchStore.setSeason(tvId, seasonNumber, target, totalEpisodes);
 		const result = await execute(() =>
-			markSeasonWatched(tvId, seasonNumber, totalEpisodes)
+			setSeasonWatched(tvId, seasonNumber, totalEpisodes, target)
 		);
-		if (result === undefined) setOptimistic(null);
+		if (result === undefined) {
+			episodeWatchStore.restore(tvId, seasonNumber, previous);
+		}
 	}
 
 	const Icon = loading ? Loader2 : error ? XCircle : CheckCheck;

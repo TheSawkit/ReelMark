@@ -91,7 +91,6 @@ export function MediaCard({
 	return (
 		<Link
 			href={href}
-			prefetch={false}
 			className={cn(
 				'group relative rounded-poster overflow-hidden bg-surface border border-card-border block focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12',
 				'transition-[transform,scale,box-shadow,border-color] duration-(--duration-medium) ease-apple will-change-transform',

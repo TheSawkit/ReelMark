@@ -1,11 +1,15 @@
+'use client';
+
+import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar } from 'lucide-react';
 import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/tmdb/images';
-import { getServerLanguage } from '@/lib/i18n/server';
+import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
+import { episodeWatchStore, useSeasonWatch } from '@/lib/episode-watch-store';
 import { SeasonWatchIcon } from '@/components/media/tv/SeasonWatchIcon';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import type { Season } from '@/types/tmdb';
@@ -15,23 +19,24 @@ interface SeasonCardProps {
 	season: Season;
 	seasonWatched: number;
 	locale: string;
-	labels: {
-		episodes: string;
-		completed: string;
-		watchedProgress: (watched: number, total: number) => React.ReactNode;
-	};
 }
 
-export async function SeasonCard({
+export function SeasonCard({
 	tvId,
 	season,
 	seasonWatched,
 	locale,
-	labels,
 }: SeasonCardProps) {
+	const { t, lang } = useTranslation();
 	const seasonTotal = season.episode_count;
-	const isComplete = seasonWatched === seasonTotal && seasonTotal > 0;
-	const lang = await getServerLanguage();
+
+	useEffect(() => {
+		episodeWatchStore.seed(tvId, season.season_number, seasonWatched);
+	}, [tvId, season.season_number, seasonWatched]);
+
+	const watched =
+		useSeasonWatch(tvId, season.season_number)?.count ?? seasonWatched;
+	const isComplete = watched >= seasonTotal && seasonTotal > 0;
 
 	return (
 		<div className="relative group">
@@ -40,7 +45,6 @@ export async function SeasonCard({
 					lang,
 					`/tv/${tvId}/season/${season.season_number}`
 				)}
-				prefetch={false}
 				className={cn(
 					'flex gap-4 bg-surface-2 rounded-xl p-4 transition-all duration-(--duration-base) hover:bg-surface-3 hover:shadow-cinema border cursor-pointer',
 					isComplete
@@ -66,10 +70,10 @@ export async function SeasonCard({
 						</div>
 					)}
 
-					{seasonWatched > 0 && (
+					{watched > 0 && (
 						<div className="absolute bottom-0 inset-x-0 bg-linear-to-t from-surface/80 to-transparent p-1.5">
 							<ProgressBar
-								watched={seasonWatched}
+								watched={watched}
 								total={seasonTotal}
 								className="h-1 bg-border-subtle rounded-full"
 								innerClassName={
@@ -91,7 +95,7 @@ export async function SeasonCard({
 							<span className="font-semibold text-text">
 								{seasonTotal}
 							</span>{' '}
-							{labels.episodes}
+							{t.movie.episodes}
 						</div>
 						{season.air_date && (
 							<div className="flex items-center gap-1.5 text-sm text-muted overflow-hidden">
@@ -102,7 +106,7 @@ export async function SeasonCard({
 							</div>
 						)}
 
-						{seasonWatched > 0 && (
+						{watched > 0 && (
 							<div
 								className={cn(
 									'text-xs font-medium mt-1 truncate',
@@ -110,11 +114,8 @@ export async function SeasonCard({
 								)}
 							>
 								{isComplete
-									? labels.completed
-									: labels.watchedProgress(
-											seasonWatched,
-											seasonTotal
-										)}
+									? `✓ ${t.movie.completed}`
+									: `${watched}/${seasonTotal} ${t.movie.watchedCount}`}
 							</div>
 						)}
 					</div>
@@ -124,7 +125,7 @@ export async function SeasonCard({
 			<div
 				className={cn(
 					'absolute top-2 right-2 z-10 transition-all duration-(--duration-base)',
-					seasonWatched > 0
+					watched > 0
 						? 'opacity-100'
 						: 'opacity-0 group-hover:opacity-100'
 				)}
@@ -133,7 +134,7 @@ export async function SeasonCard({
 					tvId={tvId}
 					seasonNumber={season.season_number}
 					totalEpisodes={seasonTotal}
-					watchedCount={seasonWatched}
+					watchedCount={watched}
 					releaseDate={season.air_date ?? undefined}
 				/>
 			</div>

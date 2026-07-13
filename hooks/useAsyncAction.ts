@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useAutoResetError } from '@/hooks/useAutoResetError';
 
 interface UseAsyncActionResult {
@@ -9,14 +9,17 @@ interface UseAsyncActionResult {
 	execute: <T>(action: () => Promise<T>) => Promise<T | undefined>;
 }
 
-/** Handles loading/error state for server action calls; UI updates come from the action's own revalidatePath. */
+/** Handles loading/error state for server action calls; re-entrant calls are dropped so rapid clicks fire a single request. */
 export function useAsyncAction(): UseAsyncActionResult {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useAutoResetError();
+	const inFlightRef = useRef(false);
 
 	async function execute<T>(
 		action: () => Promise<T>
 	): Promise<T | undefined> {
+		if (inFlightRef.current) return undefined;
+		inFlightRef.current = true;
 		setLoading(true);
 		setError(false);
 		try {
@@ -25,6 +28,7 @@ export function useAsyncAction(): UseAsyncActionResult {
 			setError(true);
 			return undefined;
 		} finally {
+			inFlightRef.current = false;
 			setLoading(false);
 		}
 	}

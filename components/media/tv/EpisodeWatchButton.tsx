@@ -4,7 +4,8 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Eye, Check, Loader2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toggleEpisodeWatch } from '@/app/actions/episodes';
+import { setEpisodeWatched } from '@/app/actions/episodes';
+import { episodeWatchStore, useSeasonWatch } from '@/lib/episode-watch-store';
 import { useTranslation } from '@/lib/i18n/context';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 
@@ -35,25 +36,34 @@ export function EpisodeWatchButton({
 	episodeName,
 	stillPath,
 }: EpisodeWatchButtonProps) {
-	const [watched, setWatched] = useState(initialWatched);
 	const [reviewOpen, setReviewOpen] = useState(false);
 	const { loading, error, execute } = useAsyncAction();
 	const { t } = useTranslation();
 
+	const seasonState = useSeasonWatch(tvId, seasonNumber);
+	const watched = seasonState?.episodes
+		? seasonState.episodes.has(episodeNumber)
+		: initialWatched;
+
 	async function handleToggle(e: React.MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
-		const previous = watched;
-		setWatched(!previous);
-		const newState = await execute(() =>
-			toggleEpisodeWatch(tvId, seasonNumber, episodeNumber)
+		if (loading) return;
+		const target = !watched;
+		episodeWatchStore.setEpisode(tvId, seasonNumber, episodeNumber, target);
+		const result = await execute(() =>
+			setEpisodeWatched(tvId, seasonNumber, episodeNumber, target)
 		);
-		if (newState === undefined) {
-			setWatched(previous);
+		if (result === undefined) {
+			episodeWatchStore.setEpisode(
+				tvId,
+				seasonNumber,
+				episodeNumber,
+				!target
+			);
 			return;
 		}
-		setWatched(newState);
-		if (newState && !previous) setReviewOpen(true);
+		if (target) setReviewOpen(true);
 	}
 
 	const Icon = loading ? Loader2 : error ? XCircle : watched ? Check : Eye;
