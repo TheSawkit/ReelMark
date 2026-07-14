@@ -6,6 +6,7 @@ import type { Language } from '@/lib/i18n/translations';
 
 const PROTECTED_SEGMENTS = ['/dashboard', '/library', '/settings'];
 const AUTH_SEGMENTS = ['/login', '/signup'];
+const RECOVERY_SEGMENT = '/auth/update-password';
 
 const SEARCH_LIMIT = 30;
 const SEARCH_WINDOW_MS = 60_000;
@@ -93,11 +94,12 @@ export async function proxy(request: NextRequest) {
 	const isAuthRoute = AUTH_SEGMENTS.some((segment) =>
 		pathWithoutLocale.startsWith(segment)
 	);
+	const isRecovery = pathWithoutLocale.startsWith(RECOVERY_SEGMENT);
 
 	const requestHeaders = new Headers(request.headers);
 	requestHeaders.set('x-locale', locale);
 
-	if (!isProtected && !isAuthRoute) {
+	if (!isProtected && !isAuthRoute && !isRecovery) {
 		return NextResponse.next({ request: { headers: requestHeaders } });
 	}
 
@@ -131,6 +133,12 @@ export async function proxy(request: NextRequest) {
 		const loginUrl = request.nextUrl.clone();
 		loginUrl.pathname = `/${locale}/login`;
 		return NextResponse.redirect(loginUrl);
+	}
+
+	if (isRecovery && !user) {
+		const errorUrl = request.nextUrl.clone();
+		errorUrl.pathname = `/${locale}/auth/auth-code-error`;
+		return NextResponse.redirect(errorUrl);
 	}
 
 	if (isAuthRoute && user) {
