@@ -18,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { deleteAccount } from '@/app/[lang]/(protected)/settings/actions';
 import { useTranslation } from '@/lib/i18n/context';
+import { clearUserScopedCaches } from '@/lib/pwa-cache';
 
 const initialState = {
 	error: undefined as string | undefined,
@@ -42,6 +43,11 @@ export function DangerZone({ isOAuthOnly }: DangerZoneProps) {
 		setConfirmText('');
 	};
 
+	const handleDelete = async (formData: FormData) => {
+		await clearUserScopedCaches();
+		formAction(formData);
+	};
+
 	return (
 		<Card className="border-red">
 			<CardHeader>
@@ -61,7 +67,7 @@ export function DangerZone({ isOAuthOnly }: DangerZoneProps) {
 						{t.settings.dangerZone.deleteAccount}
 					</Button>
 				) : (
-					<form action={formAction} className="space-y-6">
+					<form action={handleDelete} className="space-y-6">
 						<div className="bg-red/10 border border-red/20 rounded-lg p-4">
 							<p className="text-sm font-medium text-red mb-3">
 								{t.danger.warning}

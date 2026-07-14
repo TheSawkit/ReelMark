@@ -4,6 +4,7 @@ import { useTransition } from 'react';
 import { signout } from '@/app/auth/actions';
 import { LogOut } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
+import { clearUserScopedCaches } from '@/lib/pwa-cache';
 
 export function SignoutButton() {
 	const [isPending, startTransition] = useTransition();
@@ -11,6 +12,7 @@ export function SignoutButton() {
 
 	const handleSignout = () => {
 		startTransition(async () => {
+			await clearUserScopedCaches();
 			await signout();
 		});
 	};
