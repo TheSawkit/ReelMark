@@ -140,6 +140,46 @@ export async function setEpisodeWatched(
 }
 
 /**
+ * Marks every episode from 1 to `upToEpisode` as watched (idempotent), letting a
+ * user catch up on skipped episodes, and syncs the parent TV show's watchlist status.
+ *
+ * @param tvId - TMDB TV show ID.
+ * @param seasonNumber - Season number (1-based).
+ * @param upToEpisode - Highest episode number to mark, inclusive.
+ * @returns The applied state and the show's resulting watchlist status.
+ */
+export async function setEpisodesWatchedUpTo(
+	tvId: number,
+	seasonNumber: number,
+	upToEpisode: number
+): Promise<EpisodeWatchResult> {
+	if (
+		!Number.isInteger(upToEpisode) ||
+		upToEpisode <= 0 ||
+		upToEpisode > MAX_SEASON_EPISODES
+	) {
+		throw new Error('Invalid episode number');
+	}
+
+	const { supabase, userId } = await getAuthenticatedUser();
+
+	const rows = Array.from({ length: upToEpisode }, (_, i) => ({
+		user_id: userId,
+		tv_id: tvId,
+		season_number: seasonNumber,
+		episode_number: i + 1,
+	}));
+	const { error } = await supabase
+		.from('episode_watches')
+		.upsert(rows, { onConflict: EPISODE_CONFLICT, ignoreDuplicates: true });
+	if (error) throw new Error(error.message);
+
+	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
+	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
+	return { watched: true, tvStatus };
+}
+
+/**
  * Sets the watched state of a whole season (idempotent) and syncs the parent
  * TV show's watchlist status atomically.
  *

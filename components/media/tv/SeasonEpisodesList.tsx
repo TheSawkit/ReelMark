@@ -59,6 +59,7 @@ export function SeasonEpisodesList({
 						tvId={tvId}
 						seasonNumber={seasonNumber}
 						episode={episode}
+						totalEpisodes={episodes.length}
 						isWatched={watched.has(episode.episode_number)}
 						locale={locale}
 						reviews={reviewsByEpisodeId[episode.id] ?? []}

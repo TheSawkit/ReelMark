@@ -16,6 +16,7 @@ interface EpisodeCardProps {
 	tvId: number;
 	seasonNumber: number;
 	episode: Episode;
+	totalEpisodes: number;
 	isWatched: boolean;
 	locale: string;
 	reviews?: PublicReview[];
@@ -33,6 +34,7 @@ interface EpisodeCardProps {
  * @param props.tvId - TV show ID for action handlers
  * @param props.seasonNumber - Season number containing this episode
  * @param props.episode - Episode details (name, overview, rating, dates, etc.)
+ * @param props.totalEpisodes - Episode count of the season, for the catch-up prompt
  * @param props.isWatched - Whether the episode has been marked as watched
  * @param props.locale - Locale string for date formatting
  * @param props.labels - Optional custom text labels for fallback messages
@@ -42,6 +44,7 @@ export function EpisodeCard({
 	tvId,
 	seasonNumber,
 	episode,
+	totalEpisodes,
 	isWatched,
 	locale,
 	reviews,
@@ -185,6 +188,7 @@ export function EpisodeCard({
 						tvId={tvId}
 						seasonNumber={seasonNumber}
 						episodeNumber={episode.episode_number}
+						totalEpisodes={totalEpisodes}
 						initialWatched={isWatched}
 						episodeId={episode.id}
 						episodeName={episode.name}

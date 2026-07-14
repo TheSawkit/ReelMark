@@ -72,6 +72,15 @@ export const episodeWatchStore = {
 		notify();
 	},
 
+	setWatchedUpTo(tvId: number, seasonNumber: number, upToEpisode: number) {
+		const key = seasonKey(tvId, seasonNumber);
+		const prev = seasons.get(key);
+		const episodes = new Set(prev?.episodes ?? []);
+		for (let i = 1; i <= upToEpisode; i++) episodes.add(i);
+		seasons.set(key, { count: episodes.size, episodes, dirty: true });
+		notify();
+	},
+
 	setSeason(
 		tvId: number,
 		seasonNumber: number,
