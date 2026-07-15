@@ -40,72 +40,97 @@ function hasSessionCookie(request: NextRequest): boolean {
 		);
 }
 
-export async function proxy(request: NextRequest) {
-	const { pathname } = request.nextUrl;
+function isBypassedPath(pathname: string): boolean {
+	return pathname.startsWith('/api') || pathname.startsWith('/auth');
+}
 
-	if (pathname === '/api/search') {
-		const ip = getClientIp(request);
-		const rate = checkRateLimit(
-			`search:${ip}`,
-			SEARCH_LIMIT,
-			SEARCH_WINDOW_MS
-		);
+function buildRequestHeaders(request: NextRequest, locale: Language): Headers {
+	const headers = new Headers(request.headers);
+	headers.set('x-locale', locale);
+	return headers;
+}
 
-		if (!rate.allowed) {
-			return NextResponse.json(
-				{ error: 'Too many requests' },
-				{
-					status: 429,
-					headers: {
-						'Retry-After': String(
-							Math.ceil((rate.resetAt - Date.now()) / 1000)
-						),
-						'X-RateLimit-Limit': String(SEARCH_LIMIT),
-						'X-RateLimit-Remaining': '0',
-					},
-				}
-			);
+function handleSearchRateLimit(request: NextRequest): NextResponse | null {
+	if (request.nextUrl.pathname !== '/api/search') return null;
+
+	const ip = getClientIp(request);
+	const rate = checkRateLimit(`search:${ip}`, SEARCH_LIMIT, SEARCH_WINDOW_MS);
+
+	if (rate.allowed) return null;
+
+	return NextResponse.json(
+		{ error: 'Too many requests' },
+		{
+			status: 429,
+			headers: {
+				'Retry-After': String(
+					Math.ceil((rate.resetAt - Date.now()) / 1000)
+				),
+				'X-RateLimit-Limit': String(SEARCH_LIMIT),
+				'X-RateLimit-Remaining': '0',
+			},
 		}
-	}
+	);
+}
 
-	if (pathname.startsWith('/api') || pathname.startsWith('/auth')) {
-		return NextResponse.next();
-	}
-
+function handleLocaleRedirect(
+	request: NextRequest,
+	pathname: string
+): NextResponse | null {
 	const firstSegment = pathname.split('/')[1];
 
-	if (!isLanguage(firstSegment)) {
-		const locale = detectLocale(request);
-		const isRoot = pathname === '/';
-		const url = request.nextUrl.clone();
-		url.pathname =
-			isRoot && hasSessionCookie(request)
-				? `/${locale}/dashboard`
-				: `/${locale}${isRoot ? '' : pathname}`;
-		return NextResponse.redirect(url);
-	}
+	if (isLanguage(firstSegment)) return null;
 
-	const locale: Language = firstSegment;
+	const locale = detectLocale(request);
+	const isRoot = pathname === '/';
+	const url = request.nextUrl.clone();
+
+	url.pathname =
+		isRoot && hasSessionCookie(request)
+			? `/${locale}/dashboard`
+			: `/${locale}${isRoot ? '' : pathname}`;
+
+	return NextResponse.redirect(url);
+}
+
+type RouteAccess = {
+	pathWithoutLocale: string;
+	isProtected: boolean;
+	isAuthRoute: boolean;
+	isRecovery: boolean;
+};
+
+function getRouteAccess(pathname: string, locale: Language): RouteAccess {
 	const pathWithoutLocale = pathname.slice(locale.length + 1) || '/';
 
-	const isProtected = PROTECTED_SEGMENTS.some((segment) =>
-		pathWithoutLocale.startsWith(segment)
-	);
-	const isAuthRoute = AUTH_SEGMENTS.some((segment) =>
-		pathWithoutLocale.startsWith(segment)
-	);
-	const isRecovery = pathWithoutLocale.startsWith(RECOVERY_SEGMENT);
+	return {
+		pathWithoutLocale,
+		isProtected: PROTECTED_SEGMENTS.some((segment) =>
+			pathWithoutLocale.startsWith(segment)
+		),
+		isAuthRoute: AUTH_SEGMENTS.some((segment) =>
+			pathWithoutLocale.startsWith(segment)
+		),
+		isRecovery: pathWithoutLocale.startsWith(RECOVERY_SEGMENT),
+	};
+}
 
-	const requestHeaders = new Headers(request.headers);
-	requestHeaders.set('x-locale', locale);
-
-	if (!isProtected && !isAuthRoute && !isRecovery) {
-		return NextResponse.next({ request: { headers: requestHeaders } });
-	}
-
-	const response = NextResponse.next({
+function createSupabaseResponse(
+	request: NextRequest,
+	requestHeaders: Headers
+): NextResponse {
+	return NextResponse.next({
 		request: { headers: requestHeaders },
 	});
+}
+
+async function handleAuthRouting(
+	request: NextRequest,
+	locale: Language,
+	requestHeaders: Headers,
+	access: RouteAccess
+): Promise<NextResponse> {
+	const response = createSupabaseResponse(request, requestHeaders);
 
 	const supabase = createServerClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -129,25 +154,49 @@ export async function proxy(request: NextRequest) {
 		data: { user },
 	} = await supabase.auth.getUser();
 
-	if (isProtected && !user) {
+	if (access.isProtected && !user) {
 		const loginUrl = request.nextUrl.clone();
 		loginUrl.pathname = `/${locale}/login`;
 		return NextResponse.redirect(loginUrl);
 	}
 
-	if (isRecovery && !user) {
+	if (access.isRecovery && !user) {
 		const errorUrl = request.nextUrl.clone();
 		errorUrl.pathname = `/${locale}/auth/auth-code-error`;
 		return NextResponse.redirect(errorUrl);
 	}
 
-	if (isAuthRoute && user) {
+	if (access.isAuthRoute && user) {
 		const dashboardUrl = request.nextUrl.clone();
 		dashboardUrl.pathname = `/${locale}/dashboard`;
 		return NextResponse.redirect(dashboardUrl);
 	}
 
 	return response;
+}
+
+export async function proxy(request: NextRequest) {
+	const { pathname } = request.nextUrl;
+
+	const rateLimitResponse = handleSearchRateLimit(request);
+	if (rateLimitResponse) return rateLimitResponse;
+
+	if (isBypassedPath(pathname)) {
+		return NextResponse.next();
+	}
+
+	const localeRedirect = handleLocaleRedirect(request, pathname);
+	if (localeRedirect) return localeRedirect;
+
+	const locale = pathname.split('/')[1] as Language;
+	const access = getRouteAccess(pathname, locale);
+	const requestHeaders = buildRequestHeaders(request, locale);
+
+	if (!access.isProtected && !access.isAuthRoute && !access.isRecovery) {
+		return NextResponse.next({ request: { headers: requestHeaders } });
+	}
+
+	return handleAuthRouting(request, locale, requestHeaders, access);
 }
 
 export const config = {

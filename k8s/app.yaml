@@ -12,6 +12,11 @@ metadata:
         app: reelmark
 spec:
     replicas: 1
+    strategy:
+        type: RollingUpdate
+        rollingUpdate:
+            maxUnavailable: 0
+            maxSurge: 1
     selector:
         matchLabels:
             app: reelmark
@@ -20,6 +25,7 @@ spec:
             labels:
                 app: reelmark
         spec:
+            terminationGracePeriodSeconds: 30
             imagePullSecrets:
                 - name: ghcr-pull
             containers:
@@ -30,6 +36,10 @@ spec:
                   envFrom:
                       - secretRef:
                             name: reelmark-secrets
+                  lifecycle:
+                      preStop:
+                          exec:
+                              command: ['sh', '-c', 'sleep 10']
                   resources:
                       requests:
                           cpu: '100m'
