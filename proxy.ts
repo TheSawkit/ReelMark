@@ -6,6 +6,7 @@ import type { Language } from '@/lib/i18n/translations';
 
 const PROTECTED_SEGMENTS = ['/dashboard', '/library', '/settings'];
 const AUTH_SEGMENTS = ['/login', '/signup'];
+const RECOVERY_SEGMENT = '/auth/update-password';
 
 const SEARCH_LIMIT = 30;
 const SEARCH_WINDOW_MS = 60_000;
@@ -27,6 +28,16 @@ function detectLocale(request: NextRequest): Language {
 	if (primary === 'fr') return 'fr';
 
 	return DEFAULT_LANGUAGE;
+}
+
+function hasSessionCookie(request: NextRequest): boolean {
+	return request.cookies
+		.getAll()
+		.some(
+			(cookie) =>
+				cookie.name.startsWith('sb-') &&
+				cookie.name.includes('-auth-token')
+		);
 }
 
 export async function proxy(request: NextRequest) {
@@ -65,8 +76,12 @@ export async function proxy(request: NextRequest) {
 
 	if (!isLanguage(firstSegment)) {
 		const locale = detectLocale(request);
+		const isRoot = pathname === '/';
 		const url = request.nextUrl.clone();
-		url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`;
+		url.pathname =
+			isRoot && hasSessionCookie(request)
+				? `/${locale}/dashboard`
+				: `/${locale}${isRoot ? '' : pathname}`;
 		return NextResponse.redirect(url);
 	}
 
@@ -79,11 +94,12 @@ export async function proxy(request: NextRequest) {
 	const isAuthRoute = AUTH_SEGMENTS.some((segment) =>
 		pathWithoutLocale.startsWith(segment)
 	);
+	const isRecovery = pathWithoutLocale.startsWith(RECOVERY_SEGMENT);
 
 	const requestHeaders = new Headers(request.headers);
 	requestHeaders.set('x-locale', locale);
 
-	if (!isProtected && !isAuthRoute) {
+	if (!isProtected && !isAuthRoute && !isRecovery) {
 		return NextResponse.next({ request: { headers: requestHeaders } });
 	}
 
@@ -117,6 +133,12 @@ export async function proxy(request: NextRequest) {
 		const loginUrl = request.nextUrl.clone();
 		loginUrl.pathname = `/${locale}/login`;
 		return NextResponse.redirect(loginUrl);
+	}
+
+	if (isRecovery && !user) {
+		const errorUrl = request.nextUrl.clone();
+		errorUrl.pathname = `/${locale}/auth/auth-code-error`;
+		return NextResponse.redirect(errorUrl);
 	}
 
 	if (isAuthRoute && user) {

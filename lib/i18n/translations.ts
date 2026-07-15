@@ -6,6 +6,7 @@ export const translations = {
 			settings: 'Paramètres',
 			saveChanges: 'Enregistrer les modifications',
 			cancel: 'Annuler',
+			undo: 'Annuler',
 			confirm: 'Confirmer',
 			user: 'Utilisateur',
 			age: 'ans',
@@ -309,6 +310,9 @@ export const translations = {
 				save: 'Enregistrer',
 			},
 			data: {
+				legalTitle: 'Documents légaux',
+				legalDescription:
+					'Consulte les documents qui encadrent ton utilisation du service et le traitement de tes données.',
 				exportTitle: 'Exporter les données',
 				exportDescription:
 					'Télécharge toutes tes données (watchlist, avis, épisodes vus) au format JSON.',
@@ -684,6 +688,18 @@ export const translations = {
 			markAllWatched: 'Tout marquer comme vu',
 			episodeWatched: 'Vu',
 			markEpisodeWatched: 'Marquer vu',
+			catchUpTitle: 'Tu as sauté des épisodes',
+			catchUpOneMissing:
+				"L'épisode ${episode} n'est pas marqué comme vu.",
+			catchUpManyMissing:
+				'${count} épisodes de cette saison ne sont pas marqués comme vus.',
+			catchUpConfirm: "Rattraper jusqu'à l'ép. ${episode}",
+			catchUpWholeSeason: 'Toute la saison',
+			catchUpDismiss: 'Non merci',
+			catchUpDone: 'Épisodes marqués comme vus',
+			seasonMarkedWatched: 'Saison marquée comme vue',
+			seasonMarkedUnwatched: 'Saison marquée comme non vue',
+			ratingSaved: 'Note enregistrée',
 			notRated: 'N/A',
 			rateThis: 'Donner une note',
 			rateEpisode: 'Noter cet épisode',
@@ -876,6 +892,9 @@ export const translations = {
 				statsMoviesWatched: 'Films vus',
 				statsEpisodesWatched: 'Épisodes vus',
 				statsToWatch: 'À voir',
+				continueWatching: 'Continuer à regarder',
+				continueWatchingCaughtUp: 'Vous êtes à jour',
+				episodeCode: 'S{season}E{episode}',
 			},
 			explorer: {
 				title: 'Explorateur',
@@ -1038,6 +1057,7 @@ export const translations = {
 			settings: 'Settings',
 			saveChanges: 'Save changes',
 			cancel: 'Cancel',
+			undo: 'Undo',
 			confirm: 'Confirm',
 			user: 'User',
 			age: 'years',
@@ -1333,6 +1353,9 @@ export const translations = {
 				save: 'Save',
 			},
 			data: {
+				legalTitle: 'Legal documents',
+				legalDescription:
+					'Review the documents that govern your use of the service and the processing of your data.',
 				exportTitle: 'Export Data',
 				exportDescription:
 					'Download all your data (watchlist, reviews, watched episodes) as JSON.',
@@ -1701,6 +1724,17 @@ export const translations = {
 			markAllWatched: 'Mark all as watched',
 			episodeWatched: 'Watched',
 			markEpisodeWatched: 'Mark watched',
+			catchUpTitle: 'You skipped some episodes',
+			catchUpOneMissing: 'Episode ${episode} is not marked as watched.',
+			catchUpManyMissing:
+				'${count} episodes in this season are not marked as watched.',
+			catchUpConfirm: 'Catch up to ep. ${episode}',
+			catchUpWholeSeason: 'Whole season',
+			catchUpDismiss: 'No thanks',
+			catchUpDone: 'Episodes marked as watched',
+			seasonMarkedWatched: 'Season marked as watched',
+			seasonMarkedUnwatched: 'Season marked as unwatched',
+			ratingSaved: 'Rating saved',
 			notRated: 'N/A',
 			rateThis: 'Rate this',
 			rateEpisode: 'Rate this episode',
@@ -1893,6 +1927,9 @@ export const translations = {
 				statsMoviesWatched: 'Movies watched',
 				statsEpisodesWatched: 'Episodes watched',
 				statsToWatch: 'To watch',
+				continueWatching: 'Continue watching',
+				continueWatchingCaughtUp: "You're all caught up",
+				episodeCode: 'S{season}E{episode}',
 			},
 			explorer: {
 				title: 'Explorer',

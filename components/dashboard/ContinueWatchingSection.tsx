@@ -1,0 +1,208 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { CheckCircle2, Eye, Loader2, XCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { getImageUrl } from '@/lib/tmdb/images';
+import { localizedHref } from '@/lib/i18n/utils';
+import { useTranslation } from '@/lib/i18n/context';
+import { setEpisodeWatched } from '@/app/actions/episodes';
+import { episodeWatchStore, useTvWatchTotal } from '@/lib/episode-watch-store';
+import { mediaWatchStore } from '@/lib/media-watch-store';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { HorizontalScroll } from '@/components/shared/HorizontalScroll';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+import { ProgressBar } from '@/components/shared/ProgressBar';
+import { StaggeredItem } from '@/components/ui/StaggeredItem';
+import type { ContinueWatchingItem } from '@/app/actions/continue-watching';
+
+const CARD_ANIMATION_DELAY_MS = 50;
+
+interface ContinueWatchingSectionProps {
+	items: ContinueWatchingItem[];
+}
+
+/** Dashboard row letting the user tick the next unwatched episode of each show they are mid-way through. */
+export function ContinueWatchingSection({
+	items,
+}: ContinueWatchingSectionProps) {
+	const { t } = useTranslation();
+
+	if (items.length === 0) return null;
+
+	return (
+		<HorizontalScroll
+			className="mb-12 lg:mb-16"
+			scrollAmount={500}
+			title={
+				<SectionHeading>
+					{t.pages.dashboard.continueWatching}
+				</SectionHeading>
+			}
+		>
+			{items.map((item, index) => (
+				<StaggeredItem
+					key={item.tvId}
+					index={index}
+					staggerMs={CARD_ANIMATION_DELAY_MS}
+					className="flex-none w-72 snap-start"
+					eager={index < 3}
+				>
+					<ContinueWatchingCard item={item} priority={index < 3} />
+				</StaggeredItem>
+			))}
+		</HorizontalScroll>
+	);
+}
+
+function ContinueWatchingCard({
+	item,
+	priority,
+}: {
+	item: ContinueWatchingItem;
+	priority: boolean;
+}) {
+	const { t, lang } = useTranslation();
+	const { loading, error, execute } = useAsyncAction();
+	const [queueIndex, setQueueIndex] = useState(0);
+
+	useEffect(() => {
+		episodeWatchStore.seed(
+			item.tvId,
+			item.seasonNumber,
+			item.seasonWatchedEpisodes.length,
+			item.seasonWatchedEpisodes
+		);
+	}, [item.tvId, item.seasonNumber, item.seasonWatchedEpisodes]);
+
+	const watchedTotal = useTvWatchTotal(item.tvId, item.seasonWatched);
+	const episode = item.queue[queueIndex];
+
+	async function handleWatch() {
+		if (!episode || loading) return;
+
+		const previous = episodeWatchStore.get(item.tvId, episode.seasonNumber);
+		episodeWatchStore.setEpisode(
+			item.tvId,
+			episode.seasonNumber,
+			episode.episodeNumber,
+			true
+		);
+
+		const result = await execute(() =>
+			setEpisodeWatched(
+				item.tvId,
+				episode.seasonNumber,
+				episode.episodeNumber,
+				true
+			)
+		);
+
+		if (!result) {
+			episodeWatchStore.restore(
+				item.tvId,
+				episode.seasonNumber,
+				previous
+			);
+			return;
+		}
+
+		mediaWatchStore.set('tv', item.tvId, result.tvStatus);
+		setQueueIndex((index) => index + 1);
+	}
+
+	const seasonHref = localizedHref(
+		lang,
+		`/tv/${item.tvId}/season/${item.seasonNumber}`
+	);
+	const episodeCode = episode
+		? t.pages.dashboard.episodeCode
+				.replace('{season}', String(episode.seasonNumber))
+				.replace('{episode}', String(episode.episodeNumber))
+		: null;
+	const Icon = loading ? Loader2 : error ? XCircle : Eye;
+
+	return (
+		<article className="relative h-full overflow-hidden rounded-poster glass-overlay shadow-card border border-border/10 transition-all duration-(--duration-base) hover:shadow-glow-gold hover:border-gold/40">
+			<Link
+				href={seasonHref}
+				className="flex h-full flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+			>
+				<div className="relative aspect-video w-full overflow-hidden bg-background">
+					{episode?.stillPath ? (
+						<Image
+							src={getImageUrl(episode.stillPath, 'w500')}
+							alt={episode.name}
+							fill
+							unoptimized
+							priority={priority}
+							className="object-cover"
+							sizes="288px"
+						/>
+					) : (
+						<div className="flex h-full w-full items-center justify-center text-sm text-muted">
+							{t.movie.noImage}
+						</div>
+					)}
+
+					{episodeCode && (
+						<span className="absolute left-2 top-2 rounded px-2 py-1 text-sm font-bold text-text glass-overlay shadow-card-sm">
+							{episodeCode}
+						</span>
+					)}
+				</div>
+
+				<div className="flex flex-1 flex-col gap-1 p-4">
+					<h3 className="line-clamp-1 font-bold text-text">
+						{item.title}
+					</h3>
+					<p className="line-clamp-1 text-sm text-muted">
+						{episode
+							? episode.name
+							: t.pages.dashboard.continueWatchingCaughtUp}
+					</p>
+
+					<div className="mt-auto pt-3">
+						<ProgressBar
+							watched={watchedTotal}
+							total={item.totalEpisodes}
+							className="h-1.5 rounded-full bg-surface-3"
+							innerClassName="rounded-full bg-linear-to-r from-primary to-gold"
+						/>
+						<span className="mt-2 block text-xs font-medium text-muted">
+							{watchedTotal}/{item.totalEpisodes}{' '}
+							{t.movie.episodes}
+						</span>
+					</div>
+				</div>
+			</Link>
+
+			{episode ? (
+				<button
+					onClick={handleWatch}
+					disabled={loading}
+					aria-label={t.movie.markEpisodeWatched}
+					className={cn(
+						'absolute right-2 top-2 z-10 flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-border/10 border-t-border/20 bg-surface/20 px-3 py-2 text-xs font-medium text-muted shadow-card-sm backdrop-blur-2xl transition-colors',
+						'hover:border-border hover:bg-surface-2/20 hover:text-text',
+						'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+						'disabled:cursor-not-allowed disabled:opacity-50'
+					)}
+				>
+					<Icon
+						className={cn('h-4 w-4', loading && 'animate-spin')}
+						aria-hidden="true"
+					/>
+					{error ? t.common.actionError : t.movie.markEpisodeWatched}
+				</button>
+			) : (
+				<span className="absolute right-2 top-2 z-10 flex min-h-10 items-center gap-2 rounded-md border border-border/10 bg-primary/40 px-3 py-2 text-xs font-medium text-white shadow-glow-red backdrop-blur-2xl">
+					<CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+					{t.movie.episodeWatched}
+				</span>
+			)}
+		</article>
+	);
+}

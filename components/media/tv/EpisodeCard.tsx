@@ -1,23 +1,33 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
-import { Clock, Calendar, Star, X } from 'lucide-react';
+import { Clock, Calendar, Star } from 'lucide-react';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { formatDate, formatRuntime } from '@/lib/format';
 import { EpisodeWatchButton } from '@/components/media/tv/EpisodeWatchButton';
+import { EpisodeRating } from '@/components/media/tv/EpisodeRating';
 import { ReviewsList } from '@/components/media/reviews/ReviewsList';
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+} from '@/components/ui/dialog';
 import { useTranslation } from '@/lib/i18n/context';
 import { cn } from '@/lib/utils';
 import type { Episode } from '@/types/tmdb';
-import type { PublicReview } from '@/types/profile';
+import type { PublicReview, Review } from '@/types/profile';
 
 interface EpisodeCardProps {
 	tvId: number;
 	seasonNumber: number;
 	episode: Episode;
+	totalEpisodes: number;
 	isWatched: boolean;
 	locale: string;
+	myReview?: Review | null;
 	reviews?: PublicReview[];
 	labels?: {
 		noImage: string;
@@ -26,74 +36,33 @@ interface EpisodeCardProps {
 }
 
 /**
- * Card displaying a TV episode with still image, metadata, and watch button.
- * Allows expanding description text in a modal overlay. Shows watched status visually.
+ * Card displaying a TV episode with still image, metadata, watch button and — once
+ * watched — an inline star rating. Long descriptions open in a dialog.
  *
  * @param props - EpisodeCardProps configuration
  * @param props.tvId - TV show ID for action handlers
  * @param props.seasonNumber - Season number containing this episode
  * @param props.episode - Episode details (name, overview, rating, dates, etc.)
+ * @param props.totalEpisodes - Episode count of the season, for the catch-up prompt
  * @param props.isWatched - Whether the episode has been marked as watched
  * @param props.locale - Locale string for date formatting
+ * @param props.myReview - The viewer's own review of this episode, if any
  * @param props.labels - Optional custom text labels for fallback messages
- * @returns Card with episode details and expandable description modal
+ * @returns Card with episode details and expandable description dialog
  */
 export function EpisodeCard({
 	tvId,
 	seasonNumber,
 	episode,
+	totalEpisodes,
 	isWatched,
 	locale,
+	myReview,
 	reviews,
 	labels,
 }: EpisodeCardProps) {
 	const { t } = useTranslation();
 	const [isExpanded, setIsExpanded] = useState(false);
-	const dialogRef = useRef<HTMLDivElement>(null);
-	const triggerRef = useRef<HTMLButtonElement>(null);
-	const wasOpenRef = useRef(false);
-
-	const handleEscape = useCallback((e: KeyboardEvent) => {
-		if (e.key === 'Escape') setIsExpanded(false);
-	}, []);
-
-	const handleDialogKeyDown = useCallback((e: React.KeyboardEvent) => {
-		if (e.key !== 'Tab' || !dialogRef.current) return;
-		const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-		);
-		const first = focusable[0];
-		const last = focusable[focusable.length - 1];
-		if (e.shiftKey) {
-			if (document.activeElement === first) {
-				e.preventDefault();
-				last.focus();
-			}
-		} else {
-			if (document.activeElement === last) {
-				e.preventDefault();
-				first.focus();
-			}
-		}
-	}, []);
-
-	useEffect(() => {
-		if (isExpanded) {
-			wasOpenRef.current = true;
-			document.addEventListener('keydown', handleEscape);
-			const closeButton =
-				dialogRef.current?.querySelector<HTMLButtonElement>(
-					'[data-close]'
-				);
-			closeButton?.focus();
-			return () => document.removeEventListener('keydown', handleEscape);
-		}
-
-		if (wasOpenRef.current) {
-			wasOpenRef.current = false;
-			triggerRef.current?.focus();
-		}
-	}, [isExpanded, handleEscape]);
 
 	const noImage = labels?.noImage ?? t.movie.noImage;
 	const noDescription = labels?.noDescription ?? t.movie.noDescription;
@@ -163,7 +132,6 @@ export function EpisodeCard({
 					</p>
 					{episode.overview && episode.overview.length > 120 && (
 						<button
-							ref={triggerRef}
 							onClick={(e) => {
 								e.preventDefault();
 								setIsExpanded(true);
@@ -175,64 +143,46 @@ export function EpisodeCard({
 					)}
 				</div>
 
-				<div className="mt-auto pt-4 flex items-center justify-between relative z-10">
-					{reviews && reviews.length > 0 ? (
-						<ReviewsList reviews={reviews} triggerOnly />
-					) : (
-						<div />
-					)}
-					<EpisodeWatchButton
+				<div className="mt-auto pt-4 flex flex-col gap-3 relative z-10">
+					<EpisodeRating
 						tvId={tvId}
 						seasonNumber={seasonNumber}
 						episodeNumber={episode.episode_number}
-						initialWatched={isWatched}
 						episodeId={episode.id}
 						episodeName={episode.name}
 						stillPath={episode.still_path}
+						initialWatched={isWatched}
+						initialReview={myReview ?? null}
 					/>
+					<div className="flex items-center justify-between gap-2">
+						{reviews && reviews.length > 0 ? (
+							<ReviewsList reviews={reviews} triggerOnly />
+						) : (
+							<div />
+						)}
+						<EpisodeWatchButton
+							tvId={tvId}
+							seasonNumber={seasonNumber}
+							episodeNumber={episode.episode_number}
+							totalEpisodes={totalEpisodes}
+							initialWatched={isWatched}
+						/>
+					</div>
 				</div>
 			</div>
 
-			{isExpanded && (
-				<div
-					ref={dialogRef}
-					onClick={() => setIsExpanded(false)}
-					role="dialog"
-					aria-modal="true"
-					aria-labelledby={`episode-title-${episode.episode_number}`}
-					onKeyDown={handleDialogKeyDown}
-					className="absolute inset-0 z-30 glass-bar flex flex-col p-6 animate-in fade-in duration-(--duration-base) cursor-pointer"
-				>
-					<div className="flex justify-between items-start mb-4 gap-4">
-						<h3
-							id={`episode-title-${episode.episode_number}`}
-							className="text-lg font-bold text-text leading-tight"
-						>
-							{episode.name}
-						</h3>
-						<button
-							data-close
-							onClick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								setIsExpanded(false);
-							}}
-							aria-label={t.common.close}
-							className="h-11 w-11 flex items-center justify-center shrink-0 rounded-full bg-border-subtle hover:bg-border text-muted hover:text-text transition-colors cursor-pointer"
-						>
-							<X className="h-4 w-4" aria-hidden="true" />
-						</button>
-					</div>
-					<div
-						className="overflow-y-auto flex-1 pr-2 cursor-auto"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<p className="text-sm text-text leading-relaxed cursor-text selection:bg-primary/30">
+			<Dialog open={isExpanded} onOpenChange={setIsExpanded}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>{episode.name}</DialogTitle>
+					</DialogHeader>
+					<div className="px-5 py-5 overflow-y-auto">
+						<DialogDescription className="text-sm text-text leading-relaxed">
 							{episode.overview || noDescription}
-						</p>
+						</DialogDescription>
 					</div>
-				</div>
-			)}
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

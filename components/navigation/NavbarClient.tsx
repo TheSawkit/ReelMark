@@ -71,7 +71,7 @@ export function NavbarClient({
 			<header>
 				<nav className="fixed w-full top-0 z-50 border-b border-border-subtle glass-bar shadow-navbar top-nav-safe-area">
 					<div className="mx-auto max-w-7xl px-6 lg:px-12">
-						<div className="flex md:hidden h-16 items-center gap-2">
+						<div className="flex lg:hidden h-16 items-center gap-2">
 							{isMedia ? (
 								<div className="flex flex-1 min-w-0 items-center gap-2">
 									<button
@@ -133,11 +133,11 @@ export function NavbarClient({
 
 						<div
 							id="rm-nav-actions"
-							className="md:hidden empty:hidden"
+							className="lg:hidden empty:hidden"
 						/>
 
 						{/* Desktop: full navigation */}
-						<div className="hidden md:grid grid-cols-3 h-16 items-center gap-4">
+						<div className="hidden lg:grid grid-cols-3 h-16 items-center gap-4">
 							<div className="flex justify-start col-start-1">
 								{logo}
 							</div>

@@ -1,13 +1,19 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
-import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
+import { getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
+import type { Language } from '@/lib/i18n/translations';
 
-export const dynamic = 'force-dynamic';
+interface AuthErrorPageProps {
+	params: Promise<{ lang: Language }>;
+}
 
-export async function generateMetadata(): Promise<Metadata> {
-	const t = await getTranslations();
+export async function generateMetadata({
+	params,
+}: AuthErrorPageProps): Promise<Metadata> {
+	const { lang } = await params;
+	const t = await getTranslations(lang);
 	return {
 		title: t.metadata.authErrorTitle,
 		description: t.metadata.authErrorDescription,
@@ -19,11 +25,9 @@ export async function generateMetadata(): Promise<Metadata> {
 	};
 }
 
-export default async function AuthErrorPage() {
-	const [t, lang] = await Promise.all([
-		getTranslations(),
-		getServerLanguage(),
-	]);
+export default async function AuthErrorPage({ params }: AuthErrorPageProps) {
+	const { lang } = await params;
+	const t = await getTranslations(lang);
 
 	return (
 		<div className="flex flex-col items-center text-center">

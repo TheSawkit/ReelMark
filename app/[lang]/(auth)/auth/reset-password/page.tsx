@@ -2,11 +2,15 @@ import type { Metadata } from 'next';
 import { AuthPageShell } from '@/components/auth/AuthPageShell';
 import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm';
 import { getTranslations } from '@/lib/i18n/server';
+import type { Language } from '@/lib/i18n/translations';
 
-export const dynamic = 'force-dynamic';
-
-export async function generateMetadata(): Promise<Metadata> {
-	const t = await getTranslations();
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ lang: Language }>;
+}): Promise<Metadata> {
+	const { lang } = await params;
+	const t = await getTranslations(lang);
 	return {
 		title: t.auth.resetPassword.metaTitle,
 		description: t.auth.resetPassword.metaDescription,
@@ -18,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 	};
 }
 
-export default async function ResetPasswordPage() {
+export default function ResetPasswordPage() {
 	return (
 		<AuthPageShell>
 			<ResetPasswordForm />

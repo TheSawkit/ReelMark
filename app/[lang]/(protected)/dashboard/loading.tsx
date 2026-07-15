@@ -6,6 +6,7 @@ import {
 	BentoStatsSkeleton,
 	TrendingMarqueeSkeleton,
 } from '@/components/dashboard/DashboardSkeletons';
+import { ContinueWatchingSkeleton } from '@/components/dashboard/ContinueWatchingSkeleton';
 
 export default function DashboardLoading() {
 	return (
@@ -16,6 +17,7 @@ export default function DashboardLoading() {
 			</div>
 
 			<DashboardHeroSkeleton />
+			<ContinueWatchingSkeleton />
 			<BentoStatsSkeleton />
 			<TrendingMarqueeSkeleton />
 

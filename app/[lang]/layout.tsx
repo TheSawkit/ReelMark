@@ -18,6 +18,8 @@ import { PreventImageContextMenu } from '@/components/shared/PreventImageContext
 import { PWAInstallPrompt } from '@/components/shared/PWAInstallPrompt';
 import NextTopLoader from 'nextjs-toploader';
 import { ViewTransition } from 'react';
+import Link from 'next/link';
+import { localizedHref } from '@/lib/i18n/utils';
 
 const sans = Inter({
 	subsets: ['latin'],
@@ -39,6 +41,7 @@ export const viewport: Viewport = {
 	userScalable: false,
 	viewportFit: 'cover',
 	interactiveWidget: 'resizes-content',
+	colorScheme: 'dark light',
 	themeColor: [
 		{ media: '(prefers-color-scheme: dark)', color: '#000000' },
 		{ media: '(prefers-color-scheme: light)', color: '#F5F5F7' },
@@ -324,6 +327,8 @@ export default async function RootLayout({
 			data-scroll-behavior="smooth"
 		>
 			<head>
+				{/* Next n'émet plus que `mobile-web-app-capable` (vercel/next.js#70363) ; Safari iOS exige encore celle-ci pour afficher la launch image (vercel/next.js#74524, closed as not planned). */}
+				<meta name="apple-mobile-web-app-capable" content="yes" />
 				<link rel="dns-prefetch" href="https://image.tmdb.org" />
 				<style>{`#nprogress .bar { top: calc(4rem + env(safe-area-inset-top)) !important; }`}</style>
 				<script
@@ -362,8 +367,25 @@ export default async function RootLayout({
 						<ViewTransition>{children}</ViewTransition>
 					</main>
 					<footer className="border-t border-border-subtle mt-auto">
-						<div className="container mx-auto px-6 lg:px-12 pt-8 pb-28 text-center text-sm text-muted md:pb-8">
+						<div className="container mx-auto px-6 lg:px-12 pt-8 pb-28 lg:pb-8 flex flex-col items-center gap-3 text-sm text-muted sm:flex-row sm:justify-between">
 							<p>© {new Date().getFullYear()} ReelMark</p>
+							<nav
+								aria-label={t.pages.legal.terms.title}
+								className="flex items-center gap-4"
+							>
+								<Link
+									href={localizedHref(lang, '/terms')}
+									className="hover:text-text transition-colors"
+								>
+									{t.pages.legal.terms.title}
+								</Link>
+								<Link
+									href={localizedHref(lang, '/privacy')}
+									className="hover:text-text transition-colors"
+								>
+									{t.pages.legal.privacy.title}
+								</Link>
+							</nav>
 						</div>
 					</footer>
 					<PWAInstallPrompt />

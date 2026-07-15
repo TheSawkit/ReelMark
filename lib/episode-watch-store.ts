@@ -72,6 +72,29 @@ export const episodeWatchStore = {
 		notify();
 	},
 
+	setSeasonEpisodes(
+		tvId: number,
+		seasonNumber: number,
+		episodeNumbers: number[]
+	) {
+		const episodes = new Set(episodeNumbers);
+		seasons.set(seasonKey(tvId, seasonNumber), {
+			count: episodes.size,
+			episodes,
+			dirty: true,
+		});
+		notify();
+	},
+
+	setWatchedUpTo(tvId: number, seasonNumber: number, upToEpisode: number) {
+		const key = seasonKey(tvId, seasonNumber);
+		const prev = seasons.get(key);
+		const episodes = new Set(prev?.episodes ?? []);
+		for (let i = 1; i <= upToEpisode; i++) episodes.add(i);
+		seasons.set(key, { count: episodes.size, episodes, dirty: true });
+		notify();
+	},
+
 	setSeason(
 		tvId: number,
 		seasonNumber: number,
@@ -131,6 +154,19 @@ export function useSeasonWatch(
 		() => seasons.get(seasonKey(tvId, seasonNumber)),
 		() => undefined
 	);
+}
+
+/** Reactive watched state of a single episode, falling back to the server value until the season is seeded. */
+export function useEpisodeWatched(
+	tvId: number,
+	seasonNumber: number,
+	episodeNumber: number,
+	initialWatched: boolean
+): boolean {
+	const season = useSeasonWatch(tvId, seasonNumber);
+	return season?.episodes
+		? season.episodes.has(episodeNumber)
+		: initialWatched;
 }
 
 /** Show-level watched total, mixing store counts with server fallbacks per season. */
