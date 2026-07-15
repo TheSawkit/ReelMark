@@ -19,7 +19,8 @@ import { episodeWatchStore } from '@/lib/episode-watch-store';
 import { mediaWatchStore } from '@/lib/media-watch-store';
 import { dismissCatchUp } from '@/lib/season-catch-up';
 import { useTranslation } from '@/lib/i18n/context';
-import type { EpisodeWatchResult } from '@/app/actions/episodes';
+import { useSeasonUndoToast } from '@/hooks/useSeasonUndoToast';
+import type { SeasonWatchResult } from '@/app/actions/episodes';
 
 type CatchUpAction = 'upTo' | 'season';
 
@@ -47,6 +48,7 @@ export function SeasonCatchUpPrompt({
 	missingEpisodes,
 }: SeasonCatchUpPromptProps) {
 	const { t } = useTranslation();
+	const undoToast = useSeasonUndoToast(tvId, seasonNumber);
 	const [pending, setPending] = useState<CatchUpAction | null>(null);
 
 	const description =
@@ -62,7 +64,7 @@ export function SeasonCatchUpPrompt({
 
 	async function run(
 		action: CatchUpAction,
-		mutate: () => Promise<EpisodeWatchResult>
+		mutate: () => Promise<SeasonWatchResult>
 	) {
 		if (pending) return;
 		setPending(action);
@@ -75,7 +77,7 @@ export function SeasonCatchUpPrompt({
 		try {
 			const result = await mutate();
 			mediaWatchStore.set('tv', tvId, result.tvStatus);
-			toast.success(t.movie.catchUpDone);
+			undoToast(t.movie.catchUpDone, result.previousEpisodes);
 			onClose();
 		} catch {
 			episodeWatchStore.restore(tvId, seasonNumber, previous);

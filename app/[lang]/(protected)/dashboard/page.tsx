@@ -33,11 +33,14 @@ import {
 } from '@/components/dashboard/DashboardHero';
 import { BentoStats } from '@/components/dashboard/BentoStats';
 import { TrendingMarquee } from '@/components/dashboard/TrendingMarquee';
+import { ContinueWatchingSection } from '@/components/dashboard/ContinueWatchingSection';
+import { ContinueWatchingSkeleton } from '@/components/dashboard/ContinueWatchingSkeleton';
 import {
 	DashboardHeroSkeleton,
 	BentoStatsSkeleton,
 	TrendingMarqueeSkeleton,
 } from '@/components/dashboard/DashboardSkeletons';
+import { getContinueWatching } from '@/app/actions/continue-watching';
 import {
 	getWatchlistWithProgress,
 	mergeWithWatchlist,
@@ -120,6 +123,11 @@ async function HeroSection({ t }: { t: Translations }) {
 			discoverLabel={t.pages.dashboard.discover}
 		/>
 	);
+}
+
+async function ContinueWatching() {
+	const items = await getContinueWatching();
+	return <ContinueWatchingSection items={items} />;
 }
 
 async function StatsSection({ t }: { t: Translations }) {
@@ -309,6 +317,10 @@ export default async function DashboardPage({ searchParams }: Props) {
 
 			<Suspense fallback={<DashboardHeroSkeleton />}>
 				<HeroSection t={t} />
+			</Suspense>
+
+			<Suspense fallback={<ContinueWatchingSkeleton />}>
+				<ContinueWatching />
 			</Suspense>
 
 			<Suspense fallback={<BentoStatsSkeleton />}>

@@ -124,6 +124,31 @@ export async function getMediaReview(
 }
 
 /**
+ * Returns the authenticated user's own episode reviews, keyed by episode ID, so a season
+ * page can render inline ratings without one query per episode.
+ */
+export async function getMyEpisodeReviews(
+	episodeIds: number[]
+): Promise<Record<number, Review>> {
+	if (episodeIds.length === 0) return {};
+	const { supabase, userId } = await getOptionalUser();
+	if (!userId) return {};
+
+	const { data } = await supabase
+		.from('reviews')
+		.select(REVIEW_COLUMNS)
+		.eq('user_id', userId)
+		.eq('media_type', 'episode')
+		.in('media_id', episodeIds);
+
+	const byEpisodeId: Record<number, Review> = {};
+	for (const review of (data ?? []) as Review[]) {
+		byEpisodeId[review.media_id] = review;
+	}
+	return byEpisodeId;
+}
+
+/**
  * Returns the community average rating (1–10 scale) and count for a media item.
  * Returns null if no ratings exist.
  */

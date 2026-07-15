@@ -1,6 +1,5 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import {
 	getAuthenticatedUser,
 	getOptionalUser,
@@ -9,7 +8,7 @@ import {
 	SHARED_REVALIDATE_PATHS,
 	revalidateLocalizedAfterResponse,
 } from '@/app/actions/_helpers';
-import { getTvShowDetails } from '@/lib/tmdb';
+import { getCachedTvShowDetails } from '@/lib/tmdb/cached';
 import type { SupabaseServerClient } from '@/lib/supabase/server';
 import type { WatchStatus } from '@/types/tmdb';
 
@@ -21,11 +20,10 @@ export interface EpisodeWatchResult {
 	tvStatus: TvWatchlistStatus;
 }
 
-const getCachedTvShowDetails = unstable_cache(
-	(tvId: number) => getTvShowDetails(tvId),
-	['tv-show-details'],
-	{ revalidate: 300 }
-);
+/** Result of a season-wide write, carrying the pre-mutation state so the UI can offer an exact undo. */
+export interface SeasonWatchResult extends EpisodeWatchResult {
+	previousEpisodes: number[];
+}
 
 const MAX_SEASON_EPISODES = 5000;
 const EPISODE_CONFLICT = 'user_id,tv_id,season_number,episode_number';
@@ -76,6 +74,34 @@ async function syncTvShowWatchlistStatus(
 	}
 
 	return readTvWatchlistStatus(supabase, userId, tvId);
+}
+
+async function readSeasonEpisodes(
+	supabase: SupabaseServerClient,
+	userId: string,
+	tvId: number,
+	seasonNumber: number
+): Promise<number[]> {
+	const { data } = await supabase
+		.from('episode_watches')
+		.select('episode_number')
+		.eq('user_id', userId)
+		.eq('tv_id', tvId)
+		.eq('season_number', seasonNumber);
+
+	return (data ?? []).map((row) => row.episode_number);
+}
+
+function assertEpisodeNumbers(episodeNumbers: number[]): void {
+	if (
+		!Array.isArray(episodeNumbers) ||
+		episodeNumbers.length > MAX_SEASON_EPISODES ||
+		episodeNumbers.some(
+			(n) => !Number.isInteger(n) || n <= 0 || n > MAX_SEASON_EPISODES
+		)
+	) {
+		throw new Error('Invalid episode numbers');
+	}
 }
 
 async function readTvWatchlistStatus(
@@ -152,7 +178,7 @@ export async function setEpisodesWatchedUpTo(
 	tvId: number,
 	seasonNumber: number,
 	upToEpisode: number
-): Promise<EpisodeWatchResult> {
+): Promise<SeasonWatchResult> {
 	if (
 		!Number.isInteger(upToEpisode) ||
 		upToEpisode <= 0 ||
@@ -162,6 +188,12 @@ export async function setEpisodesWatchedUpTo(
 	}
 
 	const { supabase, userId } = await getAuthenticatedUser();
+	const previousEpisodes = await readSeasonEpisodes(
+		supabase,
+		userId,
+		tvId,
+		seasonNumber
+	);
 
 	const rows = Array.from({ length: upToEpisode }, (_, i) => ({
 		user_id: userId,
@@ -176,7 +208,73 @@ export async function setEpisodesWatchedUpTo(
 
 	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
 	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
-	return { watched: true, tvStatus };
+	return { watched: true, tvStatus, previousEpisodes };
+}
+
+/**
+ * Replaces a season's watched episodes with exactly `episodeNumbers`, used to undo a
+ * season-wide write without losing a partially watched state.
+ *
+ * @param tvId - TMDB TV show ID.
+ * @param seasonNumber - Season number (1-based).
+ * @param episodeNumbers - The exact set of episodes to leave marked as watched.
+ * @returns The applied state and the show's resulting watchlist status.
+ */
+export async function setSeasonEpisodes(
+	tvId: number,
+	seasonNumber: number,
+	episodeNumbers: number[]
+): Promise<SeasonWatchResult> {
+	assertEpisodeNumbers(episodeNumbers);
+
+	const { supabase, userId } = await getAuthenticatedUser();
+	const previousEpisodes = await readSeasonEpisodes(
+		supabase,
+		userId,
+		tvId,
+		seasonNumber
+	);
+
+	const target = new Set(episodeNumbers);
+	const surplus = previousEpisodes.filter(
+		(episodeNumber) => !target.has(episodeNumber)
+	);
+	const missing = [...target].filter(
+		(episodeNumber) => !previousEpisodes.includes(episodeNumber)
+	);
+
+	if (missing.length > 0) {
+		const rows = missing.map((episodeNumber) => ({
+			user_id: userId,
+			tv_id: tvId,
+			season_number: seasonNumber,
+			episode_number: episodeNumber,
+		}));
+		const { error } = await supabase.from('episode_watches').upsert(rows, {
+			onConflict: EPISODE_CONFLICT,
+			ignoreDuplicates: true,
+		});
+		if (error) throw new Error(error.message);
+	}
+
+	if (surplus.length > 0) {
+		const { error } = await supabase
+			.from('episode_watches')
+			.delete()
+			.eq('user_id', userId)
+			.eq('tv_id', tvId)
+			.eq('season_number', seasonNumber)
+			.in('episode_number', surplus);
+		if (error) throw new Error(error.message);
+	}
+
+	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
+	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
+	return {
+		watched: episodeNumbers.length > 0,
+		tvStatus,
+		previousEpisodes,
+	};
 }
 
 /**
@@ -194,7 +292,7 @@ export async function setSeasonWatched(
 	seasonNumber: number,
 	totalEpisodes: number,
 	watched: boolean
-): Promise<EpisodeWatchResult> {
+): Promise<SeasonWatchResult> {
 	if (
 		!Number.isInteger(totalEpisodes) ||
 		totalEpisodes <= 0 ||
@@ -204,6 +302,12 @@ export async function setSeasonWatched(
 	}
 
 	const { supabase, userId } = await getAuthenticatedUser();
+	const previousEpisodes = await readSeasonEpisodes(
+		supabase,
+		userId,
+		tvId,
+		seasonNumber
+	);
 
 	if (watched) {
 		const rows = Array.from({ length: totalEpisodes }, (_, i) => ({
@@ -229,7 +333,7 @@ export async function setSeasonWatched(
 
 	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
 	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
-	return { watched, tvStatus };
+	return { watched, tvStatus, previousEpisodes };
 }
 
 /**

@@ -16,6 +16,7 @@ import { getSeasonEpisodeWatches } from '@/app/actions/episodes';
 import {
 	getSeasonAverageRating,
 	getPublicEpisodeReviews,
+	getMyEpisodeReviews,
 } from '@/app/actions/reviews';
 import { SeasonBanner } from '@/components/media/tv/SeasonBanner';
 import { SeasonWatchButton } from '@/components/media/tv/SeasonWatchButton';
@@ -106,14 +107,21 @@ export default async function SeasonPage(props: SeasonPageProps) {
 	}
 
 	const episodeIds = seasonDetails.episodes.map((e) => e.id);
-	const [t, locale, watchedEpisodes, seasonRating, episodeReviews] =
-		await Promise.all([
-			getTranslations(),
-			getServerLocale(),
-			getSeasonEpisodeWatches(tvId, seasonNumber),
-			getSeasonAverageRating(tvId, seasonNumber),
-			getPublicEpisodeReviews(episodeIds),
-		]);
+	const [
+		t,
+		locale,
+		watchedEpisodes,
+		seasonRating,
+		episodeReviews,
+		myEpisodeReviews,
+	] = await Promise.all([
+		getTranslations(),
+		getServerLocale(),
+		getSeasonEpisodeWatches(tvId, seasonNumber),
+		getSeasonAverageRating(tvId, seasonNumber),
+		getPublicEpisodeReviews(episodeIds),
+		getMyEpisodeReviews(episodeIds),
+	]);
 
 	const watchedCount = watchedEpisodes.size;
 
@@ -196,6 +204,7 @@ export default async function SeasonPage(props: SeasonPageProps) {
 						reviewsByEpisodeId={Object.fromEntries(
 							reviewsByEpisodeId
 						)}
+						myReviewsByEpisodeId={myEpisodeReviews}
 						locale={locale}
 						labels={{
 							noImage: t.movie.noImage,

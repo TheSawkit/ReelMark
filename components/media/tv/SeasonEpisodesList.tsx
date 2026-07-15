@@ -7,7 +7,7 @@ import { episodeWatchStore } from '@/lib/episode-watch-store';
 import { useProgressiveReveal } from '@/hooks/useProgressiveReveal';
 import { useTranslation } from '@/lib/i18n/context';
 import type { Episode } from '@/types/tmdb';
-import type { PublicReview } from '@/types/profile';
+import type { PublicReview, Review } from '@/types/profile';
 
 const EPISODES_PAGE_SIZE = 12;
 
@@ -17,6 +17,7 @@ interface SeasonEpisodesListProps {
 	episodes: Episode[];
 	watchedEpisodeNumbers: number[];
 	reviewsByEpisodeId: Record<number, PublicReview[]>;
+	myReviewsByEpisodeId: Record<number, Review>;
 	locale: string;
 	labels: { noImage: string; noDescription: string };
 }
@@ -31,6 +32,7 @@ export function SeasonEpisodesList({
 	episodes,
 	watchedEpisodeNumbers,
 	reviewsByEpisodeId,
+	myReviewsByEpisodeId,
 	locale,
 	labels,
 }: SeasonEpisodesListProps) {
@@ -62,6 +64,7 @@ export function SeasonEpisodesList({
 						totalEpisodes={episodes.length}
 						isWatched={watched.has(episode.episode_number)}
 						locale={locale}
+						myReview={myReviewsByEpisodeId[episode.id] ?? null}
 						reviews={reviewsByEpisodeId[episode.id] ?? []}
 						labels={labels}
 					/>

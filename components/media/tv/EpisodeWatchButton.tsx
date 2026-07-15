@@ -1,12 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Eye, Check, Loader2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { setEpisodeWatched } from '@/app/actions/episodes';
-import { episodeWatchStore, useSeasonWatch } from '@/lib/episode-watch-store';
+import {
+	episodeWatchStore,
+	useSeasonWatch,
+	useEpisodeWatched,
+} from '@/lib/episode-watch-store';
 import { mediaWatchStore } from '@/lib/media-watch-store';
 import {
 	isSeasonSkip,
@@ -15,14 +18,6 @@ import {
 } from '@/lib/season-catch-up';
 import { useTranslation } from '@/lib/i18n/context';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-
-const ReviewDialog = dynamic(
-	() =>
-		import('@/components/media/reviews/ReviewDialog').then(
-			(m) => m.ReviewDialog
-		),
-	{ ssr: false }
-);
 
 const SeasonCatchUpPrompt = dynamic(
 	() =>
@@ -38,9 +33,6 @@ interface EpisodeWatchButtonProps {
 	episodeNumber: number;
 	totalEpisodes: number;
 	initialWatched: boolean;
-	episodeId: number;
-	episodeName: string;
-	stillPath: string | null;
 }
 
 export function EpisodeWatchButton({
@@ -49,21 +41,18 @@ export function EpisodeWatchButton({
 	episodeNumber,
 	totalEpisodes,
 	initialWatched,
-	episodeId,
-	episodeName,
-	stillPath,
 }: EpisodeWatchButtonProps) {
-	const [reviewOpen, setReviewOpen] = useState(false);
 	const [missingEpisodes, setMissingEpisodes] = useState<number[]>([]);
-	const [catchUpOpen, setCatchUpOpen] = useState(false);
 	const { loading, error, execute } = useAsyncAction();
 	const { t } = useTranslation();
-	const router = useRouter();
 
 	const seasonState = useSeasonWatch(tvId, seasonNumber);
-	const watched = seasonState?.episodes
-		? seasonState.episodes.has(episodeNumber)
-		: initialWatched;
+	const watched = useEpisodeWatched(
+		tvId,
+		seasonNumber,
+		episodeNumber,
+		initialWatched
+	);
 
 	async function handleToggle(e: React.MouseEvent) {
 		e.preventDefault();
@@ -85,26 +74,16 @@ export function EpisodeWatchButton({
 			return;
 		}
 		mediaWatchStore.set('tv', tvId, result.tvStatus);
-		if (!target) return;
+		if (!target || watchedBefore === null) return;
 
 		const skipped =
-			watchedBefore !== null &&
 			isSeasonSkip(episodeNumber, watchedBefore) &&
 			!isCatchUpDismissed(tvId, seasonNumber);
-		setMissingEpisodes(
-			skipped ? missingEpisodesBefore(episodeNumber, watchedBefore) : []
-		);
-		setReviewOpen(true);
-	}
-
-	function handleReviewClose() {
-		setReviewOpen(false);
-		if (missingEpisodes.length > 0) setCatchUpOpen(true);
-	}
-
-	function handleCatchUpClose() {
-		setCatchUpOpen(false);
-		setMissingEpisodes([]);
+		if (skipped) {
+			setMissingEpisodes(
+				missingEpisodesBefore(episodeNumber, watchedBefore)
+			);
+		}
 	}
 
 	const Icon = loading ? Loader2 : error ? XCircle : watched ? Check : Eye;
@@ -134,24 +113,10 @@ export function EpisodeWatchButton({
 						: t.movie.markEpisodeWatched}
 			</button>
 
-			{reviewOpen && (
-				<ReviewDialog
-					open={reviewOpen}
-					onClose={handleReviewClose}
-					mediaId={episodeId}
-					mediaType="episode"
-					mediaTitle={episodeName}
-					posterPath={stillPath}
-					tvId={tvId}
-					seasonNumber={seasonNumber}
-					onSave={() => router.refresh()}
-				/>
-			)}
-
-			{catchUpOpen && (
+			{missingEpisodes.length > 0 && (
 				<SeasonCatchUpPrompt
-					open={catchUpOpen}
-					onClose={handleCatchUpClose}
+					open
+					onClose={() => setMissingEpisodes([])}
 					tvId={tvId}
 					seasonNumber={seasonNumber}
 					episodeNumber={episodeNumber}

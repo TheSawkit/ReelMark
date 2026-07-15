@@ -2,11 +2,9 @@
 
 import { Eye, Check, Loader2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { setSeasonWatched } from '@/app/actions/episodes';
-import { episodeWatchStore, useSeasonWatch } from '@/lib/episode-watch-store';
-import { mediaWatchStore } from '@/lib/media-watch-store';
+import { useSeasonWatch } from '@/lib/episode-watch-store';
 import { useTranslation } from '@/lib/i18n/context';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useSeasonWatchToggle } from '@/hooks/useSeasonWatchToggle';
 
 interface SeasonWatchIconProps {
 	tvId: number;
@@ -23,8 +21,12 @@ export function SeasonWatchIcon({
 	watchedCount,
 	releaseDate,
 }: SeasonWatchIconProps) {
-	const { loading, error, execute } = useAsyncAction();
 	const { t } = useTranslation();
+	const { loading, error, toggle } = useSeasonWatchToggle(
+		tvId,
+		seasonNumber,
+		totalEpisodes
+	);
 
 	const count = useSeasonWatch(tvId, seasonNumber)?.count ?? watchedCount;
 	const allWatched = count >= totalEpisodes && totalEpisodes > 0;
@@ -37,21 +39,10 @@ export function SeasonWatchIcon({
 		return null;
 	}
 
-	async function handleClick(e: React.MouseEvent) {
+	function handleClick(e: React.MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
-		if (loading) return;
-		const target = !allWatched;
-		const previous = episodeWatchStore.get(tvId, seasonNumber);
-		episodeWatchStore.setSeason(tvId, seasonNumber, target, totalEpisodes);
-		const result = await execute(() =>
-			setSeasonWatched(tvId, seasonNumber, totalEpisodes, target)
-		);
-		if (!result) {
-			episodeWatchStore.restore(tvId, seasonNumber, previous);
-			return;
-		}
-		mediaWatchStore.set('tv', tvId, result.tvStatus);
+		toggle(!allWatched);
 	}
 
 	const Icon = loading ? Loader2 : error ? XCircle : allWatched ? Check : Eye;
