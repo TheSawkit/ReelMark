@@ -367,7 +367,7 @@ export default async function RootLayout({
 						<ViewTransition>{children}</ViewTransition>
 					</main>
 					<footer className="border-t border-border-subtle mt-auto">
-						<div className="container mx-auto px-6 lg:px-12 pt-8 pb-28 md:pb-8 flex flex-col items-center gap-3 text-sm text-muted sm:flex-row sm:justify-between">
+						<div className="container mx-auto px-6 lg:px-12 pt-8 pb-28 lg:pb-8 flex flex-col items-center gap-3 text-sm text-muted sm:flex-row sm:justify-between">
 							<p>© {new Date().getFullYear()} ReelMark</p>
 							<nav
 								aria-label={t.pages.legal.terms.title}
