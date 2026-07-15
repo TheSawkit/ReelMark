@@ -72,7 +72,12 @@ export function SeasonCatchUpPrompt({
 		if (action === 'upTo') {
 			episodeWatchStore.setWatchedUpTo(tvId, seasonNumber, episodeNumber);
 		} else {
-			episodeWatchStore.setSeason(tvId, seasonNumber, true, totalEpisodes);
+			episodeWatchStore.setSeason(
+				tvId,
+				seasonNumber,
+				true,
+				totalEpisodes
+			);
 		}
 		try {
 			const result = await mutate();

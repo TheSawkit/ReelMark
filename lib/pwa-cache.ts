@@ -1,4 +1,10 @@
-const USER_SCOPED_CACHES = ['pages', 'pages-rsc', 'pages-rsc-prefetch', 'others', 'apis'];
+const USER_SCOPED_CACHES = [
+	'pages',
+	'pages-rsc',
+	'pages-rsc-prefetch',
+	'others',
+	'apis',
+];
 
 /**
  * Drops the service worker caches that can hold responses rendered for the signed-in user.

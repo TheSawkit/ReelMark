@@ -32,7 +32,12 @@ describe('episodeWatchStore.setSeasonEpisodes', () => {
 	});
 
 	it('replaces the season with exactly the given episodes', () => {
-		episodeWatchStore.seed(TV_ID, SEASON, 10, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+		episodeWatchStore.seed(
+			TV_ID,
+			SEASON,
+			10,
+			[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+		);
 
 		episodeWatchStore.setSeasonEpisodes(TV_ID, SEASON, [2, 4]);
 

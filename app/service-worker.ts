@@ -51,12 +51,14 @@ const boundedPageCache: RuntimeCaching[] = [
 	},
 	{
 		matcher: ({ request, url, sameOrigin }) =>
-			request.headers.get('RSC') === '1' && isPageRequest(url, sameOrigin),
+			request.headers.get('RSC') === '1' &&
+			isPageRequest(url, sameOrigin),
 		handler: boundedPageStrategy(PAGES_CACHE_NAME.rsc),
 	},
 	{
 		matcher: ({ request, url, sameOrigin }) =>
-			request.destination === 'document' && isPageRequest(url, sameOrigin),
+			request.destination === 'document' &&
+			isPageRequest(url, sameOrigin),
 		handler: boundedPageStrategy(PAGES_CACHE_NAME.html),
 	},
 ];

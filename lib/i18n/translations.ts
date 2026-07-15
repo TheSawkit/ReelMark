@@ -689,7 +689,8 @@ export const translations = {
 			episodeWatched: 'Vu',
 			markEpisodeWatched: 'Marquer vu',
 			catchUpTitle: 'Tu as sauté des épisodes',
-			catchUpOneMissing: "L'épisode ${episode} n'est pas marqué comme vu.",
+			catchUpOneMissing:
+				"L'épisode ${episode} n'est pas marqué comme vu.",
 			catchUpManyMissing:
 				'${count} épisodes de cette saison ne sont pas marqués comme vus.',
 			catchUpConfirm: "Rattraper jusqu'à l'ép. ${episode}",
