@@ -310,6 +310,9 @@ export const translations = {
 				save: 'Enregistrer',
 			},
 			data: {
+				legalTitle: 'Documents légaux',
+				legalDescription:
+					'Consulte les documents qui encadrent ton utilisation du service et le traitement de tes données.',
 				exportTitle: 'Exporter les données',
 				exportDescription:
 					'Télécharge toutes tes données (watchlist, avis, épisodes vus) au format JSON.',
@@ -1349,6 +1352,9 @@ export const translations = {
 				save: 'Save',
 			},
 			data: {
+				legalTitle: 'Legal documents',
+				legalDescription:
+					'Review the documents that govern your use of the service and the processing of your data.',
 				exportTitle: 'Export Data',
 				exportDescription:
 					'Download all your data (watchlist, reviews, watched episodes) as JSON.',

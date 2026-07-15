@@ -18,6 +18,8 @@ import { PreventImageContextMenu } from '@/components/shared/PreventImageContext
 import { PWAInstallPrompt } from '@/components/shared/PWAInstallPrompt';
 import NextTopLoader from 'nextjs-toploader';
 import { ViewTransition } from 'react';
+import Link from 'next/link';
+import { localizedHref } from '@/lib/i18n/utils';
 
 const sans = Inter({
 	subsets: ['latin'],
@@ -365,8 +367,25 @@ export default async function RootLayout({
 						<ViewTransition>{children}</ViewTransition>
 					</main>
 					<footer className="border-t border-border-subtle mt-auto">
-						<div className="container mx-auto px-6 lg:px-12 pt-8 pb-28 text-center text-sm text-muted md:pb-8">
+						<div className="container mx-auto px-6 lg:px-12 pt-8 pb-28 md:pb-8 flex flex-col items-center gap-3 text-sm text-muted sm:flex-row sm:justify-between">
 							<p>© {new Date().getFullYear()} ReelMark</p>
+							<nav
+								aria-label={t.pages.legal.terms.title}
+								className="flex items-center gap-4"
+							>
+								<Link
+									href={localizedHref(lang, '/terms')}
+									className="hover:text-text transition-colors"
+								>
+									{t.pages.legal.terms.title}
+								</Link>
+								<Link
+									href={localizedHref(lang, '/privacy')}
+									className="hover:text-text transition-colors"
+								>
+									{t.pages.legal.privacy.title}
+								</Link>
+							</nav>
 						</div>
 					</footer>
 					<PWAInstallPrompt />

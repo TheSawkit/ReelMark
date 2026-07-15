@@ -11,7 +11,11 @@ import {
 	ChevronDown,
 	ChevronUp,
 	Copy,
+	FileText,
+	ShieldCheck,
 } from 'lucide-react';
+import Link from 'next/link';
+import { localizedHref } from '@/lib/i18n/utils';
 import {
 	Card,
 	CardContent,
@@ -185,8 +189,9 @@ function chunkImportItems(items: ImportItem[]): ImportItem[][] {
 }
 
 export function DataSettings() {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
 	const td = t.settings.data;
+	const legal = t.pages.legal;
 	const [exportPending, startExportTransition] = useTransition();
 	const [platform, setPlatform] = useState<Platform | null>(null);
 	const [phase, setPhase] = useState<ImportPhase>({ type: 'idle' });
@@ -316,6 +321,27 @@ export function DataSettings() {
 
 	return (
 		<div className="space-y-4">
+			<Card>
+				<CardHeader>
+					<CardTitle>{td.legalTitle}</CardTitle>
+					<CardDescription>{td.legalDescription}</CardDescription>
+				</CardHeader>
+				<CardContent className="flex flex-wrap gap-2">
+					<Button asChild variant="outline" className="gap-2">
+						<Link href={localizedHref(lang, '/terms')}>
+							<FileText className="h-4 w-4" />
+							{legal.terms.title}
+						</Link>
+					</Button>
+					<Button asChild variant="outline" className="gap-2">
+						<Link href={localizedHref(lang, '/privacy')}>
+							<ShieldCheck className="h-4 w-4" />
+							{legal.privacy.title}
+						</Link>
+					</Button>
+				</CardContent>
+			</Card>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>{td.exportTitle}</CardTitle>
