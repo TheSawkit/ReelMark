@@ -7,7 +7,7 @@
 		<meta name="x-apple-disable-message-reformatting" />
 		<meta name="color-scheme" content="light" />
 		<meta name="supported-color-schemes" content="light" />
-		<title>Confirm your ReelMark signup</title>
+		<title>Confirm your new ReelMark email</title>
 		<!--[if mso]>
 			<noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
 		<![endif]-->
@@ -24,7 +24,7 @@
 	</head>
 	<body style="margin: 0; padding: 0; background-color: #f2f2f4">
 		<div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: #f2f2f4; opacity: 0">
-			One click to activate your account and start your watchlist.
+			Confirm the new email address for your ReelMark account.
 		</div>
 
 		<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f2f2f4">
@@ -43,7 +43,7 @@
 								/>
 								<div style="height: 3px; width: 56px; margin: 18px auto 0 auto; background-color: #f5c518; border-radius: 2px; font-size: 0; line-height: 3px">&nbsp;</div>
 								<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #a3a3a3; margin-top: 14px">
-									Track every film &amp; show
+									Email change
 								</div>
 							</td>
 						</tr>
@@ -52,23 +52,40 @@
 						<tr>
 							<td class="px" style="padding: 44px 48px 8px 48px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
 								<h1 style="margin: 0 0 16px 0; font-size: 26px; line-height: 1.25; color: #141414; font-weight: 700">
-									Welcome to ReelMark
+									Confirm your new email
 								</h1>
-								<p style="margin: 0 0 14px 0; font-size: 16px; line-height: 1.6; color: #4a4a4f">
-									You're one click away. Confirm your email address to activate your account and start building your watchlist.
+								<p style="margin: 0; font-size: 16px; line-height: 1.6; color: #4a4a4f">
+									You asked to change the email address on your ReelMark account. Confirm it below to make the change.
 								</p>
+							</td>
+						</tr>
+
+						<!-- From -> To -->
+						<tr>
+							<td class="px" style="padding: 26px 48px 8px 48px">
+								<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f7f7f8; border: 1px solid #e4e4e7; border-radius: 14px">
+									<tr>
+										<td style="padding: 18px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+											<div style="font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #a3a3a3; margin-bottom: 4px">Current</div>
+											<div style="font-size: 15px; color: #8a8a8e; text-decoration: line-through; word-break: break-all">{{ .Email }}</div>
+											<div style="height: 1px; background-color: #e4e4e7; margin: 14px 0; font-size: 0; line-height: 1px">&nbsp;</div>
+											<div style="font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #a3a3a3; margin-bottom: 4px">New</div>
+											<div style="font-size: 15px; font-weight: 600; color: #141414; word-break: break-all">{{ .NewEmail }}</div>
+										</td>
+									</tr>
+								</table>
 							</td>
 						</tr>
 
 						<!-- Button -->
 						<tr>
-							<td class="px" align="left" style="padding: 24px 48px 8px 48px">
+							<td class="px" align="left" style="padding: 26px 48px 8px 48px">
 								<table role="presentation" cellpadding="0" cellspacing="0">
 									<tr>
 										<td bgcolor="#b9090b" style="border-radius: 12px">
 											<!--[if mso]>&nbsp;<![endif]-->
-											<a href="{{ .ConfirmationURL }}" target="_blank" style="display: inline-block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 15px 34px; border-radius: 12px">
-												Confirm my email
+											<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change&next=/settings" target="_blank" style="display: inline-block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 15px 34px; border-radius: 12px">
+												Confirm this change
 											</a>
 											<!--[if mso]>&nbsp;<![endif]-->
 										</td>
@@ -79,13 +96,26 @@
 
 						<!-- Fallback link -->
 						<tr>
-							<td class="px" style="padding: 20px 48px 40px 48px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+							<td class="px" style="padding: 20px 48px 32px 48px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
 								<p style="margin: 0 0 6px 0; font-size: 13px; line-height: 1.5; color: #8a8a8e">
 									Button not working? Copy and paste this link into your browser:
 								</p>
 								<p style="margin: 0; font-size: 13px; line-height: 1.5; word-break: break-all">
-									<a href="{{ .ConfirmationURL }}" target="_blank" style="color: #b9090b; text-decoration: underline">{{ .ConfirmationURL }}</a>
+									<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change&next=/settings" target="_blank" style="color: #b9090b; text-decoration: underline">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change&next=/settings</a>
 								</p>
+							</td>
+						</tr>
+
+						<!-- Security note -->
+						<tr>
+							<td class="px" style="padding: 0 48px 40px 48px">
+								<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #fdf8e8; border-radius: 12px; border-left: 3px solid #f5c518">
+									<tr>
+										<td style="padding: 16px 18px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.6; color: #6b5a1f">
+											<strong style="color: #8a6d1a">You didn't ask for this?</strong> Do not open the link, and change your password right away — someone may have access to your account.
+										</td>
+									</tr>
+								</table>
 							</td>
 						</tr>
 
@@ -99,9 +129,6 @@
 						<!-- Footer -->
 						<tr>
 							<td class="px" style="padding: 28px 48px 40px 48px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
-								<p style="margin: 0 0 14px 0; font-size: 12px; line-height: 1.6; color: #a3a3a3">
-									If you didn't create a ReelMark account, you can safely ignore this email.
-								</p>
 								<p style="margin: 0; font-size: 12px; line-height: 1.6; color: #a3a3a3">
 									<a href="https://reelmark.silexio.be/en/terms" target="_blank" style="color: #8a8a8e; text-decoration: underline">Terms</a>
 									&nbsp;&middot;&nbsp;

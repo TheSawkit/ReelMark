@@ -7,7 +7,7 @@
 		<meta name="x-apple-disable-message-reformatting" />
 		<meta name="color-scheme" content="light" />
 		<meta name="supported-color-schemes" content="light" />
-		<title>Confirm your ReelMark signup</title>
+		<title>Sign in to ReelMark</title>
 		<!--[if mso]>
 			<noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
 		<![endif]-->
@@ -19,12 +19,13 @@
 			@media only screen and (max-width: 600px) {
 				.card { width: 100% !important; border-radius: 0 !important; }
 				.px { padding-left: 26px !important; padding-right: 26px !important; }
+				.code { font-size: 34px !important; letter-spacing: 8px !important; }
 			}
 		</style>
 	</head>
 	<body style="margin: 0; padding: 0; background-color: #f2f2f4">
 		<div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: #f2f2f4; opacity: 0">
-			One click to activate your account and start your watchlist.
+			Your secure sign-in link and code for ReelMark.
 		</div>
 
 		<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f2f2f4">
@@ -43,7 +44,7 @@
 								/>
 								<div style="height: 3px; width: 56px; margin: 18px auto 0 auto; background-color: #f5c518; border-radius: 2px; font-size: 0; line-height: 3px">&nbsp;</div>
 								<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #a3a3a3; margin-top: 14px">
-									Track every film &amp; show
+									Secure sign-in
 								</div>
 							</td>
 						</tr>
@@ -52,10 +53,10 @@
 						<tr>
 							<td class="px" style="padding: 44px 48px 8px 48px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
 								<h1 style="margin: 0 0 16px 0; font-size: 26px; line-height: 1.25; color: #141414; font-weight: 700">
-									Welcome to ReelMark
+									Sign in to ReelMark
 								</h1>
-								<p style="margin: 0 0 14px 0; font-size: 16px; line-height: 1.6; color: #4a4a4f">
-									You're one click away. Confirm your email address to activate your account and start building your watchlist.
+								<p style="margin: 0; font-size: 16px; line-height: 1.6; color: #4a4a4f">
+									No password needed. Tap the button below, or enter the code if you're signing in on another device.
 								</p>
 							</td>
 						</tr>
@@ -67,8 +68,8 @@
 									<tr>
 										<td bgcolor="#b9090b" style="border-radius: 12px">
 											<!--[if mso]>&nbsp;<![endif]-->
-											<a href="{{ .ConfirmationURL }}" target="_blank" style="display: inline-block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 15px 34px; border-radius: 12px">
-												Confirm my email
+											<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard" target="_blank" style="display: inline-block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 15px 34px; border-radius: 12px">
+												Sign in to ReelMark
 											</a>
 											<!--[if mso]>&nbsp;<![endif]-->
 										</td>
@@ -79,13 +80,64 @@
 
 						<!-- Fallback link -->
 						<tr>
-							<td class="px" style="padding: 20px 48px 40px 48px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+							<td class="px" style="padding: 20px 48px 28px 48px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
 								<p style="margin: 0 0 6px 0; font-size: 13px; line-height: 1.5; color: #8a8a8e">
 									Button not working? Copy and paste this link into your browser:
 								</p>
 								<p style="margin: 0; font-size: 13px; line-height: 1.5; word-break: break-all">
-									<a href="{{ .ConfirmationURL }}" target="_blank" style="color: #b9090b; text-decoration: underline">{{ .ConfirmationURL }}</a>
+									<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard" target="_blank" style="color: #b9090b; text-decoration: underline">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard</a>
 								</p>
+							</td>
+						</tr>
+
+						<!-- Separator "or" -->
+						<tr>
+							<td class="px" style="padding: 0 48px">
+								<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+									<tr>
+										<td style="width: 50%"><div style="height: 1px; background-color: #ececee; font-size: 0; line-height: 1px">&nbsp;</div></td>
+										<td style="padding: 0 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #a3a3a3; white-space: nowrap">
+											or enter this code
+										</td>
+										<td style="width: 50%"><div style="height: 1px; background-color: #ececee; font-size: 0; line-height: 1px">&nbsp;</div></td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+
+						<!-- OTP code -->
+						<tr>
+							<td class="px" style="padding: 22px 48px 8px 48px">
+								<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f7f7f8; border: 1px solid #e4e4e7; border-radius: 14px">
+									<tr>
+										<td align="center" style="padding: 24px 16px">
+											<div class="code" style="font-family: 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Courier New', monospace; font-size: 40px; font-weight: 700; letter-spacing: 12px; color: #141414; line-height: 1.1; text-indent: 12px">
+												{{ .Token }}
+											</div>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+
+						<tr>
+							<td class="px" style="padding: 14px 48px 28px 48px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+								<p style="margin: 0; font-size: 13px; line-height: 1.5; color: #8a8a8e">
+									The link and the code both expire shortly, and each works only once.
+								</p>
+							</td>
+						</tr>
+
+						<!-- Security note -->
+						<tr>
+							<td class="px" style="padding: 0 48px 40px 48px">
+								<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #fdf8e8; border-radius: 12px; border-left: 3px solid #f5c518">
+									<tr>
+										<td style="padding: 16px 18px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.6; color: #6b5a1f">
+											<strong style="color: #8a6d1a">Never share this code.</strong> ReelMark will never ask you for it. If you didn't try to sign in, ignore this email — nobody can access your account without this link or code.
+										</td>
+									</tr>
+								</table>
 							</td>
 						</tr>
 
@@ -99,9 +151,6 @@
 						<!-- Footer -->
 						<tr>
 							<td class="px" style="padding: 28px 48px 40px 48px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
-								<p style="margin: 0 0 14px 0; font-size: 12px; line-height: 1.6; color: #a3a3a3">
-									If you didn't create a ReelMark account, you can safely ignore this email.
-								</p>
 								<p style="margin: 0; font-size: 12px; line-height: 1.6; color: #a3a3a3">
 									<a href="https://reelmark.silexio.be/en/terms" target="_blank" style="color: #8a8a8e; text-decoration: underline">Terms</a>
 									&nbsp;&middot;&nbsp;
