@@ -21,6 +21,9 @@ import { ViewTransition } from 'react';
 import Link from 'next/link';
 import { localizedHref } from '@/lib/i18n/utils';
 
+/** Stamped at build time: a copyright year must not depend on when a page happens to render. */
+const COPYRIGHT_YEAR = new Date().getFullYear();
+
 const sans = Inter({
 	subsets: ['latin'],
 	display: 'swap',
@@ -368,7 +371,7 @@ export default async function RootLayout({
 					</main>
 					<footer className="border-t border-border-subtle mt-auto">
 						<div className="container mx-auto px-6 lg:px-12 pt-8 pb-28 lg:pb-8 flex flex-col items-center gap-3 text-sm text-muted sm:flex-row sm:justify-between">
-							<p>© {new Date().getFullYear()} ReelMark</p>
+							<p>© {COPYRIGHT_YEAR} ReelMark</p>
 							<nav
 								aria-label={t.pages.legal.terms.title}
 								className="flex items-center gap-4"

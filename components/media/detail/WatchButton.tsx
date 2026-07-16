@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { addToWatchlist, removeFromWatchlist } from '@/app/actions/watchlist';
 import { useTranslation } from '@/lib/i18n/context';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useIsUnreleased } from '@/hooks/useIsUnreleased';
 import { mediaWatchStore, useMediaWatch } from '@/lib/media-watch-store';
 import { episodeWatchStore } from '@/lib/episode-watch-store';
 import { mediaRatingStore } from '@/lib/media-rating-store';
@@ -41,9 +42,7 @@ export function WatchButton({
 
 	const isActive =
 		storedStatus !== undefined ? storedStatus === status : initialIsActive;
-	const isUnreleased = releaseDate
-		? new Date(releaseDate) > new Date()
-		: false;
+	const isUnreleased = useIsUnreleased(releaseDate);
 
 	if (status === 'watched' && isUnreleased && !isActive) {
 		return null;

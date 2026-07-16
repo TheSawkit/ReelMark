@@ -35,17 +35,14 @@ import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
 import { tvSeriesJsonLd, serializeJsonLd } from '@/lib/structured-data';
 import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
-import {
-	getServerLocale,
-	getTranslations,
-	getServerLanguage,
-} from '@/lib/i18n/server';
+import { getServerLocale, getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import type { Season, TvShowDetails } from '@/types/tmdb';
+import type { Language } from '@/lib/i18n/translations';
 
 export const dynamic = 'force-dynamic';
 
-type TvPageParams = Promise<{ id: string }>;
+type TvPageParams = Promise<{ lang: Language; id: string }>;
 interface TvPageProps {
 	params: TvPageParams;
 }
@@ -200,6 +197,7 @@ export async function generateMetadata({
 
 export default async function TvShowPage(props: TvPageProps) {
 	const params = await props.params;
+	const { lang } = params;
 	const tvId = parseInt(params.id);
 
 	if (isNaN(tvId)) notFound();
@@ -229,17 +227,13 @@ export default async function TvShowPage(props: TvPageProps) {
 			))
 				throw probeError;
 		}
-		if (isMovie)
-			redirect(
-				localizedHref(await getServerLanguage(), `/movie/${tvId}`)
-			);
+		if (isMovie) redirect(localizedHref(lang, `/movie/${tvId}`));
 		notFound();
 	}
 
-	const [t, locale, lang] = await Promise.all([
-		getTranslations(),
-		getServerLocale(),
-		getServerLanguage(),
+	const [t, locale] = await Promise.all([
+		getTranslations(lang),
+		getServerLocale(lang),
 	]);
 
 	const heroImageUrl = getImageUrl(

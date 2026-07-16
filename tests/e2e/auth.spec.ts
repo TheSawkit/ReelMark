@@ -8,14 +8,14 @@ test.describe('Login page', () => {
 			page.getByRole('textbox', { name: /email/i })
 		).toBeVisible();
 		await expect(
-			page.getByRole('button', { name: /connexion|login|sign in/i })
+			page.getByRole('button', { name: /^(connexion|login|sign in)$/i })
 		).toBeVisible();
 	});
 
 	test('shows validation error on empty submit', async ({ page }) => {
 		await page.goto('/en/login');
 		await page
-			.getByRole('button', { name: /connexion|login|sign in/i })
+			.getByRole('button', { name: /^(connexion|login|sign in)$/i })
 			.click();
 		const emailInput = page.getByRole('textbox', { name: /email/i });
 		const validationMessage = await emailInput.evaluate(

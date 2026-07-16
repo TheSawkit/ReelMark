@@ -23,7 +23,7 @@ setup('authenticate', async ({ page }) => {
 	await page.locator('#email').fill(email);
 	await page.locator('#password').fill(password);
 	await page
-		.getByRole('button', { name: /connexion|login|se connecter/i })
+		.getByRole('button', { name: /^(connexion|login|se connecter)$/i })
 		.click();
 
 	const navigated = await page
@@ -32,8 +32,10 @@ setup('authenticate', async ({ page }) => {
 		.catch(() => false);
 
 	if (!navigated) {
-		await writeEmptyAuth();
-		return;
+		throw new Error(
+			'Login never reached /dashboard. Credentials are set, so this is a real failure, ' +
+				'not a reason to skip: check TEST_USER_* validity or a Supabase auth rate limit.'
+		);
 	}
 
 	await page.context().storageState({ path: authFile });

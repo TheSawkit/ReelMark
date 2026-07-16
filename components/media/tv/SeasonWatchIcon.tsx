@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { useSeasonWatch } from '@/lib/episode-watch-store';
 import { useTranslation } from '@/lib/i18n/context';
 import { useSeasonWatchToggle } from '@/hooks/useSeasonWatchToggle';
+import { useIsUnreleased } from '@/hooks/useIsUnreleased';
 
 interface SeasonWatchIconProps {
 	tvId: number;
@@ -31,9 +32,7 @@ export function SeasonWatchIcon({
 	const count = useSeasonWatch(tvId, seasonNumber)?.count ?? watchedCount;
 	const allWatched = count >= totalEpisodes && totalEpisodes > 0;
 
-	const isUnreleased = releaseDate
-		? new Date(releaseDate) > new Date()
-		: false;
+	const isUnreleased = useIsUnreleased(releaseDate);
 
 	if (isUnreleased && !allWatched) {
 		return null;
