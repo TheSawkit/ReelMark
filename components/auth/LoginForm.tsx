@@ -1,7 +1,10 @@
 'use client';
 
 import { useActionState, useRef, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { KeyRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { usePasskeySupport } from '@/hooks/usePasskeySupport';
 import { Button } from '@/components/ui/button';
 import {
 	Card,
@@ -37,9 +40,27 @@ export function LoginForm({
 	const [magicPending, startMagicLink] = useTransition();
 	const [magicSent, setMagicSent] = useState(false);
 	const [magicError, setMagicError] = useState('');
+	const [passkeyPending, startPasskey] = useTransition();
+	const [passkeyError, setPasskeyError] = useState('');
+	const passkeySupported = usePasskeySupport();
 	const emailRef = useRef<HTMLInputElement>(null);
+	const router = useRouter();
 	const { t, lang } = useTranslation();
 	const supabase = createClient();
+
+	const handlePasskeyLogin = () => {
+		setPasskeyError('');
+		startPasskey(async () => {
+			const { error } = await supabase.auth.signInWithPasskey();
+			if (error) {
+				if (error.name !== 'NotAllowedError')
+					setPasskeyError(error.message);
+				return;
+			}
+			router.replace(localizedHref(lang, '/dashboard'));
+			router.refresh();
+		});
+	};
 
 	const handleMagicLink = () => {
 		const email = emailRef.current?.value.trim() ?? '';
@@ -107,6 +128,21 @@ export function LoginForm({
 									)}
 									{t.auth.login.google}
 								</Button>
+
+								{passkeySupported && (
+									<Button
+										variant="outline"
+										type="button"
+										onClick={handlePasskeyLogin}
+										loading={passkeyPending}
+										disabled={isPending || oauthPending}
+									>
+										{!passkeyPending && (
+											<KeyRound className="h-4 w-4" />
+										)}
+										{t.auth.login.passkey}
+									</Button>
+								)}
 							</Field>
 							<FieldSeparator>
 								{t.auth.login.orEmail}
@@ -151,9 +187,15 @@ export function LoginForm({
 									required
 								/>
 							</Field>
-							{(oauthError || state?.error || magicError) && (
+							{(oauthError ||
+								state?.error ||
+								magicError ||
+								passkeyError) && (
 								<FormError>
-									{oauthError || state?.error || magicError}
+									{oauthError ||
+										state?.error ||
+										magicError ||
+										passkeyError}
 								</FormError>
 							)}
 							<Field>

@@ -247,6 +247,22 @@ export const translations = {
 				minChars: 'Le mot de passe doit contenir au moins 8 caractères',
 				updatePassword: 'Mettre à jour le mot de passe',
 			},
+			passkeys: {
+				title: 'Clés d’accès',
+				description:
+					'Connecte-toi avec Face ID, Touch ID ou le code de ton appareil, sans mot de passe.',
+				add: 'Ajouter une clé d’accès',
+				empty: 'Aucune clé d’accès pour l’instant',
+				unnamed: 'Clé d’accès',
+				addedOn: 'Ajoutée le',
+				lastUsed: 'Dernière utilisation',
+				neverUsed: 'Jamais utilisée',
+				remove: 'Supprimer cette clé d’accès',
+				added: 'Clé d’accès ajoutée',
+				removed: 'Clé d’accès supprimée',
+				unsupported:
+					'Ton navigateur ne gère pas les clés d’accès. Essaie Safari, Chrome ou Edge à jour.',
+			},
 			dangerZone: {
 				title: 'Données',
 				description:
@@ -515,6 +531,7 @@ export const translations = {
 				signup: "S'inscrire",
 				google: 'Continuer avec Google',
 				forgotPassword: 'Mot de passe oublié ?',
+				passkey: 'Se connecter avec une clé d’accès',
 				magicLink: 'Recevoir un lien de connexion',
 				magicLinkSent:
 					'Lien envoyé — regarde ta boîte mail pour te connecter sans mot de passe.',
@@ -1305,6 +1322,22 @@ export const translations = {
 				minChars: 'Password must contain at least 8 characters',
 				updatePassword: 'Update Password',
 			},
+			passkeys: {
+				title: 'Passkeys',
+				description:
+					'Sign in with Face ID, Touch ID or your device PIN — no password needed.',
+				add: 'Add a passkey',
+				empty: 'No passkeys yet',
+				unnamed: 'Passkey',
+				addedOn: 'Added on',
+				lastUsed: 'Last used',
+				neverUsed: 'Never used',
+				remove: 'Remove this passkey',
+				added: 'Passkey added',
+				removed: 'Passkey removed',
+				unsupported:
+					'Your browser doesn’t support passkeys. Try an up-to-date Safari, Chrome or Edge.',
+			},
 			dangerZone: {
 				title: 'Account Data',
 				description: 'The following actions cannot be undone',
@@ -1569,6 +1602,7 @@ export const translations = {
 				signup: 'Sign up',
 				google: 'Continue with Google',
 				forgotPassword: 'Forgot password?',
+				passkey: 'Sign in with a passkey',
 				magicLink: 'Email me a sign-in link',
 				magicLinkSent:
 					'Link sent — check your inbox to sign in without a password.',
