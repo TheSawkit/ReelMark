@@ -17,8 +17,8 @@ import {
 } from '@/components/ui/field';
 import { FormError } from '@/components/ui/FormError';
 import { Input } from '@/components/ui/input';
-import { SelectInput } from '@/components/ui/SelectInput';
 import { completeOnboarding } from '@/app/[lang]/onboarding/actions';
+import { RegionSelect } from '@/components/auth/RegionSelect';
 import { useTranslation } from '@/lib/i18n/context';
 
 const initialState = { error: '' };
@@ -65,32 +65,7 @@ export function OnboardingForm({ initialUsername }: OnboardingFormProps) {
 								<FieldLabel htmlFor="region">
 									{t.onboarding.regionLabel} *
 								</FieldLabel>
-								<SelectInput id="region" name="region" required>
-									<option value="">
-										{t.settings.region.placeholder}
-									</option>
-									<option value="BE">
-										{t.settings.region.be}
-									</option>
-									<option value="FR">
-										{t.settings.region.fr}
-									</option>
-									<option value="US">
-										{t.settings.region.us}
-									</option>
-									<option value="CA">
-										{t.settings.region.ca}
-									</option>
-									<option value="GB">
-										{t.settings.region.gb}
-									</option>
-									<option value="CH">
-										{t.settings.region.ch}
-									</option>
-									<option value="LU">
-										{t.settings.region.lu}
-									</option>
-								</SelectInput>
+								<RegionSelect />
 								<FieldDescription>
 									{t.onboarding.regionHint}
 								</FieldDescription>

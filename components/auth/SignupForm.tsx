@@ -19,9 +19,10 @@ import {
 } from '@/components/ui/field';
 import { FormError } from '@/components/ui/FormError';
 import { Input } from '@/components/ui/input';
-import { SelectInput } from '@/components/ui/SelectInput';
 import Link from 'next/link';
 import { signup } from '@/app/auth/actions';
+import { RegionSelect } from '@/components/auth/RegionSelect';
+import { AuthLegalNotice } from '@/components/auth/AuthLegalNotice';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
@@ -175,32 +176,7 @@ export function SignupForm({
 								<FieldLabel htmlFor="region">
 									{t.auth.signup.region} *
 								</FieldLabel>
-								<SelectInput id="region" name="region" required>
-									<option value="">
-										{t.settings.region.placeholder}
-									</option>
-									<option value="BE">
-										{t.settings.region.be}
-									</option>
-									<option value="FR">
-										{t.settings.region.fr}
-									</option>
-									<option value="US">
-										{t.settings.region.us}
-									</option>
-									<option value="CA">
-										{t.settings.region.ca}
-									</option>
-									<option value="GB">
-										{t.settings.region.gb}
-									</option>
-									<option value="CH">
-										{t.settings.region.ch}
-									</option>
-									<option value="LU">
-										{t.settings.region.lu}
-									</option>
-								</SelectInput>
+								<RegionSelect />
 								<FieldDescription>
 									{t.auth.signup.regionDescription}
 								</FieldDescription>
@@ -231,23 +207,7 @@ export function SignupForm({
 					</form>
 				</CardContent>
 			</Card>
-			<FieldDescription className="px-6 text-center">
-				{t.auth.terms}{' '}
-				<Link
-					href={localizedHref(lang, '/terms')}
-					className="underline hover:text-text transition-colors"
-				>
-					{t.auth.termsLink}
-				</Link>{' '}
-				{t.common.and}{' '}
-				<Link
-					href={localizedHref(lang, '/privacy')}
-					className="underline hover:text-text transition-colors"
-				>
-					{t.auth.privacyLink}
-				</Link>
-				.
-			</FieldDescription>
+			<AuthLegalNotice />
 		</div>
 	);
 }

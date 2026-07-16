@@ -13,6 +13,30 @@ import type { InfiniteScrollMediaProps } from '@/types/components';
 
 const MAX_RENDERED_ITEMS = 80;
 
+/** Carries the server's latest watchlist status onto already-rendered items, keeping the same array when nothing moved. */
+function withRefreshedWatchStatus(
+	current: MediaItem[],
+	refreshed: MediaItem[]
+): MediaItem[] {
+	let changed = false;
+	const next = current.map((item) => {
+		const match = refreshed.find(
+			(candidate) =>
+				candidate.id === item.id &&
+				candidate.media_type === item.media_type
+		);
+		if (
+			!match ||
+			match.watchlistEntry?.status === item.watchlistEntry?.status
+		) {
+			return item;
+		}
+		changed = true;
+		return { ...item, watchlistEntry: match.watchlistEntry };
+	});
+	return changed ? next : current;
+}
+
 export function InfiniteScrollMedia({
 	initialItems,
 	category,
@@ -32,40 +56,20 @@ export function InfiniteScrollMedia({
 	});
 	const { t } = useTranslation();
 
-	const prevCategoryRef = useRef(category);
+	const [prevCategory, setPrevCategory] = useState(category);
+	const [prevInitialItems, setPrevInitialItems] = useState(initialItems);
 
-	useEffect(() => {
-		if (prevCategoryRef.current !== category) {
-			setItems(initialItems);
-			setPage(2);
-			setHasMore(initialItems.length < MAX_RENDERED_ITEMS);
-			setLoadError(false);
-			prevCategoryRef.current = category;
-		} else {
-			setItems((prev) => {
-				let changed = false;
-				const next = prev.map((item) => {
-					const refreshed = initialItems.find(
-						(i) =>
-							i.id === item.id && i.media_type === item.media_type
-					);
-					if (
-						refreshed &&
-						refreshed.watchlistEntry?.status !==
-							item.watchlistEntry?.status
-					) {
-						changed = true;
-						return {
-							...item,
-							watchlistEntry: refreshed.watchlistEntry,
-						};
-					}
-					return item;
-				});
-				return changed ? next : prev;
-			});
-		}
-	}, [category, initialItems]);
+	if (prevCategory !== category) {
+		setPrevCategory(category);
+		setPrevInitialItems(initialItems);
+		setItems(initialItems);
+		setPage(2);
+		setHasMore(initialItems.length < MAX_RENDERED_ITEMS);
+		setLoadError(false);
+	} else if (prevInitialItems !== initialItems) {
+		setPrevInitialItems(initialItems);
+		setItems((prev) => withRefreshedWatchStatus(prev, initialItems));
+	}
 
 	const loadMore = useCallback(() => {
 		if (isPending || !hasMore || loadError) return;

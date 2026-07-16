@@ -235,60 +235,64 @@ async function findByTvdbId(tvdbId: number): Promise<FindResult | null> {
 	}
 }
 
-async function resolveImportMedia(item: ImportItem): Promise<{
+interface ImportMatch {
 	id: number;
 	type: 'movie' | 'tv';
 	title: string;
 	poster_path: string | null;
-} | null> {
-	const mediaType: 'movie' | 'tv' =
-		item.mediaType && VALID_MEDIA_TYPES.has(item.mediaType)
-			? item.mediaType
-			: 'movie';
-	const fallbackTitle = String(item.title).slice(0, 500);
+}
 
-	if (item.tmdbId && Number.isInteger(item.tmdbId) && item.tmdbId > 0) {
-		try {
-			const verified = await verifyTmdbType(item.tmdbId, mediaType);
-			if (!verified) return null;
-			return {
-				id: item.tmdbId,
-				type: verified.type,
-				title: verified.title || fallbackTitle,
-				poster_path: verified.poster_path,
-			};
-		} catch {
-			return {
-				id: item.tmdbId,
-				type: mediaType,
-				title: fallbackTitle,
-				poster_path: item.posterPath ?? null,
-			};
-		}
+const isPositiveId = (value: number | null | undefined): value is number =>
+	typeof value === 'number' && Number.isInteger(value) && value > 0;
+
+/** Trusts the file's TMDB id, keeping the entry even when TMDB is unreachable. */
+async function matchByTmdbId(
+	tmdbId: number,
+	mediaType: 'movie' | 'tv',
+	fallbackTitle: string,
+	fallbackPoster: string | null
+): Promise<ImportMatch | null> {
+	try {
+		const verified = await verifyTmdbType(tmdbId, mediaType);
+		if (!verified) return null;
+		return {
+			id: tmdbId,
+			type: verified.type,
+			title: verified.title || fallbackTitle,
+			poster_path: verified.poster_path,
+		};
+	} catch {
+		return {
+			id: tmdbId,
+			type: mediaType,
+			title: fallbackTitle,
+			poster_path: fallbackPoster,
+		};
 	}
+}
 
+async function matchByExternalId(
+	item: ImportItem,
+	mediaType: 'movie' | 'tv'
+): Promise<ImportMatch | null> {
 	if (item.imdbId && /^tt\d+$/.test(item.imdbId)) {
 		const found = await findByImdbId(item.imdbId, mediaType);
-		if (found)
-			return {
-				id: found.id,
-				type: mediaType,
-				title: found.title,
-				poster_path: found.poster_path,
-			};
+		if (found) return { ...found, type: mediaType };
 	}
 
-	if (item.tvdbId && Number.isInteger(item.tvdbId) && item.tvdbId > 0) {
+	if (isPositiveId(item.tvdbId)) {
 		const found = await findByTvdbId(item.tvdbId);
-		if (found)
-			return {
-				id: found.id,
-				type: 'tv',
-				title: found.title,
-				poster_path: found.poster_path,
-			};
+		if (found) return { ...found, type: 'tv' };
 	}
 
+	return null;
+}
+
+/** Last resort: title search, preferring a release year match when the file carries one. */
+async function matchByTitle(
+	item: ImportItem,
+	fallbackTitle: string
+): Promise<ImportMatch | null> {
 	const results = await searchMulti(String(item.title).slice(0, 200));
 	const candidates = item.mediaType
 		? results.filter((r) => r.media_type === item.mediaType)
@@ -306,6 +310,34 @@ async function resolveImportMedia(item: ImportItem): Promise<{
 		title: match.title || fallbackTitle,
 		poster_path: match.poster_path,
 	};
+}
+
+/**
+ * Resolves one imported row to a TMDB entry, trying the most trustworthy source first.
+ * A TMDB id is authoritative: when it fails verification the row is dropped rather than guessed.
+ */
+async function resolveImportMedia(
+	item: ImportItem
+): Promise<ImportMatch | null> {
+	const mediaType: 'movie' | 'tv' =
+		item.mediaType && VALID_MEDIA_TYPES.has(item.mediaType)
+			? item.mediaType
+			: 'movie';
+	const fallbackTitle = String(item.title).slice(0, 500);
+
+	if (isPositiveId(item.tmdbId)) {
+		return matchByTmdbId(
+			item.tmdbId,
+			mediaType,
+			fallbackTitle,
+			item.posterPath ?? null
+		);
+	}
+
+	return (
+		(await matchByExternalId(item, mediaType)) ??
+		(await matchByTitle(item, fallbackTitle))
+	);
 }
 
 /**

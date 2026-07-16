@@ -39,7 +39,12 @@ export function VirtualMediaGrid({
 	if (rows.length === 0) return null;
 
 	return (
-		<WindowVirtualizer ssrCount={Math.min(SSR_ROWS, rows.length)}>
+		// Keyed on the column count: it resolves only after mount, which reshapes `rows`
+		// under the virtualizer and would leave it indexing rows that no longer exist.
+		<WindowVirtualizer
+			key={cols}
+			ssrCount={Math.min(SSR_ROWS, rows.length)}
+		>
 			{rows.map((row, rowIndex) => (
 				<div key={getMediaKey(row[0])} className={rowClassName}>
 					{row.map((item, colIndex) =>
