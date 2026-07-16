@@ -515,6 +515,10 @@ export const translations = {
 				signup: "S'inscrire",
 				google: 'Continuer avec Google',
 				forgotPassword: 'Mot de passe oublié ?',
+				magicLink: 'Recevoir un lien de connexion',
+				magicLinkSent:
+					'Lien envoyé — regarde ta boîte mail pour te connecter sans mot de passe.',
+				magicLinkNoEmail: 'Entre ton e-mail d’abord',
 				placeholders: {
 					email: 'chuck@example.com',
 					password: '••••••••',
@@ -1565,6 +1569,10 @@ export const translations = {
 				signup: 'Sign up',
 				google: 'Continue with Google',
 				forgotPassword: 'Forgot password?',
+				magicLink: 'Email me a sign-in link',
+				magicLinkSent:
+					'Link sent — check your inbox to sign in without a password.',
+				magicLinkNoEmail: 'Enter your email first',
 				placeholders: {
 					email: 'chuck@example.com',
 					password: '••••••••',

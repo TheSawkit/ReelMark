@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState, useTransition } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,7 +20,7 @@ import {
 import { FormError } from '@/components/ui/FormError';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { login } from '@/app/auth/actions';
+import { login, requestMagicLink } from '@/app/auth/actions';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
@@ -34,8 +34,26 @@ export function LoginForm({
 	const [state, formAction, isPending] = useActionState(login, initialState);
 	const [oauthPending, setOAuthPending] = useState(false);
 	const [oauthError, setOAuthError] = useState('');
+	const [magicPending, startMagicLink] = useTransition();
+	const [magicSent, setMagicSent] = useState(false);
+	const [magicError, setMagicError] = useState('');
+	const emailRef = useRef<HTMLInputElement>(null);
 	const { t, lang } = useTranslation();
 	const supabase = createClient();
+
+	const handleMagicLink = () => {
+		const email = emailRef.current?.value.trim() ?? '';
+		setMagicError('');
+		if (!email) {
+			setMagicError(t.auth.login.magicLinkNoEmail);
+			return;
+		}
+		startMagicLink(async () => {
+			const result = await requestMagicLink(email);
+			if (result.error) setMagicError(result.error);
+			else setMagicSent(true);
+		});
+	};
 
 	const handleOAuthLogin = async (provider: 'google') => {
 		setOAuthError('');
@@ -98,6 +116,7 @@ export function LoginForm({
 									{t.auth.login.email}
 								</FieldLabel>
 								<Input
+									ref={emailRef}
 									id="email"
 									name="email"
 									type="email"
@@ -132,21 +151,42 @@ export function LoginForm({
 									required
 								/>
 							</Field>
-							{(oauthError || state?.error) && (
+							{(oauthError || state?.error || magicError) && (
 								<FormError>
-									{oauthError || state?.error}
+									{oauthError || state?.error || magicError}
 								</FormError>
 							)}
 							<Field>
 								<Button
 									type="submit"
 									loading={isPending}
-									disabled={oauthPending}
+									disabled={oauthPending || magicPending}
 								>
 									{isPending
 										? t.common.loading
 										: t.auth.login.button}
 								</Button>
+
+								{magicSent ? (
+									<FieldDescription
+										role="status"
+										className="text-center text-text"
+									>
+										{t.auth.login.magicLinkSent}
+									</FieldDescription>
+								) : (
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onClick={handleMagicLink}
+										loading={magicPending}
+										disabled={isPending || oauthPending}
+									>
+										{t.auth.login.magicLink}
+									</Button>
+								)}
+
 								<FieldDescription className="text-center">
 									{t.auth.login.dontHaveAccount}{' '}
 									<Link href={localizedHref(lang, '/signup')}>

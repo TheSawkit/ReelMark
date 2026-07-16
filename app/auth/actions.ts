@@ -133,6 +133,42 @@ export async function signout() {
 	redirect(localizedHref(await getServerLanguage(), '/login'));
 }
 
+/**
+ * Sends a passwordless sign-in link to an existing account.
+ *
+ * Never creates a user: signup must go through the form that collects the username
+ * `handle_new_user` copies into the profile, so an OTP-created account would have none.
+ *
+ * @param email - Address to send the link to.
+ * @returns Success even when no account matches, so the response can't be used to probe emails.
+ */
+export async function requestMagicLink(
+	email: string
+): Promise<{ error?: string; success?: boolean }> {
+	const t = await getTranslations();
+	const validEmail = validateEmail(email);
+	if (!validEmail) return { error: t.settings.missingFields };
+
+	const supabase = await createClient();
+	const origin = await getOrigin();
+	const { error } = await supabase.auth.signInWithOtp({
+		email: validEmail,
+		options: {
+			shouldCreateUser: false,
+			emailRedirectTo: `${origin}/auth/confirm?next=/dashboard`,
+		},
+	});
+
+	if (error) {
+		if (error.message.toLowerCase().includes('signups not allowed')) {
+			return { success: true };
+		}
+		return { error: mapAuthError(error.message, t) };
+	}
+
+	return { success: true };
+}
+
 export async function requestPasswordReset(
 	prevState: unknown,
 	formData: FormData
