@@ -36,7 +36,15 @@ export function validateReviewContent(content: unknown): string | null {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{1,50}$/;
 
-export const VALID_REGIONS = ['BE', 'FR', 'US', 'CA', 'GB', 'CH', 'LU'] as const;
+export const VALID_REGIONS = [
+	'BE',
+	'FR',
+	'US',
+	'CA',
+	'GB',
+	'CH',
+	'LU',
+] as const;
 const VALID_LANGUAGES = ['fr', 'en'] as const;
 const ALLOWED_AVATAR_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'] as const;
 const ALLOWED_AVATAR_MIMES = ['image/jpeg', 'image/png', 'image/webp'] as const;

@@ -316,7 +316,9 @@ async function matchByTitle(
  * Resolves one imported row to a TMDB entry, trying the most trustworthy source first.
  * A TMDB id is authoritative: when it fails verification the row is dropped rather than guessed.
  */
-async function resolveImportMedia(item: ImportItem): Promise<ImportMatch | null> {
+async function resolveImportMedia(
+	item: ImportItem
+): Promise<ImportMatch | null> {
 	const mediaType: 'movie' | 'tv' =
 		item.mediaType && VALID_MEDIA_TYPES.has(item.mediaType)
 			? item.mediaType

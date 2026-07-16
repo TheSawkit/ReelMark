@@ -9,11 +9,20 @@ export function RegionSelect({ defaultValue }: { defaultValue?: string }) {
 	const { t } = useTranslation();
 
 	return (
-		<SelectInput id="region" name="region" defaultValue={defaultValue} required>
+		<SelectInput
+			id="region"
+			name="region"
+			defaultValue={defaultValue}
+			required
+		>
 			<option value="">{t.settings.region.placeholder}</option>
 			{VALID_REGIONS.map((code) => (
 				<option key={code} value={code}>
-					{t.settings.region[code.toLowerCase() as Lowercase<typeof code>]}
+					{
+						t.settings.region[
+							code.toLowerCase() as Lowercase<typeof code>
+						]
+					}
 				</option>
 			))}
 		</SelectInput>
