@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { WatchButton } from '@/components/media/detail/WatchButton';
+import { AbandonShowMenu } from '@/components/media/tv/AbandonShowMenu';
 import {
 	mediaWatchStore,
 	useMediaWatch,
@@ -32,15 +33,24 @@ export function TvWatchActions({
 	const status = useMediaWatch('tv', mediaId) ?? initialStatus;
 
 	return (
-		<WatchButton
-			mediaId={mediaId}
-			mediaTitle={mediaTitle}
-			mediaType="tv"
-			posterPath={posterPath}
-			status={status === 'watched' ? 'watched' : 'to_watch'}
-			variant={variant === 'bar' ? 'responsive' : 'full'}
-			initialIsActive={status !== 'none'}
-			releaseDate={releaseDate}
-		/>
+		<div className="flex items-center gap-2">
+			<WatchButton
+				mediaId={mediaId}
+				mediaTitle={mediaTitle}
+				mediaType="tv"
+				posterPath={posterPath}
+				status={status === 'watched' ? 'watched' : 'to_watch'}
+				variant={variant === 'bar' ? 'responsive' : 'full'}
+				initialIsActive={status !== 'none'}
+				releaseDate={releaseDate}
+			/>
+			{status !== 'none' && (
+				<AbandonShowMenu
+					tvId={mediaId}
+					initialStatus={status}
+					className="h-10 w-10 shrink-0"
+				/>
+			)}
+		</div>
 	);
 }

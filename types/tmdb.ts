@@ -1,5 +1,5 @@
 export type MediaType = 'movie' | 'tv';
-export type WatchStatus = 'to_watch' | 'watched';
+export type WatchStatus = 'to_watch' | 'watched' | 'abandoned';
 
 export interface WatchlistEntry {
 	id: string;

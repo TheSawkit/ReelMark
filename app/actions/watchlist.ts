@@ -57,6 +57,39 @@ export async function addToWatchlist(
 	revalidateWatchlistPaths(mediaType, mediaId);
 }
 
+/**
+ * Updates the status of an existing watchlist entry, letting a show be abandoned or
+ * picked back up without refetching its TMDB metadata.
+ *
+ * @param mediaId - TMDB media ID.
+ * @param mediaType - "movie" or "tv".
+ * @param status - Target watchlist status.
+ * @returns The applied status, so callers can tell success from failure.
+ */
+export async function setWatchlistStatus(
+	mediaId: number,
+	mediaType: MediaType,
+	status: WatchStatus
+): Promise<WatchStatus> {
+	if (!VALID_STATUSES.has(status)) throw new Error('Invalid status');
+	if (!VALID_MEDIA_TYPES.has(mediaType))
+		throw new Error('Invalid media_type');
+
+	const { supabase, userId } = await getAuthenticatedUser();
+
+	const { error } = await supabase
+		.from('watchlist')
+		.update({ status })
+		.eq('user_id', userId)
+		.eq('media_id', mediaId)
+		.eq('media_type', mediaType);
+
+	if (error) throw new Error(error.message);
+
+	revalidateWatchlistPaths(mediaType, mediaId);
+	return status;
+}
+
 const META_BATCH_SIZE = 8;
 
 const BACKFILL_RUN_LIMIT = 200;

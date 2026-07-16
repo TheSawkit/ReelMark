@@ -66,6 +66,7 @@ async function LibraryContent({ type }: { type: MediaType }) {
 
 	const toWatch = watchlist.filter((entry) => entry.status === 'to_watch');
 	const watched = watchlist.filter((entry) => entry.status === 'watched');
+	const abandoned = watchlist.filter((entry) => entry.status === 'abandoned');
 
 	const tvProgressMap: Record<number, { watched: number; total: number }> =
 		{};
@@ -100,6 +101,7 @@ async function LibraryContent({ type }: { type: MediaType }) {
 			<LibraryTabs
 				toWatch={toWatch}
 				watched={watched}
+				abandoned={abandoned}
 				tvProgress={tvProgressMap}
 				genreNames={genreNames}
 				ratingByKey={ratingByKey}

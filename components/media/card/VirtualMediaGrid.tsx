@@ -36,8 +36,10 @@ export function VirtualMediaGrid({
 		return chunked;
 	}, [items, cols]);
 
+	if (rows.length === 0) return null;
+
 	return (
-		<WindowVirtualizer ssrCount={SSR_ROWS}>
+		<WindowVirtualizer ssrCount={Math.min(SSR_ROWS, rows.length)}>
 			{rows.map((row, rowIndex) => (
 				<div key={getMediaKey(row[0])} className={rowClassName}>
 					{row.map((item, colIndex) =>
