@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { KeyRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePasskeySupport } from '@/hooks/usePasskeySupport';
+import { AuthLegalNotice } from '@/components/auth/AuthLegalNotice';
 import { Button } from '@/components/ui/button';
 import {
 	Card,
@@ -240,23 +241,7 @@ export function LoginForm({
 					</form>
 				</CardContent>
 			</Card>
-			<FieldDescription className="px-6 text-center">
-				{t.auth.terms}{' '}
-				<Link
-					href={localizedHref(lang, '/terms')}
-					className="underline hover:text-text transition-colors"
-				>
-					{t.auth.termsLink}
-				</Link>{' '}
-				{t.common.and}{' '}
-				<Link
-					href={localizedHref(lang, '/privacy')}
-					className="underline hover:text-text transition-colors"
-				>
-					{t.auth.privacyLink}
-				</Link>
-				.
-			</FieldDescription>
+			<AuthLegalNotice />
 		</div>
 	);
 }

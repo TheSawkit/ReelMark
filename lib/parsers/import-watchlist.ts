@@ -8,6 +8,17 @@ export interface ImportPayload {
 	lists: ImportedList[];
 }
 
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+	typeof value === 'object' && value !== null
+		? (value as Record<string, unknown>)
+		: null;
+
+const asText = (value: unknown): string =>
+	typeof value === 'string' ? value.trim() : '';
+
+const asNumber = (value: unknown): number | null =>
+	typeof value === 'number' ? value : null;
+
 function parseCSVLine(line: string): string[] {
 	const result: string[] = [];
 	let current = '';
@@ -93,41 +104,55 @@ function parseWatchedEpisodes(
 	return watched;
 }
 
+function refractShow(
+	entry: Record<string, unknown>,
+	ids: Record<string, unknown> | null,
+	title: string,
+	year: number | null
+): ImportItem {
+	const yearInTitle = title.match(/^(.+?)\s*\((\d{4})\)\s*$/);
+	const watchedEpisodes = parseWatchedEpisodes(entry.seasons as unknown[]);
+	return {
+		title: yearInTitle ? yearInTitle[1].trim() : title,
+		year: yearInTitle ? parseInt(yearInTitle[2]) : year,
+		status: asText(entry.status) === 'up_to_date' ? 'watched' : 'to_watch',
+		mediaType: 'tv',
+		tvdbId: asNumber(ids?.tvdb),
+		watchedEpisodes:
+			watchedEpisodes.length > 0 ? watchedEpisodes : undefined,
+	};
+}
+
+function refractMovie(
+	entry: Record<string, unknown>,
+	ids: Record<string, unknown> | null,
+	title: string,
+	year: number | null
+): ImportItem {
+	return {
+		title,
+		year,
+		status: entry.is_watched === true ? 'watched' : 'to_watch',
+		mediaType: 'movie',
+		imdbId: asText(ids?.imdb) || null,
+	};
+}
+
 function parseTvTimeRefract(arr: unknown[]): ImportItem[] {
 	const items: ImportItem[] = [];
 	for (const entry of arr) {
-		if (typeof entry !== 'object' || entry === null) continue;
-		const e = entry as Record<string, unknown>;
-		const title = e.title ? String(e.title).trim() : null;
+		const e = asRecord(entry);
+		if (!e) continue;
+		const title = e.title ? String(e.title).trim() : '';
 		if (!title) continue;
-		const year = typeof e.year === 'number' ? e.year : null;
 
-		const ids = e.id as Record<string, unknown> | undefined;
+		const year = asNumber(e.year);
+		const ids = asRecord(e.id);
 
 		if (Array.isArray(e.seasons)) {
-			const tvStatus = typeof e.status === 'string' ? e.status : '';
-			const status: WatchStatus =
-				tvStatus === 'up_to_date' ? 'watched' : 'to_watch';
-			const tvdbId = typeof ids?.tvdb === 'number' ? ids.tvdb : null;
-			const yearInTitle = title.match(/^(.+?)\s*\((\d{4})\)\s*$/);
-			const cleanTitle = yearInTitle ? yearInTitle[1].trim() : title;
-			const seriesYear = yearInTitle ? parseInt(yearInTitle[2]) : year;
-			const watchedEpisodes = parseWatchedEpisodes(e.seasons);
-			items.push({
-				title: cleanTitle,
-				year: seriesYear,
-				status,
-				mediaType: 'tv',
-				tvdbId,
-				watchedEpisodes:
-					watchedEpisodes.length > 0 ? watchedEpisodes : undefined,
-			});
+			items.push(refractShow(e, ids, title, year));
 		} else if ('is_watched' in e) {
-			const status: WatchStatus =
-				e.is_watched === true ? 'watched' : 'to_watch';
-			const imdbId =
-				typeof ids?.imdb === 'string' && ids.imdb ? ids.imdb : null;
-			items.push({ title, year, status, mediaType: 'movie', imdbId });
+			items.push(refractMovie(e, ids, title, year));
 		}
 	}
 	return items;
@@ -186,40 +211,40 @@ function isTvTimeLists(arr: unknown[]): boolean {
 	});
 }
 
+function listedMediaType(type: string): 'tv' | 'movie' | null {
+	if (type === 'series' || type === 'show' || type === 'tv') return 'tv';
+	if (type === 'movie') return 'movie';
+	return null;
+}
+
+function parseListedItem(raw: unknown): ImportItem | null {
+	const item = asRecord(raw);
+	if (!item) return null;
+	const title = asText(item.name);
+	if (!title) return null;
+
+	return {
+		title,
+		year: null,
+		status: 'to_watch',
+		mediaType: listedMediaType(asText(item.type)),
+	};
+}
+
 function parseTvTimeLists(arr: unknown[]): ImportedList[] {
 	const lists: ImportedList[] = [];
 	for (const entry of arr) {
-		if (typeof entry !== 'object' || entry === null) continue;
-		const e = entry as Record<string, unknown>;
-		const name = typeof e.name === 'string' ? e.name.trim() : '';
+		const e = asRecord(entry);
+		if (!e) continue;
+		const name = asText(e.name);
 		if (!name || !Array.isArray(e.items)) continue;
-		const items: ImportItem[] = [];
-		for (const raw of e.items) {
-			if (typeof raw !== 'object' || raw === null) continue;
-			const it = raw as Record<string, unknown>;
-			const title = typeof it.name === 'string' ? it.name.trim() : '';
-			if (!title) continue;
-			const type = typeof it.type === 'string' ? it.type : '';
-			const mediaType =
-				type === 'series' || type === 'show' || type === 'tv'
-					? ('tv' as const)
-					: type === 'movie'
-						? ('movie' as const)
-						: null;
-			items.push({
-				title,
-				year: null,
-				status: 'to_watch',
-				mediaType,
-			});
-		}
+
 		lists.push({
 			name,
-			description:
-				typeof e.description === 'string' && e.description.trim()
-					? e.description.trim()
-					: null,
-			items,
+			description: asText(e.description) || null,
+			items: e.items
+				.map(parseListedItem)
+				.filter((item): item is ImportItem => item !== null),
 		});
 	}
 	return lists;
