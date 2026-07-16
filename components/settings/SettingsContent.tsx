@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { ProfileSettings } from './ProfileSettings';
 import { PasswordSettings } from './PasswordSettings';
+import { PasskeySettings } from './PasskeySettings';
 import { ThemeSettings } from './ThemeSettings';
 import { LanguageSettings } from './LanguageSettings';
 import { RegionalSettings } from './RegionalSettings';
@@ -51,7 +52,10 @@ export function SettingsContent({
 					</div>
 				)}
 				{activeTab === 'security' && (
-					<PasswordSettings isOAuthOnly={isOAuthOnly} />
+					<div className="space-y-6">
+						<PasswordSettings isOAuthOnly={isOAuthOnly} />
+						<PasskeySettings />
+					</div>
 				)}
 				{activeTab === 'notifications' && <NotificationSettings />}
 				{activeTab === 'appearance' && (
