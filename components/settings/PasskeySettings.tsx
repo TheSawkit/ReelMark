@@ -44,7 +44,8 @@ export function PasskeySettings() {
 		startTransition(async () => {
 			const { error } = await supabase.auth.registerPasskey();
 			if (error) {
-				if (error.name !== 'NotAllowedError') toast.error(error.message);
+				if (error.name !== 'NotAllowedError')
+					toast.error(error.message);
 				return;
 			}
 			toast.success(tp.added);
