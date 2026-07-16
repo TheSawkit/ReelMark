@@ -67,12 +67,13 @@ async function buildHero(
 	watchlist: Awaited<ReturnType<typeof getUserWatchlist>>,
 	tvProgress: Record<number, number>
 ): Promise<FeaturedHero | null> {
+	const candidates = watchlist.filter((e) => e.status !== 'abandoned');
 	const featured =
-		watchlist.find(
+		candidates.find(
 			(e) => e.media_type === 'tv' && (tvProgress[e.media_id] ?? 0) > 0
 		) ??
-		watchlist.find((e) => e.status === 'to_watch') ??
-		watchlist[0];
+		candidates.find((e) => e.status === 'to_watch') ??
+		candidates[0];
 	if (!featured) return null;
 
 	try {

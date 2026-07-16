@@ -1,10 +1,10 @@
 'use client';
 
-import { ViewTransition } from 'react';
+import { ViewTransition, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getImageUrl } from '@/lib/tmdb/images';
-import { Star, Eye, Clock } from 'lucide-react';
+import { Star, Eye, Clock, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WatchButton } from '@/components/media/detail/WatchButton';
 import { useTranslation } from '@/lib/i18n/context';
@@ -22,6 +22,7 @@ interface Props extends MediaCardProps {
 	imageSize?: 'card' | 'grid';
 	compact?: boolean;
 	enableSharedTransition?: boolean;
+	action?: ReactNode;
 }
 
 /**
@@ -49,6 +50,7 @@ export function MediaCard({
 	imageSize = 'card',
 	compact = false,
 	enableSharedTransition = false,
+	action,
 }: Props) {
 	const { t, lang } = useTranslation();
 	const locale = getLocale(lang);
@@ -123,6 +125,11 @@ export function MediaCard({
 								className="h-3 w-3 text-success"
 								aria-hidden="true"
 							/>
+						) : badgeEntry.status === 'abandoned' ? (
+							<Ban
+								className="h-3 w-3 text-muted"
+								aria-hidden="true"
+							/>
 						) : (
 							<Clock
 								className="h-3 w-3 text-gold"
@@ -148,6 +155,10 @@ export function MediaCard({
 							/>
 						</div>
 					</div>
+				)}
+
+				{action && (
+					<div className="absolute top-3 right-3 z-20">{action}</div>
 				)}
 
 				{!hideRating && (

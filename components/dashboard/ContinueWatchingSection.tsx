@@ -12,6 +12,7 @@ import { setEpisodeWatched } from '@/app/actions/episodes';
 import { episodeWatchStore, useTvWatchTotal } from '@/lib/episode-watch-store';
 import { mediaWatchStore } from '@/lib/media-watch-store';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { AbandonShowMenu } from '@/components/media/tv/AbandonShowMenu';
 import { HorizontalScroll } from '@/components/shared/HorizontalScroll';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { ProgressBar } from '@/components/shared/ProgressBar';
@@ -29,8 +30,10 @@ export function ContinueWatchingSection({
 	items,
 }: ContinueWatchingSectionProps) {
 	const { t } = useTranslation();
+	const [abandonedIds, setAbandonedIds] = useState<number[]>([]);
 
-	if (items.length === 0) return null;
+	const visible = items.filter((item) => !abandonedIds.includes(item.tvId));
+	if (visible.length === 0) return null;
 
 	return (
 		<HorizontalScroll
@@ -42,7 +45,7 @@ export function ContinueWatchingSection({
 				</SectionHeading>
 			}
 		>
-			{items.map((item, index) => (
+			{visible.map((item, index) => (
 				<StaggeredItem
 					key={item.tvId}
 					index={index}
@@ -50,7 +53,13 @@ export function ContinueWatchingSection({
 					className="flex-none w-72 snap-start"
 					eager={index < 3}
 				>
-					<ContinueWatchingCard item={item} priority={index < 3} />
+					<ContinueWatchingCard
+						item={item}
+						priority={index < 3}
+						onAbandoned={() =>
+							setAbandonedIds((ids) => [...ids, item.tvId])
+						}
+					/>
 				</StaggeredItem>
 			))}
 		</HorizontalScroll>
@@ -60,9 +69,11 @@ export function ContinueWatchingSection({
 function ContinueWatchingCard({
 	item,
 	priority,
+	onAbandoned,
 }: {
 	item: ContinueWatchingItem;
 	priority: boolean;
+	onAbandoned: () => void;
 }) {
 	const { t, lang } = useTranslation();
 	const { loading, error, execute } = useAsyncAction();
@@ -179,30 +190,36 @@ function ContinueWatchingCard({
 				</div>
 			</Link>
 
-			{episode ? (
-				<button
-					onClick={handleWatch}
-					disabled={loading}
-					aria-label={t.movie.markEpisodeWatched}
-					className={cn(
-						'absolute right-2 top-2 z-10 flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-border/10 border-t-border/20 bg-surface/20 px-3 py-2 text-xs font-medium text-muted shadow-card-sm backdrop-blur-2xl transition-colors',
-						'hover:border-border hover:bg-surface-2/20 hover:text-text',
-						'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-						'disabled:cursor-not-allowed disabled:opacity-50'
-					)}
-				>
-					<Icon
-						className={cn('h-4 w-4', loading && 'animate-spin')}
-						aria-hidden="true"
-					/>
-					{error ? t.common.actionError : t.movie.markEpisodeWatched}
-				</button>
-			) : (
-				<span className="absolute right-2 top-2 z-10 flex min-h-10 items-center gap-2 rounded-md border border-border/10 bg-primary/40 px-3 py-2 text-xs font-medium text-white shadow-glow-red backdrop-blur-2xl">
-					<CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-					{t.movie.episodeWatched}
-				</span>
-			)}
+			<div className="absolute right-2 top-2 z-10 flex items-center gap-1.5">
+				{episode ? (
+					<button
+						onClick={handleWatch}
+						disabled={loading}
+						aria-label={t.movie.markEpisodeWatched}
+						className={cn(
+							'flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-border/10 border-t-border/20 bg-surface/20 px-3 py-2 text-xs font-medium text-muted shadow-card-sm backdrop-blur-2xl transition-colors',
+							'hover:border-border hover:bg-surface-2/20 hover:text-text',
+							'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+							'disabled:cursor-not-allowed disabled:opacity-50'
+						)}
+					>
+						<Icon
+							className={cn('h-4 w-4', loading && 'animate-spin')}
+							aria-hidden="true"
+						/>
+						{error
+							? t.common.actionError
+							: t.movie.markEpisodeWatched}
+					</button>
+				) : (
+					<span className="flex min-h-10 items-center gap-2 rounded-md border border-border/10 bg-primary/40 px-3 py-2 text-xs font-medium text-white shadow-glow-red backdrop-blur-2xl">
+						<CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+						{t.movie.episodeWatched}
+					</span>
+				)}
+
+				<AbandonShowMenu tvId={item.tvId} onAbandoned={onAbandoned} />
+			</div>
 		</article>
 	);
 }

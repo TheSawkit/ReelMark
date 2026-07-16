@@ -4,7 +4,11 @@ import {
 	type NotificationType,
 } from '@/types/notifications';
 
-export const VALID_STATUSES = new Set<string>(['watched', 'to_watch']);
+export const VALID_STATUSES = new Set<string>([
+	'watched',
+	'to_watch',
+	'abandoned',
+]);
 export const VALID_MEDIA_TYPES = new Set<string>(['movie', 'tv']);
 
 export function validateRating(rating: unknown): number | null {

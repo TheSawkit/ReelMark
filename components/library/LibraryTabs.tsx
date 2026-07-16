@@ -3,9 +3,10 @@
 import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { MediaCard } from '@/components/media/card/MediaCard';
+import { AbandonShowMenu } from '@/components/media/tv/AbandonShowMenu';
 import { VirtualMediaGrid } from '@/components/media/card/VirtualMediaGrid';
 import { MediaListControls } from '@/components/media/list/MediaListControls';
-import { BookMarked, Eye } from 'lucide-react';
+import { BookMarked, Eye, Ban } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
 import type { GridColumns } from '@/hooks/useGridColumns';
 import type { MediaItem, WatchlistEntry } from '@/types/tmdb';
@@ -20,12 +21,13 @@ const LIBRARY_ROW_CLASS =
 interface LibraryTabsProps {
 	toWatch: WatchlistEntry[];
 	watched: WatchlistEntry[];
+	abandoned?: WatchlistEntry[];
 	tvProgress?: Record<number, { watched: number; total: number }>;
 	genreNames: Record<number, string>;
 	ratingByKey: Record<string, number>;
 }
 
-type Tab = 'to_watch' | 'watched';
+type Tab = 'to_watch' | 'watched' | 'abandoned';
 
 function toItems(
 	entries: WatchlistEntry[],
@@ -40,6 +42,7 @@ function toItems(
 export function LibraryTabs({
 	toWatch,
 	watched,
+	abandoned = [],
 	tvProgress = {},
 	genreNames,
 	ratingByKey,
@@ -55,6 +58,10 @@ export function LibraryTabs({
 		() => toItems(watched, ratingByKey),
 		[watched, ratingByKey]
 	);
+	const abandonedItems = useMemo(
+		() => toItems(abandoned, ratingByKey),
+		[abandoned, ratingByKey]
+	);
 
 	const tabs: Record<
 		Tab,
@@ -66,15 +73,41 @@ export function LibraryTabs({
 			items: toWatchItems,
 		},
 		watched: { label: t.library.watched, icon: Eye, items: watchedItems },
+		abandoned: {
+			label: t.library.abandoned,
+			icon: Ban,
+			items: abandonedItems,
+		},
 	};
 
-	const current = tabs[activeTab];
-	const activeIndex = activeTab === 'to_watch' ? 0 : 1;
+	const emptyState: Record<Tab, { title: string; description: string }> = {
+		to_watch: {
+			title: t.library.noMovies,
+			description: t.library.noMoviesDesc,
+		},
+		watched: {
+			title: t.library.noWatched,
+			description: t.library.noWatchedDesc,
+		},
+		abandoned: {
+			title: t.library.noAbandoned,
+			description: t.library.noAbandonedDesc,
+		},
+	};
+
+	const tabOrder: Tab[] =
+		abandonedItems.length > 0
+			? ['to_watch', 'watched', 'abandoned']
+			: ['to_watch', 'watched'];
+
+	const visibleTab = tabOrder.includes(activeTab) ? activeTab : 'to_watch';
+	const current = tabs[visibleTab];
+	const activeIndex = tabOrder.indexOf(visibleTab);
 
 	const controls = useMediaListControls(
 		current.items,
 		genreNames,
-		`reelmark:list:library:${activeTab}`
+		`reelmark:list:library:${visibleTab}`
 	);
 
 	const processed = controls.items;
@@ -94,22 +127,23 @@ export function LibraryTabs({
 					aria-hidden="true"
 					className="absolute top-1 bottom-1 rounded-xl bg-surface border border-border shadow-card-sm transition-[left] duration-(--duration-base) ease-apple-spring"
 					style={{
-						left: `calc(${activeIndex * 50}% + 0.25rem)`,
-						width: 'calc(50% - 0.5rem)',
+						left: `calc(${activeIndex} * (100% / ${tabOrder.length}) + 0.25rem)`,
+						width: `calc(100% / ${tabOrder.length} - 0.5rem)`,
 					}}
 				/>
-				{(Object.entries(tabs) as [Tab, (typeof tabs)[Tab]][]).map(
-					([id, tab]) => (
+				{tabOrder.map((id) => {
+					const tab = tabs[id];
+					return (
 						<button
 							key={id}
 							role="tab"
-							aria-selected={activeTab === id}
+							aria-selected={visibleTab === id}
 							aria-controls={`panel-${id}`}
 							onClick={() => switchTab(id)}
 							className={cn(
 								'relative z-10 flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl min-h-11 transition-[color,scale] duration-(--duration-fast) cursor-pointer active:scale-95',
 								'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-								activeTab === id
+								visibleTab === id
 									? 'text-text'
 									: 'text-muted hover:text-text'
 							)}
@@ -119,7 +153,7 @@ export function LibraryTabs({
 							<span
 								className={cn(
 									'ml-1 px-1.5 py-0.5 rounded-full text-xs',
-									activeTab === id
+									visibleTab === id
 										? 'bg-primary/20 text-text'
 										: 'bg-surface-3 text-muted'
 								)}
@@ -127,28 +161,24 @@ export function LibraryTabs({
 								{tab.items.length}
 							</span>
 						</button>
-					)
-				)}
+					);
+				})}
 			</div>
 
 			{current.items.length === 0 ? (
 				<div
 					role="tabpanel"
-					id={`panel-${activeTab}`}
+					id={`panel-${visibleTab}`}
 					className="flex flex-col items-center justify-center py-32 animate-fade-in"
 				>
 					<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/10 mb-6">
 						<current.icon className="h-10 w-10 text-muted/50" />
 					</div>
 					<p className="text-xl font-semibold text-text mb-2">
-						{activeTab === 'to_watch'
-							? t.library.noMovies
-							: t.library.noWatched}
+						{emptyState[visibleTab].title}
 					</p>
 					<p className="text-muted max-w-sm text-center">
-						{activeTab === 'to_watch'
-							? t.library.noMoviesDesc
-							: t.library.noWatchedDesc}
+						{emptyState[visibleTab].description}
 					</p>
 				</div>
 			) : (
@@ -160,8 +190,9 @@ export function LibraryTabs({
 							{t.lists.noResults}
 						</p>
 					) : (
-						<div role="tabpanel" id={`panel-${activeTab}`}>
+						<div role="tabpanel" id={`panel-${visibleTab}`}>
 							<VirtualMediaGrid
+								key={visibleTab}
 								items={processed}
 								columns={LIBRARY_COLUMNS}
 								rowClassName={LIBRARY_ROW_CLASS}
@@ -182,6 +213,16 @@ export function LibraryTabs({
 												hideRating
 												priority={index < 6}
 												tvProgress={progress}
+												action={
+													item.media_type === 'tv' ? (
+														<AbandonShowMenu
+															tvId={item.id}
+															initialStatus={
+																entry?.status
+															}
+														/>
+													) : undefined
+												}
 											/>
 										</div>
 									);
