@@ -12,6 +12,11 @@ export function getImageUrl(path: string | null, size: TMDBImageSize = 'w500') {
 	return `${TMDB_IMAGE_BASE_URL}${size}${path}`;
 }
 
+/** Rewrites a TMDB image URL to w300 — color sampling never needs a full-size decode. */
+export function getColorSampleUrl(url: string): string {
+	return url.replace(/\/t\/p\/[^/]+\//, '/t/p/w300/');
+}
+
 /** Selects the highest-ranked alternative backdrop, excluding the current one to vary visuals. */
 export function selectHeroImage(
 	images: MediaImagesResponse,

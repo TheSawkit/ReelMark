@@ -6,13 +6,14 @@ import type { CrewBannerProps } from '@/types/components';
 import { MapPin, Calendar, Star } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
 import { getLocale } from '@/lib/i18n/utils';
-import { formatDate, calculateAge } from '@/lib/format';
+import { formatDate } from '@/lib/format';
+import { useAge } from '@/hooks/useAge';
 
 export function CrewBanner({ crew }: CrewBannerProps) {
 	const { t, lang } = useTranslation();
 	const locale = getLocale(lang);
 
-	const age = calculateAge(crew.birthday, crew.deathday);
+	const age = useAge(crew.birthday, crew.deathday);
 
 	const DEPARTMENT_KEY_MAP: Record<string, string> = {
 		Acting: 'acting',

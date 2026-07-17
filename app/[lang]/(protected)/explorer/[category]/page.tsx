@@ -6,9 +6,10 @@ import { InfiniteScrollMedia } from '@/components/media/card/InfiniteScrollMedia
 import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { CategoryNav } from '@/components/navigation/CategoryNav';
 import { getTranslations } from '@/lib/i18n/server';
+import type { Language } from '@/lib/i18n/translations';
 import { SearchBar } from '@/components/search/SearchBar';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
-type CategoryPageParams = Promise<{ category: string }>;
+type CategoryPageParams = Promise<{ lang: Language; category: string }>;
 interface CategoryPageProps {
 	params: CategoryPageParams;
 }
@@ -70,8 +71,8 @@ function buildCategoryMap(
 export async function generateMetadata({
 	params,
 }: CategoryPageProps): Promise<Metadata> {
-	const { category } = await params;
-	const t = await getTranslations();
+	const { lang, category } = await params;
+	const t = await getTranslations(lang);
 	const categoryMap = buildCategoryMap(t);
 	const categoryData = categoryMap[category] ?? {
 		title: 'ReelMark',
@@ -95,8 +96,8 @@ export async function generateMetadata({
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-	const { category } = await params;
-	const t = await getTranslations();
+	const { lang, category } = await params;
+	const t = await getTranslations(lang);
 	const categoryMap = buildCategoryMap(t);
 
 	if (!(category in categoryMap)) {

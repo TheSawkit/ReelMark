@@ -7,11 +7,8 @@ import {
 	getTvShowWatchProviders,
 	getImageUrl,
 } from '@/lib/tmdb';
-import {
-	getServerLocale,
-	getTranslations,
-	getServerLanguage,
-} from '@/lib/i18n/server';
+import { getServerLocale, getTranslations } from '@/lib/i18n/server';
+import type { Language } from '@/lib/i18n/translations';
 import { getSeasonEpisodeWatches } from '@/app/actions/episodes';
 import {
 	getSeasonAverageRating,
@@ -30,13 +27,25 @@ import { localizedAlternates } from '@/lib/metadata';
 
 export const dynamic = 'force-dynamic';
 
-type SeasonPageParams = Promise<{ id: string; seasonNumber: string }>;
+type SeasonPageParams = Promise<{
+	lang: Language;
+	id: string;
+	seasonNumber: string;
+}>;
 interface SeasonPageProps {
 	params: SeasonPageParams;
 }
 
-async function SeasonProvidersSection({ tvId }: { tvId: number }) {
-	const providers = await getTvShowWatchProviders(tvId).catch(() => null);
+async function SeasonProvidersSection({
+	tvId,
+	lang,
+}: {
+	tvId: number;
+	lang: Language;
+}) {
+	const providers = await getTvShowWatchProviders(tvId, lang).catch(
+		() => null
+	);
 	return <WatchProviders providers={providers} />;
 }
 
@@ -49,12 +58,12 @@ export async function generateMetadata({
 
 	if (isNaN(tvId) || isNaN(seasonNumber)) return { title: 'Season' };
 
-	const lang = await getServerLanguage();
+	const { lang } = params;
 
 	try {
 		const [tvDetails, seasonDetails] = await Promise.all([
-			getTvShowDetails(tvId),
-			getSeasonDetails(tvId, seasonNumber),
+			getTvShowDetails(tvId, lang),
+			getSeasonDetails(tvId, seasonNumber, lang),
 		]);
 		const description =
 			seasonDetails.overview ||
@@ -91,6 +100,7 @@ export async function generateMetadata({
 
 export default async function SeasonPage(props: SeasonPageProps) {
 	const params = await props.params;
+	const { lang } = params;
 	const tvId = parseInt(params.id);
 	const seasonNumber = parseInt(params.seasonNumber);
 
@@ -99,8 +109,8 @@ export default async function SeasonPage(props: SeasonPageProps) {
 	let tvDetails, seasonDetails;
 	try {
 		[tvDetails, seasonDetails] = await Promise.all([
-			getTvShowDetails(tvId),
-			getSeasonDetails(tvId, seasonNumber),
+			getTvShowDetails(tvId, lang),
+			getSeasonDetails(tvId, seasonNumber, lang),
 		]);
 	} catch {
 		notFound();
@@ -115,8 +125,8 @@ export default async function SeasonPage(props: SeasonPageProps) {
 		episodeReviews,
 		myEpisodeReviews,
 	] = await Promise.all([
-		getTranslations(),
-		getServerLocale(),
+		getTranslations(lang),
+		getServerLocale(lang),
 		getSeasonEpisodeWatches(tvId, seasonNumber),
 		getSeasonAverageRating(tvId, seasonNumber),
 		getPublicEpisodeReviews(episodeIds),
@@ -137,7 +147,7 @@ export default async function SeasonPage(props: SeasonPageProps) {
 		tvDetails.backdrop_path ??
 			seasonDetails.poster_path ??
 			tvDetails.poster_path,
-		'original'
+		'w1280'
 	);
 
 	return (
@@ -177,7 +187,7 @@ export default async function SeasonPage(props: SeasonPageProps) {
 				)}
 
 				<Suspense fallback={<DetailSectionSkeleton />}>
-					<SeasonProvidersSection tvId={tvId} />
+					<SeasonProvidersSection tvId={tvId} lang={lang} />
 				</Suspense>
 
 				{seasonRating && (

@@ -19,10 +19,11 @@ import {
 import { buildFilmographyDepartments } from '@/lib/filmography';
 import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { mergeWithWatchlist } from '@/lib/data/watchlist';
-import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
+import { getTranslations } from '@/lib/i18n/server';
+import type { Language } from '@/lib/i18n/translations';
 import { localizedAlternates } from '@/lib/metadata';
 
-type CrewPageParams = Promise<{ id: string }>;
+type CrewPageParams = Promise<{ lang: Language; id: string }>;
 interface CrewPageProps {
 	params: CrewPageParams;
 }
@@ -32,14 +33,11 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({
 	params,
 }: {
-	params: Promise<{ id: string }>;
+	params: CrewPageParams;
 }): Promise<Metadata> {
-	const { id } = await params;
+	const { lang, id } = await params;
 	const crewId = parseInt(id);
-	const [t, lang] = await Promise.all([
-		getTranslations(),
-		getServerLanguage(),
-	]);
+	const t = await getTranslations(lang);
 
 	if (isNaN(crewId)) {
 		return {
@@ -49,7 +47,7 @@ export async function generateMetadata({
 	}
 
 	try {
-		const crew = await getCrewDetails(crewId);
+		const crew = await getCrewDetails(crewId, lang);
 		const profileImage = crew.profile_path
 			? `https://image.tmdb.org/t/p/w500${crew.profile_path}`
 			: undefined;
@@ -89,13 +87,15 @@ export async function generateMetadata({
 async function CrewFilmographySection({
 	crewId,
 	knownForDepartment,
+	lang,
 }: {
 	crewId: number;
 	knownForDepartment: string;
+	lang: Language;
 }) {
 	const [movieCredits, tvCredits] = await Promise.all([
-		getCrewMovieCredits(crewId),
-		getCrewTvCredits(crewId),
+		getCrewMovieCredits(crewId, lang),
+		getCrewTvCredits(crewId, lang),
 	]);
 
 	const actingItems = [
@@ -139,6 +139,7 @@ function FilmographySkeleton() {
 
 export default async function CrewPage(props: CrewPageProps) {
 	const params = await props.params;
+	const { lang } = params;
 	const crewId = parseInt(params.id);
 
 	if (isNaN(crewId)) {
@@ -147,7 +148,7 @@ export default async function CrewPage(props: CrewPageProps) {
 
 	let crew;
 	try {
-		crew = await getCrewDetails(crewId);
+		crew = await getCrewDetails(crewId, lang);
 	} catch {
 		notFound();
 	}
@@ -163,6 +164,7 @@ export default async function CrewPage(props: CrewPageProps) {
 					<CrewFilmographySection
 						crewId={crewId}
 						knownForDepartment={crew.known_for_department}
+						lang={lang}
 					/>
 				</Suspense>
 			</div>

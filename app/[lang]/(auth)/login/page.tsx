@@ -3,17 +3,20 @@ import { AuthPageShell } from '@/components/auth/AuthPageShell';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
+import { getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import { localizedAlternates } from '@/lib/metadata';
+import type { Language } from '@/lib/i18n/translations';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata(): Promise<Metadata> {
-	const [t, lang] = await Promise.all([
-		getTranslations(),
-		getServerLanguage(),
-	]);
+type Props = {
+	params: Promise<{ lang: Language }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+	const { lang } = await params;
+	const t = await getTranslations(lang);
 
 	return {
 		title: t.metadata.loginTitle,
@@ -37,14 +40,15 @@ export async function generateMetadata(): Promise<Metadata> {
 	};
 }
 
-export default async function LoginPage() {
+export default async function LoginPage({ params }: Props) {
+	const { lang } = await params;
 	const supabase = await createClient();
 	const {
 		data: { user },
 	} = await supabase.auth.getUser();
 
 	if (user) {
-		redirect(localizedHref(await getServerLanguage(), '/dashboard'));
+		redirect(localizedHref(lang, '/dashboard'));
 	}
 
 	return (

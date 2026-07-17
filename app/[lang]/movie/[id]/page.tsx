@@ -30,11 +30,11 @@ import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
 import { movieJsonLd, serializeJsonLd } from '@/lib/structured-data';
 import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
-import { getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import type { MovieDetails } from '@/types/tmdb';
+import type { Language } from '@/lib/i18n/translations';
 
-type MoviePageParams = Promise<{ id: string }>;
+type MoviePageParams = Promise<{ lang: Language; id: string }>;
 interface MoviePageProps {
 	params: MoviePageParams;
 }
@@ -51,13 +51,27 @@ function loadMovieUserData(movieId: number) {
 	]);
 }
 
-async function MovieProvidersSection({ movieId }: { movieId: number }) {
-	const providers = await getMovieWatchProviders(movieId).catch(() => null);
+async function MovieProvidersSection({
+	movieId,
+	lang,
+}: {
+	movieId: number;
+	lang: Language;
+}) {
+	const providers = await getMovieWatchProviders(movieId, lang).catch(
+		() => null
+	);
 	return <WatchProviders providers={providers} />;
 }
 
-async function MovieTrailersSection({ movieId }: { movieId: number }) {
-	const videos = await getMovieVideos(movieId);
+async function MovieTrailersSection({
+	movieId,
+	lang,
+}: {
+	movieId: number;
+	lang: Language;
+}) {
+	const videos = await getMovieVideos(movieId, lang);
 	const trailers = await filterAvailableVideos(filterTrailers(videos));
 	if (trailers.length === 0) return null;
 	return <MediaTrailers trailers={trailers} />;
@@ -137,6 +151,7 @@ export async function generateMetadata({
 
 export default async function MoviePage(props: MoviePageProps) {
 	const params = await props.params;
+	const { lang } = params;
 	const movieId = parseInt(params.id);
 
 	if (isNaN(movieId)) notFound();
@@ -147,9 +162,9 @@ export default async function MoviePage(props: MoviePageProps) {
 	let movieDetails, credits, images;
 	try {
 		[movieDetails, credits, images] = await Promise.all([
-			getMovieDetails(movieId),
-			getMovieCredits(movieId),
-			getMovieImages(movieId),
+			getMovieDetails(movieId, lang),
+			getMovieCredits(movieId, lang),
+			getMovieImages(movieId, lang),
 		]);
 	} catch (error) {
 		if (!(error instanceof Error && error.message.includes('404')))
@@ -157,7 +172,7 @@ export default async function MoviePage(props: MoviePageProps) {
 
 		let isTvShow = false;
 		try {
-			await fetchTMDB(`/tv/${movieId}`, {}, 86400);
+			await fetchTMDB(`/tv/${movieId}`, {}, { revalidate: 86400 });
 			isTvShow = true;
 		} catch (probeError) {
 			if (!(
@@ -166,26 +181,19 @@ export default async function MoviePage(props: MoviePageProps) {
 			))
 				throw probeError;
 		}
-		if (isTvShow)
-			redirect(
-				localizedHref(await getServerLanguage(), `/tv/${movieId}`)
-			);
+		if (isTvShow) redirect(localizedHref(lang, `/tv/${movieId}`));
 		notFound();
 	}
 
-	const lang = await getServerLanguage();
-
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, movieDetails.backdrop_path),
-		'original'
+		'w1280'
 	);
 
 	const crew = groupCrew(credits.crew);
 
 	const banner = (
 		<MediaBanner
-			mediaType="movie"
-			mediaId={movieDetails.id}
 			title={movieDetails.title}
 			tagline={movieDetails.tagline}
 			backdropUrl={heroImageUrl}
@@ -242,7 +250,7 @@ export default async function MoviePage(props: MoviePageProps) {
 				crew={crew}
 				watchProviders={
 					<Suspense fallback={<DetailSectionSkeleton />}>
-						<MovieProvidersSection movieId={movieId} />
+						<MovieProvidersSection movieId={movieId} lang={lang} />
 					</Suspense>
 				}
 				rating={
@@ -265,7 +273,7 @@ export default async function MoviePage(props: MoviePageProps) {
 				}
 				trailers={
 					<Suspense fallback={<DetailSectionSkeleton />}>
-						<MovieTrailersSection movieId={movieId} />
+						<MovieTrailersSection movieId={movieId} lang={lang} />
 					</Suspense>
 				}
 				cast={credits.cast}

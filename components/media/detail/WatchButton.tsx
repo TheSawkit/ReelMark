@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { addToWatchlist, removeFromWatchlist } from '@/app/actions/watchlist';
 import { useTranslation } from '@/lib/i18n/context';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useIsUnreleased } from '@/hooks/useIsUnreleased';
 import { mediaWatchStore, useMediaWatch } from '@/lib/media-watch-store';
 import { episodeWatchStore } from '@/lib/episode-watch-store';
 import { mediaRatingStore } from '@/lib/media-rating-store';
@@ -30,6 +31,7 @@ export function WatchButton({
 	initialIsActive = false,
 	variant = 'icon',
 	onDark = false,
+	blur = true,
 	fallbackStatus,
 	releaseDate,
 }: WatchButtonProps) {
@@ -41,9 +43,7 @@ export function WatchButton({
 
 	const isActive =
 		storedStatus !== undefined ? storedStatus === status : initialIsActive;
-	const isUnreleased = releaseDate
-		? new Date(releaseDate) > new Date()
-		: false;
+	const isUnreleased = useIsUnreleased(releaseDate);
 
 	if (status === 'watched' && isUnreleased && !isActive) {
 		return null;
@@ -157,11 +157,12 @@ export function WatchButton({
 					disabled={loading}
 					className={cn(
 						'flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11 w-full shrink-0',
+						blur && 'backdrop-blur-2xl',
 						isActive
-							? 'bg-primary/50 backdrop-blur-2xl text-white border-white/10 shadow-glow-red'
+							? 'bg-primary/50 text-white border-white/10 shadow-glow-red'
 							: onDark
-								? 'bg-white/15 backdrop-blur-2xl text-white/90 border-white/10 hover:bg-white/25 hover:text-white shadow-card-sm'
-								: 'bg-white/15 backdrop-blur-2xl text-text border-white/10 hover:bg-white/25 hover:text-text shadow-card-sm'
+								? 'bg-white/15 text-white/90 border-white/10 hover:bg-white/25 hover:text-white shadow-card-sm'
+								: 'bg-white/15 text-text border-white/10 hover:bg-white/25 hover:text-text shadow-card-sm'
 					)}
 				>
 					<Icon

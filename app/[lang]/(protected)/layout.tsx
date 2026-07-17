@@ -1,9 +1,9 @@
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import { needsOnboarding } from '@/lib/onboarding';
+import { isLanguage } from '@/lib/i18n/config';
 
 /**
  * Auth boundary for every route in the (protected) group — redirects to /login when
@@ -11,9 +11,13 @@ import { needsOnboarding } from '@/lib/onboarding';
  */
 export default async function ProtectedLayout({
 	children,
+	params,
 }: {
 	children: React.ReactNode;
+	params: Promise<{ lang: string }>;
 }) {
+	const { lang } = await params;
+	if (!isLanguage(lang)) notFound();
 	const user = await requireAuth();
 	const supabase = await createClient();
 
@@ -24,7 +28,7 @@ export default async function ProtectedLayout({
 		.maybeSingle();
 
 	if (needsOnboarding(user.user_metadata, profile?.onboarding_completed)) {
-		redirect(localizedHref(await getServerLanguage(), '/onboarding'));
+		redirect(localizedHref(lang, '/onboarding'));
 	}
 
 	return <>{children}</>;

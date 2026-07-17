@@ -51,7 +51,6 @@ const nextConfig: NextConfig = {
 			'@radix-ui/react-separator',
 			'@radix-ui/react-slot',
 		],
-		viewTransition: true,
 		staleTimes: {
 			dynamic: 90,
 			static: 180,
@@ -111,6 +110,7 @@ export default withSerwist({
 	swSrc: 'app/service-worker.ts',
 	swDest: 'public/sw.js',
 	disable: isDev,
+	reloadOnOnline: false,
 	additionalPrecacheEntries: [
 		{ url: '/en/offline', revision: offlineRevision },
 		{ url: '/fr/offline', revision: offlineRevision },

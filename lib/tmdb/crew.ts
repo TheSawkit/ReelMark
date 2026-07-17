@@ -6,13 +6,21 @@ import type {
 	CrewTvCrewCredit,
 } from '@/types/tmdb';
 import { fetchTMDB } from './client';
+import type { Language } from '@/lib/i18n/translations';
 
 /**
  * @param id - TMDB person ID.
  * @returns Full person/crew details including biography and profile images.
  */
-export async function getCrewDetails(id: number): Promise<CrewDetails> {
-	return fetchTMDB<CrewDetails>(`/person/${id}`, {}, 86400);
+export async function getCrewDetails(
+	id: number,
+	lang?: Language
+): Promise<CrewDetails> {
+	return fetchTMDB<CrewDetails>(
+		`/person/${id}`,
+		{},
+		{ revalidate: 86400, lang }
+	);
 }
 
 /**
@@ -22,12 +30,13 @@ export async function getCrewDetails(id: number): Promise<CrewDetails> {
  * @param id - TMDB person ID.
  */
 export async function getCrewMovieCredits(
-	id: number
+	id: number,
+	lang?: Language
 ): Promise<{ cast: CrewMovieCredit[]; crew: CrewMovieCrewCredit[] }> {
 	const { cast, crew } = await fetchTMDB<{
 		cast: CrewMovieCredit[];
 		crew: CrewMovieCrewCredit[];
-	}>(`/person/${id}/movie_credits`, {}, 86400);
+	}>(`/person/${id}/movie_credits`, {}, { revalidate: 86400, lang });
 	return { cast, crew };
 }
 
@@ -38,11 +47,12 @@ export async function getCrewMovieCredits(
  * @param id - TMDB person ID.
  */
 export async function getCrewTvCredits(
-	id: number
+	id: number,
+	lang?: Language
 ): Promise<{ cast: CrewTvCredit[]; crew: CrewTvCrewCredit[] }> {
 	const { cast, crew } = await fetchTMDB<{
 		cast: CrewTvCredit[];
 		crew: CrewTvCrewCredit[];
-	}>(`/person/${id}/tv_credits`, {}, 86400);
+	}>(`/person/${id}/tv_credits`, {}, { revalidate: 86400, lang });
 	return { cast, crew };
 }

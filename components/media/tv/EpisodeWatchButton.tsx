@@ -101,8 +101,8 @@ export function EpisodeWatchButton({
 				className={cn(
 					'flex items-center justify-center gap-2 px-4 py-2 rounded-md text-xs font-medium transition-colors border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-10 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer',
 					watched
-						? 'bg-primary/40 backdrop-blur-2xl text-white border-border/10 border-t-border/20 shadow-glow-red'
-						: 'bg-surface/20 backdrop-blur-2xl text-muted border-border/10 border-t-border/20 hover:text-text hover:bg-surface-2/20 hover:border-border shadow-card-sm'
+						? 'bg-primary/40 text-white border-border/10 border-t-border/20 shadow-glow-red'
+						: 'bg-surface/20 text-muted border-border/10 border-t-border/20 hover:text-text hover:bg-surface-2/20 hover:border-border shadow-card-sm'
 				)}
 			>
 				<Icon className={cn('h-4 w-4', loading && 'animate-spin')} />

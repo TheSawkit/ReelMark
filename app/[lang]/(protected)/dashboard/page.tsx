@@ -20,11 +20,8 @@ import {
 } from '@/components/media/card/MediaSection';
 import { MediaSectionsSkeleton } from '@/components/media/card/MediaSectionsSkeleton';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
-import {
-	getTranslations,
-	getServerLanguage,
-	type Translations,
-} from '@/lib/i18n/server';
+import { getTranslations, type Translations } from '@/lib/i18n/server';
+import type { Language } from '@/lib/i18n/translations';
 import { localizedHref } from '@/lib/i18n/utils';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
 import {
@@ -50,8 +47,9 @@ import type { Movie, TvShow, MediaType } from '@/types/tmdb';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata(): Promise<Metadata> {
-	const t = await getTranslations();
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+	const { lang } = await params;
+	const t = await getTranslations(lang);
 	return buildPageMetadata(
 		t.metadata.dashboardTitle,
 		t.metadata.dashboardDescription,
@@ -60,12 +58,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 type Props = {
+	params: Promise<{ lang: Language }>;
 	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 async function buildHero(
 	watchlist: Awaited<ReturnType<typeof getUserWatchlist>>,
-	tvProgress: Record<number, number>
+	tvProgress: Record<number, number>,
+	lang: Language
 ): Promise<FeaturedHero | null> {
 	const candidates = watchlist.filter((e) => e.status !== 'abandoned');
 	const featured =
@@ -78,7 +78,7 @@ async function buildHero(
 
 	try {
 		if (featured.media_type === 'tv') {
-			const d = await getTvShowDetails(featured.media_id);
+			const d = await getTvShowDetails(featured.media_id, lang);
 			const watched = tvProgress[featured.media_id] ?? 0;
 			return {
 				id: d.id,
@@ -95,7 +95,7 @@ async function buildHero(
 				resume: watched > 0,
 			};
 		}
-		const d = await getMovieDetails(featured.media_id);
+		const d = await getMovieDetails(featured.media_id, lang);
 		return {
 			id: d.id,
 			media_type: 'movie',
@@ -112,9 +112,9 @@ async function buildHero(
 	}
 }
 
-async function HeroSection({ t }: { t: Translations }) {
+async function HeroSection({ t, lang }: { t: Translations; lang: Language }) {
 	const { watchlist, tvProgress } = await getWatchlistWithProgress();
-	const hero = await buildHero(watchlist, tvProgress);
+	const hero = await buildHero(watchlist, tvProgress, lang);
 	if (!hero) return null;
 
 	return (
@@ -160,10 +160,16 @@ async function StatsSection({ t }: { t: Translations }) {
 	);
 }
 
-async function TrendingSection({ t }: { t: Translations }) {
+async function TrendingSection({
+	t,
+	lang,
+}: {
+	t: Translations;
+	lang: Language;
+}) {
 	const [trendingMovies, trendingTv] = await Promise.all([
-		getTrendingMovies().catch((): Movie[] => []),
-		getTrendingTvShows().catch((): TvShow[] => []),
+		getTrendingMovies('week', 1, lang).catch((): Movie[] => []),
+		getTrendingTvShows('week', 1, lang).catch((): TvShow[] => []),
 	]);
 
 	const trendingItems = await mergeWithWatchlist(
@@ -184,9 +190,11 @@ async function TrendingSection({ t }: { t: Translations }) {
 async function LibraryContentSection({
 	type,
 	t,
+	lang,
 }: {
 	type: MediaType;
 	t: Translations;
+	lang: Language;
 }) {
 	const { watchlist, tvProgress } = await getWatchlistWithProgress();
 
@@ -265,8 +273,6 @@ async function LibraryContentSection({
 	);
 	const isEmpty =
 		watchlist.filter((entry) => entry.media_type === type).length === 0;
-	const lang = await getServerLanguage();
-
 	return (
 		<>
 			{toWatch.length > 0 && (
@@ -304,10 +310,14 @@ async function LibraryContentSection({
 	);
 }
 
-export default async function DashboardPage({ searchParams }: Props) {
+export default async function DashboardPage({
+	params: paramsPromise,
+	searchParams,
+}: Props) {
+	const { lang } = await paramsPromise;
 	const params = await searchParams;
 	const type: MediaType = params?.type === 'tv' ? 'tv' : 'movie';
-	const t = await getTranslations();
+	const t = await getTranslations(lang);
 
 	return (
 		<PageLayout className="screen-in">
@@ -317,7 +327,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 			/>
 
 			<Suspense fallback={<DashboardHeroSkeleton />}>
-				<HeroSection t={t} />
+				<HeroSection t={t} lang={lang} />
 			</Suspense>
 
 			<Suspense fallback={<ContinueWatchingSkeleton />}>
@@ -329,7 +339,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 			</Suspense>
 
 			<Suspense fallback={<TrendingMarqueeSkeleton />}>
-				<TrendingSection t={t} />
+				<TrendingSection t={t} lang={lang} />
 			</Suspense>
 
 			<Suspense fallback={<div className="h-11.5 mb-8" />}>
@@ -341,7 +351,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 					<MediaSectionsSkeleton sections={3} cardsPerSection={8} />
 				}
 			>
-				<LibraryContentSection type={type} t={t} />
+				<LibraryContentSection type={type} t={t} lang={lang} />
 			</Suspense>
 		</PageLayout>
 	);

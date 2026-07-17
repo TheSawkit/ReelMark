@@ -35,17 +35,14 @@ import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
 import { tvSeriesJsonLd, serializeJsonLd } from '@/lib/structured-data';
 import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
-import {
-	getServerLocale,
-	getTranslations,
-	getServerLanguage,
-} from '@/lib/i18n/server';
+import { getServerLocale, getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import type { Season, TvShowDetails } from '@/types/tmdb';
+import type { Language } from '@/lib/i18n/translations';
 
 export const dynamic = 'force-dynamic';
 
-type TvPageParams = Promise<{ id: string }>;
+type TvPageParams = Promise<{ lang: Language; id: string }>;
 interface TvPageProps {
 	params: TvPageParams;
 }
@@ -64,13 +61,27 @@ function loadTvUserData(tvId: number) {
 const SEASON_GRID_CLASS =
 	'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
 
-async function TvProvidersSection({ tvId }: { tvId: number }) {
-	const providers = await getTvShowWatchProviders(tvId).catch(() => null);
+async function TvProvidersSection({
+	tvId,
+	lang,
+}: {
+	tvId: number;
+	lang: Language;
+}) {
+	const providers = await getTvShowWatchProviders(tvId, lang).catch(
+		() => null
+	);
 	return <WatchProviders providers={providers} />;
 }
 
-async function TvTrailersSection({ tvId }: { tvId: number }) {
-	const videos = await getTvShowVideos(tvId);
+async function TvTrailersSection({
+	tvId,
+	lang,
+}: {
+	tvId: number;
+	lang: Language;
+}) {
+	const videos = await getTvShowVideos(tvId, lang);
 	const trailers = await filterAvailableVideos(filterTrailers(videos));
 	if (trailers.length === 0) return null;
 	return <MediaTrailers trailers={trailers} />;
@@ -200,6 +211,7 @@ export async function generateMetadata({
 
 export default async function TvShowPage(props: TvPageProps) {
 	const params = await props.params;
+	const { lang } = params;
 	const tvId = parseInt(params.id);
 
 	if (isNaN(tvId)) notFound();
@@ -210,9 +222,9 @@ export default async function TvShowPage(props: TvPageProps) {
 	let tvDetails, credits, images;
 	try {
 		[tvDetails, credits, images] = await Promise.all([
-			getTvShowDetails(tvId),
-			getTvShowCredits(tvId),
-			getTvShowImages(tvId),
+			getTvShowDetails(tvId, lang),
+			getTvShowCredits(tvId, lang),
+			getTvShowImages(tvId, lang),
 		]);
 	} catch (error) {
 		if (!(error instanceof Error && error.message.includes('404')))
@@ -220,7 +232,7 @@ export default async function TvShowPage(props: TvPageProps) {
 
 		let isMovie = false;
 		try {
-			await fetchTMDB(`/movie/${tvId}`, {}, 86400);
+			await fetchTMDB(`/movie/${tvId}`, {}, { revalidate: 86400 });
 			isMovie = true;
 		} catch (probeError) {
 			if (!(
@@ -229,22 +241,18 @@ export default async function TvShowPage(props: TvPageProps) {
 			))
 				throw probeError;
 		}
-		if (isMovie)
-			redirect(
-				localizedHref(await getServerLanguage(), `/movie/${tvId}`)
-			);
+		if (isMovie) redirect(localizedHref(lang, `/movie/${tvId}`));
 		notFound();
 	}
 
-	const [t, locale, lang] = await Promise.all([
-		getTranslations(),
-		getServerLocale(),
-		getServerLanguage(),
+	const [t, locale] = await Promise.all([
+		getTranslations(lang),
+		getServerLocale(lang),
 	]);
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, tvDetails.backdrop_path),
-		'original'
+		'w1280'
 	);
 	const standardSeasons = (tvDetails.seasons ?? []).filter(
 		(s: { season_number: number }) => s.season_number > 0
@@ -258,8 +266,6 @@ export default async function TvShowPage(props: TvPageProps) {
 
 	const banner = (
 		<MediaBanner
-			mediaType="tv"
-			mediaId={tvDetails.id}
 			title={tvDetails.name}
 			tagline={tvDetails.tagline}
 			backdropUrl={heroImageUrl}
@@ -349,7 +355,7 @@ export default async function TvShowPage(props: TvPageProps) {
 				creators={tvDetails.created_by}
 				watchProviders={
 					<Suspense fallback={<DetailSectionSkeleton />}>
-						<TvProvidersSection tvId={tvId} />
+						<TvProvidersSection tvId={tvId} lang={lang} />
 					</Suspense>
 				}
 				rating={
@@ -367,7 +373,7 @@ export default async function TvShowPage(props: TvPageProps) {
 				extraSections={seasonsSection}
 				trailers={
 					<Suspense fallback={<DetailSectionSkeleton />}>
-						<TvTrailersSection tvId={tvId} />
+						<TvTrailersSection tvId={tvId} lang={lang} />
 					</Suspense>
 				}
 				cast={credits.cast}

@@ -17,24 +17,33 @@ import {
 	getImageLanguageFilter,
 } from './client';
 import { getWatchmodeProviders } from '@/lib/watchmode/providers';
+import type { Language } from '@/lib/i18n/translations';
 import { findLocalCertification } from './certifications';
 
 /** @returns Paginated list of popular movies. */
-export async function getPopularMovies(page: number = 1): Promise<Movie[]> {
+export async function getPopularMovies(
+	page: number = 1,
+	lang?: Language
+): Promise<Movie[]> {
 	const { results } = await fetchTMDB<{ results: Movie[] }>(
 		'/movie/popular',
 		{
 			page: clampPage(page).toString(),
-		}
+		},
+		{ lang }
 	);
 	return results;
 }
 
 /** @returns Paginated list of top-rated movies. */
-export async function getTopRatedMovies(page: number = 1): Promise<Movie[]> {
+export async function getTopRatedMovies(
+	page: number = 1,
+	lang?: Language
+): Promise<Movie[]> {
 	const { results } = await fetchTMDB<{ results: Movie[] }>(
 		'/movie/top_rated',
-		{ page: clampPage(page).toString() }
+		{ page: clampPage(page).toString() },
+		{ lang }
 	);
 	return results;
 }
@@ -45,11 +54,13 @@ export async function getTopRatedMovies(page: number = 1): Promise<Movie[]> {
  */
 export async function getTrendingMovies(
 	timeWindow: 'day' | 'week' = 'week',
-	page: number = 1
+	page: number = 1,
+	lang?: Language
 ): Promise<Movie[]> {
 	const { results } = await fetchTMDB<{ results: Movie[] }>(
 		`/trending/movie/${timeWindow}`,
-		{ page: clampPage(page).toString() }
+		{ page: clampPage(page).toString() },
+		{ lang }
 	);
 	return results;
 }
@@ -58,8 +69,11 @@ export async function getTrendingMovies(
  * Returns movies with upcoming release dates, filtered by the user's region.
  * @returns Paginated list of upcoming movies.
  */
-export async function getUpcomingMovies(page: number = 1): Promise<Movie[]> {
-	const region = await getUserRegion();
+export async function getUpcomingMovies(
+	page: number = 1,
+	lang?: Language
+): Promise<Movie[]> {
+	const region = await getUserRegion(lang);
 	const today = new Date().toISOString().split('T')[0];
 
 	const { results } = await fetchTMDB<{ results: Movie[] }>(
@@ -70,7 +84,8 @@ export async function getUpcomingMovies(page: number = 1): Promise<Movie[]> {
 			'release_date.gte': today,
 			sort_by: 'popularity.desc',
 			with_release_type: '2|3',
-		}
+		},
+		{ lang }
 	);
 
 	return results;
@@ -81,17 +96,24 @@ export async function getUpcomingMovies(page: number = 1): Promise<Movie[]> {
  * For Belgium, merges BE and FR results to maximize coverage.
  * @returns Paginated list of now-playing movies.
  */
-export async function getNowPlayingMovies(page: number = 1): Promise<Movie[]> {
-	const region = await getUserRegion();
+export async function getNowPlayingMovies(
+	page: number = 1,
+	lang?: Language
+): Promise<Movie[]> {
+	const region = await getUserRegion(lang);
 	const mergeRegions = getMergeRegions(region);
 
 	if (mergeRegions) {
 		const responses = await Promise.all(
 			mergeRegions.map((r) =>
-				fetchTMDB<{ results: Movie[] }>('/movie/now_playing', {
-					page: clampPage(page).toString(),
-					region: r,
-				})
+				fetchTMDB<{ results: Movie[] }>(
+					'/movie/now_playing',
+					{
+						page: clampPage(page).toString(),
+						region: r,
+					},
+					{ lang }
+				)
 			)
 		);
 
@@ -112,7 +134,8 @@ export async function getNowPlayingMovies(page: number = 1): Promise<Movie[]> {
 		{
 			page: clampPage(page).toString(),
 			region,
-		}
+		},
+		{ lang }
 	);
 
 	return results;
@@ -125,16 +148,23 @@ export async function getNowPlayingMovies(page: number = 1): Promise<Movie[]> {
  * @param id - TMDB movie ID.
  * @returns Full movie details with optional certification field.
  */
-export async function getMovieDetails(id: number): Promise<MovieDetails> {
-	const details = await fetchTMDB<MovieDetails>(`/movie/${id}`, {}, 86400);
+export async function getMovieDetails(
+	id: number,
+	lang?: Language
+): Promise<MovieDetails> {
+	const details = await fetchTMDB<MovieDetails>(
+		`/movie/${id}`,
+		{},
+		{ revalidate: 86400, lang }
+	);
 
 	try {
 		const releaseDates = await fetchTMDB<ReleaseDatesResponse>(
 			`/movie/${id}/release_dates`,
 			{},
-			86400
+			{ revalidate: 86400, lang }
 		);
-		const userRegion = await getUserRegion();
+		const userRegion = await getUserRegion(lang);
 		details.certification = findLocalCertification(
 			releaseDates,
 			userRegion
@@ -151,16 +181,26 @@ export async function getMovieDetails(id: number): Promise<MovieDetails> {
 }
 
 /** @returns Cast and crew credits for the given movie. */
-export async function getMovieCredits(id: number): Promise<Credits> {
-	return fetchTMDB<Credits>(`/movie/${id}/credits`, {}, 86400);
+export async function getMovieCredits(
+	id: number,
+	lang?: Language
+): Promise<Credits> {
+	return fetchTMDB<Credits>(
+		`/movie/${id}/credits`,
+		{},
+		{ revalidate: 86400, lang }
+	);
 }
 
 /** @returns Official video trailers and clips for the given movie. */
-export async function getMovieVideos(id: number): Promise<Video[]> {
+export async function getMovieVideos(
+	id: number,
+	lang?: Language
+): Promise<Video[]> {
 	const { results } = await fetchTMDB<VideoResponse>(
 		`/movie/${id}/videos`,
 		{},
-		86400
+		{ revalidate: 86400, lang }
 	);
 	return results;
 }
@@ -169,12 +209,15 @@ export async function getMovieVideos(id: number): Promise<Video[]> {
  * Returns recommended movies based on a given movie.
  * Returns an empty array on failure.
  */
-export async function getMovieRecommendations(id: number): Promise<Movie[]> {
+export async function getMovieRecommendations(
+	id: number,
+	lang?: Language
+): Promise<Movie[]> {
 	try {
 		const { results } = await fetchTMDB<{ results: Movie[] }>(
 			`/movie/${id}/recommendations`,
 			{},
-			86400
+			{ revalidate: 86400, lang }
 		);
 		return results;
 	} catch {
@@ -186,12 +229,15 @@ export async function getMovieRecommendations(id: number): Promise<Movie[]> {
  * Returns movies similar to the given movie.
  * Returns an empty array on failure.
  */
-export async function getSimilarMovies(id: number): Promise<Movie[]> {
+export async function getSimilarMovies(
+	id: number,
+	lang?: Language
+): Promise<Movie[]> {
 	try {
 		const { results } = await fetchTMDB<{ results: Movie[] }>(
 			`/movie/${id}/similar`,
 			{},
-			86400
+			{ revalidate: 86400, lang }
 		);
 		return results;
 	} catch {
@@ -200,14 +246,17 @@ export async function getSimilarMovies(id: number): Promise<Movie[]> {
 }
 
 /** @returns Available backdrop and poster images for the given movie. */
-export async function getMovieImages(id: number): Promise<MediaImagesResponse> {
-	const imageLanguage = await getImageLanguageFilter();
+export async function getMovieImages(
+	id: number,
+	lang?: Language
+): Promise<MediaImagesResponse> {
+	const imageLanguage = await getImageLanguageFilter(lang);
 	return fetchTMDB<MediaImagesResponse>(
 		`/movie/${id}/images`,
 		{
 			include_image_language: imageLanguage,
 		},
-		86400
+		{ revalidate: 86400, lang }
 	);
 }
 
@@ -220,15 +269,16 @@ export async function getMovieImages(id: number): Promise<MediaImagesResponse> {
  * @returns Watch providers for the user's region, or null.
  */
 export async function getMovieWatchProviders(
-	id: number
+	id: number,
+	lang?: Language
 ): Promise<WatchProvidersRegion | null> {
 	try {
-		const region = await getUserRegion();
+		const region = await getUserRegion(lang);
 		const [tmdbData, watchmode] = await Promise.all([
 			fetchTMDB<WatchProvidersResponse>(
 				`/movie/${id}/watch/providers`,
 				{},
-				43200
+				{ revalidate: 43200, lang }
 			),
 			getWatchmodeProviders(id, 'movie', region),
 		]);

@@ -18,8 +18,13 @@ import type { Movie, TvShow } from '@/types/tmdb';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata(): Promise<Metadata> {
-	const t = await getTranslations();
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ lang: Language }>;
+}): Promise<Metadata> {
+	const { lang } = await params;
+	const t = await getTranslations(lang);
 	return {
 		title: { absolute: t.metadata.landingTitle },
 		description: t.metadata.landingDescription,
@@ -52,8 +57,8 @@ export default async function Home({
 	}
 
 	const [movies, shows] = await Promise.all([
-		getTrendingMovies().catch((): Movie[] => []),
-		getTrendingTvShows().catch((): TvShow[] => []),
+		getTrendingMovies('week', 1, lang).catch((): Movie[] => []),
+		getTrendingTvShows('week', 1, lang).catch((): TvShow[] => []),
 	]);
 	const movieItems = movies.map(movieToMediaItem);
 	const showItems = shows.map(tvShowToMediaItem);

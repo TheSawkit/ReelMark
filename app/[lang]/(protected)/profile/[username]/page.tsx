@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { requireAuth } from '@/lib/auth';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { resolveAvatarUrl } from '@/lib/avatar';
+import type { Language } from '@/lib/i18n/translations';
 import { getTranslations } from '@/lib/i18n/server';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ProfileHero } from '@/components/profile/ProfileHero';
@@ -29,7 +30,7 @@ import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
 export const dynamic = 'force-dynamic';
 
 interface Props {
-	params: Promise<{ username: string }>;
+	params: Promise<{ lang: Language; username: string }>;
 }
 
 type Friendship = Awaited<ReturnType<typeof getFriendshipStatus>>;
@@ -37,8 +38,8 @@ type Friendship = Awaited<ReturnType<typeof getFriendshipStatus>>;
 export async function generateMetadata({
 	params,
 }: Props): Promise<import('next').Metadata> {
-	const { username } = await params;
-	const t = await getTranslations();
+	const { lang, username } = await params;
+	const t = await getTranslations(lang);
 	const description = t.metadata.profileDescription.replace(
 		'${username}',
 		username
@@ -68,10 +69,12 @@ async function ProfileTabsSection({
 	profileUserId,
 	isOwnProfile,
 	friendship,
+	lang,
 }: {
 	profileUserId: string;
 	isOwnProfile: boolean;
 	friendship: Friendship;
+	lang: Language;
 }) {
 	const supabase = await createClient();
 	const isFriend = friendship?.status === 'accepted';
@@ -97,7 +100,7 @@ async function ProfileTabsSection({
 			.order('created_at', { ascending: false })
 			.limit(1000),
 		isOwnProfile ? getPendingRequestsWithProfiles() : Promise.resolve([]),
-		getGenres(),
+		getGenres(lang),
 		isOwnProfile
 			? getUserReviewRatings(profileUserId)
 			: Promise.resolve<Record<string, number>>({}),
@@ -152,7 +155,7 @@ async function ProfileTabsSection({
 }
 
 export default async function ProfilePage({ params }: Props) {
-	const { username } = await params;
+	const { lang, username } = await params;
 
 	const [currentUser, profile] = await Promise.all([
 		requireAuth(),
@@ -219,6 +222,7 @@ export default async function ProfilePage({ params }: Props) {
 					profileUserId={profile.user_id}
 					isOwnProfile={isOwnProfile}
 					friendship={friendship}
+					lang={lang}
 				/>
 			</Suspense>
 		</PageLayout>

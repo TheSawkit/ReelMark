@@ -7,13 +7,19 @@ import { SettingsContentSkeleton } from '@/components/settings/SettingsContentSk
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { getTranslations } from '@/lib/i18n/server';
 import { USER_PROFILE_COLUMNS, PRIVACY_COLUMNS } from '@/lib/supabase/columns';
+import type { Language } from '@/lib/i18n/translations';
 import type { UserProfile, PrivacySettings } from '@/types/profile';
 import type { User } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata() {
-	const t = await getTranslations();
+type Props = {
+	params: Promise<{ lang: Language }>;
+};
+
+export async function generateMetadata({ params }: Props) {
+	const { lang } = await params;
+	const t = await getTranslations(lang);
 	return {
 		title: t.settings.title,
 		description: t.settings.subtitle,
@@ -55,9 +61,10 @@ async function SettingsSection({ user }: { user: User }) {
 	);
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ params }: Props) {
+	const { lang } = await params;
 	const user = await requireAuth();
-	const t = await getTranslations();
+	const t = await getTranslations(lang);
 
 	return (
 		<PageLayout>

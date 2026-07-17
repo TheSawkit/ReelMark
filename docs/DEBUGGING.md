@@ -19,6 +19,9 @@ Outils et pièges connus, appris en production. À lire avant de passer une heur
 - **Pas de `sw.js` après build, PWA morte** → le build a tourné sous Turbopack. Serwist exige webpack : `pnpm build` = `next build --webpack`. Ne jamais « simplifier » ce script.
 - **Blur cassé sur Chrome après build** → lightningcss fusionne `backdrop-filter` : écrire `-webkit-backdrop-filter` **avant** la propriété standard dans `globals.css`, sinon la standard est supprimée.
 - **`ERR_PNPM_LOCKFILE_CONFIG_MISMATCH` dans Docker** → le stage deps du Dockerfile doit copier `pnpm-workspace.yaml` (contient `overrides` + `allowBuilds`).
+- **PWA qui flashe et se recharge toute seule** → trois causes corrigées le 2026-07-17, à ne pas réintroduire : (1) `experimental.viewTransition` — crash dur iOS Safari (facebook/react#35336) ; (2) `reloadOnOnline` de `@serwist/next` (défaut `true`) — `location.reload()` à chaque bascule réseau, désactivé dans `next.config.ts` ; (3) `backdrop-filter` répété par carte/épisode — plafond mémoire GPU dépassé sur mobile, WebKit tue la page. Le verre est réservé aux singletons (navbar, bottom bar, boutons de hero, dialogs) ; les éléments répétés utilisent `bg-poster-overlay-heavy`/`bg-surface`.
+- **Splash screen absent** → Android : il faut une icône 512 `purpose: any` dans le manifest (la maskable seule ne suffit pas). iOS : les `apple-touch-startup-image` sont capturées **à l'installation** — supprimer puis réinstaller la PWA après tout changement de splash.
+- **Backdrop de page détail** → toujours `w1280`, jamais `original` (3840px ≈ 30 Mo décodés par page, s'empile en navigation). L'extraction de couleur passe par `getColorSampleUrl()` (`w300`).
 
 ### Auth / redirections
 

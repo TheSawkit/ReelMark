@@ -1,4 +1,5 @@
 import { test as setup } from '@playwright/test';
+import { createServerClient } from '@supabase/ssr';
 import path from 'path';
 import { mkdir, writeFile } from 'fs/promises';
 
@@ -9,7 +10,7 @@ async function writeEmptyAuth() {
 	await writeFile(authFile, JSON.stringify({ cookies: [], origins: [] }));
 }
 
-setup('authenticate', async ({ page }) => {
+setup('authenticate', async ({ context, baseURL }) => {
 	const email = process.env.TEST_USER_EMAIL;
 	const password = process.env.TEST_USER_PASSWORD;
 
@@ -18,23 +19,44 @@ setup('authenticate', async ({ page }) => {
 		return;
 	}
 
-	await page.emulateMedia({ reducedMotion: 'reduce' });
-	await page.goto('/en/login');
-	await page.locator('#email').fill(email);
-	await page.locator('#password').fill(password);
-	await page
-		.getByRole('button', { name: /connexion|login|se connecter/i })
-		.click();
+	const sessionCookies: { name: string; value: string }[] = [];
+	const supabase = createServerClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL!,
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+		{
+			cookies: {
+				getAll: () => [],
+				setAll: (cookiesToSet) => {
+					sessionCookies.push(
+						...cookiesToSet.map(({ name, value }) => ({
+							name,
+							value,
+						}))
+					);
+				},
+			},
+		}
+	);
 
-	const navigated = await page
-		.waitForURL(/\/(en|fr)\/dashboard/, { timeout: 15000 })
-		.then(() => true)
-		.catch(() => false);
+	const { error } = await supabase.auth.signInWithPassword({
+		email,
+		password,
+	});
 
-	if (!navigated) {
-		await writeEmptyAuth();
-		return;
+	if (error) {
+		throw new Error(
+			`Supabase sign-in failed (${error.message}). Credentials are set, so this is a real failure, not a reason to skip.`
+		);
 	}
 
-	await page.context().storageState({ path: authFile });
+	await context.addCookies(
+		sessionCookies.map(({ name, value }) => ({
+			name,
+			value,
+			domain: new URL(baseURL ?? 'http://localhost:3000').hostname,
+			path: '/',
+		}))
+	);
+
+	await context.storageState({ path: authFile });
 });

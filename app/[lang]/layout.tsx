@@ -13,13 +13,14 @@ import type { Language } from '@/lib/i18n/translations';
 import { notFound } from 'next/navigation';
 import { BASE_URL } from '@/lib/metadata';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
-import { NavTransitionDirection } from '@/components/layout/NavTransitionDirection';
 import { PreventImageContextMenu } from '@/components/shared/PreventImageContextMenu';
 import { PWAInstallPrompt } from '@/components/shared/PWAInstallPrompt';
 import NextTopLoader from 'nextjs-toploader';
-import { ViewTransition } from 'react';
 import Link from 'next/link';
 import { localizedHref } from '@/lib/i18n/utils';
+
+/** Stamped at build time: a copyright year must not depend on when a page happens to render. */
+const COPYRIGHT_YEAR = new Date().getFullYear();
 
 const sans = Inter({
 	subsets: ['latin'],
@@ -343,7 +344,6 @@ export default async function RootLayout({
 				<PreventImageContextMenu />
 				<Providers initialLang={lang}>
 					<ScrollToTop />
-					<NavTransitionDirection />
 					<a
 						href="#main-content"
 						className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-lg"
@@ -364,11 +364,11 @@ export default async function RootLayout({
 					</Suspense>
 					<PageTopGradient />
 					<main id="main-content" className="page-top-offset">
-						<ViewTransition>{children}</ViewTransition>
+						{children}
 					</main>
 					<footer className="border-t border-border-subtle mt-auto">
 						<div className="container mx-auto px-6 lg:px-12 pt-8 pb-28 lg:pb-8 flex flex-col items-center gap-3 text-sm text-muted sm:flex-row sm:justify-between">
-							<p>© {new Date().getFullYear()} ReelMark</p>
+							<p>© {COPYRIGHT_YEAR} ReelMark</p>
 							<nav
 								aria-label={t.pages.legal.terms.title}
 								className="flex items-center gap-4"
