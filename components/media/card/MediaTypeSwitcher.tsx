@@ -10,10 +10,13 @@ type MediaType = 'movie' | 'tv';
 
 interface MediaTypeSwitcherProps {
 	defaultType?: MediaType;
+	shallow?: boolean;
 }
 
+/** `shallow` swaps the type without a server round-trip — for pages that already hold both datasets. */
 export function MediaTypeSwitcher({
 	defaultType = 'movie',
+	shallow = false,
 }: MediaTypeSwitcherProps) {
 	const { t } = useTranslation();
 	const router = useRouter();
@@ -31,8 +34,13 @@ export function MediaTypeSwitcher({
 
 		const params = new URLSearchParams(searchParams.toString());
 		params.set('type', type);
-		setRequestedType(type);
 
+		if (shallow) {
+			window.history.replaceState(null, '', `${pathname}?${params}`);
+			return;
+		}
+
+		setRequestedType(type);
 		startTransition(() => {
 			router.replace(`${pathname}?${params.toString()}`, {
 				scroll: false,
