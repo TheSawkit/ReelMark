@@ -34,7 +34,9 @@ export function TvWatchActions({
 
 	return (
 		<div className="flex items-center gap-2">
-			<div className={variant === 'banner' ? 'flex-1 min-w-0' : undefined}>
+			<div
+				className={variant === 'banner' ? 'flex-1 min-w-0' : undefined}
+			>
 				<WatchButton
 					mediaId={mediaId}
 					mediaTitle={mediaTitle}

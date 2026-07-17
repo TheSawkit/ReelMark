@@ -43,8 +43,10 @@ function toItems(
 /** Server buckets can be stale right after a mutation — the store holds the live status. */
 function withLiveStatus(entries: WatchlistEntry[]): WatchlistEntry[] {
 	return entries.flatMap((entry) => {
-		const stored = mediaWatchStore.get(entry.media_type, entry.media_id)
-			?.status;
+		const stored = mediaWatchStore.get(
+			entry.media_type,
+			entry.media_id
+		)?.status;
 		if (!stored || stored === entry.status) return entry;
 		if (stored === 'none') return [];
 		return { ...entry, status: stored };
