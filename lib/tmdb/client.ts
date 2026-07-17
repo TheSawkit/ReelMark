@@ -1,6 +1,13 @@
 import { cache } from 'react';
 import { getServerLocale, getServerLanguage } from '@/lib/i18n/server';
 import { createClient } from '@/lib/supabase/server';
+import type { Language } from '@/lib/i18n/translations';
+
+export interface FetchTMDBOptions {
+	revalidate?: number;
+	retries?: number;
+	lang?: Language;
+}
 
 const TMDB_READ_ACCESS_TOKEN = process.env.TMDB_READ_ACCESS_TOKEN;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
@@ -40,25 +47,28 @@ export function getMergeRegions(region: string): string[] | null {
 	return REGION_MERGE_CONFIG[region] ?? null;
 }
 
-export async function getImageLanguageFilter(): Promise<string> {
-	const lang = await getServerLanguage();
-	const languages = new Set(['null', lang, 'en']);
+export async function getImageLanguageFilter(lang?: Language): Promise<string> {
+	const resolved = lang ?? (await getServerLanguage());
+	const languages = new Set(['null', resolved, 'en']);
 	return Array.from(languages).join(',');
 }
 
-/** Fetches from TMDB with Bearer auth, locale injection, and Next.js cache revalidation. */
+/**
+ * Fetches from TMDB with Bearer auth, locale injection, and Next.js cache revalidation.
+ * Pass `lang` from the route params on localized pages: omitting it resolves the language
+ * from the request, which makes the caller dynamic.
+ */
 export async function fetchTMDB<T>(
 	endpoint: string,
 	params: Record<string, string> = {},
-	revalidate = 3600,
-	retries = 2
+	{ revalidate = 3600, retries = 2, lang }: FetchTMDBOptions = {}
 ): Promise<T> {
 	if (!TMDB_READ_ACCESS_TOKEN) {
 		throw new Error('TMDB_READ_ACCESS_TOKEN is not defined.');
 	}
 
 	const safeEndpoint = sanitizeTMDBEndpoint(endpoint);
-	const locale = await getServerLocale();
+	const locale = await getServerLocale(lang);
 
 	const queryParams = new URLSearchParams({ language: locale, ...params });
 
@@ -87,7 +97,7 @@ export async function fetchTMDB<T>(
 }
 
 /** Resolves the user's region from profile metadata, falling back to locale country or "US". Deduped per request. */
-export const getUserRegion = cache(async (): Promise<string> => {
+export const getUserRegion = cache(async (lang?: Language): Promise<string> => {
 	try {
 		const supabase = await createClient();
 		const {
@@ -101,7 +111,7 @@ export const getUserRegion = cache(async (): Promise<string> => {
 		/* unauthenticated */
 	}
 
-	const locale = await getServerLocale();
+	const locale = await getServerLocale(lang);
 	if (locale.includes('-')) {
 		return locale.split('-')[1].toUpperCase();
 	}

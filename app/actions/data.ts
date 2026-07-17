@@ -28,7 +28,7 @@ async function fetchTmdbForType(
 			const data = await fetchTMDB<{
 				title: string;
 				poster_path: string | null;
-			}>(`/movie/${id}`, {}, 86400);
+			}>(`/movie/${id}`, {}, { revalidate: 86400 });
 			return {
 				type: 'movie',
 				title: data.title,
@@ -38,7 +38,7 @@ async function fetchTmdbForType(
 		const data = await fetchTMDB<{
 			name: string;
 			poster_path: string | null;
-		}>(`/tv/${id}`, {}, 86400);
+		}>(`/tv/${id}`, {}, { revalidate: 86400 });
 		return { type: 'tv', title: data.name, poster_path: data.poster_path };
 	} catch (error) {
 		if (error instanceof Error && error.message.includes('404'))
@@ -178,7 +178,11 @@ async function findByImdbId(
 				name: string;
 				poster_path: string | null;
 			}>;
-		}>(`/find/${imdbId}`, { external_source: 'imdb_id' }, 86400);
+		}>(
+			`/find/${imdbId}`,
+			{ external_source: 'imdb_id' },
+			{ revalidate: 86400 }
+		);
 
 		if (expectedType === 'movie') {
 			const r = data.movie_results[0];
@@ -224,7 +228,11 @@ async function findByTvdbId(tvdbId: number): Promise<FindResult | null> {
 				name: string;
 				poster_path: string | null;
 			}>;
-		}>(`/find/${tvdbId}`, { external_source: 'tvdb_id' }, 86400);
+		}>(
+			`/find/${tvdbId}`,
+			{ external_source: 'tvdb_id' },
+			{ revalidate: 86400 }
+		);
 
 		const r = data.tv_results[0];
 		return r

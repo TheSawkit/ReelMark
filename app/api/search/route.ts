@@ -4,7 +4,6 @@ import { rankMedia } from '@/lib/search/score';
 import { getMediaKey } from '@/lib/media';
 import { createClient } from '@/lib/supabase/server';
 import { DEFAULT_LANGUAGE, isLanguage } from '@/lib/i18n/config';
-import { getLocale } from '@/lib/i18n/utils';
 import type { MediaItem } from '@/types/tmdb';
 
 const MAX_RESULTS = 6;
@@ -42,9 +41,7 @@ export async function GET(req: NextRequest) {
 	const { searchParams } = new URL(req.url);
 	const query = searchParams.get('query')?.trim().slice(0, 200);
 	const langParam = searchParams.get('lang');
-	const locale = getLocale(
-		isLanguage(langParam) ? langParam : DEFAULT_LANGUAGE
-	);
+	const lang = isLanguage(langParam) ? langParam : DEFAULT_LANGUAGE;
 
 	if (!query || query.length < 2) {
 		return NextResponse.json(
@@ -75,14 +72,14 @@ export async function GET(req: NextRequest) {
 	}
 
 	try {
-		const results = await searchMulti(query, 1, locale);
+		const results = await searchMulti(query, 1, lang);
 
 		if (results.length < FALLBACK_MIN_RESULTS) {
 			const fallbacks = buildFallbackQueries(query);
 			if (fallbacks.length > 0) {
 				const batches = await Promise.all(
 					fallbacks.map((q) =>
-						searchMulti(q, 1, locale).catch(() => [] as MediaItem[])
+						searchMulti(q, 1, lang).catch(() => [] as MediaItem[])
 					)
 				);
 				const seen = new Set<string>(results.map(getMediaKey));

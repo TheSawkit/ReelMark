@@ -21,14 +21,16 @@ import { CategoryNav } from '@/components/navigation/CategoryNav';
 import { SearchBar } from '@/components/search/SearchBar';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
+import type { Language } from '@/lib/i18n/translations';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
 import { buildPageMetadata } from '@/lib/metadata';
 import type { Movie, TvShow, MediaType } from '@/types/tmdb';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata(): Promise<Metadata> {
-	const t = await getTranslations();
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+	const { lang } = await params;
+	const t = await getTranslations(lang);
 	return buildPageMetadata(
 		t.metadata.explorerTitle,
 		t.metadata.explorerDescription
@@ -36,20 +38,23 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 type Props = {
+	params: Promise<{ lang: Language }>;
 	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 async function TrendingSpotlightSection({
 	type,
 	t,
+	lang,
 }: {
 	type: MediaType;
 	t: Translations;
+	lang: Language;
 }) {
 	const isMovie = type === 'movie';
 	const rawResults = isMovie
-		? await getTrendingMovies('week')
-		: await getTrendingTvShows('week');
+		? await getTrendingMovies('week', 1, lang)
+		: await getTrendingTvShows('week', 1, lang);
 	const items = await mergeWithWatchlist(
 		isMovie
 			? (rawResults as Movie[]).map(movieToMediaItem)
@@ -77,14 +82,16 @@ async function TrendingSpotlightSection({
 async function PopularSection({
 	type,
 	t,
+	lang,
 }: {
 	type: MediaType;
 	t: Translations;
+	lang: Language;
 }) {
 	const isMovie = type === 'movie';
 	const rawResults = isMovie
-		? await getPopularMovies()
-		: await getPopularTvShows();
+		? await getPopularMovies(1, lang)
+		: await getPopularTvShows(1, lang);
 	const items = await mergeWithWatchlist(
 		isMovie
 			? (rawResults as Movie[]).map(movieToMediaItem)
@@ -105,14 +112,16 @@ async function PopularSection({
 async function TopRatedSection({
 	type,
 	t,
+	lang,
 }: {
 	type: MediaType;
 	t: Translations;
+	lang: Language;
 }) {
 	const isMovie = type === 'movie';
 	const rawResults = isMovie
-		? await getTopRatedMovies()
-		: await getTopRatedTvShows();
+		? await getTopRatedMovies(1, lang)
+		: await getTopRatedTvShows(1, lang);
 	const items = await mergeWithWatchlist(
 		isMovie
 			? (rawResults as Movie[]).map(movieToMediaItem)
@@ -137,14 +146,16 @@ async function TopRatedSection({
 async function UpcomingSection({
 	type,
 	t,
+	lang,
 }: {
 	type: MediaType;
 	t: Translations;
+	lang: Language;
 }) {
 	const isMovie = type === 'movie';
 	const rawResults = isMovie
-		? await getUpcomingMovies()
-		: await getAiringTodayTvShows();
+		? await getUpcomingMovies(1, lang)
+		: await getAiringTodayTvShows(1, lang);
 	const items = await mergeWithWatchlist(
 		isMovie
 			? (rawResults as Movie[]).map(movieToMediaItem)
@@ -176,10 +187,14 @@ function SpotlightTrendingSkeleton() {
 	);
 }
 
-export default async function ExplorerPage({ searchParams }: Props) {
+export default async function ExplorerPage({
+	params: paramsPromise,
+	searchParams,
+}: Props) {
+	const { lang } = await paramsPromise;
 	const params = await searchParams;
 	const type: MediaType = params?.type === 'tv' ? 'tv' : 'movie';
-	const t = await getTranslations();
+	const t = await getTranslations(lang);
 
 	return (
 		<PageLayout className="screen-in">
@@ -203,7 +218,7 @@ export default async function ExplorerPage({ searchParams }: Props) {
 			</div>
 
 			<Suspense fallback={<SpotlightTrendingSkeleton />}>
-				<TrendingSpotlightSection type={type} t={t} />
+				<TrendingSpotlightSection type={type} t={t} lang={lang} />
 			</Suspense>
 
 			<Suspense
@@ -211,7 +226,7 @@ export default async function ExplorerPage({ searchParams }: Props) {
 					<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
 				}
 			>
-				<PopularSection type={type} t={t} />
+				<PopularSection type={type} t={t} lang={lang} />
 			</Suspense>
 
 			<Suspense
@@ -219,7 +234,7 @@ export default async function ExplorerPage({ searchParams }: Props) {
 					<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
 				}
 			>
-				<TopRatedSection type={type} t={t} />
+				<TopRatedSection type={type} t={t} lang={lang} />
 			</Suspense>
 
 			<Suspense
@@ -227,7 +242,7 @@ export default async function ExplorerPage({ searchParams }: Props) {
 					<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
 				}
 			>
-				<UpcomingSection type={type} t={t} />
+				<UpcomingSection type={type} t={t} lang={lang} />
 			</Suspense>
 		</PageLayout>
 	);

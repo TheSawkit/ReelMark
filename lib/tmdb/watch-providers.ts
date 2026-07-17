@@ -1,4 +1,5 @@
 import { fetchTMDB } from './client';
+import type { Language } from '@/lib/i18n/translations';
 
 interface TmdbProviderItem {
 	logo_path: string;
@@ -27,13 +28,14 @@ export function normalizeName(name: string): string {
 
 async function fetchProviderList(
 	mediaType: 'movie' | 'tv',
-	region: string
+	region: string,
+	lang?: Language
 ): Promise<TmdbProviderItem[]> {
 	try {
 		const data = await fetchTMDB<{ results: TmdbProviderItem[] }>(
 			`/watch/providers/${mediaType}`,
 			{ watch_region: region },
-			604800
+			{ revalidate: 604800, lang }
 		);
 		return data.results ?? [];
 	} catch {
@@ -46,13 +48,15 @@ async function fetchProviderList(
  * name → logo_path map. US covers most global providers, BE covers European ones.
  * Cached 1 week.
  */
-export async function getTmdbProviderLogoMap(): Promise<Map<string, string>> {
+export async function getTmdbProviderLogoMap(
+	lang?: Language
+): Promise<Map<string, string>> {
 	try {
 		const [movieFR, tvFR, movieNL, movieUS] = await Promise.all([
-			fetchProviderList('movie', 'FR'),
-			fetchProviderList('tv', 'FR'),
-			fetchProviderList('movie', 'NL'),
-			fetchProviderList('movie', 'US'),
+			fetchProviderList('movie', 'FR', lang),
+			fetchProviderList('tv', 'FR', lang),
+			fetchProviderList('movie', 'NL', lang),
+			fetchProviderList('movie', 'US', lang),
 		]);
 
 		const map = new Map<string, string>();

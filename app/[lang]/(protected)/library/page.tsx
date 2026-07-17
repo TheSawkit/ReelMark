@@ -6,6 +6,7 @@ import { getMyReviewRatings } from '@/app/actions/reviews';
 import { LibraryTabs } from '@/components/library/LibraryTabs';
 import { ListMetadataBackfill } from '@/components/library/ListMetadataBackfill';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
+import type { Language } from '@/lib/i18n/translations';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
 import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
@@ -15,8 +16,9 @@ import type { MediaType } from '@/types/tmdb';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata() {
-	const t = await getTranslations();
+export async function generateMetadata({ params }: Props) {
+	const { lang } = await params;
+	const t = await getTranslations(lang);
 	return buildPageMetadata(
 		t.pages.library.title,
 		t.metadata.libraryDescription,
@@ -28,6 +30,7 @@ export async function generateMetadata() {
 }
 
 type Props = {
+	params: Promise<{ lang: Language }>;
 	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
@@ -54,10 +57,16 @@ async function LibrarySubtitle({
 	return <>{`${count} ${filmsCountText} ${t.library.inLibrary}`}</>;
 }
 
-async function LibraryContent({ type }: { type: MediaType }) {
+async function LibraryContent({
+	type,
+	lang,
+}: {
+	type: MediaType;
+	lang: Language;
+}) {
 	const [fullWatchlist, genreNames, ratingByKey] = await Promise.all([
 		getCachedUserWatchlist(),
-		getGenres(),
+		getGenres(lang),
 		getMyReviewRatings(),
 	]);
 	const watchlist = fullWatchlist.filter(
@@ -84,7 +93,7 @@ async function LibraryContent({ type }: { type: MediaType }) {
 		const [watchedCounts, fetched] = await Promise.all([
 			getAllTvShowsWatchProgress(tvIds),
 			missing.length > 0
-				? getTvShowsTotalEpisodes(missing)
+				? getTvShowsTotalEpisodes(missing, lang)
 				: Promise.resolve<Record<number, number>>({}),
 		]);
 		for (const tvId of tvIds) {
@@ -122,11 +131,15 @@ function LibraryGridSkeleton() {
 	);
 }
 
-export default async function LibraryPage({ searchParams }: Props) {
+export default async function LibraryPage({
+	params: paramsPromise,
+	searchParams,
+}: Props) {
+	const { lang } = await paramsPromise;
 	const params = await searchParams;
 	const type: MediaType = params?.type === 'tv' ? 'tv' : 'movie';
 
-	const t = await getTranslations();
+	const t = await getTranslations(lang);
 
 	return (
 		<PageLayout className="screen-in">
@@ -148,7 +161,7 @@ export default async function LibraryPage({ searchParams }: Props) {
 			</Suspense>
 
 			<Suspense fallback={<LibraryGridSkeleton />}>
-				<LibraryContent type={type} />
+				<LibraryContent type={type} lang={lang} />
 			</Suspense>
 		</PageLayout>
 	);

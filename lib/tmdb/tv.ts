@@ -17,23 +17,31 @@ import {
 	getImageLanguageFilter,
 } from './client';
 import { getWatchmodeProviders } from '@/lib/watchmode/providers';
+import type { Language } from '@/lib/i18n/translations';
 import { findTvCertification } from './certifications';
 
 /** @returns Paginated list of popular TV shows. */
-export async function getPopularTvShows(page: number = 1): Promise<TvShow[]> {
-	const { results } = await fetchTMDB<{ results: TvShow[] }>('/tv/popular', {
-		page: clampPage(page).toString(),
-	});
+export async function getPopularTvShows(
+	page: number = 1,
+	lang?: Language
+): Promise<TvShow[]> {
+	const { results } = await fetchTMDB<{ results: TvShow[] }>(
+		'/tv/popular',
+		{ page: clampPage(page).toString() },
+		{ lang }
+	);
 	return results;
 }
 
 /** @returns Paginated list of top-rated TV shows. */
-export async function getTopRatedTvShows(page: number = 1): Promise<TvShow[]> {
+export async function getTopRatedTvShows(
+	page: number = 1,
+	lang?: Language
+): Promise<TvShow[]> {
 	const { results } = await fetchTMDB<{ results: TvShow[] }>(
 		'/tv/top_rated',
-		{
-			page: clampPage(page).toString(),
-		}
+		{ page: clampPage(page).toString() },
+		{ lang }
 	);
 	return results;
 }
@@ -44,33 +52,39 @@ export async function getTopRatedTvShows(page: number = 1): Promise<TvShow[]> {
  */
 export async function getTrendingTvShows(
 	timeWindow: 'day' | 'week' = 'week',
-	page: number = 1
+	page: number = 1,
+	lang?: Language
 ): Promise<TvShow[]> {
 	const { results } = await fetchTMDB<{ results: TvShow[] }>(
 		`/trending/tv/${timeWindow}`,
-		{ page: clampPage(page).toString() }
+		{ page: clampPage(page).toString() },
+		{ lang }
 	);
 	return results;
 }
 
 /** @returns Paginated list of TV shows airing today. */
 export async function getAiringTodayTvShows(
-	page: number = 1
+	page: number = 1,
+	lang?: Language
 ): Promise<TvShow[]> {
 	const { results } = await fetchTMDB<{ results: TvShow[] }>(
 		'/tv/airing_today',
-		{ page: clampPage(page).toString() }
+		{ page: clampPage(page).toString() },
+		{ lang }
 	);
 	return results;
 }
 
 /** @returns Paginated list of TV shows currently on the air. */
-export async function getOnTheAirTvShows(page: number = 1): Promise<TvShow[]> {
+export async function getOnTheAirTvShows(
+	page: number = 1,
+	lang?: Language
+): Promise<TvShow[]> {
 	const { results } = await fetchTMDB<{ results: TvShow[] }>(
 		'/tv/on_the_air',
-		{
-			page: clampPage(page).toString(),
-		}
+		{ page: clampPage(page).toString() },
+		{ lang }
 	);
 	return results;
 }
@@ -81,16 +95,23 @@ export async function getOnTheAirTvShows(page: number = 1): Promise<TvShow[]> {
  * @param id - TMDB TV show ID.
  * @returns Full TV show details with optional certification field.
  */
-export async function getTvShowDetails(id: number): Promise<TvShowDetails> {
-	const details = await fetchTMDB<TvShowDetails>(`/tv/${id}`, {}, 86400);
+export async function getTvShowDetails(
+	id: number,
+	lang?: Language
+): Promise<TvShowDetails> {
+	const details = await fetchTMDB<TvShowDetails>(
+		`/tv/${id}`,
+		{},
+		{ revalidate: 86400, lang }
+	);
 
 	try {
 		const ratings = await fetchTMDB<ContentRatingsResponse>(
 			`/tv/${id}/content_ratings`,
 			{},
-			86400
+			{ revalidate: 86400, lang }
 		);
-		const userRegion = await getUserRegion();
+		const userRegion = await getUserRegion(lang);
 		details.certification = findTvCertification(ratings, userRegion);
 	} catch (error) {
 		console.warn('[tmdb/tv] Certification fetch failed for TV:', id, error);
@@ -107,9 +128,16 @@ export async function getTvShowDetails(id: number): Promise<TvShowDetails> {
  * @param id - TMDB TV show ID.
  * @returns Total number of episodes.
  */
-async function getTvShowTotalEpisodes(id: number): Promise<number> {
+async function getTvShowTotalEpisodes(
+	id: number,
+	lang?: Language
+): Promise<number> {
 	try {
-		const details = await fetchTMDB<TvShowDetails>(`/tv/${id}`, {}, 86400);
+		const details = await fetchTMDB<TvShowDetails>(
+			`/tv/${id}`,
+			{},
+			{ revalidate: 86400, lang }
+		);
 		return (details.seasons ?? [])
 			.filter((s) => s.season_number > 0)
 			.reduce((sum, s) => sum + s.episode_count, 0);
@@ -122,14 +150,16 @@ const TV_EPISODES_BATCH_SIZE = 8;
 
 /** Batched total-episode lookup that caps TMDB concurrency to avoid 429 rate limiting on the library. */
 export async function getTvShowsTotalEpisodes(
-	ids: number[]
+	ids: number[],
+	lang?: Language
 ): Promise<Record<number, number>> {
 	const totals: Record<number, number> = {};
 	for (let i = 0; i < ids.length; i += TV_EPISODES_BATCH_SIZE) {
 		const batch = ids.slice(i, i + TV_EPISODES_BATCH_SIZE);
 		const counts = await Promise.all(
 			batch.map(
-				async (id) => [id, await getTvShowTotalEpisodes(id)] as const
+				async (id) =>
+					[id, await getTvShowTotalEpisodes(id, lang)] as const
 			)
 		);
 		for (const [id, total] of counts) totals[id] = total;
@@ -138,31 +168,42 @@ export async function getTvShowsTotalEpisodes(
 }
 
 /** @returns Cast and crew credits for the given TV show. */
-export async function getTvShowCredits(id: number): Promise<Credits> {
-	return fetchTMDB<Credits>(`/tv/${id}/credits`, {}, 86400);
+export async function getTvShowCredits(
+	id: number,
+	lang?: Language
+): Promise<Credits> {
+	return fetchTMDB<Credits>(
+		`/tv/${id}/credits`,
+		{},
+		{ revalidate: 86400, lang }
+	);
 }
 
 /** @returns Official video trailers and clips for the given TV show. */
-export async function getTvShowVideos(id: number): Promise<Video[]> {
+export async function getTvShowVideos(
+	id: number,
+	lang?: Language
+): Promise<Video[]> {
 	const { results } = await fetchTMDB<VideoResponse>(
 		`/tv/${id}/videos`,
 		{},
-		86400
+		{ revalidate: 86400, lang }
 	);
 	return results;
 }
 
 /** @returns Available backdrop and poster images for the given TV show. */
 export async function getTvShowImages(
-	id: number
+	id: number,
+	lang?: Language
 ): Promise<MediaImagesResponse> {
-	const imageLanguage = await getImageLanguageFilter();
+	const imageLanguage = await getImageLanguageFilter(lang);
 	return fetchTMDB<MediaImagesResponse>(
 		`/tv/${id}/images`,
 		{
 			include_image_language: imageLanguage,
 		},
-		86400
+		{ revalidate: 86400, lang }
 	);
 }
 
@@ -170,12 +211,15 @@ export async function getTvShowImages(
  * Returns recommended TV shows based on a given show.
  * Returns an empty array on failure.
  */
-export async function getTvShowRecommendations(id: number): Promise<TvShow[]> {
+export async function getTvShowRecommendations(
+	id: number,
+	lang?: Language
+): Promise<TvShow[]> {
 	try {
 		const { results } = await fetchTMDB<{ results: TvShow[] }>(
 			`/tv/${id}/recommendations`,
 			{},
-			86400
+			{ revalidate: 86400, lang }
 		);
 		return results;
 	} catch {
@@ -187,12 +231,15 @@ export async function getTvShowRecommendations(id: number): Promise<TvShow[]> {
  * Returns TV shows similar to the given show.
  * Returns an empty array on failure.
  */
-export async function getSimilarTvShows(id: number): Promise<TvShow[]> {
+export async function getSimilarTvShows(
+	id: number,
+	lang?: Language
+): Promise<TvShow[]> {
 	try {
 		const { results } = await fetchTMDB<{ results: TvShow[] }>(
 			`/tv/${id}/similar`,
 			{},
-			86400
+			{ revalidate: 86400, lang }
 		);
 		return results;
 	} catch {
@@ -207,12 +254,13 @@ export async function getSimilarTvShows(id: number): Promise<TvShow[]> {
  */
 export async function getSeasonDetails(
 	tvId: number,
-	seasonNumber: number
+	seasonNumber: number,
+	lang?: Language
 ): Promise<SeasonDetails> {
 	return fetchTMDB<SeasonDetails>(
 		`/tv/${tvId}/season/${seasonNumber}`,
 		{},
-		86400
+		{ revalidate: 86400, lang }
 	);
 }
 
@@ -225,15 +273,16 @@ export async function getSeasonDetails(
  * @returns Watch providers for the user's region, or null.
  */
 export async function getTvShowWatchProviders(
-	id: number
+	id: number,
+	lang?: Language
 ): Promise<WatchProvidersRegion | null> {
 	try {
-		const region = await getUserRegion();
+		const region = await getUserRegion(lang);
 		const [tmdbData, watchmode] = await Promise.all([
 			fetchTMDB<WatchProvidersResponse>(
 				`/tv/${id}/watch/providers`,
 				{},
-				43200
+				{ revalidate: 43200, lang }
 			),
 			getWatchmodeProviders(id, 'tv', region),
 		]);

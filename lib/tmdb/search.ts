@@ -1,5 +1,6 @@
 import type { MediaItem, Movie, TvShow } from '@/types/tmdb';
 import { fetchTMDB } from './client';
+import type { Language } from '@/lib/i18n/translations';
 
 interface TMDBMultiResult {
 	id: number;
@@ -25,21 +26,21 @@ interface TMDBMultiResult {
  *
  * @param query - Search string.
  * @param page - Page number (default: 1).
- * @param language - TMDB locale override; defaults to the request-resolved locale.
+ * @param lang - Language to search in; defaults to the request-resolved one.
  * @returns Filtered and normalized list of matching movies and TV shows.
  */
 export async function searchMulti(
 	query: string,
 	page: number = 1,
-	language?: string
+	lang?: Language
 ): Promise<MediaItem[]> {
 	const { results } = await fetchTMDB<{ results: TMDBMultiResult[] }>(
 		'/search/multi',
 		{
 			query,
 			page: page.toString(),
-			...(language ? { language } : {}),
-		}
+		},
+		{ lang }
 	);
 
 	return results

@@ -51,13 +51,27 @@ function loadMovieUserData(movieId: number) {
 	]);
 }
 
-async function MovieProvidersSection({ movieId }: { movieId: number }) {
-	const providers = await getMovieWatchProviders(movieId).catch(() => null);
+async function MovieProvidersSection({
+	movieId,
+	lang,
+}: {
+	movieId: number;
+	lang: Language;
+}) {
+	const providers = await getMovieWatchProviders(movieId, lang).catch(
+		() => null
+	);
 	return <WatchProviders providers={providers} />;
 }
 
-async function MovieTrailersSection({ movieId }: { movieId: number }) {
-	const videos = await getMovieVideos(movieId);
+async function MovieTrailersSection({
+	movieId,
+	lang,
+}: {
+	movieId: number;
+	lang: Language;
+}) {
+	const videos = await getMovieVideos(movieId, lang);
 	const trailers = await filterAvailableVideos(filterTrailers(videos));
 	if (trailers.length === 0) return null;
 	return <MediaTrailers trailers={trailers} />;
@@ -148,9 +162,9 @@ export default async function MoviePage(props: MoviePageProps) {
 	let movieDetails, credits, images;
 	try {
 		[movieDetails, credits, images] = await Promise.all([
-			getMovieDetails(movieId),
-			getMovieCredits(movieId),
-			getMovieImages(movieId),
+			getMovieDetails(movieId, lang),
+			getMovieCredits(movieId, lang),
+			getMovieImages(movieId, lang),
 		]);
 	} catch (error) {
 		if (!(error instanceof Error && error.message.includes('404')))
@@ -158,7 +172,7 @@ export default async function MoviePage(props: MoviePageProps) {
 
 		let isTvShow = false;
 		try {
-			await fetchTMDB(`/tv/${movieId}`, {}, 86400);
+			await fetchTMDB(`/tv/${movieId}`, {}, { revalidate: 86400 });
 			isTvShow = true;
 		} catch (probeError) {
 			if (!(
@@ -238,7 +252,7 @@ export default async function MoviePage(props: MoviePageProps) {
 				crew={crew}
 				watchProviders={
 					<Suspense fallback={<DetailSectionSkeleton />}>
-						<MovieProvidersSection movieId={movieId} />
+						<MovieProvidersSection movieId={movieId} lang={lang} />
 					</Suspense>
 				}
 				rating={
@@ -261,7 +275,7 @@ export default async function MoviePage(props: MoviePageProps) {
 				}
 				trailers={
 					<Suspense fallback={<DetailSectionSkeleton />}>
-						<MovieTrailersSection movieId={movieId} />
+						<MovieTrailersSection movieId={movieId} lang={lang} />
 					</Suspense>
 				}
 				cast={credits.cast}

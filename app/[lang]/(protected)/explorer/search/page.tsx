@@ -8,8 +8,10 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { SearchBar } from '@/components/search/SearchBar';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
 import { Search as SearchIcon } from 'lucide-react';
+import type { Language } from '@/lib/i18n/translations';
 
 interface SearchPageProps {
+	params: Promise<{ lang: Language }>;
 	searchParams: Promise<{ q?: string; query?: string }>;
 }
 
@@ -28,9 +30,17 @@ export async function generateMetadata({
 	};
 }
 
-async function SearchResults({ query, t }: { query: string; t: Translations }) {
+async function SearchResults({
+	query,
+	t,
+	lang,
+}: {
+	query: string;
+	t: Translations;
+	lang: Language;
+}) {
 	const results = query
-		? await mergeWithWatchlist(await searchMulti(query))
+		? await mergeWithWatchlist(await searchMulti(query, 1, lang))
 		: [];
 
 	const foundMessage = `${t.pages.search.found} ${t.pages.search.foundCount.replace('${count}', String(results.length))}`;
@@ -61,12 +71,14 @@ async function SearchResults({ query, t }: { query: string; t: Translations }) {
 }
 
 export default async function SearchResultsPage({
+	params,
 	searchParams,
 }: SearchPageProps) {
-	const params = await searchParams;
-	const query = params.q || params.query || '';
+	const { lang } = await params;
+	const search = await searchParams;
+	const query = search.q || search.query || '';
 
-	const t = await getTranslations();
+	const t = await getTranslations(lang);
 
 	return (
 		<PageLayout>
@@ -80,7 +92,7 @@ export default async function SearchResultsPage({
 
 			<div className="mt-8">
 				<Suspense fallback={<PosterGridSkeleton />}>
-					<SearchResults query={query} t={t} />
+					<SearchResults query={query} t={t} lang={lang} />
 				</Suspense>
 			</div>
 		</PageLayout>
