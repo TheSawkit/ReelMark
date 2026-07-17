@@ -80,7 +80,7 @@ export function SeasonBanner({
 	}, []);
 
 	return (
-		<div className="relative w-full min-h-[70vh] md:min-h-[80vh] flex flex-col justify-end pb-6 sm:pb-12 overflow-hidden banner-pull-top banner-safe-pad">
+		<div className="relative isolate w-full min-h-[70vh] md:min-h-[80vh] flex flex-col justify-end pb-6 sm:pb-12 overflow-hidden banner-pull-top banner-safe-pad">
 			<NavbarGradient color={dominantColor} />
 			<CinematicBackdrop src={backdropUrl} alt={seasonName} />
 
