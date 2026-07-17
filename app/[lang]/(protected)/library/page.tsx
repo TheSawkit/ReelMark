@@ -3,7 +3,10 @@ import { Suspense } from 'react';
 import { getAllTvShowsWatchProgress } from '@/app/actions/episodes';
 import { getCachedUserWatchlist } from '@/lib/data/watchlist';
 import { getMyReviewRatings } from '@/app/actions/reviews';
-import { LibraryTabs } from '@/components/library/LibraryTabs';
+import {
+	LibraryView,
+	LibraryLiveSubtitle,
+} from '@/components/library/LibraryView';
 import { ListMetadataBackfill } from '@/components/library/ListMetadataBackfill';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import type { Language } from '@/lib/i18n/translations';
@@ -31,86 +34,81 @@ export async function generateMetadata({ params }: Props) {
 
 type Props = {
 	params: Promise<{ lang: Language }>;
-	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-async function LibrarySubtitle({
-	type,
-	t,
-}: {
-	type: MediaType;
-	t: Translations;
-}) {
+async function LibrarySubtitle({ t }: { t: Translations }) {
 	const fullWatchlist = await getCachedUserWatchlist();
-	const count = fullWatchlist.filter(
-		(entry) => entry.media_type === type
-	).length;
-	const isPlural = count > 1;
-	const filmsCountText = isPlural
-		? type === 'tv'
-			? t.library.tvCountPlural
-			: t.library.filmsCountPlural
-		: type === 'tv'
-			? t.library.tvCount
-			: t.library.filmsCount;
+	const subtitle = (type: MediaType) => {
+		const count = fullWatchlist.filter(
+			(entry) => entry.media_type === type
+		).length;
+		const isPlural = count > 1;
+		const countText = isPlural
+			? type === 'tv'
+				? t.library.tvCountPlural
+				: t.library.filmsCountPlural
+			: type === 'tv'
+				? t.library.tvCount
+				: t.library.filmsCount;
+		return `${count} ${countText} ${t.library.inLibrary}`;
+	};
 
-	return <>{`${count} ${filmsCountText} ${t.library.inLibrary}`}</>;
+	return (
+		<LibraryLiveSubtitle movie={subtitle('movie')} tv={subtitle('tv')} />
+	);
 }
 
-async function LibraryContent({
-	type,
-	lang,
-}: {
-	type: MediaType;
-	lang: Language;
-}) {
+async function LibraryContent({ lang }: { lang: Language }) {
 	const [fullWatchlist, genreNames, ratingByKey] = await Promise.all([
 		getCachedUserWatchlist(),
 		getGenres(lang),
 		getMyReviewRatings(),
 	]);
-	const watchlist = fullWatchlist.filter(
-		(entry) => entry.media_type === type
+	const dataset = (type: MediaType) => {
+		const entries = fullWatchlist.filter(
+			(entry) => entry.media_type === type
+		);
+		return {
+			toWatch: entries.filter((entry) => entry.status === 'to_watch'),
+			watched: entries.filter((entry) => entry.status === 'watched'),
+			abandoned: entries.filter((entry) => entry.status === 'abandoned'),
+		};
+	};
+
+	const tvEntries = fullWatchlist.filter(
+		(entry) => entry.media_type === 'tv'
 	);
-
-	const toWatch = watchlist.filter((entry) => entry.status === 'to_watch');
-	const watched = watchlist.filter((entry) => entry.status === 'watched');
-	const abandoned = watchlist.filter((entry) => entry.status === 'abandoned');
-
+	const tvIds = tvEntries.map((entry) => entry.media_id);
+	const stored: Record<number, number> = {};
+	const missing: number[] = [];
+	for (const entry of tvEntries) {
+		if (typeof entry.total_episodes === 'number') {
+			stored[entry.media_id] = entry.total_episodes;
+		} else {
+			missing.push(entry.media_id);
+		}
+	}
+	const [watchedCounts, fetched] = await Promise.all([
+		getAllTvShowsWatchProgress(tvIds),
+		missing.length > 0
+			? getTvShowsTotalEpisodes(missing, lang)
+			: Promise.resolve<Record<number, number>>({}),
+	]);
 	const tvProgressMap: Record<number, { watched: number; total: number }> =
 		{};
-	if (type === 'tv') {
-		const tvIds = watchlist.map((entry) => entry.media_id);
-		const stored: Record<number, number> = {};
-		const missing: number[] = [];
-		for (const entry of watchlist) {
-			if (typeof entry.total_episodes === 'number') {
-				stored[entry.media_id] = entry.total_episodes;
-			} else {
-				missing.push(entry.media_id);
-			}
-		}
-		const [watchedCounts, fetched] = await Promise.all([
-			getAllTvShowsWatchProgress(tvIds),
-			missing.length > 0
-				? getTvShowsTotalEpisodes(missing, lang)
-				: Promise.resolve<Record<number, number>>({}),
-		]);
-		for (const tvId of tvIds) {
-			tvProgressMap[tvId] = {
-				watched: watchedCounts[tvId] ?? 0,
-				total: stored[tvId] ?? fetched[tvId] ?? 0,
-			};
-		}
+	for (const tvId of tvIds) {
+		tvProgressMap[tvId] = {
+			watched: watchedCounts[tvId] ?? 0,
+			total: stored[tvId] ?? fetched[tvId] ?? 0,
+		};
 	}
 
 	return (
 		<>
 			<ListMetadataBackfill />
-			<LibraryTabs
-				toWatch={toWatch}
-				watched={watched}
-				abandoned={abandoned}
+			<LibraryView
+				movie={dataset('movie')}
+				tv={dataset('tv')}
 				tvProgress={tvProgressMap}
 				genreNames={genreNames}
 				ratingByKey={ratingByKey}
@@ -131,14 +129,8 @@ function LibraryGridSkeleton() {
 	);
 }
 
-export default async function LibraryPage({
-	params: paramsPromise,
-	searchParams,
-}: Props) {
+export default async function LibraryPage({ params: paramsPromise }: Props) {
 	const { lang } = await paramsPromise;
-	const params = await searchParams;
-	const type: MediaType = params?.type === 'tv' ? 'tv' : 'movie';
-
 	const t = await getTranslations(lang);
 
 	return (
@@ -151,17 +143,17 @@ export default async function LibraryPage({
 							<span className="inline-block h-5 w-40 max-w-full rounded bg-surface-2 align-middle animate-shimmer skeleton-sheen" />
 						}
 					>
-						<LibrarySubtitle type={type} t={t} />
+						<LibrarySubtitle t={t} />
 					</Suspense>
 				}
 			/>
 
 			<Suspense fallback={<div className="h-11.5 mb-8" />}>
-				<MediaTypeSwitcher defaultType="movie" />
+				<MediaTypeSwitcher defaultType="movie" shallow />
 			</Suspense>
 
 			<Suspense fallback={<LibraryGridSkeleton />}>
-				<LibraryContent type={type} lang={lang} />
+				<LibraryContent lang={lang} />
 			</Suspense>
 		</PageLayout>
 	);

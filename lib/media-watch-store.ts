@@ -12,11 +12,13 @@ interface MediaWatchState {
 
 const media = new Map<string, MediaWatchState>();
 const listeners = new Set<() => void>();
+let version = 0;
 
 const mediaKey = (mediaType: MediaType, mediaId: number) =>
 	`${mediaType}:${mediaId}`;
 
 function notify() {
+	version++;
 	listeners.forEach((listener) => listener());
 }
 
@@ -61,6 +63,15 @@ export const mediaWatchStore = {
 		notify();
 	},
 };
+
+/** Bumps on every store change; lets list views re-derive buckets from mutated statuses. */
+export function useMediaWatchVersion(): number {
+	return useSyncExternalStore(
+		subscribe,
+		() => version,
+		() => 0
+	);
+}
 
 /** Reactive watchlist status for a media item; undefined until seeded or mutated. */
 export function useMediaWatch(
