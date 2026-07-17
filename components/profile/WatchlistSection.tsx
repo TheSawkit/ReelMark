@@ -161,7 +161,6 @@ export function WatchlistSection({
 									hideRating
 									imageSize="grid"
 									priority={index < 6}
-									enableSharedTransition
 								/>
 							</div>
 						)}

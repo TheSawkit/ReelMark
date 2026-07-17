@@ -18,7 +18,7 @@ export function BottomTabBar({ username }: BottomTabBarProps) {
 				aria-hidden="true"
 				className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-background/60 to-transparent"
 			/>
-			<div className="glass-bar bottom-nav-bar relative mx-4 mb-3 flex h-16 items-center justify-around rounded-[22px] border border-border-subtle px-1.5 shadow-navbar">
+			<div className="glass-bar relative mx-4 mb-3 flex h-16 items-center justify-around rounded-[22px] border border-border-subtle px-1.5 shadow-navbar">
 				{tabs.map(({ href, label, icon: Icon, active }) => (
 					<Link
 						key={label}

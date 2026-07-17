@@ -90,7 +90,7 @@ export function EpisodeCard({
 						<span className="text-sm">{noImage}</span>
 					</div>
 				)}
-				<div className="absolute top-2 left-2 glass-overlay shadow-card-sm text-text font-bold text-sm px-2 py-1 rounded">
+				<div className="absolute top-2 left-2 bg-poster-overlay-heavy border border-white/10 shadow-card-sm text-text font-bold text-sm px-2 py-1 rounded">
 					E{episode.episode_number.toString().padStart(2, '0')}
 				</div>
 				<div

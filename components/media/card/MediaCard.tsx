@@ -1,6 +1,6 @@
 'use client';
 
-import { ViewTransition, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getImageUrl } from '@/lib/tmdb/images';
@@ -10,7 +10,7 @@ import { WatchButton } from '@/components/media/detail/WatchButton';
 import { useTranslation } from '@/lib/i18n/context';
 import { getLocale, localizedHref } from '@/lib/i18n/utils';
 import { formatShortDate } from '@/lib/format';
-import { getMediaHref, posterTransitionName } from '@/lib/media';
+import { getMediaHref } from '@/lib/media';
 import type { MediaCardProps } from '@/types/components';
 import type { WatchlistEntry } from '@/types/tmdb';
 
@@ -21,7 +21,6 @@ interface Props extends MediaCardProps {
 	priority?: boolean;
 	imageSize?: 'card' | 'grid';
 	compact?: boolean;
-	enableSharedTransition?: boolean;
 	action?: ReactNode;
 }
 
@@ -49,7 +48,6 @@ export function MediaCard({
 	priority,
 	imageSize = 'card',
 	compact = false,
-	enableSharedTransition = false,
 	action,
 }: Props) {
 	const { t, lang } = useTranslation();
@@ -95,19 +93,13 @@ export function MediaCard({
 			href={href}
 			className={cn(
 				'group relative rounded-poster overflow-hidden bg-surface border border-card-border block focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12',
-				'transition-[transform,scale,box-shadow,border-color] duration-(--duration-medium) ease-apple will-change-transform',
+				'transition-[transform,scale,box-shadow,border-color] duration-(--duration-medium) ease-apple',
 				'hover:scale-[1.03] active:scale-[0.98] hover:border-gold/40 hover:shadow-poster hover:z-10',
 				className
 			)}
 		>
 			<div className="relative aspect-2/3 w-full overflow-hidden rounded-poster bg-surface">
-				{enableSharedTransition ? (
-					<ViewTransition name={posterTransitionName(media)}>
-						{poster}
-					</ViewTransition>
-				) : (
-					poster
-				)}
+				{poster}
 
 				{!compact && (
 					<div
@@ -119,7 +111,7 @@ export function MediaCard({
 				)}
 
 				{compact && badgeEntry && (
-					<div className="absolute top-1.5 right-1.5 z-10 grid size-6 place-items-center rounded-full glass-overlay shadow-card-sm">
+					<div className="absolute top-1.5 right-1.5 z-10 grid size-6 place-items-center rounded-full bg-poster-overlay-heavy border border-white/10 shadow-card-sm">
 						{badgeEntry.status === 'watched' ? (
 							<Eye
 								className="h-3 w-3 text-success"
@@ -168,7 +160,7 @@ export function MediaCard({
 							'translate-y-0 group-hover:-translate-y-1'
 						)}
 					>
-						<div className="flex items-center gap-1.5 rounded-md bg-poster-overlay px-2 py-1 text-xs font-mono font-bold text-gold-bright backdrop-blur-md border border-white/10 shadow-card-sm transition-colors group-hover:bg-poster-overlay-heavy">
+						<div className="flex items-center gap-1.5 rounded-md bg-poster-overlay-heavy px-2 py-1 text-xs font-mono font-bold text-gold-bright border border-white/10 shadow-card-sm">
 							<Star
 								className="h-3 w-3 fill-current drop-shadow-text"
 								aria-hidden="true"
@@ -244,6 +236,7 @@ export function MediaCard({
 							fallbackStatus={resolvedFallback}
 							variant="full"
 							onDark
+							blur={false}
 						/>
 					</div>
 				)}

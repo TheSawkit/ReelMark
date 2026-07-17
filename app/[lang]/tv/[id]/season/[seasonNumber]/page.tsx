@@ -147,7 +147,7 @@ export default async function SeasonPage(props: SeasonPageProps) {
 		tvDetails.backdrop_path ??
 			seasonDetails.poster_path ??
 			tvDetails.poster_path,
-		'original'
+		'w1280'
 	);
 
 	return (

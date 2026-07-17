@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { getServerLanguage, getTranslations } from '@/lib/i18n/server';
+import { getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import {
 	ensureUniqueUsername,
@@ -9,11 +9,17 @@ import {
 	suggestUsernameFromMetadata,
 } from '@/lib/onboarding';
 import { OnboardingForm } from '@/components/onboarding/OnboardingForm';
+import type { Language } from '@/lib/i18n/translations';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata() {
-	const t = await getTranslations();
+type Props = {
+	params: Promise<{ lang: Language }>;
+};
+
+export async function generateMetadata({ params }: Props) {
+	const { lang } = await params;
+	const t = await getTranslations(lang);
 	return {
 		title: t.onboarding.title,
 		robots: {
@@ -24,7 +30,8 @@ export async function generateMetadata() {
 	};
 }
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({ params }: Props) {
+	const { lang } = await params;
 	const user = await requireAuth();
 	const supabase = await createClient();
 
@@ -35,7 +42,7 @@ export default async function OnboardingPage() {
 		.maybeSingle();
 
 	if (!needsOnboarding(user.user_metadata, profile?.onboarding_completed)) {
-		redirect(localizedHref(await getServerLanguage(), '/dashboard'));
+		redirect(localizedHref(lang, '/dashboard'));
 	}
 
 	const existingUsername =

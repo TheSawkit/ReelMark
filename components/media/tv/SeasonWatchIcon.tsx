@@ -57,7 +57,7 @@ export function SeasonWatchIcon({
 				allWatched ? t.movie.markUnwatched : t.movie.markSeasonWatched
 			}
 			className={cn(
-				'h-8 w-8 rounded-full backdrop-blur-md border',
+				'h-8 w-8 rounded-full border',
 				'flex items-center justify-center transition-all duration-(--duration-base) cursor-pointer',
 				allWatched
 					? 'bg-success/30 text-success border-success/30 hover:bg-red/30 hover:text-red hover:border-red/30'

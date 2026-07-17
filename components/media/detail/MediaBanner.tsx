@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useRef, ViewTransition } from 'react';
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { getImageUrl } from '@/lib/tmdb/images';
-import { posterTransitionName } from '@/lib/media';
+import { getColorSampleUrl, getImageUrl } from '@/lib/tmdb/images';
 import type { MediaBannerProps } from '@/types/components';
 import { Clock, Calendar, ArrowLeft } from 'lucide-react';
 import { InfoBadge, RatingBadge } from '@/components/ui/InfoBadge';
@@ -20,8 +19,6 @@ import { mediaHeaderStore } from '@/lib/media-header-store';
  * Feeds title and scroll state into mediaHeaderStore for NavbarClient and MediaActionsBar.
  */
 export function MediaBanner({
-	mediaType,
-	mediaId,
 	title,
 	tagline,
 	backdropUrl,
@@ -38,7 +35,7 @@ export function MediaBanner({
 	const locale = getLocale(lang);
 	const router = useRouter();
 	const bottomRef = useRef<HTMLDivElement>(null);
-	const dominantColor = useDominantColor(backdropUrl);
+	const dominantColor = useDominantColor(getColorSampleUrl(backdropUrl));
 
 	useEffect(() => {
 		mediaHeaderStore.setMedia(title);
@@ -81,21 +78,14 @@ export function MediaBanner({
 				</div>
 				<div className="flex flex-col md:flex-row gap-3 sm:gap-6 md:gap-8 w-full items-start md:items-end pt-4 sm:pt-10 md:pt-0">
 					<div className="relative aspect-2/3 w-20 sm:w-40 md:w-48 lg:w-56 shrink-0 rounded-lg overflow-hidden border-2 border-gold/30 shadow-poster">
-						<ViewTransition
-							name={posterTransitionName({
-								media_type: mediaType,
-								id: mediaId,
-							})}
-						>
-							<Image
-								src={getImageUrl(posterPath, 'w500')}
-								alt={title}
-								fill
-								priority
-								className="object-cover"
-								sizes="(max-width: 768px) 128px, 224px"
-							/>
-						</ViewTransition>
+						<Image
+							src={getImageUrl(posterPath, 'w500')}
+							alt={title}
+							fill
+							priority
+							className="object-cover"
+							sizes="(max-width: 768px) 128px, 224px"
+						/>
 					</div>
 
 					<div className="flex-1 max-w-4xl">

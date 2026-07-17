@@ -187,15 +187,13 @@ export default async function MoviePage(props: MoviePageProps) {
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, movieDetails.backdrop_path),
-		'original'
+		'w1280'
 	);
 
 	const crew = groupCrew(credits.crew);
 
 	const banner = (
 		<MediaBanner
-			mediaType="movie"
-			mediaId={movieDetails.id}
 			title={movieDetails.title}
 			tagline={movieDetails.tagline}
 			backdropUrl={heroImageUrl}

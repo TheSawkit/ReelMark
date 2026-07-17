@@ -89,7 +89,6 @@ export function CrewFilmography({ departments }: CrewFilmographyProps) {
 							media={item}
 							imageSize="grid"
 							priority={index < 6}
-							enableSharedTransition
 						/>
 					</div>
 				)}

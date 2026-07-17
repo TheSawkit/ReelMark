@@ -252,7 +252,7 @@ export default async function TvShowPage(props: TvPageProps) {
 
 	const heroImageUrl = getImageUrl(
 		selectHeroImage(images, tvDetails.backdrop_path),
-		'original'
+		'w1280'
 	);
 	const standardSeasons = (tvDetails.seasons ?? []).filter(
 		(s: { season_number: number }) => s.season_number > 0
@@ -266,8 +266,6 @@ export default async function TvShowPage(props: TvPageProps) {
 
 	const banner = (
 		<MediaBanner
-			mediaType="tv"
-			mediaId={tvDetails.id}
 			title={tvDetails.name}
 			tagline={tvDetails.tagline}
 			backdropUrl={heroImageUrl}

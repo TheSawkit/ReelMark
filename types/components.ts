@@ -43,8 +43,6 @@ export interface InfiniteScrollMediaProps {
 }
 
 export interface MediaBannerProps {
-	mediaType: MediaType;
-	mediaId: number;
 	title: string;
 	tagline?: string;
 	backdropUrl: string;
@@ -80,6 +78,7 @@ export interface WatchButtonProps {
 	fallbackStatus?: WatchStatus;
 	variant?: 'icon' | 'full' | 'responsive';
 	onDark?: boolean;
+	blur?: boolean;
 	releaseDate?: string;
 }
 
