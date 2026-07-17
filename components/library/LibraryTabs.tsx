@@ -13,6 +13,7 @@ import type { MediaItem, WatchlistEntry } from '@/types/tmdb';
 import { watchlistEntryToMediaItem } from '@/lib/mappers';
 import { getMediaKey } from '@/lib/media';
 import { useMediaListControls } from '@/hooks/useMediaListControls';
+import { mediaWatchStore, useMediaWatchVersion } from '@/lib/media-watch-store';
 
 const LIBRARY_COLUMNS: GridColumns = { base: 2, sm: 3, md: 4, lg: 5, xl: 6 };
 const LIBRARY_ROW_CLASS =
@@ -39,6 +40,17 @@ function toItems(
 	});
 }
 
+/** Server buckets can be stale right after a mutation — the store holds the live status. */
+function withLiveStatus(entries: WatchlistEntry[]): WatchlistEntry[] {
+	return entries.flatMap((entry) => {
+		const stored = mediaWatchStore.get(entry.media_type, entry.media_id)
+			?.status;
+		if (!stored || stored === entry.status) return entry;
+		if (stored === 'none') return [];
+		return { ...entry, status: stored };
+	});
+}
+
 export function LibraryTabs({
 	toWatch,
 	watched,
@@ -49,19 +61,22 @@ export function LibraryTabs({
 }: LibraryTabsProps) {
 	const [activeTab, setActiveTab] = useState<Tab>('to_watch');
 	const { t } = useTranslation();
+	const watchVersion = useMediaWatchVersion();
 
-	const toWatchItems = useMemo(
-		() => toItems(toWatch, ratingByKey),
-		[toWatch, ratingByKey]
-	);
-	const watchedItems = useMemo(
-		() => toItems(watched, ratingByKey),
-		[watched, ratingByKey]
-	);
-	const abandonedItems = useMemo(
-		() => toItems(abandoned, ratingByKey),
-		[abandoned, ratingByKey]
-	);
+	const { toWatchItems, watchedItems, abandonedItems } = useMemo(() => {
+		void watchVersion;
+		const live = withLiveStatus([...toWatch, ...watched, ...abandoned]);
+		const bucket = (status: Tab) =>
+			toItems(
+				live.filter((entry) => entry.status === status),
+				ratingByKey
+			);
+		return {
+			toWatchItems: bucket('to_watch'),
+			watchedItems: bucket('watched'),
+			abandonedItems: bucket('abandoned'),
+		};
+	}, [toWatch, watched, abandoned, ratingByKey, watchVersion]);
 
 	const tabs: Record<
 		Tab,

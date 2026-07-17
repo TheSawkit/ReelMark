@@ -34,16 +34,18 @@ export function TvWatchActions({
 
 	return (
 		<div className="flex items-center gap-2">
-			<WatchButton
-				mediaId={mediaId}
-				mediaTitle={mediaTitle}
-				mediaType="tv"
-				posterPath={posterPath}
-				status={status === 'watched' ? 'watched' : 'to_watch'}
-				variant={variant === 'bar' ? 'responsive' : 'full'}
-				initialIsActive={status !== 'none'}
-				releaseDate={releaseDate}
-			/>
+			<div className={variant === 'banner' ? 'flex-1 min-w-0' : undefined}>
+				<WatchButton
+					mediaId={mediaId}
+					mediaTitle={mediaTitle}
+					mediaType="tv"
+					posterPath={posterPath}
+					status={status === 'watched' ? 'watched' : 'to_watch'}
+					variant={variant === 'bar' ? 'responsive' : 'full'}
+					initialIsActive={status !== 'none'}
+					releaseDate={releaseDate}
+				/>
+			</div>
 			{status !== 'none' && (
 				<AbandonShowMenu
 					tvId={mediaId}
