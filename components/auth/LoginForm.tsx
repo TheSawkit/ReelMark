@@ -96,7 +96,7 @@ export function LoginForm({
 			className={cn('flex flex-col gap-6 auth-form-animate', className)}
 			{...props}
 		>
-			<Card className="transform transition-all duration-(--duration-base) hover:shadow-cinema">
+			<Card className="transform transition-all duration-(--duration-base)">
 				<CardHeader className="text-center">
 					<CardTitle className="text-xl">
 						{t.auth.login.title}

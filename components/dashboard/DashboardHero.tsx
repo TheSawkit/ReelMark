@@ -46,7 +46,7 @@ export async function DashboardHero({
 			<TiltCard max={5} radius={24} glow={false}>
 				<Link
 					href={localizedHref(lang, getMediaHref(item))}
-					className="relative block h-104 sm:h-112 overflow-hidden rounded-3xl border border-border shadow-cinema focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+					className="relative block h-104 sm:h-112 overflow-hidden rounded-3xl border border-border shadow-card-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 				>
 					{item.backdropPath ? (
 						<Image

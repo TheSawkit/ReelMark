@@ -18,6 +18,7 @@ export type TvWatchlistStatus = WatchStatus | 'none';
 export interface EpisodeWatchResult {
 	watched: boolean;
 	tvStatus: TvWatchlistStatus;
+	addedToWatchlist: boolean;
 }
 
 /** Result of a season-wide write, carrying the pre-mutation state so the UI can offer an exact undo. */
@@ -137,6 +138,7 @@ export async function setEpisodeWatched(
 	watched: boolean
 ): Promise<EpisodeWatchResult> {
 	const { supabase, userId } = await getAuthenticatedUser();
+	const previousStatus = await readTvWatchlistStatus(supabase, userId, tvId);
 
 	if (watched) {
 		const { error } = await supabase.from('episode_watches').upsert(
@@ -162,7 +164,11 @@ export async function setEpisodeWatched(
 
 	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
 	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
-	return { watched, tvStatus };
+	return {
+		watched,
+		tvStatus,
+		addedToWatchlist: previousStatus === 'none' && tvStatus !== 'none',
+	};
 }
 
 /**
@@ -188,6 +194,7 @@ export async function setEpisodesWatchedUpTo(
 	}
 
 	const { supabase, userId } = await getAuthenticatedUser();
+	const previousStatus = await readTvWatchlistStatus(supabase, userId, tvId);
 	const previousEpisodes = await readSeasonEpisodes(
 		supabase,
 		userId,
@@ -208,7 +215,12 @@ export async function setEpisodesWatchedUpTo(
 
 	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
 	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
-	return { watched: true, tvStatus, previousEpisodes };
+	return {
+		watched: true,
+		tvStatus,
+		previousEpisodes,
+		addedToWatchlist: previousStatus === 'none' && tvStatus !== 'none',
+	};
 }
 
 /**
@@ -228,6 +240,7 @@ export async function setSeasonEpisodes(
 	assertEpisodeNumbers(episodeNumbers);
 
 	const { supabase, userId } = await getAuthenticatedUser();
+	const previousStatus = await readTvWatchlistStatus(supabase, userId, tvId);
 	const previousEpisodes = await readSeasonEpisodes(
 		supabase,
 		userId,
@@ -274,6 +287,7 @@ export async function setSeasonEpisodes(
 		watched: episodeNumbers.length > 0,
 		tvStatus,
 		previousEpisodes,
+		addedToWatchlist: previousStatus === 'none' && tvStatus !== 'none',
 	};
 }
 
@@ -302,6 +316,7 @@ export async function setSeasonWatched(
 	}
 
 	const { supabase, userId } = await getAuthenticatedUser();
+	const previousStatus = await readTvWatchlistStatus(supabase, userId, tvId);
 	const previousEpisodes = await readSeasonEpisodes(
 		supabase,
 		userId,
@@ -333,7 +348,12 @@ export async function setSeasonWatched(
 
 	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
 	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
-	return { watched, tvStatus, previousEpisodes };
+	return {
+		watched,
+		tvStatus,
+		previousEpisodes,
+		addedToWatchlist: previousStatus === 'none' && tvStatus !== 'none',
+	};
 }
 
 /**

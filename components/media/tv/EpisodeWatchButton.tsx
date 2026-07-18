@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Eye, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -46,6 +47,7 @@ export function EpisodeWatchButton({
 	const [missingEpisodes, setMissingEpisodes] = useState<number[]>([]);
 	const { loading, error, run } = useOptimisticAction();
 	const { t } = useTranslation();
+	const router = useRouter();
 
 	const seasonState = useSeasonWatch(tvId, seasonNumber);
 	const watched = useEpisodeWatched(
@@ -80,6 +82,7 @@ export function EpisodeWatchButton({
 				setEpisodeWatched(tvId, seasonNumber, episodeNumber, target),
 			onSuccess: (result) => {
 				mediaWatchStore.set('tv', tvId, result.tvStatus);
+				if (result.addedToWatchlist) router.refresh();
 				if (!target || watchedBefore === null) return;
 
 				const skipped =
@@ -108,7 +111,7 @@ export function EpisodeWatchButton({
 					'flex items-center justify-center gap-2 px-4 py-2 rounded-md text-xs font-medium transition-colors border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-10 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer',
 					watched
 						? 'bg-primary/40 text-white border-border/10 border-t-border/20 shadow-glow-red'
-						: 'bg-surface/20 text-muted border-border/10 border-t-border/20 hover:text-text hover:bg-surface-2/20 hover:border-border shadow-card-sm'
+						: 'bg-surface/70 text-muted border-border/10 border-t-border/20 hover:text-text hover:bg-surface-2/70 hover:border-border shadow-card-sm'
 				)}
 			>
 				<ActionStatusIcon
