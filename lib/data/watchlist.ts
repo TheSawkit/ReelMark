@@ -1,9 +1,11 @@
 import { cache } from 'react';
 import { getUserWatchlist } from '@/app/actions/watchlist';
 import { getAllTvShowsWatchProgress } from '@/app/actions/episodes';
+import { getMyReviewRatings } from '@/app/actions/reviews';
 import type { MediaItem, WatchlistEntry } from '@/types/tmdb';
 
 export const getCachedUserWatchlist = cache(getUserWatchlist);
+export const getCachedMyRatings = cache(getMyReviewRatings);
 
 /**
  * Loads the user's watchlist and per-show episode progress in one request-deduped call.

@@ -40,9 +40,16 @@ import {
 } from '@/components/dashboard/DashboardSkeletons';
 import { getContinueWatching } from '@/app/actions/continue-watching';
 import {
+	getCachedMyRatings,
 	getWatchlistWithProgress,
 	mergeWithWatchlist,
 } from '@/lib/data/watchlist';
+import {
+	favoriteGenres,
+	pickSeeds,
+	rankRecommendations,
+} from '@/lib/recommendations';
+import { getMediaKey } from '@/lib/media';
 import { buildPageMetadata } from '@/lib/metadata';
 import type { Movie, TvShow, MediaType } from '@/types/tmdb';
 
@@ -213,10 +220,9 @@ async function buildLibraryContent(
 	t: Translations,
 	lang: Language
 ) {
-	const toWatch = watchlist
-		.filter(
-			(entry) => entry.media_type === type && entry.status === 'to_watch'
-		)
+	const typeEntries = watchlist.filter((entry) => entry.media_type === type);
+	const toWatch = typeEntries
+		.filter((entry) => entry.status === 'to_watch')
 		.slice(0, 10);
 
 	const tvProgressMap: Record<number, { watched: number; total: number }> =
@@ -231,13 +237,8 @@ async function buildLibraryContent(
 			}
 		}
 	}
-	const watched = watchlist.filter(
-		(entry) => entry.media_type === type && entry.status === 'watched'
-	);
-	const seedMedia = watched.slice(0, 4);
-
-	const seedForRecs = seedMedia.slice(0, 1);
-	const seedForSimilars = seedMedia.slice(1, 4);
+	const watched = typeEntries.filter((entry) => entry.status === 'watched');
+	const seedForSimilars = watched.slice(0, 3);
 
 	const isMovie = type === 'movie';
 	const getRecs = isMovie
@@ -245,26 +246,38 @@ async function buildLibraryContent(
 		: getTvShowRecommendations;
 	const getSims = isMovie ? getSimilarMovies : getSimilarTvShows;
 
+	const ratingByKey = await getCachedMyRatings();
+	const seeds = pickSeeds(typeEntries, ratingByKey);
+
 	const [recommendationsResults, similarResults] = await Promise.all([
-		Promise.all(seedForRecs.map((entry) => getRecs(entry.media_id))),
-		Promise.all(seedForSimilars.map((entry) => getSims(entry.media_id))),
+		Promise.all(seeds.map(({ entry }) => getRecs(entry.media_id, lang))),
+		Promise.all(
+			seedForSimilars.map((entry) => getSims(entry.media_id, lang))
+		),
 	]);
 
-	const recommendationSections = seedForRecs
-		.map((entry, index) => ({
-			title: t.pages.dashboard.basedOn.replace(
-				'${movie.movie_title}',
-				entry.media_title
-			),
-			items: isMovie
-				? (recommendationsResults[index] as Movie[]).map(
-						movieToMediaItem
-					)
-				: (recommendationsResults[index] as TvShow[]).map(
-						tvShowToMediaItem
-					),
-		}))
-		.filter((section) => section.items.length > 0);
+	const seedCandidates = seeds.map(({ weight }, index) => ({
+		weight,
+		items: isMovie
+			? (recommendationsResults[index] as Movie[]).map(movieToMediaItem)
+			: (recommendationsResults[index] as TvShow[]).map(
+					tvShowToMediaItem
+				),
+	}));
+	const excludedKeys = new Set(
+		typeEntries.map((entry) =>
+			getMediaKey({ media_type: entry.media_type, id: entry.media_id })
+		)
+	);
+	const forYouItems = rankRecommendations(
+		seedCandidates,
+		excludedKeys,
+		favoriteGenres(typeEntries)
+	);
+	const forYouSections =
+		forYouItems.length > 0
+			? [{ title: t.pages.dashboard.forYou, items: forYouItems }]
+			: [];
 
 	const similarSections = seedForSimilars
 		.map((entry, index) => ({
@@ -278,16 +291,16 @@ async function buildLibraryContent(
 		}))
 		.filter((section) => section.items.length > 0);
 
-	const allSections = await Promise.all(
-		[...recommendationSections, ...similarSections].map(
-			async (section) => ({
+	const allSections = [
+		...forYouSections,
+		...(await Promise.all(
+			similarSections.map(async (section) => ({
 				...section,
 				items: await mergeWithWatchlist(section.items),
-			})
-		)
-	);
-	const isEmpty =
-		watchlist.filter((entry) => entry.media_type === type).length === 0;
+			}))
+		)),
+	];
+	const isEmpty = typeEntries.length === 0;
 	return (
 		<>
 			{toWatch.length > 0 && (
