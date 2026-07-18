@@ -3,7 +3,12 @@
 import { useEffect, useState, useRef, useCallback, useTransition } from 'react';
 import { useInView } from '@/hooks/useInView';
 import type { MediaItem } from '@/types/tmdb';
-import { MediaGrid } from '@/components/media/card/MediaGrid';
+import { MediaCard } from '@/components/media/card/MediaCard';
+import {
+	VirtualMediaGrid,
+	MEDIA_GRID_COLUMNS,
+	MEDIA_GRID_ROW_CLASS,
+} from '@/components/media/card/VirtualMediaGrid';
 import { MediaCardSkeleton } from '@/components/media/card/MediaCardSkeleton';
 import { BackToTopButton } from '@/components/shared/BackToTopButton';
 import { fetchMoreMedia } from '@/app/actions/media';
@@ -123,10 +128,25 @@ export function InfiniteScrollMedia({
 
 	return (
 		<>
-			<MediaGrid
+			<VirtualMediaGrid
 				items={items}
-				hideRating={hideRating ?? category === 'upcoming'}
-				showWatchlistMeta={showWatchlistMeta}
+				columns={MEDIA_GRID_COLUMNS}
+				rowClassName={MEDIA_GRID_ROW_CLASS}
+				renderItem={(item, index) => (
+					<div key={getMediaKey(item)} className="media-grid-cell">
+						<MediaCard
+							media={item}
+							watchlistEntry={
+								showWatchlistMeta
+									? item.watchlistEntry
+									: undefined
+							}
+							hideRating={hideRating ?? category === 'upcoming'}
+							imageSize="grid"
+							priority={index < 6}
+						/>
+					</div>
+				)}
 			/>
 
 			<div ref={loaderRef} aria-hidden="true" />
