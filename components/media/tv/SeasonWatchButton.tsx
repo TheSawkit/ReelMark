@@ -54,11 +54,11 @@ export function SeasonWatchButton({
 				)}
 			>
 				<ActionStatusIcon
-				loading={loading}
-				error={error}
-				icon={CheckCheck}
-				className="h-5 w-5"
-			/>
+					loading={loading}
+					error={error}
+					icon={CheckCheck}
+					className="h-5 w-5"
+				/>
 				<span className="hidden lg:inline">{stateLabel}</span>
 			</button>
 		);

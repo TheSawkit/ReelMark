@@ -44,7 +44,9 @@ export function CrewBanner({ crew }: CrewBannerProps) {
 		const title = jobTitles[key];
 		if (title) {
 			const gendered = crew.gender === 1 ? title.female : title.male;
-			return gendered || title.default || title.male || title.female || dept;
+			return (
+				gendered || title.default || title.male || title.female || dept
+			);
 		}
 
 		const flatSection: Record<string, unknown> = t.movie;
