@@ -11,8 +11,8 @@ interface MediaActionsBarProps {
 }
 
 /**
- * Sticky media actions. Desktop: fixed bar at the bottom. Mobile: portaled into
- * the navbar as an expanding sub-bar (so it never overlaps the fixed navbar).
+ * Sticky media actions. Desktop: fixed bar at the bottom. Below lg: portaled
+ * into the navbar's trailing slot, crossfading with search/notifications.
  */
 export function MediaActionsBar({ children }: MediaActionsBarProps) {
 	const { scrolled } = useMediaHeader();
@@ -27,15 +27,13 @@ export function MediaActionsBar({ children }: MediaActionsBarProps) {
 		return createPortal(
 			<div
 				className={cn(
-					'overflow-hidden transition-all duration-(--duration-base) ease-in-out',
+					'flex items-center gap-2 transition-all duration-(--duration-base) ease-apple',
 					scrolled
-						? 'max-h-20 opacity-100'
-						: 'max-h-0 opacity-0 pointer-events-none'
+						? 'visible scale-100 opacity-100'
+						: 'invisible scale-95 opacity-0'
 				)}
 			>
-				<div className="h-14 flex items-center justify-center gap-3 border-t border-border/15">
-					{children}
-				</div>
+				{children}
 			</div>,
 			slot
 		);

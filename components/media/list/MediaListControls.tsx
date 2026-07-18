@@ -31,7 +31,7 @@ interface MediaListControlsProps {
 }
 
 const triggerClass =
-	'flex items-center gap-2 px-3.5 py-2 rounded-full bg-surface-2 border border-border text-sm font-medium text-text hover:bg-surface-3 transition-colors duration-(--duration-fast) cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-10';
+	'flex items-center gap-2 px-3.5 py-2 rounded-full bg-surface-2 border border-border text-sm font-medium text-text hover:bg-surface-3 transition-colors duration-(--duration-fast) cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11';
 
 export function MediaListControls({
 	controls,
@@ -149,7 +149,7 @@ export function MediaListControls({
 						onChange={(e) => setActorQuery(e.target.value)}
 						placeholder={t.lists.actorPlaceholder}
 						aria-label={t.lists.filterByActor}
-						className="w-full h-10 pl-9 pr-9 rounded-full bg-surface-2 border border-border text-sm text-text placeholder:text-muted outline-none transition-colors duration-(--duration-fast) focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+						className="w-full h-11 pl-9 pr-9 rounded-full bg-surface-2 border border-border text-sm text-text placeholder:text-muted outline-none transition-colors duration-(--duration-fast) focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
 					/>
 					{isActorLoading ? (
 						<Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted animate-spin" />

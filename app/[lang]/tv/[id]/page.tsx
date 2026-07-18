@@ -201,12 +201,12 @@ async function TvSeasonsGrid({
 export async function generateMetadata({
 	params,
 }: {
-	params: Promise<{ id: string }>;
+	params: TvPageParams;
 }): Promise<Metadata> {
-	const { id } = await params;
+	const { id, lang } = await params;
 	const tvId = parseInt(id);
 	if (isNaN(tvId)) return { title: 'ReelMark' };
-	return buildMediaDetailMetadata('tv', tvId);
+	return buildMediaDetailMetadata('tv', tvId, lang);
 }
 
 export default async function TvShowPage(props: TvPageProps) {

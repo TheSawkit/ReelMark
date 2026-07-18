@@ -1,5 +1,7 @@
 'use server';
 
+import { headers } from 'next/headers';
+import { checkRateLimit, clientIpFrom } from '@/lib/rate-limiter';
 import {
 	getPopularMovies,
 	getTopRatedMovies,
@@ -119,6 +121,8 @@ export async function fetchMoreMedia(
 
 const ACTOR_FILTER_MAX_ITEMS = 300;
 const ACTOR_CREDITS_BATCH_SIZE = 8;
+const ACTOR_FILTER_LIMIT = 20;
+const ACTOR_FILTER_WINDOW_MS = 60_000;
 
 function normalizeName(value: string): string {
 	return value
@@ -144,6 +148,14 @@ export async function filterListByActor(
 ): Promise<string[]> {
 	const needle = normalizeName(query);
 	if (needle === '') return items.map((item) => getMediaKey(item));
+
+	const ip = clientIpFrom(await headers());
+	const { allowed } = checkRateLimit(
+		`actor-filter:${ip}`,
+		ACTOR_FILTER_LIMIT,
+		ACTOR_FILTER_WINDOW_MS
+	);
+	if (!allowed) throw new Error('Too many requests');
 
 	const scoped = items.slice(0, ACTOR_FILTER_MAX_ITEMS);
 	if (scoped.length < items.length) {

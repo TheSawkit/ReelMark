@@ -1,6 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { createKeyedStore } from '@/lib/keyed-store';
 import type { Review, ReviewMediaType } from '@/types/profile';
 
 export interface CommunityRating {
@@ -8,23 +9,13 @@ export interface CommunityRating {
 	count: number;
 }
 
-const ratings = new Map<string, CommunityRating | null>();
-const myReviews = new Map<string, Review | null>();
-const listeners = new Set<() => void>();
+const ratingsStore = createKeyedStore<CommunityRating | null>();
+const reviewsStore = createKeyedStore<Review | null>();
+const ratings = ratingsStore.entries;
+const myReviews = reviewsStore.entries;
 
 const ratingKey = (mediaType: ReviewMediaType, mediaId: number) =>
 	`${mediaType}:${mediaId}`;
-
-function notify() {
-	listeners.forEach((listener) => listener());
-}
-
-function subscribe(listener: () => void) {
-	listeners.add(listener);
-	return () => {
-		listeners.delete(listener);
-	};
-}
 
 /**
  * Recomputes a community average after one user swaps their rating.
@@ -68,7 +59,7 @@ export const mediaRatingStore = {
 			ratingKey(mediaType, mediaId),
 			nextCommunityRating(current, previousRating, nextRating)
 		);
-		notify();
+		ratingsStore.notify();
 	},
 
 	setMyReview(
@@ -77,13 +68,13 @@ export const mediaRatingStore = {
 		review: Review | null
 	) {
 		myReviews.set(ratingKey(mediaType, mediaId), review);
-		notify();
+		reviewsStore.notify();
 	},
 
 	/** Drops the local average so the next server render wins — use when the new average can't be derived locally. */
 	invalidateRating(mediaType: ReviewMediaType, mediaId: number) {
 		ratings.delete(ratingKey(mediaType, mediaId));
-		notify();
+		ratingsStore.notify();
 	},
 };
 
@@ -95,7 +86,7 @@ export function useMediaRating(
 ): CommunityRating | null {
 	const key = ratingKey(mediaType, mediaId);
 	return useSyncExternalStore(
-		subscribe,
+		ratingsStore.subscribe,
 		() => (ratings.has(key) ? (ratings.get(key) ?? null) : fallback),
 		() => fallback
 	);
@@ -109,7 +100,7 @@ export function useMyReview(
 ): Review | null {
 	const key = ratingKey(mediaType, mediaId);
 	return useSyncExternalStore(
-		subscribe,
+		reviewsStore.subscribe,
 		() => (myReviews.has(key) ? (myReviews.get(key) ?? null) : fallback),
 		() => fallback
 	);

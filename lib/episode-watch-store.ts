@@ -1,6 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { createKeyedStore } from '@/lib/keyed-store';
 
 export interface SeasonWatchState {
 	count: number;
@@ -8,22 +9,14 @@ export interface SeasonWatchState {
 	dirty: boolean;
 }
 
-const seasons = new Map<string, SeasonWatchState>();
-const listeners = new Set<() => void>();
+const {
+	entries: seasons,
+	notify,
+	subscribe,
+} = createKeyedStore<SeasonWatchState>();
 
 const seasonKey = (tvId: number, seasonNumber: number) =>
 	`${tvId}:${seasonNumber}`;
-
-function notify() {
-	listeners.forEach((listener) => listener());
-}
-
-function subscribe(listener: () => void) {
-	listeners.add(listener);
-	return () => {
-		listeners.delete(listener);
-	};
-}
 
 /**
  * Client-side source of truth for per-season watch progress, shared between

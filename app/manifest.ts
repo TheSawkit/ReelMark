@@ -26,6 +26,7 @@ const ICON_192 = [
 
 export default function manifest(): MetadataRoute.Manifest {
 	const m: LocalizedManifest = {
+		id: '/',
 		name: 'ReelMark',
 		short_name: 'ReelMark',
 		description: 'Track and organize movies & TV shows you watched.',
@@ -36,6 +37,7 @@ export default function manifest(): MetadataRoute.Manifest {
 		},
 		start_url: '/',
 		display: 'standalone',
+		display_override: ['standalone', 'minimal-ui'],
 		background_color: '#000000',
 		theme_color: '#000000',
 		orientation: 'portrait-primary',

@@ -9,6 +9,12 @@ export const BASE_URL = (() => {
 	return 'https://reelmark.silexio.be';
 })();
 
+export const DEFAULT_OG_IMAGE = {
+	url: `${BASE_URL}/og`,
+	width: 1200,
+	height: 630,
+};
+
 interface MediaMetadataOptions {
 	title: string;
 	description: string;
@@ -56,8 +62,18 @@ export function buildPageMetadata(
 		...(options?.canonical && {
 			alternates: { canonical: options.canonical },
 		}),
-		openGraph: { title, description, type: 'website' },
-		twitter: { card: 'summary', title, description },
+		openGraph: {
+			title,
+			description,
+			type: 'website',
+			images: [DEFAULT_OG_IMAGE],
+		},
+		twitter: {
+			card: 'summary_large_image',
+			title,
+			description,
+			images: [DEFAULT_OG_IMAGE.url],
+		},
 	};
 }
 

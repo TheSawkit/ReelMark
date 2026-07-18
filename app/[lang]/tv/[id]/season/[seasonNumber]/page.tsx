@@ -173,6 +173,7 @@ export default async function SeasonPage(props: SeasonPageProps) {
 					seasonNumber={seasonNumber}
 					totalEpisodes={totalEpisodes}
 					watchedCount={watchedCount}
+					variant="responsive"
 				/>
 			</MediaActionsBar>
 

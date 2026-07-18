@@ -38,24 +38,18 @@ export function CrewBanner({ crew }: CrewBannerProps) {
 			DEPARTMENT_KEY_MAP[dept] ||
 			dept.toLowerCase().replace(/[^a-z0-9]+/gi, '');
 
-		type JobTitleObj = { male?: string; female?: string; default?: string };
-		const movieTyped = t.movie as unknown as Record<string, unknown>;
-
-		const jobTitles =
-			(movieTyped.jobTitles as Record<string, JobTitleObj> | undefined) ??
-			undefined;
-		if (jobTitles && jobTitles[key]) {
-			const isFemale = crew.gender === 1;
-			const titleObj = jobTitles[key] as JobTitleObj;
-			if (isFemale && titleObj.female) return titleObj.female;
-			if (!isFemale && titleObj.male) return titleObj.male;
-			return titleObj.default || titleObj.male || titleObj.female || dept;
+		type JobTitle = { male?: string; female?: string; default?: string };
+		const jobTitles: Record<string, JobTitle | undefined> =
+			t.movie.jobTitles;
+		const title = jobTitles[key];
+		if (title) {
+			const gendered = crew.gender === 1 ? title.female : title.male;
+			return gendered || title.default || title.male || title.female || dept;
 		}
 
-		const flat = movieTyped[key] as string | undefined;
-		if (flat) return flat;
-
-		return dept;
+		const flatSection: Record<string, unknown> = t.movie;
+		const flat = flatSection[key];
+		return typeof flat === 'string' ? flat : dept;
 	}
 
 	return (

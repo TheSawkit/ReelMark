@@ -52,7 +52,7 @@ export function TvWatchActions({
 				<AbandonShowMenu
 					tvId={mediaId}
 					initialStatus={status}
-					className="h-10 w-10 shrink-0"
+					className="h-11 w-11 shrink-0"
 				/>
 			)}
 		</div>

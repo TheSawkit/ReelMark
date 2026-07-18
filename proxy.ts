@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { checkRateLimit } from '@/lib/rate-limiter';
+import { checkRateLimit, clientIpFrom } from '@/lib/rate-limiter';
 import { DEFAULT_LANGUAGE, isLanguage } from '@/lib/i18n/config';
 import type { Language } from '@/lib/i18n/translations';
 
@@ -10,14 +10,6 @@ const RECOVERY_SEGMENT = '/auth/update-password';
 
 const SEARCH_LIMIT = 30;
 const SEARCH_WINDOW_MS = 60_000;
-
-function getClientIp(req: NextRequest): string {
-	return (
-		req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
-		req.headers.get('x-real-ip') ??
-		'unknown'
-	);
-}
 
 function detectLocale(request: NextRequest): Language {
 	const cookie = request.cookies.get('preferred-language')?.value;
@@ -41,7 +33,11 @@ function hasSessionCookie(request: NextRequest): boolean {
 }
 
 function isBypassedPath(pathname: string): boolean {
-	return pathname.startsWith('/api') || pathname.startsWith('/auth');
+	return (
+		pathname.startsWith('/api') ||
+		pathname.startsWith('/auth') ||
+		pathname === '/og'
+	);
 }
 
 function buildRequestHeaders(request: NextRequest, locale: Language): Headers {
@@ -53,7 +49,7 @@ function buildRequestHeaders(request: NextRequest, locale: Language): Headers {
 function handleSearchRateLimit(request: NextRequest): NextResponse | null {
 	if (request.nextUrl.pathname !== '/api/search') return null;
 
-	const ip = getClientIp(request);
+	const ip = clientIpFrom(request.headers);
 	const rate = checkRateLimit(`search:${ip}`, SEARCH_LIMIT, SEARCH_WINDOW_MS);
 
 	if (rate.allowed) return null;

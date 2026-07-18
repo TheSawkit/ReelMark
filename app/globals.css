@@ -206,7 +206,6 @@ body {
 	overflow-x: clip;
 	padding-left: env(safe-area-inset-left);
 	padding-right: env(safe-area-inset-right);
-	padding-bottom: env(safe-area-inset-bottom);
 }
 
 ::selection {
@@ -483,6 +482,20 @@ a {
 
 	.page-top-offset {
 		padding-top: calc(4rem + env(safe-area-inset-top));
+	}
+
+	/* Clears the floating tab bar (h-16 pill + mb-3 + safe-area) with breathing room. */
+	.page-bottom-clearance {
+		--bottom-nav-clearance: calc(
+			4rem + 0.75rem + env(safe-area-inset-bottom)
+		);
+		padding-bottom: calc(var(--bottom-nav-clearance) + 3rem);
+	}
+
+	@media (min-width: 1024px) {
+		.page-bottom-clearance {
+			padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+		}
 	}
 
 	.skeleton-sheen {

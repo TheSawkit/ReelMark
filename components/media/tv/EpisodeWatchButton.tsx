@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Eye, Check, Loader2, XCircle } from 'lucide-react';
+import { Eye, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ActionStatusIcon } from '@/components/ui/ActionStatusIcon';
 import { setEpisodeWatched } from '@/app/actions/episodes';
 import {
 	episodeWatchStore,
@@ -17,7 +18,7 @@ import {
 	missingEpisodesBefore,
 } from '@/lib/season-catch-up';
 import { useTranslation } from '@/lib/i18n/context';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useOptimisticAction } from '@/hooks/useOptimisticAction';
 
 const SeasonCatchUpPrompt = dynamic(
 	() =>
@@ -43,7 +44,7 @@ export function EpisodeWatchButton({
 	initialWatched,
 }: EpisodeWatchButtonProps) {
 	const [missingEpisodes, setMissingEpisodes] = useState<number[]>([]);
-	const { loading, error, execute } = useAsyncAction();
+	const { loading, error, run } = useOptimisticAction();
 	const { t } = useTranslation();
 
 	const seasonState = useSeasonWatch(tvId, seasonNumber);
@@ -57,36 +58,41 @@ export function EpisodeWatchButton({
 	async function handleToggle(e: React.MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
-		if (loading) return;
 		const target = !watched;
 		const watchedBefore = seasonState?.episodes ?? null;
-		episodeWatchStore.setEpisode(tvId, seasonNumber, episodeNumber, target);
-		const result = await execute(() =>
-			setEpisodeWatched(tvId, seasonNumber, episodeNumber, target)
-		);
-		if (!result) {
-			episodeWatchStore.setEpisode(
-				tvId,
-				seasonNumber,
-				episodeNumber,
-				!target
-			);
-			return;
-		}
-		mediaWatchStore.set('tv', tvId, result.tvStatus);
-		if (!target || watchedBefore === null) return;
 
-		const skipped =
-			isSeasonSkip(episodeNumber, watchedBefore) &&
-			!isCatchUpDismissed(tvId, seasonNumber);
-		if (skipped) {
-			setMissingEpisodes(
-				missingEpisodesBefore(episodeNumber, watchedBefore)
-			);
-		}
+		await run({
+			apply: () =>
+				episodeWatchStore.setEpisode(
+					tvId,
+					seasonNumber,
+					episodeNumber,
+					target
+				),
+			rollback: () =>
+				episodeWatchStore.setEpisode(
+					tvId,
+					seasonNumber,
+					episodeNumber,
+					!target
+				),
+			action: () =>
+				setEpisodeWatched(tvId, seasonNumber, episodeNumber, target),
+			onSuccess: (result) => {
+				mediaWatchStore.set('tv', tvId, result.tvStatus);
+				if (!target || watchedBefore === null) return;
+
+				const skipped =
+					isSeasonSkip(episodeNumber, watchedBefore) &&
+					!isCatchUpDismissed(tvId, seasonNumber);
+				if (skipped) {
+					setMissingEpisodes(
+						missingEpisodesBefore(episodeNumber, watchedBefore)
+					);
+				}
+			},
+		});
 	}
-
-	const Icon = loading ? Loader2 : error ? XCircle : watched ? Check : Eye;
 
 	return (
 		<>
@@ -105,7 +111,11 @@ export function EpisodeWatchButton({
 						: 'bg-surface/20 text-muted border-border/10 border-t-border/20 hover:text-text hover:bg-surface-2/20 hover:border-border shadow-card-sm'
 				)}
 			>
-				<Icon className={cn('h-4 w-4', loading && 'animate-spin')} />
+				<ActionStatusIcon
+					loading={loading}
+					error={error}
+					icon={watched ? Check : Eye}
+				/>
 				{error
 					? t.common.actionError
 					: watched

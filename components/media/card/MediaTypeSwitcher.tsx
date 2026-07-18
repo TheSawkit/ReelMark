@@ -73,7 +73,7 @@ export function MediaTypeSwitcher({
 						onClick={() => setType(type)}
 						disabled={isPending}
 						className={cn(
-							'flex flex-1 justify-center items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-(--duration-base) disabled:cursor-not-allowed',
+							'flex flex-1 justify-center items-center gap-2 min-h-11 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-(--duration-base) disabled:cursor-not-allowed',
 							activeType === type
 								? 'text-white shadow-cinema'
 								: 'text-muted hover:text-text'
