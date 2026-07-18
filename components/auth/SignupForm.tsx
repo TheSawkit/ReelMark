@@ -64,7 +64,7 @@ export function SignupForm({
 			className={cn('flex flex-col gap-6 auth-form-animate', className)}
 			{...props}
 		>
-			<Card className="transform transition-all duration-(--duration-base)">
+			<Card>
 				<CardHeader className="text-center">
 					<CardTitle className="text-xl">
 						{t.auth.signup.title}

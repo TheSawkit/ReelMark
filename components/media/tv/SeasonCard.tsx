@@ -46,7 +46,7 @@ export function SeasonCard({
 					`/tv/${tvId}/season/${season.season_number}`
 				)}
 				className={cn(
-					'flex gap-4 bg-surface-2 rounded-xl p-4 transition-all duration-(--duration-base) hover:bg-surface-3 hover:shadow-card-lift border cursor-pointer',
+					'flex gap-4 bg-surface-2 rounded-xl p-4 transition-colors duration-(--duration-base) hover:bg-surface-3 hover:shadow-card-lift border cursor-pointer',
 					isComplete
 						? 'border-success/30'
 						: 'border-border/10 hover:border-primary/30'

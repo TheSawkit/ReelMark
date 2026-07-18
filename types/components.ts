@@ -76,7 +76,7 @@ export interface WatchButtonProps {
 	status: WatchStatus;
 	initialIsActive?: boolean;
 	fallbackStatus?: WatchStatus;
-	variant?: 'icon' | 'full' | 'responsive';
+	variant?: 'full' | 'responsive';
 	onDark?: boolean;
 	blur?: boolean;
 	releaseDate?: string;
