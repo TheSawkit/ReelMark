@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { Aurora } from '@/components/effects/Aurora';
 import { Spotlight } from '@/components/effects/Spotlight';
 import { Grain } from '@/components/effects/Grain';
+import { PauseWhenOffscreen } from '@/components/effects/PauseWhenOffscreen';
 
 interface CinematicBackdropProps {
 	src: string;
@@ -20,10 +21,10 @@ export function CinematicBackdrop({ src, alt }: CinematicBackdropProps) {
 				className="page-top-offset object-cover object-top"
 				sizes="100vw"
 			/>
-			<div className="hidden md:contents">
+			<PauseWhenOffscreen className="hidden md:block absolute inset-0">
 				<Aurora intensity={0.4} />
 				<Spotlight />
-			</div>
+			</PauseWhenOffscreen>
 			<div className="absolute inset-0 bg-linear-to-t from-app-bg via-app-bg/40 to-transparent" />
 			<div className="absolute inset-0 bg-linear-to-r from-app-bg via-app-bg/40 to-transparent" />
 			<Grain opacity={0.06} />

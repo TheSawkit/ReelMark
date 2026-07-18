@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type PointerEvent, type ReactNode } from 'react';
+import { useRef, type PointerEvent, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 interface TiltCardProps {
@@ -20,9 +20,13 @@ function tiltEnabled() {
 	);
 }
 
+const GLOW_SIZE = 360;
+
 /**
  * 3D pointer-tilt card with a glow that follows the cursor.
- * Tilt is disabled on touch and reduced-motion devices (no JS work there).
+ * Pointer moves write CSS variables directly (rAF-throttled) — no React
+ * re-render per frame, and the glow spot moves via composited transform.
+ * Tilt is disabled on touch and reduced-motion devices.
  */
 export function TiltCard({
 	children,
@@ -33,24 +37,41 @@ export function TiltCard({
 	onClick,
 }: TiltCardProps) {
 	const ref = useRef<HTMLDivElement>(null);
-	const [t, setT] = useState({ rx: 0, ry: 0, gx: 50, gy: 50, on: false });
+	const frame = useRef(0);
 
 	const handleMove = (e: PointerEvent<HTMLDivElement>) => {
 		if (!tiltEnabled()) return;
 		const el = ref.current;
 		if (!el) return;
-		const r = el.getBoundingClientRect();
-		const px = (e.clientX - r.left) / r.width;
-		const py = (e.clientY - r.top) / r.height;
-		setT({
-			rx: (0.5 - py) * max,
-			ry: (px - 0.5) * max,
-			gx: px * 100,
-			gy: py * 100,
-			on: true,
+		const { clientX, clientY } = e;
+		cancelAnimationFrame(frame.current);
+		frame.current = requestAnimationFrame(() => {
+			const r = el.getBoundingClientRect();
+			const px = (clientX - r.left) / r.width;
+			const py = (clientY - r.top) / r.height;
+			el.style.setProperty('--tilt-rx', `${(0.5 - py) * max}deg`);
+			el.style.setProperty('--tilt-ry', `${(px - 0.5) * max}deg`);
+			el.style.setProperty('--tilt-scale', '1.03');
+			el.style.setProperty('--tilt-transition', 'transform .08s linear');
+			el.style.setProperty('--glow-x', `${clientX - r.left}px`);
+			el.style.setProperty('--glow-y', `${clientY - r.top}px`);
+			el.style.setProperty('--glow-opacity', '1');
 		});
 	};
-	const handleLeave = () => setT((s) => ({ ...s, rx: 0, ry: 0, on: false }));
+
+	const handleLeave = () => {
+		const el = ref.current;
+		if (!el) return;
+		cancelAnimationFrame(frame.current);
+		el.style.setProperty('--tilt-rx', '0deg');
+		el.style.setProperty('--tilt-ry', '0deg');
+		el.style.setProperty('--tilt-scale', '1');
+		el.style.setProperty(
+			'--tilt-transition',
+			'transform .5s var(--ease-apple-spring)'
+		);
+		el.style.setProperty('--glow-opacity', '0');
+	};
 
 	return (
 		<div
@@ -66,25 +87,34 @@ export function TiltCard({
 				style={{
 					borderRadius: radius,
 					transformStyle: 'preserve-3d',
-					transform: `rotateX(${t.rx}deg) rotateY(${t.ry}deg) scale(${t.on ? 1.03 : 1})`,
-					transition: t.on
-						? 'transform .08s linear'
-						: 'transform .5s var(--ease-apple-spring)',
-					willChange: t.on ? 'transform' : undefined,
+					transform:
+						'rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg)) scale(var(--tilt-scale, 1))',
+					transition:
+						'var(--tilt-transition, transform .5s var(--ease-apple-spring))',
+					willChange: 'transform',
 				}}
 			>
 				{children}
 				{glow && (
 					<div
 						aria-hidden="true"
-						className="pointer-events-none absolute inset-0"
+						className="pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-300"
 						style={{
 							borderRadius: radius,
-							background: `radial-gradient(180px circle at ${t.gx}% ${t.gy}%, rgb(255 255 255 / 0.18), transparent 50%)`,
-							opacity: t.on ? 1 : 0,
-							transition: 'opacity .3s',
+							opacity: 'var(--glow-opacity, 0)',
 						}}
-					/>
+					>
+						<div
+							className="absolute left-0 top-0 rounded-full will-change-transform"
+							style={{
+								height: GLOW_SIZE,
+								width: GLOW_SIZE,
+								background:
+									'radial-gradient(circle, rgb(255 255 255 / 0.18), transparent 50%)',
+								transform: `translate(calc(var(--glow-x, -${GLOW_SIZE}px) - ${GLOW_SIZE / 2}px), calc(var(--glow-y, -${GLOW_SIZE}px) - ${GLOW_SIZE / 2}px))`,
+							}}
+						/>
+					</div>
 				)}
 			</div>
 		</div>

@@ -515,4 +515,9 @@ a {
 		content-visibility: auto;
 		contain-intrinsic-size: auto 320px;
 	}
+
+	.motion-paused,
+	.motion-paused * {
+		animation-play-state: paused;
+	}
 }

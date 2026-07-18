@@ -9,6 +9,7 @@ import { TiltCard } from '@/components/effects/TiltCard';
 import { Aurora } from '@/components/effects/Aurora';
 import { Spotlight } from '@/components/effects/Spotlight';
 import { Grain } from '@/components/effects/Grain';
+import { PauseWhenOffscreen } from '@/components/effects/PauseWhenOffscreen';
 import { GlowBorder } from '@/components/effects/GlowBorder';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { BlurredPosterBackdrop } from '@/components/shared/BlurredPosterBackdrop';
@@ -63,8 +64,10 @@ export async function DashboardHero({
 						/>
 					)}
 
-					<Aurora intensity={0.65} />
-					<Spotlight />
+					<PauseWhenOffscreen className="absolute inset-0">
+						<Aurora intensity={0.65} />
+						<Spotlight />
+					</PauseWhenOffscreen>
 					<Grain />
 					<div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/45 to-transparent" />
 
