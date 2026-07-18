@@ -24,6 +24,7 @@ import { getTranslations, type Translations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
 import { localizedHref } from '@/lib/i18n/utils';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
+import { TypeSwitched } from '@/components/media/card/TypeSwitched';
 import {
 	DashboardHero,
 	type FeaturedHero,
@@ -59,7 +60,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 type Props = {
 	params: Promise<{ lang: Language }>;
-	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 async function buildHero(
@@ -188,16 +188,31 @@ async function TrendingSection({
 }
 
 async function LibraryContentSection({
-	type,
 	t,
 	lang,
 }: {
-	type: MediaType;
 	t: Translations;
 	lang: Language;
 }) {
 	const { watchlist, tvProgress } = await getWatchlistWithProgress();
+	const [movie, tv] = await Promise.all([
+		buildLibraryContent('movie', watchlist, tvProgress, t, lang),
+		buildLibraryContent('tv', watchlist, tvProgress, t, lang),
+	]);
+	return <TypeSwitched movie={movie} tv={tv} />;
+}
 
+async function buildLibraryContent(
+	type: MediaType,
+	watchlist: Awaited<
+		ReturnType<typeof getWatchlistWithProgress>
+	>['watchlist'],
+	tvProgress: Awaited<
+		ReturnType<typeof getWatchlistWithProgress>
+	>['tvProgress'],
+	t: Translations,
+	lang: Language
+) {
 	const toWatch = watchlist
 		.filter(
 			(entry) => entry.media_type === type && entry.status === 'to_watch'
@@ -310,13 +325,8 @@ async function LibraryContentSection({
 	);
 }
 
-export default async function DashboardPage({
-	params: paramsPromise,
-	searchParams,
-}: Props) {
+export default async function DashboardPage({ params: paramsPromise }: Props) {
 	const { lang } = await paramsPromise;
-	const params = await searchParams;
-	const type: MediaType = params?.type === 'tv' ? 'tv' : 'movie';
 	const t = await getTranslations(lang);
 
 	return (
@@ -343,7 +353,7 @@ export default async function DashboardPage({
 			</Suspense>
 
 			<Suspense fallback={<div className="h-11.5 mb-8" />}>
-				<MediaTypeSwitcher defaultType="movie" />
+				<MediaTypeSwitcher defaultType="movie" shallow />
 			</Suspense>
 
 			<Suspense
@@ -351,7 +361,7 @@ export default async function DashboardPage({
 					<MediaSectionsSkeleton sections={3} cardsPerSection={8} />
 				}
 			>
-				<LibraryContentSection type={type} t={t} lang={lang} />
+				<LibraryContentSection t={t} lang={lang} />
 			</Suspense>
 		</PageLayout>
 	);

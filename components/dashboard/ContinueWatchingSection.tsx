@@ -136,7 +136,7 @@ function ContinueWatchingCard({
 	const Icon = loading ? Loader2 : error ? XCircle : Eye;
 
 	return (
-		<article className="relative h-full overflow-hidden rounded-poster bg-surface shadow-card border border-border/10 transition-all duration-(--duration-base) hover:shadow-glow-gold hover:border-gold/40">
+		<article className="relative h-full overflow-hidden rounded-poster bg-surface shadow-card border border-border/10 transition-colors duration-(--duration-base) hover:shadow-glow-gold hover:border-gold/40">
 			<Link
 				href={seasonHref}
 				className="flex h-full flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"

@@ -1,5 +1,6 @@
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { MovingRow } from '@/components/effects/MovingRow';
+import { PauseWhenOffscreen } from '@/components/effects/PauseWhenOffscreen';
 import { MediaCard } from '@/components/media/card/MediaCard';
 import { getMediaKey } from '@/lib/media';
 import type { MediaItem } from '@/types/tmdb';
@@ -18,13 +19,15 @@ export function TrendingMarquee({ title, items }: TrendingMarqueeProps) {
 			<div className="mb-4">
 				<SectionHeading>{title}</SectionHeading>
 			</div>
-			<MovingRow speed={55} gap={14}>
-				{items.map((m) => (
-					<div key={getMediaKey(m)} className="w-28 sm:w-32">
-						<MediaCard media={m} hideRating compact />
-					</div>
-				))}
-			</MovingRow>
+			<PauseWhenOffscreen>
+				<MovingRow speed={55} gap={14}>
+					{items.map((m) => (
+						<div key={getMediaKey(m)} className="w-28 sm:w-32">
+							<MediaCard media={m} hideRating compact />
+						</div>
+					))}
+				</MovingRow>
+			</PauseWhenOffscreen>
 		</section>
 	);
 }
