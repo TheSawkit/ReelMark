@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { CheckCircle2, Eye, Loader2, XCircle } from 'lucide-react';
+import { CheckCircle2, Eye } from 'lucide-react';
+import { ActionStatusIcon } from '@/components/ui/ActionStatusIcon';
 import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { localizedHref } from '@/lib/i18n/utils';
@@ -11,7 +12,7 @@ import { useTranslation } from '@/lib/i18n/context';
 import { setEpisodeWatched } from '@/app/actions/episodes';
 import { episodeWatchStore, useTvWatchTotal } from '@/lib/episode-watch-store';
 import { mediaWatchStore } from '@/lib/media-watch-store';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useOptimisticAction } from '@/hooks/useOptimisticAction';
 import { AbandonShowMenu } from '@/components/media/tv/AbandonShowMenu';
 import { HorizontalScroll } from '@/components/shared/HorizontalScroll';
 import { SectionHeading } from '@/components/ui/SectionHeading';
@@ -76,7 +77,7 @@ function ContinueWatchingCard({
 	onAbandoned: () => void;
 }) {
 	const { t, lang } = useTranslation();
-	const { loading, error, execute } = useAsyncAction();
+	const { loading, error, run } = useOptimisticAction();
 	const [queueIndex, setQueueIndex] = useState(0);
 
 	useEffect(() => {
@@ -92,36 +93,36 @@ function ContinueWatchingCard({
 	const episode = item.queue[queueIndex];
 
 	async function handleWatch() {
-		if (!episode || loading) return;
+		if (!episode) return;
 
 		const previous = episodeWatchStore.get(item.tvId, episode.seasonNumber);
-		episodeWatchStore.setEpisode(
-			item.tvId,
-			episode.seasonNumber,
-			episode.episodeNumber,
-			true
-		);
 
-		const result = await execute(() =>
-			setEpisodeWatched(
-				item.tvId,
-				episode.seasonNumber,
-				episode.episodeNumber,
-				true
-			)
-		);
-
-		if (!result) {
-			episodeWatchStore.restore(
-				item.tvId,
-				episode.seasonNumber,
-				previous
-			);
-			return;
-		}
-
-		mediaWatchStore.set('tv', item.tvId, result.tvStatus);
-		setQueueIndex((index) => index + 1);
+		await run({
+			apply: () =>
+				episodeWatchStore.setEpisode(
+					item.tvId,
+					episode.seasonNumber,
+					episode.episodeNumber,
+					true
+				),
+			rollback: () =>
+				episodeWatchStore.restore(
+					item.tvId,
+					episode.seasonNumber,
+					previous
+				),
+			action: () =>
+				setEpisodeWatched(
+					item.tvId,
+					episode.seasonNumber,
+					episode.episodeNumber,
+					true
+				),
+			onSuccess: (result) => {
+				mediaWatchStore.set('tv', item.tvId, result.tvStatus);
+				setQueueIndex((index) => index + 1);
+			},
+		});
 	}
 
 	const seasonHref = localizedHref(
@@ -133,7 +134,6 @@ function ContinueWatchingCard({
 				.replace('{season}', String(episode.seasonNumber))
 				.replace('{episode}', String(episode.episodeNumber))
 		: null;
-	const Icon = loading ? Loader2 : error ? XCircle : Eye;
 
 	return (
 		<article className="relative h-full overflow-hidden rounded-poster bg-surface shadow-card border border-border/10 transition-colors duration-(--duration-base) hover:shadow-glow-gold hover:border-gold/40">
@@ -203,9 +203,10 @@ function ContinueWatchingCard({
 							'disabled:cursor-not-allowed disabled:opacity-50'
 						)}
 					>
-						<Icon
-							className={cn('h-4 w-4', loading && 'animate-spin')}
-							aria-hidden="true"
+						<ActionStatusIcon
+							loading={loading}
+							error={error}
+							icon={Eye}
 						/>
 						{error
 							? t.common.actionError

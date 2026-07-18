@@ -15,6 +15,12 @@ import {
 	tvShowToMediaItem,
 } from '@/lib/tmdb';
 import type { Movie, TvShow } from '@/types/tmdb';
+import { DEFAULT_OG_IMAGE } from '@/lib/metadata';
+import {
+	webSiteJsonLd,
+	organizationJsonLd,
+	serializeJsonLd,
+} from '@/lib/structured-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,11 +38,13 @@ export async function generateMetadata({
 			title: t.metadata.landingTitle,
 			description: t.metadata.landingDescription,
 			type: 'website',
+			images: [DEFAULT_OG_IMAGE],
 		},
 		twitter: {
 			card: 'summary_large_image',
 			title: t.metadata.landingTitle,
 			description: t.metadata.landingDescription,
+			images: [DEFAULT_OG_IMAGE.url],
 		},
 	};
 }
@@ -65,6 +73,18 @@ export default async function Home({
 
 	return (
 		<div className="min-h-screen">
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{
+					__html: serializeJsonLd(webSiteJsonLd(lang)),
+				}}
+			/>
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{
+					__html: serializeJsonLd(organizationJsonLd()),
+				}}
+			/>
 			<HeroSection posters={[...movieItems, ...showItems]} lang={lang} />
 			<PreviewSection movies={movieItems} shows={showItems} />
 			<FeaturesSection />

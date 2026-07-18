@@ -86,6 +86,28 @@ export function tvSeriesJsonLd(
 	};
 }
 
+/** Builds schema.org WebSite structured data for the landing page. */
+export function webSiteJsonLd(lang: Language): StructuredData {
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		name: 'ReelMark',
+		url: `${BASE_URL}/${lang}`,
+		inLanguage: lang,
+	};
+}
+
+/** Builds schema.org Organization structured data for the landing page. */
+export function organizationJsonLd(): StructuredData {
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'Organization',
+		name: 'ReelMark',
+		url: BASE_URL,
+		logo: `${BASE_URL}/maskable_icon_x512.png`,
+	};
+}
+
 /** Serializes structured data for a JSON-LD script tag, escaping `<` against XSS. */
 export function serializeJsonLd(data: StructuredData): string {
 	return JSON.stringify(data).replace(/</g, '\\u003c');

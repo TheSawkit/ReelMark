@@ -40,8 +40,8 @@ export function WatchActionsSkeleton({
 	if (variant === 'bar') {
 		return (
 			<>
-				<Skeleton className="h-12 w-12 md:h-11 md:w-32 rounded-full md:rounded-lg shrink-0" />
-				<Skeleton className="h-12 w-12 md:h-11 md:w-40 rounded-full md:rounded-lg shrink-0" />
+				<Skeleton className="h-12 w-12 lg:h-11 lg:w-32 rounded-full lg:rounded-lg shrink-0" />
+				<Skeleton className="h-12 w-12 lg:h-11 lg:w-40 rounded-full lg:rounded-lg shrink-0" />
 			</>
 		);
 	}

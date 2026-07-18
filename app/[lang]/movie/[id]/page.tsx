@@ -141,12 +141,12 @@ async function MovieRatingSection({
 export async function generateMetadata({
 	params,
 }: {
-	params: Promise<{ id: string }>;
+	params: MoviePageParams;
 }): Promise<Metadata> {
-	const { id } = await params;
+	const { id, lang } = await params;
 	const movieId = parseInt(id);
 	if (isNaN(movieId)) return { title: 'ReelMark' };
-	return buildMediaDetailMetadata('movie', movieId);
+	return buildMediaDetailMetadata('movie', movieId, lang);
 }
 
 export default async function MoviePage(props: MoviePageProps) {

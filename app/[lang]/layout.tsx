@@ -11,7 +11,7 @@ import { getTranslations } from '@/lib/i18n/server';
 import { SUPPORTED_LANGUAGES, isLanguage } from '@/lib/i18n/config';
 import type { Language } from '@/lib/i18n/translations';
 import { notFound } from 'next/navigation';
-import { BASE_URL } from '@/lib/metadata';
+import { BASE_URL, DEFAULT_OG_IMAGE } from '@/lib/metadata';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
 import { PreventImageContextMenu } from '@/components/shared/PreventImageContextMenu';
 import { PWAInstallPrompt } from '@/components/shared/PWAInstallPrompt';
@@ -73,9 +73,11 @@ export const metadata: Metadata = {
 		type: 'website',
 		siteName: 'ReelMark',
 		locale: 'en_US',
+		images: [DEFAULT_OG_IMAGE],
 	},
 	twitter: {
 		card: 'summary_large_image',
+		images: [DEFAULT_OG_IMAGE.url],
 	},
 	appleWebApp: {
 		capable: true,
@@ -367,7 +369,7 @@ export default async function RootLayout({
 						{children}
 					</main>
 					<footer className="border-t border-border-subtle mt-auto">
-						<div className="container mx-auto px-6 lg:px-12 pt-8 pb-28 lg:pb-8 flex flex-col items-center gap-3 text-sm text-muted sm:flex-row sm:justify-between">
+						<div className="container mx-auto px-6 lg:px-12 pt-8 page-bottom-clearance flex flex-col items-center gap-3 text-sm text-muted sm:flex-row sm:justify-between">
 							<p>© {COPYRIGHT_YEAR} ReelMark</p>
 							<nav
 								aria-label={t.pages.legal.terms.title}

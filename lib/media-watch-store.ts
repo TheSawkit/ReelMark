@@ -1,6 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { createKeyedStore } from '@/lib/keyed-store';
 import type { MediaType, WatchStatus } from '@/types/tmdb';
 
 export type MediaWatchStatus = WatchStatus | 'none';
@@ -10,24 +11,15 @@ interface MediaWatchState {
 	dirty: boolean;
 }
 
-const media = new Map<string, MediaWatchState>();
-const listeners = new Set<() => void>();
-let version = 0;
+const {
+	entries: media,
+	notify,
+	subscribe,
+	version,
+} = createKeyedStore<MediaWatchState>();
 
 const mediaKey = (mediaType: MediaType, mediaId: number) =>
 	`${mediaType}:${mediaId}`;
-
-function notify() {
-	version++;
-	listeners.forEach((listener) => listener());
-}
-
-function subscribe(listener: () => void) {
-	listeners.add(listener);
-	return () => {
-		listeners.delete(listener);
-	};
-}
 
 /**
  * Client-side source of truth for a media item's watchlist status, shared between the
@@ -66,11 +58,7 @@ export const mediaWatchStore = {
 
 /** Bumps on every store change; lets list views re-derive buckets from mutated statuses. */
 export function useMediaWatchVersion(): number {
-	return useSyncExternalStore(
-		subscribe,
-		() => version,
-		() => 0
-	);
+	return useSyncExternalStore(subscribe, version, () => 0);
 }
 
 /** Reactive watchlist status for a media item; undefined until seeded or mutated. */

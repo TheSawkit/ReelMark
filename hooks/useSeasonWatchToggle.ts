@@ -4,7 +4,7 @@ import { setSeasonWatched } from '@/app/actions/episodes';
 import { episodeWatchStore } from '@/lib/episode-watch-store';
 import { mediaWatchStore } from '@/lib/media-watch-store';
 import { useTranslation } from '@/lib/i18n/context';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useOptimisticAction } from '@/hooks/useOptimisticAction';
 import { useSeasonUndoToast } from '@/hooks/useSeasonUndoToast';
 
 interface UseSeasonWatchToggleResult {
@@ -22,31 +22,35 @@ export function useSeasonWatchToggle(
 	seasonNumber: number,
 	totalEpisodes: number
 ): UseSeasonWatchToggleResult {
-	const { loading, error, execute } = useAsyncAction();
+	const { loading, error, run } = useOptimisticAction();
 	const { t } = useTranslation();
 	const undoToast = useSeasonUndoToast(tvId, seasonNumber);
 
 	async function toggle(watched: boolean) {
-		if (loading) return;
-
 		const previous = episodeWatchStore.get(tvId, seasonNumber);
-		episodeWatchStore.setSeason(tvId, seasonNumber, watched, totalEpisodes);
 
-		const result = await execute(() =>
-			setSeasonWatched(tvId, seasonNumber, totalEpisodes, watched)
-		);
-		if (!result) {
-			episodeWatchStore.restore(tvId, seasonNumber, previous);
-			return;
-		}
-
-		mediaWatchStore.set('tv', tvId, result.tvStatus);
-		undoToast(
-			watched
-				? t.movie.seasonMarkedWatched
-				: t.movie.seasonMarkedUnwatched,
-			result.previousEpisodes
-		);
+		await run({
+			apply: () =>
+				episodeWatchStore.setSeason(
+					tvId,
+					seasonNumber,
+					watched,
+					totalEpisodes
+				),
+			rollback: () =>
+				episodeWatchStore.restore(tvId, seasonNumber, previous),
+			action: () =>
+				setSeasonWatched(tvId, seasonNumber, totalEpisodes, watched),
+			onSuccess: (result) => {
+				mediaWatchStore.set('tv', tvId, result.tvStatus);
+				undoToast(
+					watched
+						? t.movie.seasonMarkedWatched
+						: t.movie.seasonMarkedUnwatched,
+					result.previousEpisodes
+				);
+			},
+		});
 	}
 
 	return { loading, error, toggle };

@@ -1,7 +1,8 @@
 'use client';
 
-import { Eye, Check, Loader2, XCircle } from 'lucide-react';
+import { Eye, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ActionStatusIcon } from '@/components/ui/ActionStatusIcon';
 import { useSeasonWatch } from '@/lib/episode-watch-store';
 import { useTranslation } from '@/lib/i18n/context';
 import { useSeasonWatchToggle } from '@/hooks/useSeasonWatchToggle';
@@ -44,8 +45,6 @@ export function SeasonWatchIcon({
 		toggle(!allWatched);
 	}
 
-	const Icon = loading ? Loader2 : error ? XCircle : allWatched ? Check : Eye;
-
 	return (
 		<button
 			onClick={handleClick}
@@ -64,7 +63,11 @@ export function SeasonWatchIcon({
 					: 'bg-surface/40 text-text border-border/10 hover:bg-red/30 hover:text-red hover:border-red/30'
 			)}
 		>
-			<Icon className={cn('h-4 w-4', loading && 'animate-spin')} />
+			<ActionStatusIcon
+				loading={loading}
+				error={error}
+				icon={allWatched ? Check : Eye}
+			/>
 		</button>
 	);
 }

@@ -17,6 +17,8 @@ const cspDirectives = [
 	`connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://www.youtube.com https://sentry.silexio.be${isDev ? ' ws: wss:' : ' wss:'}`,
 	"object-src 'none'",
 	"base-uri 'self'",
+	"form-action 'self'",
+	"frame-ancestors 'none'",
 ];
 
 const securityHeaders = [

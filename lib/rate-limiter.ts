@@ -23,7 +23,17 @@ interface RateLimitResult {
 	resetAt: number;
 }
 
-/** Sliding window in-memory rate limiter. Per-instance — sufficient for Fluid Compute. */
+/** Client IP for rate-limit keys — Cloudflare header first, spoofable fallbacks last. */
+export function clientIpFrom(headers: Headers): string {
+	return (
+		headers.get('cf-connecting-ip') ??
+		headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+		headers.get('x-real-ip') ??
+		'unknown'
+	);
+}
+
+/** Sliding window in-memory rate limiter. Per-pod: the effective limit scales with replica count — global limiting belongs at the Cloudflare edge. */
 export function checkRateLimit(
 	key: string,
 	limit: number,

@@ -1,12 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import { Plus, ListVideo, Pencil, Trash2 } from 'lucide-react';
+import { ListVideo, Pencil, Trash2 } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { createPlaylist, deletePlaylist } from '@/app/actions/playlists';
+import { deletePlaylist } from '@/app/actions/playlists';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { cn } from '@/lib/utils';
 import { VISIBILITY_ICON } from '@/lib/visibility';
@@ -19,7 +17,7 @@ import type {
 import { useTranslation } from '@/lib/i18n/context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import dynamic from 'next/dynamic';
-import { VisibilitySelector } from '@/components/profile/VisibilitySelector';
+import { CreatePlaylistForm } from '@/components/profile/CreatePlaylistForm';
 
 const PlaylistEditDialog = dynamic(
 	() =>
@@ -263,104 +261,6 @@ function PlaylistCard({
 				onSwitchToEdit={isOwn ? switchToEditMode : undefined}
 			/>
 		</>
-	);
-}
-
-function CreatePlaylistForm({
-	onCreate,
-	defaultVisibility,
-}: {
-	onCreate: (p: Playlist) => void;
-	defaultVisibility: PrivacyVisibility;
-}) {
-	const { t } = useTranslation();
-	const [open, setOpen] = useState(false);
-	const [name, setName] = useState('');
-	const [description, setDescription] = useState('');
-	const [visibility, setVisibility] =
-		useState<PrivacyVisibility>(defaultVisibility);
-	const [isPending, startTransition] = useTransition();
-
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!name.trim()) return;
-		startTransition(async () => {
-			await createPlaylist(
-				name.trim(),
-				description.trim() || null,
-				visibility
-			);
-			onCreate({
-				id: crypto.randomUUID(),
-				user_id: '',
-				name: name.trim(),
-				description: description.trim() || null,
-				visibility,
-				created_at: new Date().toISOString(),
-				updated_at: new Date().toISOString(),
-				items: [],
-			});
-			setName('');
-			setDescription('');
-			setVisibility(defaultVisibility);
-			setOpen(false);
-		});
-	};
-
-	if (!open) {
-		return (
-			<Button
-				variant="outline"
-				size="sm"
-				onClick={() => setOpen(true)}
-				className="gap-2"
-			>
-				<Plus className="h-4 w-4" />
-				{t.profile.newPlaylist}
-			</Button>
-		);
-	}
-
-	return (
-		<form
-			onSubmit={handleSubmit}
-			className="p-3 rounded-lg bg-surface border border-border-subtle shadow-card-sm space-y-2"
-		>
-			<Input
-				placeholder={t.profile.playlistName}
-				value={name}
-				onChange={(e) => setName(e.target.value)}
-				autoFocus
-				required
-			/>
-			<Input
-				placeholder={t.profile.playlistDescription}
-				value={description}
-				onChange={(e) => setDescription(e.target.value)}
-			/>
-			<VisibilitySelector
-				value={visibility}
-				onChange={setVisibility}
-				name="new-playlist-visibility"
-			/>
-			<div className="flex gap-2">
-				<Button
-					type="submit"
-					size="sm"
-					disabled={isPending || !name.trim()}
-				>
-					{t.profile.createPlaylist}
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					onClick={() => setOpen(false)}
-				>
-					{t.common.cancel}
-				</Button>
-			</div>
-		</form>
 	);
 }
 

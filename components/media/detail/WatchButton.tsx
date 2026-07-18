@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Eye, Plus, Check, Loader2, XCircle } from 'lucide-react';
+import { Eye, Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ActionStatusIcon } from '@/components/ui/ActionStatusIcon';
 import { addToWatchlist, removeFromWatchlist } from '@/app/actions/watchlist';
 import { useTranslation } from '@/lib/i18n/context';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useOptimisticAction } from '@/hooks/useOptimisticAction';
 import { useIsUnreleased } from '@/hooks/useIsUnreleased';
 import { mediaWatchStore, useMediaWatch } from '@/lib/media-watch-store';
 import { episodeWatchStore } from '@/lib/episode-watch-store';
@@ -35,7 +36,7 @@ export function WatchButton({
 	fallbackStatus,
 	releaseDate,
 }: WatchButtonProps) {
-	const { loading, error, execute } = useAsyncAction();
+	const { loading, error, run } = useOptimisticAction();
 	const [reviewOpen, setReviewOpen] = useState(false);
 	const { t } = useTranslation();
 	const router = useRouter();
@@ -71,42 +72,35 @@ export function WatchButton({
 
 		const previous = mediaWatchStore.get(mediaType, mediaId);
 		const target = isActive ? (fallbackStatus ?? 'none') : status;
-		mediaWatchStore.set(mediaType, mediaId, target);
 
-		const applied = await execute(async () => {
-			if (target === 'none') {
-				await removeFromWatchlist(mediaId, mediaType);
-			} else {
-				await addToWatchlist(
-					mediaId,
-					mediaTitle,
-					posterPath,
-					target,
-					mediaType
-				);
-			}
-			return true;
+		await run({
+			apply: () => mediaWatchStore.set(mediaType, mediaId, target),
+			rollback: () =>
+				mediaWatchStore.restore(mediaType, mediaId, previous),
+			action: async () => {
+				if (target === 'none') {
+					await removeFromWatchlist(mediaId, mediaType);
+				} else {
+					await addToWatchlist(
+						mediaId,
+						mediaTitle,
+						posterPath,
+						target,
+						mediaType
+					);
+				}
+				return true;
+			},
+			onSuccess: () => {
+				if (mediaType === 'tv' && target === 'none') {
+					episodeWatchStore.clearShow(mediaId);
+				}
+				if (target === 'watched') setReviewOpen(true);
+			},
 		});
-
-		if (!applied) {
-			mediaWatchStore.restore(mediaType, mediaId, previous);
-			return;
-		}
-		if (mediaType === 'tv' && target === 'none') {
-			episodeWatchStore.clearShow(mediaId);
-		}
-		if (target === 'watched') setReviewOpen(true);
 	}
 
-	const Icon = loading
-		? Loader2
-		: error
-			? XCircle
-			: isActive
-				? Check
-				: status === 'watched'
-					? Eye
-					: Plus;
+	const idleIcon = isActive ? Check : status === 'watched' ? Eye : Plus;
 
 	const stateLabel = error
 		? t.common.actionError
@@ -126,23 +120,23 @@ export function WatchButton({
 					disabled={loading}
 					aria-label={stateLabel}
 					className={cn(
-						'h-12 w-12 md:h-auto md:w-auto md:min-h-11 md:px-4 md:py-2.5',
-						'rounded-full md:rounded-lg',
+						'h-12 w-12 lg:h-auto lg:w-auto lg:min-h-11 lg:px-4 lg:py-2.5',
+						'rounded-full lg:rounded-lg',
 						'flex items-center justify-center gap-2 shrink-0',
-						'backdrop-blur-2xl border text-sm font-semibold',
+						'border text-sm font-semibold',
 						'transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
 						isActive
 							? 'bg-primary/50 text-white border-white/10 shadow-glow-red'
 							: 'bg-white/15 text-text border-white/10 hover:bg-white/25 hover:text-text shadow-card-sm'
 					)}
 				>
-					<Icon
-						className={cn(
-							'h-4 w-4 shrink-0',
-							loading && 'animate-spin'
-						)}
+					<ActionStatusIcon
+						loading={loading}
+						error={error}
+						icon={idleIcon}
+						className="h-4 w-4 shrink-0"
 					/>
-					<span className="hidden md:inline">{stateLabel}</span>
+					<span className="hidden lg:inline">{stateLabel}</span>
 				</button>
 				{reviewDialog}
 			</>
@@ -165,8 +159,10 @@ export function WatchButton({
 								: 'bg-white/15 text-text border-white/10 hover:bg-white/25 hover:text-text shadow-card-sm'
 					)}
 				>
-					<Icon
-						className={cn('h-4 w-4', loading && 'animate-spin')}
+					<ActionStatusIcon
+						loading={loading}
+						error={error}
+						icon={idleIcon}
 					/>
 					{stateLabel}
 				</button>
@@ -190,7 +186,11 @@ export function WatchButton({
 						: 'bg-surface/20 text-muted border-border/10 border-t-border/20 hover:text-text hover:bg-surface-2/20 shadow-card-sm hover:border-border'
 				)}
 			>
-				<Icon className={cn('h-4 w-4', loading && 'animate-spin')} />
+				<ActionStatusIcon
+					loading={loading}
+					error={error}
+					icon={idleIcon}
+				/>
 			</button>
 			{reviewDialog}
 		</>

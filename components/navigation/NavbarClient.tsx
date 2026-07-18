@@ -69,7 +69,7 @@ export function NavbarClient({
 	const content = (
 		<>
 			<header>
-				<nav className="fixed w-full top-0 z-50 border-b border-border-subtle glass-bar shadow-navbar top-nav-safe-area">
+				<nav className="fixed inset-x-0 top-0 z-50 border-b border-border-subtle glass-bar shadow-navbar top-nav-safe-area">
 					<div className="mx-auto max-w-7xl px-6 lg:px-12">
 						<div className="flex lg:hidden h-16 items-center gap-2">
 							{isMedia ? (
@@ -77,7 +77,7 @@ export function NavbarClient({
 									<button
 										onClick={() => router.back()}
 										aria-label={t.common.goBack}
-										className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full glass-surface text-text transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+										className="h-11 w-11 shrink-0 flex items-center justify-center rounded-full glass-surface text-text transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
 									>
 										<ArrowLeft className="h-5 w-5" />
 									</button>
@@ -89,52 +89,60 @@ export function NavbarClient({
 								<div className="flex-1 min-w-0">{logo}</div>
 							)}
 
-							<div className="shrink-0 flex items-center gap-1">
-								{user ? (
-									<>
-										<SearchModal key={pathname} />
-										<NotificationBell variant="mobile" />
-									</>
-								) : (
-									<div className="flex gap-2">
-										<Button
-											asChild
-											variant="outline"
-											size="sm"
-											className="border-border text-muted hover:text-text hover:bg-surface-2 border"
-										>
-											<Link
-												href={localizedHref(
-													lang,
-													'/login'
-												)}
+							<div className="shrink-0 grid items-center">
+								<div
+									className={cn(
+										'col-start-1 row-start-1 justify-self-end flex items-center gap-1 transition-all duration-(--duration-base) ease-apple',
+										isMediaBarActive
+											? 'invisible scale-95 opacity-0'
+											: 'visible scale-100 opacity-100'
+									)}
+								>
+									{user ? (
+										<>
+											<SearchModal key={pathname} />
+											<NotificationBell variant="mobile" />
+										</>
+									) : (
+										<div className="flex gap-2">
+											<Button
+												asChild
+												variant="outline"
+												size="sm"
+												className="border-border text-muted hover:text-text hover:bg-surface-2 border"
 											>
-												{t.navbar.login}
-											</Link>
-										</Button>
-										<Button
-											asChild
-											size="sm"
-											className="bg-primary hover:bg-primary-hover text-white"
-										>
-											<Link
-												href={localizedHref(
-													lang,
-													'/signup'
-												)}
+												<Link
+													href={localizedHref(
+														lang,
+														'/login'
+													)}
+												>
+													{t.navbar.login}
+												</Link>
+											</Button>
+											<Button
+												asChild
+												size="sm"
+												className="bg-primary hover:bg-primary-hover text-white"
 											>
-												{t.navbar.signup}
-											</Link>
-										</Button>
-									</div>
-								)}
+												<Link
+													href={localizedHref(
+														lang,
+														'/signup'
+													)}
+												>
+													{t.navbar.signup}
+												</Link>
+											</Button>
+										</div>
+									)}
+								</div>
+								<div
+									id="rm-nav-actions"
+									className="col-start-1 row-start-1 justify-self-end lg:hidden"
+								/>
 							</div>
 						</div>
-
-						<div
-							id="rm-nav-actions"
-							className="lg:hidden empty:hidden"
-						/>
 
 						{/* Desktop: full navigation */}
 						<div className="hidden lg:grid grid-cols-3 h-16 items-center gap-4">
@@ -267,7 +275,7 @@ export function NavbarClient({
 					{/* Desktop only: media sub-bar that expands on scroll */}
 					<div
 						className={cn(
-							'hidden md:block overflow-hidden transition-all duration-(--duration-base) ease-in-out',
+							'hidden lg:block overflow-hidden transition-all duration-(--duration-base) ease-in-out',
 							isMediaBarActive
 								? 'max-h-12 opacity-100'
 								: 'max-h-0 opacity-0 pointer-events-none'

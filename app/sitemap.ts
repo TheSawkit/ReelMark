@@ -53,11 +53,6 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
 		changeFrequency: 'monthly',
 		priority: 0.4,
 	}),
-	localizedEntry('/explorer', {
-		lastModified: new Date(),
-		changeFrequency: 'daily',
-		priority: 0.8,
-	}),
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

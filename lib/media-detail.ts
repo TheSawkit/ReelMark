@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import type { Video, MediaType } from '@/types/tmdb';
+import type { Language } from '@/lib/i18n/translations';
 import { getMovieDetails, getTvShowDetails } from '@/lib/tmdb';
 import { buildMediaMetadata } from '@/lib/metadata';
-import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
+import { getTranslations } from '@/lib/i18n/server';
 
 /** Filters and sorts YouTube trailers/teasers by official status. */
 export function filterTrailers(videos: Video[]): Video[] {
@@ -15,15 +16,13 @@ export function filterTrailers(videos: Video[]): Video[] {
 		.sort((a, b) => (b.official ? 1 : 0) - (a.official ? 1 : 0));
 }
 
-/** Builds canonical Metadata for a movie or TV show detail page. */
+/** Builds canonical Metadata for a movie or TV show detail page. Takes the route lang so the TMDB fetch dedupes with the page's. */
 export async function buildMediaDetailMetadata(
 	type: MediaType,
-	id: number
+	id: number,
+	lang: Language
 ): Promise<Metadata> {
-	const [t, lang] = await Promise.all([
-		getTranslations(),
-		getServerLanguage(),
-	]);
+	const t = await getTranslations(lang);
 	const defaultDesc =
 		type === 'movie'
 			? t.metadata.defaultMovieDescription
@@ -31,7 +30,7 @@ export async function buildMediaDetailMetadata(
 
 	try {
 		if (type === 'movie') {
-			const details = await getMovieDetails(id);
+			const details = await getMovieDetails(id, lang);
 			const description =
 				details.overview ||
 				t.metadata.watchMovieOn.replace('${title}', details.title);
@@ -44,7 +43,7 @@ export async function buildMediaDetailMetadata(
 				ogType: 'video.movie',
 			});
 		} else {
-			const details = await getTvShowDetails(id);
+			const details = await getTvShowDetails(id, lang);
 			const description =
 				details.overview ||
 				t.metadata.watchShowOn.replace('${title}', details.name);

@@ -158,18 +158,18 @@ export function LibraryTabs({
 							aria-controls={`panel-${id}`}
 							onClick={() => switchTab(id)}
 							className={cn(
-								'relative z-10 flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl min-h-11 transition-[color,scale] duration-(--duration-fast) cursor-pointer active:scale-95',
+								'relative z-10 flex flex-1 min-w-0 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-medium rounded-xl min-h-11 transition-[color,scale] duration-(--duration-fast) cursor-pointer active:scale-95',
 								'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 								visibleTab === id
 									? 'text-text'
 									: 'text-muted hover:text-text'
 							)}
 						>
-							<tab.icon className="h-4 w-4" />
-							{tab.label}
+							<tab.icon className="hidden sm:block h-4 w-4 shrink-0" />
+							<span className="truncate">{tab.label}</span>
 							<span
 								className={cn(
-									'ml-1 px-1.5 py-0.5 rounded-full text-xs',
+									'ml-0.5 sm:ml-1 shrink-0 px-1 sm:px-1.5 py-0.5 rounded-full text-[10px] sm:text-xs',
 									visibleTab === id
 										? 'bg-primary/20 text-text'
 										: 'bg-surface-3 text-muted'

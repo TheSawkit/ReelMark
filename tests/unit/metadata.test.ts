@@ -4,6 +4,7 @@ import {
 	buildMediaMetadata,
 	localizedAlternates,
 	BASE_URL,
+	DEFAULT_OG_IMAGE,
 } from '@/lib/metadata';
 
 vi.mock('@/lib/tmdb/images', () => ({
@@ -33,9 +34,17 @@ describe('buildPageMetadata', () => {
 		expect((meta.openGraph as { type?: string })?.type).toBe('website');
 	});
 
-	it('sets twitter card to summary', () => {
+	it('sets twitter card to summary_large_image with the default OG image', () => {
 		const meta = buildPageMetadata('Title', 'Desc');
-		expect((meta.twitter as { card: string })?.card).toBe('summary');
+		expect((meta.twitter as { card: string })?.card).toBe(
+			'summary_large_image'
+		);
+		expect((meta.twitter as { images: string[] })?.images).toEqual([
+			DEFAULT_OG_IMAGE.url,
+		]);
+		expect((meta.openGraph as { images: unknown[] })?.images).toEqual([
+			DEFAULT_OG_IMAGE,
+		]);
 	});
 
 	it('adds robots noindex when isPrivate is true', () => {
