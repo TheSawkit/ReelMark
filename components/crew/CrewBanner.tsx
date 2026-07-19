@@ -60,7 +60,7 @@ export function CrewBanner({ crew }: CrewBannerProps) {
 
 			<div className="relative z-10 container mx-auto px-6 lg:px-12 py-section md:py-section-md">
 				<div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-start">
-					<div className="relative w-32 h-32 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 shrink-0 rounded-full overflow-hidden border-4 border-gold/30 shadow-cinema">
+					<div className="relative w-32 h-32 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 shrink-0 rounded-full overflow-hidden border-4 border-gold/30 shadow-card-lift">
 						<Image
 							src={getImageUrl(crew.profile_path)}
 							alt={crew.name}

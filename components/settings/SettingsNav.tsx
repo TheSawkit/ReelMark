@@ -8,6 +8,7 @@ export type SettingsTab =
 	| 'security'
 	| 'notifications'
 	| 'appearance'
+	| 'services'
 	| 'data'
 	| 'privacy';
 
@@ -28,6 +29,7 @@ export function SettingsNav({ onTabChange, activeTab }: SettingsNavProps) {
 			icon: '🔔',
 		},
 		{ id: 'appearance', label: t.settings.theme.title, icon: '🎨' },
+		{ id: 'services', label: t.settings.streaming.title, icon: '📺' },
 		{ id: 'privacy', label: t.settings.privacy.title, icon: '🔐' },
 		{ id: 'data', label: t.settings.dangerZone.title, icon: '📁' },
 	];

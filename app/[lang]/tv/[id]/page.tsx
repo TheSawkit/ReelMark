@@ -15,6 +15,7 @@ import {
 import { MediaBanner } from '@/components/media/detail/MediaBanner';
 import { TvWatchActions } from '@/components/media/detail/TvWatchActions';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
+import { SimilarSection } from '@/components/media/detail/SimilarSection';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
 import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
 import {
@@ -371,6 +372,15 @@ export default async function TvShowPage(props: TvPageProps) {
 					</Suspense>
 				}
 				extraSections={seasonsSection}
+				relatedSections={
+					<Suspense fallback={null}>
+						<SimilarSection
+							mediaId={tvId}
+							mediaType="tv"
+							lang={lang}
+						/>
+					</Suspense>
+				}
 				trailers={
 					<Suspense fallback={<DetailSectionSkeleton />}>
 						<TvTrailersSection tvId={tvId} lang={lang} />

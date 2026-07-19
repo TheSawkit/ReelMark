@@ -30,7 +30,7 @@ export interface MediaCardProps {
 export interface MediaSectionProps {
 	title: string;
 	items: MediaItem[];
-	categoryUrl: string;
+	categoryUrl?: string;
 	hideRating?: boolean;
 }
 
@@ -76,7 +76,7 @@ export interface WatchButtonProps {
 	status: WatchStatus;
 	initialIsActive?: boolean;
 	fallbackStatus?: WatchStatus;
-	variant?: 'icon' | 'full' | 'responsive';
+	variant?: 'full' | 'responsive';
 	onDark?: boolean;
 	blur?: boolean;
 	releaseDate?: string;

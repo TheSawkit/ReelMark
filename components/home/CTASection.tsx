@@ -12,7 +12,7 @@ export default async function CTASection({ lang }: { lang: Language }) {
 
 	return (
 		<section className="px-6 py-24 lg:px-12">
-			<div className="glass-surface relative mx-auto max-w-4xl overflow-hidden rounded-3xl border-glass-border-hover p-12 text-center shadow-cinema md:p-16">
+			<div className="glass-surface relative mx-auto max-w-4xl overflow-hidden rounded-3xl border-glass-border-hover p-12 text-center shadow-card-lift md:p-16">
 				<Aurora intensity={0.45} />
 				<Grain opacity={0.06} />
 				<div className="absolute inset-0 bg-linear-to-t from-background/40 to-transparent" />

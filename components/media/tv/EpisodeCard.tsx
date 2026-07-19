@@ -70,7 +70,7 @@ export function EpisodeCard({
 	return (
 		<div
 			className={cn(
-				'relative flex flex-col overflow-hidden glass-overlay rounded-poster transition-all duration-(--duration-base) hover:shadow-glow-gold shadow-card group focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
+				'relative flex flex-col overflow-hidden bg-surface-2 border border-border rounded-poster transition-colors duration-(--duration-base) hover:shadow-glow-gold shadow-card group focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
 				isWatched
 					? 'border-primary/40'
 					: 'hover:border-gold/40 hover:border-t-gold/60'
@@ -95,7 +95,7 @@ export function EpisodeCard({
 				</div>
 				<div
 					className={cn(
-						'absolute top-2 right-2 glass-overlay px-2 py-1 rounded shadow-card-sm',
+						'absolute top-2 right-2 bg-poster-overlay-heavy border border-white/10 px-2 py-1 rounded shadow-card-sm',
 						'flex items-center gap-1 text-xs font-bold text-gold'
 					)}
 				>

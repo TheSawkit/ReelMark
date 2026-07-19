@@ -13,18 +13,22 @@ import { SocialLinksSettings } from './SocialLinksSettings';
 import { PrivacySettings } from './PrivacySettings';
 import { DataSettings } from './DataSettings';
 import { NotificationSettings } from './NotificationSettings';
+import { StreamingSettings } from './StreamingSettings';
 import { SettingsNav, type SettingsTab } from './SettingsNav';
 import { SignoutButton } from '@/components/auth/SignoutButton';
 import type {
 	UserProfile,
 	PrivacySettings as PrivacySettingsType,
 } from '@/types/profile';
+import type { WatchProvider } from '@/types/tmdb';
 
 interface SettingsContentProps {
 	user: User | null;
 	userProfile: UserProfile | null;
 	privacySettings: PrivacySettingsType | null;
 	isOAuthOnly: boolean;
+	streamingProviders: WatchProvider[];
+	selectedProviderIds: number[];
 }
 
 export function SettingsContent({
@@ -32,6 +36,8 @@ export function SettingsContent({
 	userProfile,
 	privacySettings,
 	isOAuthOnly,
+	streamingProviders,
+	selectedProviderIds,
 }: SettingsContentProps) {
 	const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
 
@@ -62,6 +68,12 @@ export function SettingsContent({
 					<div className="space-y-6">
 						<ThemeSettings />
 					</div>
+				)}
+				{activeTab === 'services' && (
+					<StreamingSettings
+						providers={streamingProviders}
+						initialSelected={selectedProviderIds}
+					/>
 				)}
 				{activeTab === 'privacy' && (
 					<PrivacySettings settings={privacySettings} />

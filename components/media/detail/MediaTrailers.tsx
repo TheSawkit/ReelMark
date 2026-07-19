@@ -58,7 +58,7 @@ function TrailerEmbed({
 
 	if (site !== 'YouTube') {
 		return (
-			<div className="relative aspect-video glass-overlay rounded-xl overflow-hidden shadow-card">
+			<div className="relative aspect-video bg-surface-2 border border-border rounded-xl overflow-hidden shadow-card">
 				<div className="w-full h-full flex items-center justify-center bg-transparent text-muted">
 					<p className="text-sm font-medium">{unsupportedLabel}</p>
 				</div>
@@ -67,7 +67,7 @@ function TrailerEmbed({
 	}
 
 	return (
-		<div className="relative aspect-video glass-overlay rounded-xl overflow-hidden shadow-card transition-all duration-(--duration-base) hover:shadow-glow-gold hover:border-gold/30 hover:border-t-gold/50">
+		<div className="relative aspect-video bg-surface-2 border border-border rounded-xl overflow-hidden shadow-card transition-colors duration-(--duration-base) hover:shadow-glow-gold hover:border-gold/30 hover:border-t-gold/50">
 			{isPlaying ? (
 				<iframe
 					src={`https://www.youtube-nocookie.com/embed/${videoKey}?rel=0&modestbranding=1&autoplay=1`}
@@ -94,7 +94,7 @@ function TrailerEmbed({
 					/>
 					<span className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
 					<span className="absolute inset-0 flex items-center justify-center">
-						<span className="flex h-14 w-14 items-center justify-center rounded-full bg-poster-overlay backdrop-blur-md border border-white/10 shadow-card-sm transition-all duration-(--duration-base) group-hover/trailer:scale-110 group-hover/trailer:bg-primary">
+						<span className="flex h-14 w-14 items-center justify-center rounded-full bg-poster-overlay-heavy border border-white/10 shadow-card-sm transition-[transform,background-color] duration-(--duration-base) group-hover/trailer:scale-110 group-hover/trailer:bg-primary">
 							<Play
 								className="h-6 w-6 fill-current text-white"
 								aria-hidden="true"

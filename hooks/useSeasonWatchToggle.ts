@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { setSeasonWatched } from '@/app/actions/episodes';
 import { episodeWatchStore } from '@/lib/episode-watch-store';
 import { mediaWatchStore } from '@/lib/media-watch-store';
@@ -24,6 +25,7 @@ export function useSeasonWatchToggle(
 ): UseSeasonWatchToggleResult {
 	const { loading, error, run } = useOptimisticAction();
 	const { t } = useTranslation();
+	const router = useRouter();
 	const undoToast = useSeasonUndoToast(tvId, seasonNumber);
 
 	async function toggle(watched: boolean) {
@@ -43,6 +45,7 @@ export function useSeasonWatchToggle(
 				setSeasonWatched(tvId, seasonNumber, totalEpisodes, watched),
 			onSuccess: (result) => {
 				mediaWatchStore.set('tv', tvId, result.tvStatus);
+				if (result.addedToWatchlist) router.refresh();
 				undoToast(
 					watched
 						? t.movie.seasonMarkedWatched

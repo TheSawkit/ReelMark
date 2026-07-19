@@ -12,7 +12,7 @@ import type { PlaylistItem } from '@/types/profile';
 
 const CARD_BASE = cn(
 	'group relative rounded-poster bg-surface border border-card-border block',
-	'transition-[transform,box-shadow,border-color] duration-(--duration-medium) ease-apple will-change-transform',
+	'transition-[transform,border-color] duration-(--duration-medium) ease-apple will-change-transform',
 	'hover:scale-[1.03] hover:border-gold/40 hover:shadow-poster hover:z-10'
 );
 
@@ -111,7 +111,7 @@ export function PlaylistGrid({
 								className={cn(
 									'absolute top-2 right-2 z-20',
 									'w-6 h-6 rounded-full flex items-center justify-center',
-									'bg-background/75 backdrop-blur-sm border border-white/10 shadow-sm',
+									'bg-poster-overlay-heavy border border-white/10 shadow-sm',
 									'transition-all duration-(--duration-instant)',
 									'sm:opacity-0 sm:scale-75 sm:group-hover:opacity-100 sm:group-hover:scale-100',
 									isRemoving

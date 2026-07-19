@@ -15,15 +15,16 @@ interface MediaDetailLayoutProps {
 	rating: ReactNode;
 	reviews: ReactNode;
 	extraSections?: ReactNode;
+	relatedSections?: ReactNode;
 	trailers: ReactNode;
 	cast: Cast[];
 }
 
 /**
  * Generic slot-based layout for movie and TV show detail pages.
- * Enforces a fixed section order (description → providers → rating → reviews → extra → trailers → cast → crew)
+ * Enforces a fixed section order (description → providers → rating → reviews → extra → trailers → cast → crew → related)
  * so both page types share identical structure without duplication.
- * Slow slots (watchProviders, trailers, reviews) are passed as nodes so pages can stream them via Suspense.
+ * Slow slots (watchProviders, trailers, reviews, relatedSections) are passed as nodes so pages can stream them via Suspense.
  */
 export function MediaDetailLayout({
 	banner,
@@ -35,6 +36,7 @@ export function MediaDetailLayout({
 	rating,
 	reviews,
 	extraSections,
+	relatedSections,
 	trailers,
 	cast,
 }: MediaDetailLayoutProps) {
@@ -51,6 +53,7 @@ export function MediaDetailLayout({
 				{trailers}
 				<MediaCast cast={cast.slice(0, 30)} />
 				{crew && <MediaCrew crew={crew} creators={creators} />}
+				{relatedSections}
 			</div>
 		</div>
 	);

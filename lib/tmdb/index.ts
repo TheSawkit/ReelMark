@@ -9,9 +9,11 @@ export {
 	getMovieVideos,
 	getMovieRecommendations,
 	getSimilarMovies,
+	getCollection,
 	getMovieImages,
 	getMovieWatchProviders,
 } from './movies';
+export { getAvailableProviders, getFlatrateProviderIds } from './providers';
 export {
 	getPopularTvShows,
 	getTopRatedTvShows,

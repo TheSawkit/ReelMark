@@ -33,7 +33,7 @@ export function MediaCast({ cast }: MediaCastProps) {
 							prefetch={false}
 							className="flex flex-col items-center text-center space-y-2 group w-full"
 						>
-							<div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full glass-overlay shadow-card-sm group-hover:scale-105 group-hover:border-gold/30 group-hover:border-t-gold/50 group-hover:shadow-glow-gold transition-all duration-(--duration-base)">
+							<div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full bg-surface-2 border border-border shadow-card-sm group-hover:scale-105 group-hover:border-gold/30 group-hover:border-t-gold/50 group-hover:shadow-glow-gold transition-[transform,border-color] duration-(--duration-base)">
 								<div className="absolute inset-0 rounded-full overflow-hidden">
 									<Image
 										src={getImageUrl(

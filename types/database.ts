@@ -118,8 +118,6 @@ export type Database = {
 			};
 			notifications: {
 				Row: {
-					sender_id: string | null;
-					sender_username: string | null;
 					created_at: string;
 					episode_number: number | null;
 					id: string;
@@ -129,13 +127,13 @@ export type Database = {
 					poster_path: string | null;
 					read_at: string | null;
 					season_number: number | null;
+					sender_id: string;
+					sender_username: string | null;
 					type: string;
 					url: string | null;
 					user_id: string;
 				};
 				Insert: {
-					sender_id?: string | null;
-					sender_username?: string | null;
 					created_at?: string;
 					episode_number?: number | null;
 					id?: string;
@@ -145,13 +143,13 @@ export type Database = {
 					poster_path?: string | null;
 					read_at?: string | null;
 					season_number?: number | null;
+					sender_id: string;
+					sender_username?: string | null;
 					type: string;
 					url?: string | null;
 					user_id: string;
 				};
 				Update: {
-					sender_id?: string | null;
-					sender_username?: string | null;
 					created_at?: string;
 					episode_number?: number | null;
 					id?: string;
@@ -161,6 +159,8 @@ export type Database = {
 					poster_path?: string | null;
 					read_at?: string | null;
 					season_number?: number | null;
+					sender_id?: string;
+					sender_username?: string | null;
 					type?: string;
 					url?: string | null;
 					user_id?: string;
@@ -298,6 +298,33 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			recommendation_dismissals: {
+				Row: {
+					created_at: string;
+					genre_ids: number[];
+					id: string;
+					media_id: number;
+					media_type: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					genre_ids?: number[];
+					id?: string;
+					media_id: number;
+					media_type: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					genre_ids?: number[];
+					id?: string;
+					media_id?: number;
+					media_type?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
 			reviews: {
 				Row: {
 					content: string | null;
@@ -388,6 +415,24 @@ export type Database = {
 					user_id?: string;
 					username?: string;
 					website?: string | null;
+				};
+				Relationships: [];
+			};
+			user_streaming_providers: {
+				Row: {
+					provider_ids: number[];
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					provider_ids?: number[];
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					provider_ids?: number[];
+					updated_at?: string;
+					user_id?: string;
 				};
 				Relationships: [];
 			};

@@ -30,7 +30,7 @@ export function WatchButton({
 	posterPath,
 	status,
 	initialIsActive = false,
-	variant = 'icon',
+	variant = 'full',
 	onDark = false,
 	blur = true,
 	fallbackStatus,
@@ -127,7 +127,7 @@ export function WatchButton({
 						'transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
 						isActive
 							? 'bg-primary/50 text-white border-white/10 shadow-glow-red'
-							: 'bg-white/15 text-text border-white/10 hover:bg-white/25 hover:text-text shadow-card-sm'
+							: 'bg-surface/70 text-text border-white/10 hover:bg-surface/85 hover:text-text shadow-card-sm'
 					)}
 				>
 					<ActionStatusIcon
@@ -143,47 +143,19 @@ export function WatchButton({
 		);
 	}
 
-	if (variant === 'full') {
-		return (
-			<>
-				<button
-					onClick={handleClick}
-					disabled={loading}
-					className={cn(
-						'flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11 w-full shrink-0',
-						blur && 'backdrop-blur-2xl',
-						isActive
-							? 'bg-primary/50 text-white border-white/10 shadow-glow-red'
-							: onDark
-								? 'bg-white/15 text-white/90 border-white/10 hover:bg-white/25 hover:text-white shadow-card-sm'
-								: 'bg-white/15 text-text border-white/10 hover:bg-white/25 hover:text-text shadow-card-sm'
-					)}
-				>
-					<ActionStatusIcon
-						loading={loading}
-						error={error}
-						icon={idleIcon}
-					/>
-					{stateLabel}
-				</button>
-				{reviewDialog}
-			</>
-		);
-	}
-
 	return (
 		<>
 			<button
 				onClick={handleClick}
 				disabled={loading}
-				aria-label={stateLabel}
-				title={stateLabel}
 				className={cn(
-					'h-12 w-12 rounded-full backdrop-blur-2xl border',
-					'flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
+					'flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11 w-full shrink-0',
+					blur && 'backdrop-blur-2xl',
 					isActive
-						? 'bg-primary/40 text-white border-border/10 border-t-border/20 shadow-glow-red'
-						: 'bg-surface/20 text-muted border-border/10 border-t-border/20 hover:text-text hover:bg-surface-2/20 shadow-card-sm hover:border-border'
+						? 'bg-primary/50 text-white border-white/10 shadow-glow-red'
+						: onDark
+							? 'bg-black/50 text-white/90 border-white/10 hover:bg-black/65 hover:text-white shadow-card-sm'
+							: 'bg-surface/70 text-text border-white/10 hover:bg-surface/85 hover:text-text shadow-card-sm'
 				)}
 			>
 				<ActionStatusIcon
@@ -191,6 +163,7 @@ export function WatchButton({
 					error={error}
 					icon={idleIcon}
 				/>
+				{stateLabel}
 			</button>
 			{reviewDialog}
 		</>

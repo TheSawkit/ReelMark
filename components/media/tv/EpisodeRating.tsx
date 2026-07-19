@@ -78,6 +78,7 @@ export function EpisodeRating({
 				);
 				setReview(saved);
 				toast.success(t.movie.ratingSaved);
+				router.refresh();
 			} catch {
 				setRating(previous);
 				toast.error(t.common.actionError);
