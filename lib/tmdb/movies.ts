@@ -1,6 +1,7 @@
 import type {
 	Movie,
 	MovieDetails,
+	CollectionDetails,
 	Credits,
 	Video,
 	VideoResponse,
@@ -242,6 +243,25 @@ export async function getSimilarMovies(
 		return results;
 	} catch {
 		return [];
+	}
+}
+
+/**
+ * Returns the collection (saga) a movie belongs to, with all its parts.
+ * Returns null on failure.
+ */
+export async function getCollection(
+	id: number,
+	lang?: Language
+): Promise<CollectionDetails | null> {
+	try {
+		return await fetchTMDB<CollectionDetails>(
+			`/collection/${id}`,
+			{},
+			{ revalidate: 604800, lang }
+		);
+	} catch {
+		return null;
 	}
 }
 

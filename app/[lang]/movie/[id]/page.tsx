@@ -15,6 +15,8 @@ import {
 import { MediaBanner } from '@/components/media/detail/MediaBanner';
 import { MovieWatchActions } from '@/components/media/detail/MovieWatchActions';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
+import { SagaSection } from '@/components/media/detail/SagaSection';
+import { SimilarSection } from '@/components/media/detail/SimilarSection';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
 import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
 import {
@@ -275,6 +277,24 @@ export default async function MoviePage(props: MoviePageProps) {
 					<Suspense fallback={<DetailSectionSkeleton />}>
 						<MovieTrailersSection movieId={movieId} lang={lang} />
 					</Suspense>
+				}
+				extraSections={
+					<>
+						<Suspense fallback={null}>
+							<SagaSection
+								collection={movieDetails.belongs_to_collection}
+								currentMovieId={movieId}
+								lang={lang}
+							/>
+						</Suspense>
+						<Suspense fallback={null}>
+							<SimilarSection
+								mediaId={movieId}
+								mediaType="movie"
+								lang={lang}
+							/>
+						</Suspense>
+					</>
 				}
 				cast={credits.cast}
 			/>

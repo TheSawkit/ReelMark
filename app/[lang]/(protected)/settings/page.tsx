@@ -7,6 +7,9 @@ import { SettingsContentSkeleton } from '@/components/settings/SettingsContentSk
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { getTranslations } from '@/lib/i18n/server';
 import { USER_PROFILE_COLUMNS, PRIVACY_COLUMNS } from '@/lib/supabase/columns';
+import { getAvailableProviders } from '@/lib/tmdb';
+import { getUserRegion } from '@/lib/tmdb/client';
+import { getMyStreamingProviders } from '@/app/actions/recommendations';
 import type { Language } from '@/lib/i18n/translations';
 import type { UserProfile, PrivacySettings } from '@/types/profile';
 import type { User } from '@supabase/supabase-js';
@@ -31,21 +34,26 @@ export async function generateMetadata({ params }: Props) {
 	};
 }
 
-async function SettingsSection({ user }: { user: User }) {
+async function SettingsSection({ user, lang }: { user: User; lang: Language }) {
 	const supabase = await createClient();
 
-	const [profileResult, privacyResult] = await Promise.all([
-		supabase
-			.from('user_profiles')
-			.select(USER_PROFILE_COLUMNS)
-			.eq('user_id', user.id)
-			.maybeSingle(),
-		supabase
-			.from('privacy_settings')
-			.select(PRIVACY_COLUMNS)
-			.eq('user_id', user.id)
-			.maybeSingle(),
-	]);
+	const [profileResult, privacyResult, region, selectedProviderIds] =
+		await Promise.all([
+			supabase
+				.from('user_profiles')
+				.select(USER_PROFILE_COLUMNS)
+				.eq('user_id', user.id)
+				.maybeSingle(),
+			supabase
+				.from('privacy_settings')
+				.select(PRIVACY_COLUMNS)
+				.eq('user_id', user.id)
+				.maybeSingle(),
+			getUserRegion(lang),
+			getMyStreamingProviders(),
+		]);
+
+	const streamingProviders = await getAvailableProviders(region, lang);
 
 	const userProfile = (profileResult.data as UserProfile | null) ?? null;
 	const privacySettings =
@@ -57,6 +65,8 @@ async function SettingsSection({ user }: { user: User }) {
 			userProfile={userProfile}
 			privacySettings={privacySettings}
 			isOAuthOnly={isOAuthOnly(user)}
+			streamingProviders={streamingProviders}
+			selectedProviderIds={selectedProviderIds}
 		/>
 	);
 }
@@ -73,7 +83,7 @@ export default async function SettingsPage({ params }: Props) {
 				subtitle={t.settings.subtitle}
 			/>
 			<Suspense fallback={<SettingsContentSkeleton />}>
-				<SettingsSection user={user} />
+				<SettingsSection user={user} lang={lang} />
 			</Suspense>
 		</PageLayout>
 	);
