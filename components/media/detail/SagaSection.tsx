@@ -36,7 +36,7 @@ export async function SagaSection({
 		<MediaSection
 			title={details.name}
 			items={items}
-			categoryUrl="/explorer?type=movie"
+			categoryUrl={`/collection/${details.id}`}
 		/>
 	);
 }

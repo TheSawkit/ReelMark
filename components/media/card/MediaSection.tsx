@@ -42,7 +42,9 @@ export function MediaSection({
 }: MediaSectionProps) {
 	const { t, lang } = useTranslation();
 	const visible = items.slice(0, SECTION_ITEM_LIMIT);
-	const localizedCategoryUrl = localizedHref(lang, categoryUrl);
+	const localizedCategoryUrl = categoryUrl
+		? localizedHref(lang, categoryUrl)
+		: undefined;
 
 	return (
 		<HorizontalScroll
@@ -70,7 +72,12 @@ export function MediaSection({
 					/>
 				</StaggeredItem>
 			))}
-			<ViewAllCard href={localizedCategoryUrl} label={t.common.viewAll} />
+			{localizedCategoryUrl && (
+				<ViewAllCard
+					href={localizedCategoryUrl}
+					label={t.common.viewAll}
+				/>
+			)}
 		</HorizontalScroll>
 	);
 }

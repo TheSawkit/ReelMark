@@ -268,7 +268,11 @@ async function buildPersonSection(
 	excludedKeys: Set<string>,
 	t: Translations,
 	lang: Language
-): Promise<{ title: string; items: MediaItem[] } | null> {
+): Promise<{
+	title: string;
+	items: MediaItem[];
+	categoryUrl: string;
+} | null> {
 	const favoritePerson = pickFavoritePerson(
 		personCredits.map((credits) => ({
 			directors: credits.crew
@@ -315,6 +319,7 @@ async function buildPersonSection(
 			favoritePerson.name
 		),
 		items,
+		categoryUrl: `/crew/${favoritePerson.id}`,
 	};
 }
 
@@ -459,13 +464,18 @@ async function buildLibraryContent(
 				'${movie.movie_title}',
 				entry.media_title
 			),
+			categoryUrl: `/${type}/${entry.media_id}/similar`,
 			items: isMovie
 				? (similarResults[index] as Movie[]).map(movieToMediaItem)
 				: (similarResults[index] as TvShow[]).map(tvShowToMediaItem),
 		}))
 		.filter((section) => section.items.length > 0);
 
-	const extraSections = [
+	const extraSections: Array<{
+		title: string;
+		items: MediaItem[];
+		categoryUrl?: string;
+	}> = [
 		...(onServicesItems.length > 0
 			? [
 					{
@@ -481,6 +491,9 @@ async function buildLibraryContent(
 						title: isMovie
 							? t.pages.dashboard.upcomingForYou
 							: t.pages.dashboard.onAirForYou,
+						categoryUrl: isMovie
+							? '/explorer/upcoming'
+							: '/explorer/tv-on-the-air',
 						items: freshItems,
 					},
 				]
@@ -516,7 +529,7 @@ async function buildLibraryContent(
 					key={section.title}
 					title={section.title}
 					items={section.items}
-					categoryUrl="/explorer"
+					categoryUrl={section.categoryUrl}
 				/>
 			))}
 

@@ -30,7 +30,7 @@ export interface MediaCardProps {
 export interface MediaSectionProps {
 	title: string;
 	items: MediaItem[];
-	categoryUrl: string;
+	categoryUrl?: string;
 	hideRating?: boolean;
 }
 

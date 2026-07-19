@@ -278,7 +278,7 @@ export default async function MoviePage(props: MoviePageProps) {
 						<MovieTrailersSection movieId={movieId} lang={lang} />
 					</Suspense>
 				}
-				extraSections={
+				relatedSections={
 					<>
 						<Suspense fallback={null}>
 							<SagaSection

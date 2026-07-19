@@ -371,17 +371,15 @@ export default async function TvShowPage(props: TvPageProps) {
 						<PublicReviewsSection mediaId={tvId} mediaType="tv" />
 					</Suspense>
 				}
-				extraSections={
-					<>
-						{seasonsSection}
-						<Suspense fallback={null}>
-							<SimilarSection
-								mediaId={tvId}
-								mediaType="tv"
-								lang={lang}
-							/>
-						</Suspense>
-					</>
+				extraSections={seasonsSection}
+				relatedSections={
+					<Suspense fallback={null}>
+						<SimilarSection
+							mediaId={tvId}
+							mediaType="tv"
+							lang={lang}
+						/>
+					</Suspense>
 				}
 				trailers={
 					<Suspense fallback={<DetailSectionSkeleton />}>

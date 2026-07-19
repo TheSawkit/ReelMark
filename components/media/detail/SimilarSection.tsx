@@ -37,7 +37,7 @@ export async function SimilarSection({
 		<MediaSection
 			title={t.movie.similarTitle}
 			items={items}
-			categoryUrl={`/explorer?type=${mediaType}`}
+			categoryUrl={`/${mediaType}/${mediaId}/similar`}
 		/>
 	);
 }
