@@ -1,0 +1,41 @@
+const fr = {
+	sortBy: 'Trier',
+	sortAdded: "Date d'ajout",
+	sortYear: 'Année de sortie',
+	sortTitle: 'Titre',
+	sortRating: 'Note',
+	ascending: 'Ordre croissant',
+	descending: 'Ordre décroissant',
+	genres: 'Genres',
+	filterByGenre: 'Filtrer par genre',
+	filterByActor: 'Filtrer par acteur',
+	actor: 'Acteur',
+	actorPlaceholder: 'Rechercher un acteur',
+	clearActor: 'Effacer la recherche',
+	activeFilters: 'Filtres actifs',
+	removeFilter: 'Retirer le filtre',
+	clearFilters: 'Tout effacer',
+	noResults: 'Aucun résultat ne correspond à ces filtres',
+};
+
+const en = {
+	sortBy: 'Sort',
+	sortAdded: 'Date added',
+	sortYear: 'Release year',
+	sortTitle: 'Title',
+	sortRating: 'Rating',
+	ascending: 'Ascending order',
+	descending: 'Descending order',
+	genres: 'Genres',
+	filterByGenre: 'Filter by genre',
+	filterByActor: 'Filter by actor',
+	actor: 'Actor',
+	actorPlaceholder: 'Search by actor',
+	clearActor: 'Clear search',
+	activeFilters: 'Active filters',
+	removeFilter: 'Remove filter',
+	clearFilters: 'Clear all',
+	noResults: 'No results match these filters',
+} satisfies typeof fr;
+
+export const lists = { fr, en };

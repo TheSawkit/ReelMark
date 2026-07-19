@@ -4,6 +4,7 @@ import type { Language } from '@/lib/i18n/translations';
 import { getMovieDetails, getTvShowDetails } from '@/lib/tmdb';
 import { buildMediaMetadata } from '@/lib/metadata';
 import { getTranslations } from '@/lib/i18n/server';
+import { reportSwallowed } from '@/lib/report';
 
 /** Filters and sorts YouTube trailers/teasers by official status. */
 export function filterTrailers(videos: Video[]): Video[] {
@@ -56,7 +57,8 @@ export async function buildMediaDetailMetadata(
 				ogType: 'video.tv_show',
 			});
 		}
-	} catch {
+	} catch (error) {
+		reportSwallowed('media-detail:metadata', error);
 		return { title: 'ReelMark', description: defaultDesc };
 	}
 }

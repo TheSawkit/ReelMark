@@ -5,6 +5,7 @@ import { BASE_URL } from '@/lib/metadata';
 import { sanitizeRedirectPath } from '@/lib/validators';
 import { getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
+import { reportSwallowed } from '@/lib/report';
 
 export async function GET(request: NextRequest) {
 	const { searchParams } = new URL(request.url);
@@ -28,11 +29,11 @@ export async function GET(request: NextRequest) {
 			token_hash,
 		});
 		if (!error) return NextResponse.redirect(redirectTo);
-		console.error('[auth/confirm] OTP verification failed:', error.message);
+		reportSwallowed('auth/confirm:otp', error.message);
 	} else if (code) {
 		const { error } = await supabase.auth.exchangeCodeForSession(code);
 		if (!error) return NextResponse.redirect(redirectTo);
-		console.error('[auth/confirm] Code exchange failed:', error.message);
+		reportSwallowed('auth/confirm:code-exchange', error.message);
 	}
 
 	const {

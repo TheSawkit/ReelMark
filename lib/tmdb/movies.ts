@@ -18,6 +18,7 @@ import {
 	getImageLanguageFilter,
 } from './client';
 import { getWatchmodeProviders } from '@/lib/watchmode/providers';
+import { reportSwallowed } from '@/lib/report';
 import type { Language } from '@/lib/i18n/translations';
 import { findLocalCertification } from './certifications';
 
@@ -171,10 +172,7 @@ export async function getMovieDetails(
 			userRegion
 		);
 	} catch (error) {
-		console.warn(
-			`[tmdb/movies] Certification fetch failed for movie ${id}:`,
-			error
-		);
+		reportSwallowed('tmdb/movies:certification', error);
 		details.certification = undefined;
 	}
 
@@ -221,7 +219,8 @@ export async function getMovieRecommendations(
 			{ revalidate: 86400, lang }
 		);
 		return results;
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/movies:recommendations', error);
 		return [];
 	}
 }
@@ -241,7 +240,8 @@ export async function getSimilarMovies(
 			{ revalidate: 86400, lang }
 		);
 		return results;
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/movies:similar', error);
 		return [];
 	}
 }
@@ -260,7 +260,8 @@ export async function getCollection(
 			{},
 			{ revalidate: 604800, lang }
 		);
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/movies:collection', error);
 		return null;
 	}
 }
@@ -316,7 +317,8 @@ export async function getMovieWatchProviders(
 		}
 
 		return tmdb;
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/movies:watch-providers', error);
 		return null;
 	}
 }

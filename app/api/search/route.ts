@@ -4,6 +4,7 @@ import { rankMedia } from '@/lib/search/score';
 import { getMediaKey } from '@/lib/media';
 import { createClient } from '@/lib/supabase/server';
 import { DEFAULT_LANGUAGE, isLanguage } from '@/lib/i18n/config';
+import { reportSwallowed } from '@/lib/report';
 import type { MediaItem } from '@/types/tmdb';
 
 const MAX_RESULTS = 6;
@@ -101,7 +102,7 @@ export async function GET(req: NextRequest) {
 			{ headers: CDN_CACHE_HEADERS }
 		);
 	} catch (error) {
-		console.error('[api/search] TMDB search failed:', error);
+		reportSwallowed('api/search:tmdb', error);
 		return NextResponse.json(
 			{ error: 'Failed to fetch search results' },
 			{ status: 500, headers: NO_STORE_HEADERS }

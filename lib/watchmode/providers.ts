@@ -1,5 +1,6 @@
 import type { WatchProvider } from '@/types/tmdb';
 import { fetchWatchmode } from './client';
+import { reportSwallowed } from '@/lib/report';
 import type {
 	WatchmodeSearchResponse,
 	WatchmodeTitleSource,
@@ -23,7 +24,8 @@ async function getSourceListings(): Promise<
 			604800
 		);
 		return new Map(listings.map((s) => [s.id, s]));
-	} catch {
+	} catch (error) {
+		reportSwallowed('watchmode:sources', error);
 		return new Map();
 	}
 }
@@ -40,7 +42,8 @@ async function resolveTmdbId(
 			172800
 		);
 		return data.title_results[0]?.id ?? null;
-	} catch {
+	} catch (error) {
+		reportSwallowed('watchmode:resolve-id', error);
 		return null;
 	}
 }
@@ -136,7 +139,8 @@ export async function getWatchmodeProviders(
 			result.rent.length > 0 ||
 			result.buy.length > 0;
 		return hasData ? result : null;
-	} catch {
+	} catch (error) {
+		reportSwallowed('watchmode:title-sources', error);
 		return null;
 	}
 }

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { sanitizeRedirectPath } from '@/lib/validators';
 import { getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
+import { reportSwallowed } from '@/lib/report';
 
 export async function GET(request: Request) {
 	const { searchParams, origin, host } = new URL(request.url);
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
 			);
 		}
 
-		console.error('[auth/callback] Code exchange failed:', error?.message);
+		reportSwallowed('auth/callback:code-exchange', error?.message);
 		return NextResponse.redirect(errorUrl);
 	}
 

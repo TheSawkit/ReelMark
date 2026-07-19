@@ -1,3 +1,5 @@
+import { reportSwallowed } from '@/lib/report';
+
 interface ItunesApp {
 	trackId: number;
 	artworkUrl512: string;
@@ -88,7 +90,8 @@ export async function getAppStoreIconMap(
 			if (icon) map.set(key, icon);
 		}
 		return map;
-	} catch {
+	} catch (error) {
+		reportSwallowed('watchmode:app-store-icons', error);
 		return new Map();
 	}
 }

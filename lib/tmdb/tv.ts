@@ -17,6 +17,7 @@ import {
 	getImageLanguageFilter,
 } from './client';
 import { getWatchmodeProviders } from '@/lib/watchmode/providers';
+import { reportSwallowed } from '@/lib/report';
 import type { Language } from '@/lib/i18n/translations';
 import { findTvCertification } from './certifications';
 
@@ -114,7 +115,7 @@ export async function getTvShowDetails(
 		const userRegion = await getUserRegion(lang);
 		details.certification = findTvCertification(ratings, userRegion);
 	} catch (error) {
-		console.warn('[tmdb/tv] Certification fetch failed for TV:', id, error);
+		reportSwallowed('tmdb/tv:certification', error);
 		details.certification = undefined;
 	}
 
@@ -141,7 +142,8 @@ async function getTvShowTotalEpisodes(
 		return (details.seasons ?? [])
 			.filter((s) => s.season_number > 0)
 			.reduce((sum, s) => sum + s.episode_count, 0);
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/tv:total-episodes', error);
 		return 0;
 	}
 }
@@ -222,7 +224,8 @@ export async function getTvShowRecommendations(
 			{ revalidate: 86400, lang }
 		);
 		return results;
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/tv:recommendations', error);
 		return [];
 	}
 }
@@ -242,7 +245,8 @@ export async function getSimilarTvShows(
 			{ revalidate: 86400, lang }
 		);
 		return results;
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/tv:similar', error);
 		return [];
 	}
 }
@@ -300,7 +304,8 @@ export async function getTvShowWatchProviders(
 		}
 
 		return tmdb;
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/tv:watch-providers', error);
 		return null;
 	}
 }

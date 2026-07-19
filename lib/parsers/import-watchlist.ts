@@ -1,4 +1,4 @@
-import type { ImportItem, ImportedList } from '@/app/actions/data';
+import type { ImportItem, ImportedList } from '@/lib/data-transfer/types';
 import type { WatchStatus } from '@/types/tmdb';
 
 export type Platform = 'letterboxd' | 'trakt' | 'tvtime';

@@ -1,6 +1,7 @@
 import type { MovieDetails, TvShowDetails, MediaType } from '@/types/tmdb';
 import { fetchTMDB } from './client';
 import type { Language } from '@/lib/i18n/translations';
+import { reportSwallowed } from '@/lib/report';
 
 export interface ListMediaMetadata {
 	release_date: string | null;
@@ -51,7 +52,8 @@ export async function getListMediaMetadata(
 			genre_ids: (details.genres ?? []).map((g) => g.id),
 			total_episodes: null,
 		};
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/list-metadata', error);
 		return { release_date: null, genre_ids: [], total_episodes: null };
 	}
 }

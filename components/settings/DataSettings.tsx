@@ -27,7 +27,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/context';
 import { exportUserData, importBatch, importLists } from '@/app/actions/data';
-import type { ImportItem, ImportedList } from '@/app/actions/data';
+import type { ImportItem, ImportedList } from '@/lib/data-transfer/types';
 import { parseImportFile, type Platform } from '@/lib/parsers/import-watchlist';
 import {
 	PLATFORMS,

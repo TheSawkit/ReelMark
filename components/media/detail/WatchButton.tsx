@@ -72,6 +72,10 @@ export function WatchButton({
 
 		const previous = mediaWatchStore.get(mediaType, mediaId);
 		const target = isActive ? (fallbackStatus ?? 'none') : status;
+		const effectivePrevious =
+			previous?.status ?? (initialIsActive ? status : 'none');
+		const changesMembership =
+			target === 'none' || effectivePrevious === 'none';
 
 		await run({
 			apply: () => mediaWatchStore.set(mediaType, mediaId, target),
@@ -95,6 +99,7 @@ export function WatchButton({
 				if (mediaType === 'tv' && target === 'none') {
 					episodeWatchStore.clearShow(mediaId);
 				}
+				if (changesMembership) router.refresh();
 				if (target === 'watched') setReviewOpen(true);
 			},
 		});

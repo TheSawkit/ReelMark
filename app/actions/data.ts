@@ -2,87 +2,31 @@
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { fetchAllRows } from '@/lib/supabase/pagination';
-import { fetchTMDB } from '@/lib/tmdb/client';
-import { searchMulti } from '@/lib/tmdb/search';
 import { parseVisibility } from '@/lib/privacy';
+import { reportCritical } from '@/lib/report';
 import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
+import { VALID_STATUSES, validateRating } from '@/lib/validators';
 import {
-	VALID_STATUSES,
-	VALID_MEDIA_TYPES,
-	validateRating,
-} from '@/lib/validators';
+	RESOLVE_CONCURRENCY,
+	mapLimit,
+	resolveImportMedia,
+} from '@/lib/data-transfer/resolve';
+import type {
+	ExportData,
+	ImportBatchResult,
+	ImportItem,
+	ImportedList,
+} from '@/lib/data-transfer/types';
 import type { WatchStatus } from '@/types/tmdb';
 
-interface TmdbVerified {
-	type: 'movie' | 'tv';
-	title: string;
+type WatchlistRow = {
+	user_id: string;
+	media_id: number;
+	media_type: 'movie' | 'tv';
+	media_title: string;
 	poster_path: string | null;
-}
-
-async function fetchTmdbForType(
-	id: number,
-	type: 'movie' | 'tv'
-): Promise<TmdbVerified | null> {
-	try {
-		if (type === 'movie') {
-			const data = await fetchTMDB<{
-				title: string;
-				poster_path: string | null;
-			}>(`/movie/${id}`, {}, { revalidate: 86400 });
-			return {
-				type: 'movie',
-				title: data.title,
-				poster_path: data.poster_path,
-			};
-		}
-		const data = await fetchTMDB<{
-			name: string;
-			poster_path: string | null;
-		}>(`/tv/${id}`, {}, { revalidate: 86400 });
-		return { type: 'tv', title: data.name, poster_path: data.poster_path };
-	} catch (error) {
-		if (error instanceof Error && error.message.includes('404'))
-			return null;
-		throw error;
-	}
-}
-
-async function verifyTmdbType(
-	id: number,
-	expected: 'movie' | 'tv'
-): Promise<TmdbVerified | null> {
-	const primary = await fetchTmdbForType(id, expected);
-	if (primary) return primary;
-	return fetchTmdbForType(id, expected === 'movie' ? 'tv' : 'movie');
-}
-
-export interface ExportData {
-	version: 1;
-	exported_at: string;
-	watchlist: Array<{
-		media_id: number;
-		media_type: string;
-		media_title: string;
-		poster_path: string | null;
-		status: string;
-		created_at: string;
-	}>;
-	reviews: Array<{
-		media_id: number;
-		media_type: string;
-		media_title: string;
-		poster_path: string | null;
-		rating: number | null;
-		content: string | null;
-		created_at: string;
-	}>;
-	episode_watches: Array<{
-		tv_id: number;
-		season_number: number;
-		episode_number: number;
-		watched_at: string | null;
-	}>;
-}
+	status: WatchStatus;
+};
 
 export async function exportUserData(): Promise<ExportData> {
 	const { supabase, userId } = await getAuthenticatedUser();
@@ -127,225 +71,6 @@ export async function exportUserData(): Promise<ExportData> {
 		reviews: reviewRows as ExportData['reviews'],
 		episode_watches: episodeRows as ExportData['episode_watches'],
 	};
-}
-
-export interface ImportItem {
-	title: string;
-	year: number | null;
-	status: WatchStatus;
-	rating?: number | null;
-	tmdbId?: number | null;
-	imdbId?: string | null;
-	tvdbId?: number | null;
-	mediaType?: 'movie' | 'tv' | null;
-	posterPath?: string | null;
-	watchedEpisodes?: Array<{ season: number; episode: number }> | null;
-}
-
-export interface ImportBatchResult {
-	imported: number;
-	failed: string[];
-}
-
-interface FindResult {
-	id: number;
-	title: string;
-	poster_path: string | null;
-}
-
-type WatchlistRow = {
-	user_id: string;
-	media_id: number;
-	media_type: 'movie' | 'tv';
-	media_title: string;
-	poster_path: string | null;
-	status: WatchStatus;
-};
-
-async function findByImdbId(
-	imdbId: string,
-	expectedType: 'movie' | 'tv'
-): Promise<FindResult | null> {
-	try {
-		const data = await fetchTMDB<{
-			movie_results: Array<{
-				id: number;
-				title: string;
-				poster_path: string | null;
-			}>;
-			tv_results: Array<{
-				id: number;
-				name: string;
-				poster_path: string | null;
-			}>;
-		}>(
-			`/find/${imdbId}`,
-			{ external_source: 'imdb_id' },
-			{ revalidate: 86400 }
-		);
-
-		if (expectedType === 'movie') {
-			const r = data.movie_results[0];
-			return r
-				? { id: r.id, title: r.title, poster_path: r.poster_path }
-				: null;
-		}
-		const r = data.tv_results[0];
-		return r
-			? { id: r.id, title: r.name, poster_path: r.poster_path }
-			: null;
-	} catch {
-		return null;
-	}
-}
-
-const RESOLVE_CONCURRENCY = 6;
-
-async function mapLimit<T, R>(
-	arr: T[],
-	limit: number,
-	fn: (item: T) => Promise<R>
-): Promise<R[]> {
-	const out = new Array<R>(arr.length);
-	let next = 0;
-	await Promise.all(
-		Array.from({ length: Math.min(limit, arr.length) }, async () => {
-			for (;;) {
-				const i = next++;
-				if (i >= arr.length) return;
-				out[i] = await fn(arr[i]);
-			}
-		})
-	);
-	return out;
-}
-
-async function findByTvdbId(tvdbId: number): Promise<FindResult | null> {
-	try {
-		const data = await fetchTMDB<{
-			tv_results: Array<{
-				id: number;
-				name: string;
-				poster_path: string | null;
-			}>;
-		}>(
-			`/find/${tvdbId}`,
-			{ external_source: 'tvdb_id' },
-			{ revalidate: 86400 }
-		);
-
-		const r = data.tv_results[0];
-		return r
-			? { id: r.id, title: r.name, poster_path: r.poster_path }
-			: null;
-	} catch {
-		return null;
-	}
-}
-
-interface ImportMatch {
-	id: number;
-	type: 'movie' | 'tv';
-	title: string;
-	poster_path: string | null;
-}
-
-const isPositiveId = (value: number | null | undefined): value is number =>
-	typeof value === 'number' && Number.isInteger(value) && value > 0;
-
-/** Trusts the file's TMDB id, keeping the entry even when TMDB is unreachable. */
-async function matchByTmdbId(
-	tmdbId: number,
-	mediaType: 'movie' | 'tv',
-	fallbackTitle: string,
-	fallbackPoster: string | null
-): Promise<ImportMatch | null> {
-	try {
-		const verified = await verifyTmdbType(tmdbId, mediaType);
-		if (!verified) return null;
-		return {
-			id: tmdbId,
-			type: verified.type,
-			title: verified.title || fallbackTitle,
-			poster_path: verified.poster_path,
-		};
-	} catch {
-		return {
-			id: tmdbId,
-			type: mediaType,
-			title: fallbackTitle,
-			poster_path: fallbackPoster,
-		};
-	}
-}
-
-async function matchByExternalId(
-	item: ImportItem,
-	mediaType: 'movie' | 'tv'
-): Promise<ImportMatch | null> {
-	if (item.imdbId && /^tt\d+$/.test(item.imdbId)) {
-		const found = await findByImdbId(item.imdbId, mediaType);
-		if (found) return { ...found, type: mediaType };
-	}
-
-	if (isPositiveId(item.tvdbId)) {
-		const found = await findByTvdbId(item.tvdbId);
-		if (found) return { ...found, type: 'tv' };
-	}
-
-	return null;
-}
-
-/** Last resort: title search, preferring a release year match when the file carries one. */
-async function matchByTitle(
-	item: ImportItem,
-	fallbackTitle: string
-): Promise<ImportMatch | null> {
-	const results = await searchMulti(String(item.title).slice(0, 200));
-	const candidates = item.mediaType
-		? results.filter((r) => r.media_type === item.mediaType)
-		: results;
-	const match = item.year
-		? (candidates.find((r) =>
-				r.release_date?.startsWith(String(item.year))
-			) ?? candidates[0])
-		: candidates[0];
-
-	if (!match) return null;
-	return {
-		id: match.id,
-		type: match.media_type as 'movie' | 'tv',
-		title: match.title || fallbackTitle,
-		poster_path: match.poster_path,
-	};
-}
-
-/**
- * Resolves one imported row to a TMDB entry, trying the most trustworthy source first.
- * A TMDB id is authoritative: when it fails verification the row is dropped rather than guessed.
- */
-async function resolveImportMedia(
-	item: ImportItem
-): Promise<ImportMatch | null> {
-	const mediaType: 'movie' | 'tv' =
-		item.mediaType && VALID_MEDIA_TYPES.has(item.mediaType)
-			? item.mediaType
-			: 'movie';
-	const fallbackTitle = String(item.title).slice(0, 500);
-
-	if (isPositiveId(item.tmdbId)) {
-		return matchByTmdbId(
-			item.tmdbId,
-			mediaType,
-			fallbackTitle,
-			item.posterPath ?? null
-		);
-	}
-
-	return (
-		(await matchByExternalId(item, mediaType)) ??
-		(await matchByTitle(item, fallbackTitle))
-	);
 }
 
 /**
@@ -405,7 +130,8 @@ export async function importBatch(
 					rating,
 					episodes: media.type === 'tv' ? validEpisodes : [],
 				};
-			} catch {
+			} catch (error) {
+				reportCritical('data-import:item', error);
 				return null;
 			}
 		}
@@ -486,12 +212,6 @@ export async function importBatch(
 	}
 
 	return { imported: rows.length, failed };
-}
-
-export interface ImportedList {
-	name: string;
-	description: string | null;
-	items: ImportItem[];
 }
 
 /**
