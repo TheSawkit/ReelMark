@@ -5,6 +5,7 @@ import type {
 	WatchProvidersResponse,
 } from '@/types/tmdb';
 import type { Language } from '@/lib/i18n/translations';
+import { reportSwallowed } from '@/lib/report';
 
 const PROVIDER_LIST_SIZE = 40;
 
@@ -55,7 +56,8 @@ export async function getAvailableProviders(
 			}))
 			.sort((a, b) => a.display_priority - b.display_priority)
 			.slice(0, PROVIDER_LIST_SIZE);
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/providers:available', error);
 		return [];
 	}
 }
@@ -80,7 +82,8 @@ export async function getFlatrateProviderIds(
 		return (data.results[region]?.flatrate ?? []).map(
 			(provider) => provider.provider_id
 		);
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/providers:flatrate', error);
 		return [];
 	}
 }

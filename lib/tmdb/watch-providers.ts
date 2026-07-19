@@ -1,5 +1,6 @@
 import { fetchTMDB } from './client';
 import type { Language } from '@/lib/i18n/translations';
+import { reportSwallowed } from '@/lib/report';
 
 interface TmdbProviderItem {
 	logo_path: string;
@@ -38,7 +39,8 @@ async function fetchProviderList(
 			{ revalidate: 604800, lang }
 		);
 		return data.results ?? [];
-	} catch {
+	} catch (error) {
+		reportSwallowed('tmdb/watch-providers:list', error);
 		return [];
 	}
 }
@@ -65,8 +67,8 @@ export async function getTmdbProviderLogoMap(
 			if (!map.has(key)) map.set(key, p.logo_path);
 		}
 		return map;
-	} catch (e) {
-		console.error('[WatchProviders] getTmdbProviderLogoMap failed:', e);
+	} catch (error) {
+		reportSwallowed('tmdb/watch-providers:logo-map', error);
 		return new Map();
 	}
 }

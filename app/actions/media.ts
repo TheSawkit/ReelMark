@@ -2,6 +2,7 @@
 
 import { headers } from 'next/headers';
 import { checkRateLimit, clientIpFrom } from '@/lib/rate-limiter';
+import { reportSwallowed } from '@/lib/report';
 import {
 	getPopularMovies,
 	getTopRatedMovies,
@@ -159,8 +160,9 @@ export async function filterListByActor(
 
 	const scoped = items.slice(0, ACTOR_FILTER_MAX_ITEMS);
 	if (scoped.length < items.length) {
-		console.warn(
-			`[filterListByActor] Capped actor matching to ${ACTOR_FILTER_MAX_ITEMS}/${items.length} items.`
+		reportSwallowed(
+			'media:actor-filter-cap',
+			`capped actor matching to ${ACTOR_FILTER_MAX_ITEMS}/${items.length} items`
 		);
 	}
 
@@ -178,7 +180,8 @@ export async function filterListByActor(
 						normalizeName(member.name).includes(needle)
 					);
 					return hit ? getMediaKey(item) : null;
-				} catch {
+				} catch (error) {
+					reportSwallowed('media:actor-credits', error);
 					return null;
 				}
 			})

@@ -9,6 +9,7 @@ import {
 	revalidateLocalizedAfterResponse,
 } from '@/app/actions/_helpers';
 import { getCachedTvShowDetails } from '@/lib/tmdb/cached';
+import { reportCritical, reportSwallowed } from '@/lib/report';
 import type { SupabaseServerClient } from '@/lib/supabase/server';
 import type { WatchStatus } from '@/types/tmdb';
 
@@ -56,10 +57,9 @@ async function syncTvShowWatchlistStatus(
 	}
 
 	if (totalEpisodes === 0) {
-		console.warn(
-			'[episodes] Sync skipped for tvId:',
-			tvId,
-			'episode total unknown'
+		reportSwallowed(
+			'episodes:sync-skipped',
+			`episode total unknown for tvId ${tvId}`
 		);
 		return readTvWatchlistStatus(supabase, userId, tvId);
 	}
@@ -71,7 +71,12 @@ async function syncTvShowWatchlistStatus(
 		p_poster: details?.poster_path ?? undefined,
 	});
 	if (error) {
-		console.warn('[episodes] Sync failed for tvId:', tvId, error.message);
+		reportCritical(
+			'episodes:sync',
+			new Error(
+				`sync_tv_watchlist_status failed for tvId ${tvId}: ${error.message}`
+			)
+		);
 	}
 
 	return readTvWatchlistStatus(supabase, userId, tvId);
