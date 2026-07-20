@@ -1,5 +1,6 @@
 const fr = {
 	settings: 'Paramètres',
+	myProfile: 'Mon profil',
 	userMenu: 'Menu utilisateur',
 	logout: 'Déconnexion',
 	login: 'Connexion',
@@ -19,6 +20,7 @@ const fr = {
 
 const en = {
 	settings: 'Settings',
+	myProfile: 'My Profile',
 	userMenu: 'User menu',
 	logout: 'Logout',
 	login: 'Login',
