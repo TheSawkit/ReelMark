@@ -10,6 +10,12 @@ import { reportSwallowed } from '@/lib/report';
 type PushStatus =
 	'loading' | 'unsupported' | 'ios-needs-install' | 'off' | 'on';
 
+/**
+ * Inlinée au build. Absente si le build n'a pas reçu le build-arg : le toggle doit alors
+ * se présenter comme indisponible plutôt que de rester actif sans effet.
+ */
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+
 function urlBase64ToUint8Array(base64: string) {
 	const padded = base64.padEnd(
 		base64.length + ((4 - (base64.length % 4)) % 4),
@@ -57,6 +63,8 @@ export function usePushSubscription() {
 		let cancelled = false;
 
 		async function resolveStatus(): Promise<PushStatus> {
+			if (!VAPID_PUBLIC_KEY) return 'unsupported';
+
 			if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
 				return isIOS() && !isStandalone()
 					? 'ios-needs-install'
@@ -82,8 +90,7 @@ export function usePushSubscription() {
 	}, []);
 
 	const enable = useCallback(async () => {
-		const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-		if (!publicKey) return;
+		if (!VAPID_PUBLIC_KEY) return;
 
 		setIsPending(true);
 		try {
@@ -92,7 +99,7 @@ export function usePushSubscription() {
 			const registration = await navigator.serviceWorker.ready;
 			const subscription = await registration.pushManager.subscribe({
 				userVisibleOnly: true,
-				applicationServerKey: urlBase64ToUint8Array(publicKey),
+				applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
 			});
 
 			await savePushSubscription(toSubscriptionInput(subscription));
