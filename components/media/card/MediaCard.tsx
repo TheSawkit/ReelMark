@@ -156,7 +156,7 @@ export function MediaCard({
 				{!hideRating && (
 					<div
 						className={cn(
-							'absolute top-3 right-3 z-10 transition-all duration-(--duration-base) pointer-events-none',
+							'absolute top-3 left-3 z-10 transition-all duration-(--duration-base) pointer-events-none',
 							'translate-y-0 group-hover:-translate-y-1'
 						)}
 					>
