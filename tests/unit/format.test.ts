@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import {
 	formatDate,
 	formatShortDate,
@@ -57,5 +57,35 @@ describe('calculateAge', () => {
 		const age = calculateAge('1990-01-01', null);
 		expect(typeof age).toBe('number');
 		expect(age).toBeGreaterThan(0);
+	});
+});
+
+describe('déterminisme des dates (hydratation)', () => {
+	const ORIGINAL_TZ = process.env.TZ;
+
+	afterEach(() => {
+		process.env.TZ = ORIGINAL_TZ;
+	});
+
+	/**
+	 * Un serveur en UTC et un navigateur en heure locale doivent produire la même chaîne,
+	 * sinon les composants client qui affichent une date cassent l'hydratation.
+	 */
+	it('rend la même chaîne quel que soit le fuseau du processus', () => {
+		const timestamp = '2023-07-15T23:30:00.000Z';
+		const rendus = new Set<string>();
+
+		for (const tz of ['UTC', 'Europe/Brussels', 'America/Los_Angeles']) {
+			process.env.TZ = tz;
+			rendus.add(formatShortDate(timestamp, 'fr-FR'));
+			rendus.add(formatDate(timestamp, 'fr-FR') ?? '');
+		}
+
+		expect(rendus.size).toBe(2);
+	});
+
+	it("ne décale pas d'un jour une date seule à l'ouest de Greenwich", () => {
+		process.env.TZ = 'America/Los_Angeles';
+		expect(formatShortDate('2023-07-15', 'en-GB')).toContain('15');
 	});
 });

@@ -58,6 +58,16 @@ export const metadata: Metadata = {
 	description:
 		'Your personal companion to track and organize all the movies, shows and content you have already watched.',
 	applicationName: 'ReelMark',
+	// Safari enveloppe de lui-même dates, numéros et adresses dans des <a>. Il réécrit donc
+	// le DOM entre l'arrivée du HTML et l'hydratation, et React échoue au remplacement d'une
+	// frontière Suspense (HierarchyRequestError + erreur #418) — uniquement sur Safari.
+	// Les libellés du projet en sont truffés : « S9E1 », « 134/164 épisodes », dates, notes.
+	formatDetection: {
+		telephone: false,
+		date: false,
+		address: false,
+		email: false,
+	},
 	keywords: [
 		'watchlist',
 		'movies',
