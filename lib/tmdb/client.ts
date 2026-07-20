@@ -54,11 +54,24 @@ export async function getImageLanguageFilter(lang?: Language): Promise<string> {
 	return Array.from(languages).join(',');
 }
 
+type TMDBResult<T> =
+	| { ok: true; data: T }
+	| { ok: false; status: number; statusText: string };
+
+const FAILED_LOOKUP_CACHE = { stale: 0, revalidate: 60, expire: 300 };
+
+/**
+ * Cached TMDB call. **Never throws on an HTTP failure**: an exception crossing a
+ * `"use cache"` boundary comes back digested, from the `Cache` environment, and takes down
+ * the surrounding render even when the caller has a try/catch. A TMDB 404 is routine — a
+ * deleted title, a recommendations endpoint with no entry — so failures are returned as
+ * data and turned back into an exception by `fetchTMDB`, outside the cache scope.
+ */
 async function fetchTMDBUrl<T>(
 	url: string,
 	revalidate: number,
 	retries: number
-): Promise<T> {
+): Promise<TMDBResult<T>> {
 	'use cache';
 	cacheLife({ stale: 300, revalidate, expire: revalidate * 24 });
 
@@ -67,9 +80,10 @@ async function fetchTMDBUrl<T>(
 			headers: { Authorization: `Bearer ${TMDB_READ_ACCESS_TOKEN}` },
 		});
 
-		if (response.ok) return response.json();
+		if (response.ok) return { ok: true, data: (await response.json()) as T };
 
-		if (response.status === 429 && attempt < retries) {
+		const isRetryable = response.status === 429 || response.status >= 500;
+		if (isRetryable && attempt < retries) {
 			const retryAfter = Number(response.headers.get('retry-after'));
 			const delayMs =
 				retryAfter > 0 ? retryAfter * 1000 : 300 * (attempt + 1);
@@ -77,9 +91,13 @@ async function fetchTMDBUrl<T>(
 			continue;
 		}
 
-		throw new Error(
-			`TMDB API Error: ${response.status} ${response.statusText}`
-		);
+		// Lowest cacheLife wins, so a failure is not frozen for the success TTL.
+		cacheLife(FAILED_LOOKUP_CACHE);
+		return {
+			ok: false,
+			status: response.status,
+			statusText: response.statusText,
+		};
 	}
 }
 
@@ -104,7 +122,13 @@ export async function fetchTMDB<T>(
 
 	const url = `${TMDB_BASE_URL}${safeEndpoint}?${queryParams.toString()}`;
 
-	return fetchTMDBUrl<T>(url, revalidate, retries);
+	const result = await fetchTMDBUrl<T>(url, revalidate, retries);
+	if (!result.ok) {
+		throw new Error(
+			`TMDB API Error: ${result.status} ${result.statusText}`
+		);
+	}
+	return result.data;
 }
 
 /** Resolves the user's region from profile metadata, falling back to locale country or "US". Deduped per request. */
