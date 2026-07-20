@@ -5,8 +5,6 @@ import { NotificationsList } from '@/components/notifications/NotificationsList'
 import { BASE_URL, buildPageMetadata } from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';
 
-export const dynamic = 'force-dynamic';
-
 type Props = {
 	params: Promise<{ lang: Language }>;
 };

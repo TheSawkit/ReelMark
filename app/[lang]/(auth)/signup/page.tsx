@@ -8,8 +8,6 @@ import { localizedHref } from '@/lib/i18n/utils';
 import { localizedAlternates } from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';
 
-export const dynamic = 'force-dynamic';
-
 type Props = {
 	params: Promise<{ lang: Language }>;
 };

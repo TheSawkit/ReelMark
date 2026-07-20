@@ -55,7 +55,6 @@ export interface MovieDetails extends Movie {
 	budget: number;
 	revenue: number;
 	homepage: string;
-	certification?: string;
 	belongs_to_collection?: MovieCollectionRef | null;
 }
 
@@ -83,7 +82,6 @@ export interface TvShowDetails extends TvShow {
 	seasons: Season[];
 	created_by: CreatedBy[];
 	episode_run_time: number[];
-	certification?: string;
 }
 
 export interface Season {

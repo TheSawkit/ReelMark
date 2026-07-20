@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { after } from 'next/server';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n/config';
 import type { User } from '@supabase/supabase-js';
@@ -21,6 +21,15 @@ export function revalidateLocalizedAfterResponse(paths: readonly string[]) {
 	after(() => {
 		for (const path of paths) revalidateLocalized(path);
 	});
+}
+
+/**
+ * Drops the cached Open Graph metadata of a playlist after the response.
+ * Without it a renamed — or newly private — playlist keeps advertising its old name for the
+ * whole `cacheLife` of `getPublicPlaylistMeta`.
+ */
+export function revalidatePlaylistMetaAfterResponse(playlistId: string) {
+	after(() => revalidateTag(`playlist-meta:${playlistId}`, 'hours'));
 }
 
 /** Deferred variant of revalidateProfile — same reason as revalidateLocalizedAfterResponse. */

@@ -28,7 +28,13 @@ interface CrewPageProps {
 	params: CrewPageParams;
 }
 
-export const dynamic = 'force-dynamic';
+/**
+ * Sample params so Cache Components can validate this route at build time.
+ * Everything else is rendered on demand (`dynamicParams` stays on).
+ */
+export async function generateStaticParams() {
+	return [{ id: '287' }];
+}
 
 export async function generateMetadata({
 	params,

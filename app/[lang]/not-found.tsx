@@ -1,18 +1,17 @@
+'use client';
+
 import Link from 'next/link';
 import { Film } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
+import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 
-export default async function NotFound() {
-	const [t, lang] = await Promise.all([
-		getTranslations(),
-		getServerLanguage(),
-	]);
+export default function NotFound() {
+	const { t, lang } = useTranslation();
 
 	return (
 		<div className="centered-section">
-			<div className="max-w-md w-full text-center space-y-6 glass-surface rounded-(--radius-xl) shadow-cinema p-8 animate-scale-in">
+			<div className="max-w-md w-full text-center space-y-6 glass-surface rounded-(--radius-xl) shadow-card-lift p-8 animate-scale-in">
 				<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/15 text-primary mb-4">
 					<Film className="w-10 h-10" />
 				</div>

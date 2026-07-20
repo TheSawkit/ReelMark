@@ -1,7 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, redirect } from 'next/navigation';
 import { fetchTMDB } from '@/lib/tmdb/client';
-import { Suspense } from 'react';
+import { Suspense, cache } from 'react';
 import type { Metadata } from 'next';
 import {
 	getImageUrl,
@@ -13,6 +13,7 @@ import {
 	getTvShowWatchProviders,
 } from '@/lib/tmdb';
 import { MediaBanner } from '@/components/media/detail/MediaBanner';
+import { CertificationBadge } from '@/components/media/detail/CertificationBadge';
 import { TvWatchActions } from '@/components/media/detail/TvWatchActions';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
 import { SimilarSection } from '@/components/media/detail/SimilarSection';
@@ -41,23 +42,24 @@ import { localizedHref } from '@/lib/i18n/utils';
 import type { Season, TvShowDetails } from '@/types/tmdb';
 import type { Language } from '@/lib/i18n/translations';
 
-export const dynamic = 'force-dynamic';
-
 type TvPageParams = Promise<{ lang: Language; id: string }>;
 interface TvPageProps {
 	params: TvPageParams;
 }
 
-type TvUserData = Awaited<ReturnType<typeof loadTvUserData>>;
-
-function loadTvUserData(tvId: number) {
-	return Promise.all([
+/**
+ * Every Supabase read of the page, shared as one promise. Deferred through `cache()` so the
+ * session is only touched when a Suspense-wrapped section awaits it — starting it eagerly in
+ * the page body would block the static shell.
+ */
+const loadTvUserData = cache((tvId: number) =>
+	Promise.all([
 		getMediaWatchlistEntry(tvId, 'tv'),
 		getTvShowWatchProgress(tvId),
 		getShowAverageRating(tvId),
 		getMediaReview(tvId, 'tv'),
-	]);
-}
+	])
+);
 
 const SEASON_GRID_CLASS =
 	'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
@@ -89,15 +91,13 @@ async function TvTrailersSection({
 }
 
 async function TvUserActions({
-	userData,
 	show,
 	variant,
 }: {
-	userData: Promise<TvUserData>;
 	show: TvShowDetails;
 	variant: 'banner' | 'bar';
 }) {
-	const [watchlistEntry] = await userData;
+	const [watchlistEntry] = await loadTvUserData(show.id);
 	return (
 		<TvWatchActions
 			mediaId={show.id}
@@ -110,14 +110,8 @@ async function TvUserActions({
 	);
 }
 
-async function TvCommunityBadge({
-	userData,
-	show,
-}: {
-	userData: Promise<TvUserData>;
-	show: TvShowDetails;
-}) {
-	const [watchlistEntry, , rating, userReview] = await userData;
+async function TvCommunityBadge({ show }: { show: TvShowDetails }) {
+	const [watchlistEntry, , rating, userReview] = await loadTvUserData(show.id);
 	return (
 		<CommunityRatingBadge
 			rating={rating}
@@ -131,14 +125,8 @@ async function TvCommunityBadge({
 	);
 }
 
-async function TvRatingSection({
-	userData,
-	tvId,
-}: {
-	userData: Promise<TvUserData>;
-	tvId: number;
-}) {
-	const [, , rating] = await userData;
+async function TvRatingSection({ tvId }: { tvId: number }) {
+	const [, , rating] = await loadTvUserData(tvId);
 	return (
 		<MediaCommunityRating
 			mediaId={tvId}
@@ -149,17 +137,15 @@ async function TvRatingSection({
 }
 
 async function TvProgressSummary({
-	userData,
 	tvId,
 	totalEpisodes,
 	seasons,
 }: {
-	userData: Promise<TvUserData>;
 	tvId: number;
 	totalEpisodes: number;
 	seasons: Season[];
 }) {
-	const [, watchProgress] = await userData;
+	const [, watchProgress] = await loadTvUserData(tvId);
 	return (
 		<TvWatchSummary
 			tvId={tvId}
@@ -173,17 +159,15 @@ async function TvProgressSummary({
 }
 
 async function TvSeasonsGrid({
-	userData,
 	tvId,
 	seasons,
 	locale,
 }: {
-	userData: Promise<TvUserData>;
 	tvId: number;
 	seasons: Season[];
 	locale: string;
 }) {
-	const [, watchProgress] = await userData;
+	const [, watchProgress] = await loadTvUserData(tvId);
 	return (
 		<div className={SEASON_GRID_CLASS}>
 			{seasons.map((season) => (
@@ -197,6 +181,14 @@ async function TvSeasonsGrid({
 			))}
 		</div>
 	);
+}
+
+/**
+ * One sample id so Cache Components can validate this route at build time.
+ * Every other title is rendered on demand (`dynamicParams` stays on).
+ */
+export async function generateStaticParams() {
+	return [{ id: '1399' }];
 }
 
 export async function generateMetadata({
@@ -216,9 +208,6 @@ export default async function TvShowPage(props: TvPageProps) {
 	const tvId = parseInt(params.id);
 
 	if (isNaN(tvId)) notFound();
-
-	const userData = loadTvUserData(tvId);
-	userData.catch(() => {});
 
 	let tvDetails, credits, images;
 	try {
@@ -274,11 +263,19 @@ export default async function TvShowPage(props: TvPageProps) {
 			voteAverage={tvDetails.vote_average}
 			releaseDate={tvDetails.first_air_date}
 			runtime={tvDetails.episode_run_time?.[0]}
-			certification={tvDetails.certification}
+			certification={
+				<Suspense fallback={null}>
+					<CertificationBadge
+						mediaId={tvId}
+						mediaType="tv"
+						lang={lang}
+					/>
+				</Suspense>
+			}
 			genres={tvDetails.genres}
 			communityBadge={
 				<Suspense fallback={null}>
-					<TvCommunityBadge userData={userData} show={tvDetails} />
+					<TvCommunityBadge show={tvDetails} />
 				</Suspense>
 			}
 			actions={
@@ -290,7 +287,6 @@ export default async function TvShowPage(props: TvPageProps) {
 							}
 						>
 							<TvUserActions
-								userData={userData}
 								show={tvDetails}
 								variant="banner"
 							/>
@@ -298,7 +294,6 @@ export default async function TvShowPage(props: TvPageProps) {
 					</div>
 					<Suspense fallback={null}>
 						<TvProgressSummary
-							userData={userData}
 							tvId={tvId}
 							totalEpisodes={totalEpisodes}
 							seasons={standardSeasons}
@@ -311,7 +306,7 @@ export default async function TvShowPage(props: TvPageProps) {
 
 	const actionsBar = (
 		<Suspense fallback={<WatchActionsSkeleton variant="bar" />}>
-			<TvUserActions userData={userData} show={tvDetails} variant="bar" />
+			<TvUserActions show={tvDetails} variant="bar" />
 		</Suspense>
 	);
 
@@ -329,7 +324,6 @@ export default async function TvShowPage(props: TvPageProps) {
 					}
 				>
 					<TvSeasonsGrid
-						userData={userData}
 						tvId={tvId}
 						seasons={standardSeasons}
 						locale={locale}
@@ -361,7 +355,7 @@ export default async function TvShowPage(props: TvPageProps) {
 				}
 				rating={
 					<Suspense fallback={null}>
-						<TvRatingSection userData={userData} tvId={tvId} />
+						<TvRatingSection tvId={tvId} />
 					</Suspense>
 				}
 				reviews={

@@ -1,10 +1,18 @@
 import { ImageResponse } from 'next/og';
+import { cacheLife } from 'next/cache';
 
-export const dynamic = 'force-static';
+const OG_WIDTH = 1200;
+const OG_HEIGHT = 630;
 
-/** Default Open Graph card for pages without a media backdrop. */
-export async function GET() {
-	return new ImageResponse(
+/**
+ * The rendered PNG bytes. Cached rather than the `ImageResponse` itself, which is a stream
+ * and cannot cross a `"use cache"` boundary — the card is fully static, so it is rendered once.
+ */
+async function renderOgCard(): Promise<ArrayBuffer> {
+	'use cache';
+	cacheLife('max');
+
+	const image = new ImageResponse(
 		<div
 			style={{
 				width: '100%',
@@ -50,6 +58,15 @@ export async function GET() {
 				Track movies &amp; TV shows
 			</div>
 		</div>,
-		{ width: 1200, height: 630 }
+		{ width: OG_WIDTH, height: OG_HEIGHT }
 	);
+
+	return image.arrayBuffer();
+}
+
+/** Default Open Graph card for pages without a media backdrop. */
+export async function GET() {
+	return new Response(await renderOgCard(), {
+		headers: { 'Content-Type': 'image/png' },
+	});
 }

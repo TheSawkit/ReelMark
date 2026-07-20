@@ -43,6 +43,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
 	output: 'standalone',
+	cacheComponents: true,
 	experimental: {
 		optimizePackageImports: [
 			'lucide-react',

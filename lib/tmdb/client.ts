@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { cacheLife } from 'next/cache';
 import { getServerLocale, getServerLanguage } from '@/lib/i18n/server';
 import { createClient } from '@/lib/supabase/server';
 import type { Language } from '@/lib/i18n/translations';
@@ -53,8 +54,37 @@ export async function getImageLanguageFilter(lang?: Language): Promise<string> {
 	return Array.from(languages).join(',');
 }
 
+async function fetchTMDBUrl<T>(
+	url: string,
+	revalidate: number,
+	retries: number
+): Promise<T> {
+	'use cache';
+	cacheLife({ stale: 300, revalidate, expire: revalidate * 24 });
+
+	for (let attempt = 0; ; attempt++) {
+		const response = await fetch(url, {
+			headers: { Authorization: `Bearer ${TMDB_READ_ACCESS_TOKEN}` },
+		});
+
+		if (response.ok) return response.json();
+
+		if (response.status === 429 && attempt < retries) {
+			const retryAfter = Number(response.headers.get('retry-after'));
+			const delayMs =
+				retryAfter > 0 ? retryAfter * 1000 : 300 * (attempt + 1);
+			await new Promise((resolve) => setTimeout(resolve, delayMs));
+			continue;
+		}
+
+		throw new Error(
+			`TMDB API Error: ${response.status} ${response.statusText}`
+		);
+	}
+}
+
 /**
- * Fetches from TMDB with Bearer auth, locale injection, and Next.js cache revalidation.
+ * Fetches from TMDB with Bearer auth, locale injection, and a prerenderable `"use cache"` entry.
  * Pass `lang` from the route params on localized pages: omitting it resolves the language
  * from the request, which makes the caller dynamic.
  */
@@ -74,26 +104,7 @@ export async function fetchTMDB<T>(
 
 	const url = `${TMDB_BASE_URL}${safeEndpoint}?${queryParams.toString()}`;
 
-	for (let attempt = 0; ; attempt++) {
-		const response = await fetch(url, {
-			headers: { Authorization: `Bearer ${TMDB_READ_ACCESS_TOKEN}` },
-			next: { revalidate },
-		});
-
-		if (response.ok) return response.json();
-
-		if (response.status === 429 && attempt < retries) {
-			const retryAfter = Number(response.headers.get('retry-after'));
-			const delayMs =
-				retryAfter > 0 ? retryAfter * 1000 : 300 * (attempt + 1);
-			await new Promise((resolve) => setTimeout(resolve, delayMs));
-			continue;
-		}
-
-		throw new Error(
-			`TMDB API Error: ${response.status} ${response.statusText}`
-		);
-	}
+	return fetchTMDBUrl<T>(url, revalidate, retries);
 }
 
 /** Resolves the user's region from profile metadata, falling back to locale country or "US". Deduped per request. */

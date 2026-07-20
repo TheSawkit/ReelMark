@@ -1,7 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, redirect } from 'next/navigation';
 import { fetchTMDB } from '@/lib/tmdb/client';
-import { Suspense } from 'react';
+import { Suspense, cache } from 'react';
 import type { Metadata } from 'next';
 import {
 	getImageUrl,
@@ -13,6 +13,7 @@ import {
 	getMovieWatchProviders,
 } from '@/lib/tmdb';
 import { MediaBanner } from '@/components/media/detail/MediaBanner';
+import { CertificationBadge } from '@/components/media/detail/CertificationBadge';
 import { MovieWatchActions } from '@/components/media/detail/MovieWatchActions';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
 import { SagaSection } from '@/components/media/detail/SagaSection';
@@ -41,17 +42,18 @@ interface MoviePageProps {
 	params: MoviePageParams;
 }
 
-export const dynamic = 'force-dynamic';
-
-type MovieUserData = Awaited<ReturnType<typeof loadMovieUserData>>;
-
-function loadMovieUserData(movieId: number) {
-	return Promise.all([
+/**
+ * Every Supabase read of the page, shared as one promise. Deferred through `cache()` so the
+ * session is only touched when a Suspense-wrapped section awaits it — starting it eagerly in
+ * the page body would block the static shell.
+ */
+const loadMovieUserData = cache((movieId: number) =>
+	Promise.all([
 		getMediaWatchlistEntry(movieId, 'movie'),
 		getAverageRating(movieId, 'movie'),
 		getMediaReview(movieId, 'movie'),
-	]);
-}
+	])
+);
 
 async function MovieProvidersSection({
 	movieId,
@@ -80,15 +82,13 @@ async function MovieTrailersSection({
 }
 
 async function MovieUserActions({
-	userData,
 	movie,
 	variant,
 }: {
-	userData: Promise<MovieUserData>;
 	movie: MovieDetails;
 	variant: 'banner' | 'bar';
 }) {
-	const [watchlistEntry] = await userData;
+	const [watchlistEntry] = await loadMovieUserData(movie.id);
 	return (
 		<MovieWatchActions
 			mediaId={movie.id}
@@ -102,14 +102,8 @@ async function MovieUserActions({
 	);
 }
 
-async function MovieCommunityBadge({
-	userData,
-	movie,
-}: {
-	userData: Promise<MovieUserData>;
-	movie: MovieDetails;
-}) {
-	const [watchlistEntry, rating, userReview] = await userData;
+async function MovieCommunityBadge({ movie }: { movie: MovieDetails }) {
+	const [watchlistEntry, rating, userReview] = await loadMovieUserData(movie.id);
 	return (
 		<CommunityRatingBadge
 			rating={rating}
@@ -123,14 +117,8 @@ async function MovieCommunityBadge({
 	);
 }
 
-async function MovieRatingSection({
-	userData,
-	movieId,
-}: {
-	userData: Promise<MovieUserData>;
-	movieId: number;
-}) {
-	const [, rating] = await userData;
+async function MovieRatingSection({ movieId }: { movieId: number }) {
+	const [, rating] = await loadMovieUserData(movieId);
 	return (
 		<MediaCommunityRating
 			mediaId={movieId}
@@ -138,6 +126,14 @@ async function MovieRatingSection({
 			initialRating={rating}
 		/>
 	);
+}
+
+/**
+ * One sample id so Cache Components can validate this route at build time.
+ * Every other title is rendered on demand (`dynamicParams` stays on).
+ */
+export async function generateStaticParams() {
+	return [{ id: '550' }];
 }
 
 export async function generateMetadata({
@@ -157,9 +153,6 @@ export default async function MoviePage(props: MoviePageProps) {
 	const movieId = parseInt(params.id);
 
 	if (isNaN(movieId)) notFound();
-
-	const userData = loadMovieUserData(movieId);
-	userData.catch(() => {});
 
 	let movieDetails, credits, images;
 	try {
@@ -203,12 +196,19 @@ export default async function MoviePage(props: MoviePageProps) {
 			voteAverage={movieDetails.vote_average}
 			releaseDate={movieDetails.release_date}
 			runtime={movieDetails.runtime}
-			certification={movieDetails.certification}
+			certification={
+				<Suspense fallback={null}>
+					<CertificationBadge
+						mediaId={movieId}
+						mediaType="movie"
+						lang={lang}
+					/>
+				</Suspense>
+			}
 			genres={movieDetails.genres}
 			communityBadge={
 				<Suspense fallback={null}>
 					<MovieCommunityBadge
-						userData={userData}
 						movie={movieDetails}
 					/>
 				</Suspense>
@@ -216,7 +216,6 @@ export default async function MoviePage(props: MoviePageProps) {
 			actions={
 				<Suspense fallback={<WatchActionsSkeleton variant="banner" />}>
 					<MovieUserActions
-						userData={userData}
 						movie={movieDetails}
 						variant="banner"
 					/>
@@ -228,7 +227,6 @@ export default async function MoviePage(props: MoviePageProps) {
 	const actionsBar = (
 		<Suspense fallback={<WatchActionsSkeleton variant="bar" />}>
 			<MovieUserActions
-				userData={userData}
 				movie={movieDetails}
 				variant="bar"
 			/>
@@ -258,7 +256,6 @@ export default async function MoviePage(props: MoviePageProps) {
 				rating={
 					<Suspense fallback={null}>
 						<MovieRatingSection
-							userData={userData}
 							movieId={movieId}
 						/>
 					</Suspense>

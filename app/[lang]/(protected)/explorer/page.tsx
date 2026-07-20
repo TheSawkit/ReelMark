@@ -27,8 +27,6 @@ import { TypeSwitched } from '@/components/media/card/TypeSwitched';
 import { buildPageMetadata } from '@/lib/metadata';
 import type { Movie, TvShow, MediaType } from '@/types/tmdb';
 
-export const dynamic = 'force-dynamic';
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { lang } = await params;
 	const t = await getTranslations(lang);

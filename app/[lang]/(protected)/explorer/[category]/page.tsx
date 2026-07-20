@@ -14,8 +14,6 @@ interface CategoryPageProps {
 	params: CategoryPageParams;
 }
 
-export const dynamic = 'force-dynamic';
-
 type CategoryMeta = { title: string; description: string };
 
 function buildCategoryMap(
@@ -68,6 +66,22 @@ function buildCategoryMap(
 /**
  * Generates metadata for dynamic category pages with category-specific titles and descriptions.
  */
+/** The category list is finite and known, so every category page is prerendered. */
+export async function generateStaticParams() {
+	return [
+		{ category: 'popular' },
+		{ category: 'top-rated' },
+		{ category: 'upcoming' },
+		{ category: 'now-playing' },
+		{ category: 'trending' },
+		{ category: 'tv-popular' },
+		{ category: 'tv-top-rated' },
+		{ category: 'tv-trending' },
+		{ category: 'tv-airing-today' },
+		{ category: 'tv-on-the-air' },
+	];
+}
+
 export async function generateMetadata({
 	params,
 }: CategoryPageProps): Promise<Metadata> {

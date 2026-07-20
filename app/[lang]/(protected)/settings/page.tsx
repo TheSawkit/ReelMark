@@ -14,8 +14,6 @@ import type { Language } from '@/lib/i18n/translations';
 import type { UserProfile, PrivacySettings } from '@/types/profile';
 import type { User } from '@supabase/supabase-js';
 
-export const dynamic = 'force-dynamic';
-
 type Props = {
 	params: Promise<{ lang: Language }>;
 };
