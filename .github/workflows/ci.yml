@@ -147,9 +147,14 @@ jobs:
               with:
                   path: .next/cache
                   key: nextjs-${{ github.ref_name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+            # Serwist écrit le service worker dans public/, pas dans .next, et public/sw.js
+            # est gitignoré : sans lui le job e2e sert /sw.js en 500 et la PWA n'est pas testée.
             - uses: actions/cache/save@v5
               with:
-                  path: .next
+                  path: |
+                      .next
+                      public/sw.js
+                      public/sw.js.map
                   key: next-build-${{ github.sha }}
 
     e2e:
@@ -171,7 +176,10 @@ jobs:
                   fail-on-cache-miss: true
             - uses: actions/cache/restore@v5
               with:
-                  path: .next
+                  path: |
+                      .next
+                      public/sw.js
+                      public/sw.js.map
                   key: next-build-${{ github.sha }}
                   fail-on-cache-miss: true
             - id: playwright-cache

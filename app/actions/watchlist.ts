@@ -11,6 +11,7 @@ import {
 import { VALID_STATUSES, VALID_MEDIA_TYPES } from '@/lib/validators';
 import type { WatchStatus, WatchlistEntry, MediaType } from '@/types/tmdb';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
+import type { Database } from '@/types/database';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { getListMediaMetadata, type ListMediaMetadata } from '@/lib/tmdb';
 
@@ -92,6 +93,27 @@ export async function setWatchlistStatus(
 
 const META_BATCH_SIZE = 8;
 
+/**
+ * Colonnes à écrire pour une ligne de liste, ou null s'il n'y a rien de fiable à écrire.
+ * Une réponse TMDB vide (panne transitoire) ne doit jamais écraser des genres déjà corrects.
+ */
+function buildMetadataPatch(
+	meta: ListMediaMetadata,
+	mediaType: MediaType
+): Database['public']['Tables']['watchlist']['Update'] | null {
+	const patch: Database['public']['Tables']['watchlist']['Update'] = {};
+
+	if (meta.genre_ids.length > 0) {
+		patch.release_date = meta.release_date;
+		patch.genre_ids = meta.genre_ids;
+	}
+	if (mediaType === 'tv' && meta.total_episodes !== null) {
+		patch.total_episodes = meta.total_episodes;
+	}
+
+	return Object.keys(patch).length > 0 ? patch : null;
+}
+
 const BACKFILL_RUN_LIMIT = 200;
 
 /**
@@ -111,7 +133,12 @@ export async function backfillListMetadata(): Promise<{
 			.from('watchlist')
 			.select('media_id, media_type')
 			.eq('user_id', userId)
-			.is('genre_ids', null)
+			// Les séries dont le total d'épisodes manque comptent aussi : sans elles, une
+			// ligne aux genres déjà remplis restait exclue à vie et /library refetchait son
+			// total à chaque rendu.
+			.or(
+				'genre_ids.is.null,and(media_type.eq.tv,total_episodes.is.null)'
+			)
 			.limit(BACKFILL_RUN_LIMIT),
 		supabase.from('playlists').select('id').eq('user_id', userId),
 	]);
@@ -160,12 +187,13 @@ export async function backfillListMetadata(): Promise<{
 		watchlistRows.map(async (row) => {
 			const meta = metaByKey.get(`${row.media_type}-${row.media_id}`);
 			if (!meta) return;
+
+			const patch = buildMetadataPatch(meta, row.media_type as MediaType);
+			if (!patch) return;
+
 			await supabase
 				.from('watchlist')
-				.update({
-					release_date: meta.release_date,
-					genre_ids: meta.genre_ids,
-				})
+				.update(patch)
 				.eq('user_id', userId)
 				.eq('media_id', row.media_id)
 				.eq('media_type', row.media_type);
@@ -183,6 +211,11 @@ export async function backfillListMetadata(): Promise<{
 				const meta = metaByKey.get(key);
 				const item = uniqueItems.get(key);
 				if (!meta || !item) return;
+
+				// playlist_items n'a pas de colonne total_episodes : on ne garde que le
+				// volet genres, et seulement s'il est fiable.
+				if (meta.genre_ids.length === 0) return;
+
 				await supabase
 					.from('playlist_items')
 					.update({

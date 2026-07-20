@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { ArrowLeft, Settings } from 'lucide-react';
+import { ArrowLeft, Settings, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Title from '@/components/layout/Title';
@@ -31,6 +31,7 @@ interface NavbarTranslations {
 	common: { goBack: string };
 	navbar: {
 		userMenu: string;
+		myProfile: string;
 		settings: string;
 		login: string;
 		signup: string;
@@ -217,6 +218,26 @@ export function NavbarClient({
 													</div>
 												</DropdownMenuLabel>
 												<DropdownMenuSeparator />
+												{user.user_metadata
+													.username && (
+													<DropdownMenuItem asChild>
+														<Link
+															href={localizedHref(
+																lang,
+																`/profile/${user.user_metadata.username}`
+															)}
+															className="cursor-pointer w-full flex items-center"
+														>
+															<User className="mr-2 h-4 w-4" />
+															<span>
+																{
+																	t.navbar
+																		.myProfile
+																}
+															</span>
+														</Link>
+													</DropdownMenuItem>
+												)}
 												<DropdownMenuItem asChild>
 													<Link
 														href={localizedHref(
