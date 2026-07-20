@@ -68,24 +68,6 @@ export type Database = {
 				};
 				Relationships: [];
 			};
-			notification_dedup: {
-				Row: {
-					created_at: string;
-					dedup_key: string;
-					user_id: string;
-				};
-				Insert: {
-					created_at?: string;
-					dedup_key: string;
-					user_id: string;
-				};
-				Update: {
-					created_at?: string;
-					dedup_key?: string;
-					user_id?: string;
-				};
-				Relationships: [];
-			};
 			notification_preferences: {
 				Row: {
 					created_at: string;
