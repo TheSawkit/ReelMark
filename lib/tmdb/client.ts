@@ -55,8 +55,7 @@ export async function getImageLanguageFilter(lang?: Language): Promise<string> {
 }
 
 type TMDBResult<T> =
-	| { ok: true; data: T }
-	| { ok: false; status: number; statusText: string };
+	{ ok: true; data: T } | { ok: false; status: number; statusText: string };
 
 const FAILED_LOOKUP_CACHE = { stale: 0, revalidate: 60, expire: 300 };
 
@@ -80,7 +79,8 @@ async function fetchTMDBUrl<T>(
 			headers: { Authorization: `Bearer ${TMDB_READ_ACCESS_TOKEN}` },
 		});
 
-		if (response.ok) return { ok: true, data: (await response.json()) as T };
+		if (response.ok)
+			return { ok: true, data: (await response.json()) as T };
 
 		const isRetryable = response.status === 429 || response.status >= 500;
 		if (isRetryable && attempt < retries) {
