@@ -116,8 +116,15 @@ export async function fetchMoreMedia(
 ): Promise<MediaItem[]> {
 	if (!CATEGORY_FETCHERS.has(category)) return [];
 	const fetcher = CATEGORY_FETCHERS.get(category)!;
-	const items = await fetcher(page);
-	return mergeMediaWithWatchlist(items);
+	try {
+		const items = await fetcher(page);
+		return mergeMediaWithWatchlist(items);
+	} catch (error) {
+		// Comme tous les autres consommateurs TMDB : une panne rend une grille vide, elle
+		// ne fait pas tomber la page de catégorie.
+		reportSwallowed('tmdb/media:category', error);
+		return [];
+	}
 }
 
 const ACTOR_FILTER_MAX_ITEMS = 300;
