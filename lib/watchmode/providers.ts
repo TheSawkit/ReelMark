@@ -5,6 +5,7 @@ import type {
 	WatchmodeSearchResponse,
 	WatchmodeTitleSource,
 	WatchmodeSourceListing,
+	WatchmodeRegion,
 } from './client';
 
 const REGION_FALLBACKS: Record<string, string[]> = {};
@@ -13,6 +14,24 @@ export interface WatchmodeProviderResult {
 	streaming: WatchProvider[];
 	rent: WatchProvider[];
 	buy: WatchProvider[];
+}
+
+/**
+ * Country codes Watchmode actually serves on the current plan. Everything else answers
+ * `400 "<X> is not enabled for your current plan"`, so callers must check before spending
+ * a request — the default region (`US`) is among the disabled ones.
+ */
+async function getPlanEnabledRegions(): Promise<string[]> {
+	try {
+		const regions = await fetchWatchmode<WatchmodeRegion[]>(
+			'/regions/',
+			604800
+		);
+		return regions.filter((r) => r.plan_enabled).map((r) => r.country);
+	} catch (error) {
+		reportSwallowed('watchmode:regions', error);
+		return [];
+	}
 }
 
 async function getSourceListings(): Promise<
@@ -79,12 +98,16 @@ export async function getWatchmodeProviders(
 	region: string
 ): Promise<WatchmodeProviderResult | null> {
 	try {
+		const enabledRegions = await getPlanEnabledRegions();
+
+		const regions = [region, ...(REGION_FALLBACKS[region] ?? [])]
+			.filter((r, i, arr) => arr.indexOf(r) === i)
+			.filter((r) => enabledRegions.includes(r));
+
+		if (regions.length === 0) return null;
+
 		const watchmodeId = await resolveTmdbId(tmdbId, mediaType);
 		if (!watchmodeId) return null;
-
-		const regions = [region, ...(REGION_FALLBACKS[region] ?? [])].filter(
-			(r, i, arr) => arr.indexOf(r) === i
-		);
 		const regionsParam = regions.join(',');
 
 		const [sources, logoMap] = await Promise.all([

@@ -30,6 +30,12 @@ export interface WatchmodeSearchResponse {
 	title_results: WatchmodeTitleResult[];
 }
 
+export interface WatchmodeRegion {
+	country: string;
+	name: string;
+	plan_enabled: boolean;
+}
+
 /**
  * Fetches data from the Watchmode API with Next.js cache.
  * API key is injected as a query param (server-side only).
