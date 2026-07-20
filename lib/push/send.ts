@@ -55,7 +55,9 @@ export async function sendPushToUser(
 
 		const { data: preferences } = await supabase
 			.from('notification_preferences')
-			.select('friend_requests, friend_accepted, new_episodes, suggestions')
+			.select(
+				'friend_requests, friend_accepted, new_episodes, suggestions'
+			)
 			.eq('user_id', userId)
 			.maybeSingle();
 

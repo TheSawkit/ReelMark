@@ -7,7 +7,8 @@ import {
 } from '@/app/actions/push';
 import { reportSwallowed } from '@/lib/report';
 
-type PushStatus = 'loading' | 'unsupported' | 'ios-needs-install' | 'off' | 'on';
+type PushStatus =
+	'loading' | 'unsupported' | 'ios-needs-install' | 'off' | 'on';
 
 function urlBase64ToUint8Array(base64: string) {
 	const padded = base64.padEnd(

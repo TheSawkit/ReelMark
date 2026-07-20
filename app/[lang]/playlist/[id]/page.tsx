@@ -20,7 +20,6 @@ interface Props {
 	params: Promise<{ lang: Language; id: string }>;
 }
 
-
 /**
  * One sample value so Cache Components can validate this route at build time.
  * Real playlists are rendered on demand (`dynamicParams` stays on).

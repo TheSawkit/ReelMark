@@ -41,7 +41,8 @@ export async function savePushSubscription(
 			endpoint: input.endpoint,
 			p256dh: input.p256dh,
 			auth: input.auth,
-			user_agent: input.userAgent?.slice(0, MAX_USER_AGENT_LENGTH) ?? null,
+			user_agent:
+				input.userAgent?.slice(0, MAX_USER_AGENT_LENGTH) ?? null,
 		},
 		{ onConflict: 'endpoint' }
 	);

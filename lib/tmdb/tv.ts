@@ -100,7 +100,11 @@ export async function getTvShowDetails(
 	id: number,
 	lang?: Language
 ): Promise<TvShowDetails> {
-	return fetchTMDB<TvShowDetails>(`/tv/${id}`, {}, { revalidate: 86400, lang });
+	return fetchTMDB<TvShowDetails>(
+		`/tv/${id}`,
+		{},
+		{ revalidate: 86400, lang }
+	);
 }
 
 /**

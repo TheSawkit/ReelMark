@@ -111,7 +111,9 @@ async function TvUserActions({
 }
 
 async function TvCommunityBadge({ show }: { show: TvShowDetails }) {
-	const [watchlistEntry, , rating, userReview] = await loadTvUserData(show.id);
+	const [watchlistEntry, , rating, userReview] = await loadTvUserData(
+		show.id
+	);
 	return (
 		<CommunityRatingBadge
 			rating={rating}
@@ -286,10 +288,7 @@ export default async function TvShowPage(props: TvPageProps) {
 								<Skeleton className="h-11 w-full sm:w-40 rounded-lg" />
 							}
 						>
-							<TvUserActions
-								show={tvDetails}
-								variant="banner"
-							/>
+							<TvUserActions show={tvDetails} variant="banner" />
 						</Suspense>
 					</div>
 					<Suspense fallback={null}>

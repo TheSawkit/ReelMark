@@ -153,7 +153,11 @@ export async function getMovieDetails(
 	id: number,
 	lang?: Language
 ): Promise<MovieDetails> {
-	return fetchTMDB<MovieDetails>(`/movie/${id}`, {}, { revalidate: 86400, lang });
+	return fetchTMDB<MovieDetails>(
+		`/movie/${id}`,
+		{},
+		{ revalidate: 86400, lang }
+	);
 }
 
 /**

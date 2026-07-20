@@ -100,7 +100,8 @@ self.addEventListener('notificationclick', (event) => {
 	const clickEvent = event as NotificationEvent;
 	clickEvent.notification.close();
 
-	const target = (clickEvent.notification.data as { url?: string })?.url ?? '/';
+	const target =
+		(clickEvent.notification.data as { url?: string })?.url ?? '/';
 
 	clickEvent.waitUntil(
 		self.clients

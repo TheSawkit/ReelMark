@@ -103,7 +103,9 @@ async function MovieUserActions({
 }
 
 async function MovieCommunityBadge({ movie }: { movie: MovieDetails }) {
-	const [watchlistEntry, rating, userReview] = await loadMovieUserData(movie.id);
+	const [watchlistEntry, rating, userReview] = await loadMovieUserData(
+		movie.id
+	);
 	return (
 		<CommunityRatingBadge
 			rating={rating}
@@ -208,17 +210,12 @@ export default async function MoviePage(props: MoviePageProps) {
 			genres={movieDetails.genres}
 			communityBadge={
 				<Suspense fallback={null}>
-					<MovieCommunityBadge
-						movie={movieDetails}
-					/>
+					<MovieCommunityBadge movie={movieDetails} />
 				</Suspense>
 			}
 			actions={
 				<Suspense fallback={<WatchActionsSkeleton variant="banner" />}>
-					<MovieUserActions
-						movie={movieDetails}
-						variant="banner"
-					/>
+					<MovieUserActions movie={movieDetails} variant="banner" />
 				</Suspense>
 			}
 		/>
@@ -226,10 +223,7 @@ export default async function MoviePage(props: MoviePageProps) {
 
 	const actionsBar = (
 		<Suspense fallback={<WatchActionsSkeleton variant="bar" />}>
-			<MovieUserActions
-				movie={movieDetails}
-				variant="bar"
-			/>
+			<MovieUserActions movie={movieDetails} variant="bar" />
 		</Suspense>
 	);
 
@@ -255,9 +249,7 @@ export default async function MoviePage(props: MoviePageProps) {
 				}
 				rating={
 					<Suspense fallback={null}>
-						<MovieRatingSection
-							movieId={movieId}
-						/>
+						<MovieRatingSection movieId={movieId} />
 					</Suspense>
 				}
 				reviews={
