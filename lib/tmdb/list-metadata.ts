@@ -54,6 +54,16 @@ export async function getListMediaMetadata(
 		};
 	} catch (error) {
 		reportSwallowed('tmdb/list-metadata', error);
-		return { release_date: null, genre_ids: [], total_episodes: null };
+
+		// Un 404 est une réponse définitive : la fiche n'existe plus côté TMDB. On rend un
+		// total terminal pour les séries, sinon la ligne resterait à NULL et /library la
+		// refetcherait à chaque rendu. Toute autre panne est transitoire : on ne rend rien,
+		// l'appelant réessaiera plus tard.
+		const isGone = error instanceof Error && error.message.includes('404');
+		return {
+			release_date: null,
+			genre_ids: [],
+			total_episodes: isGone && mediaType === 'tv' ? 0 : null,
+		};
 	}
 }
