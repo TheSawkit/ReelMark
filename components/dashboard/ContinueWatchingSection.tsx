@@ -213,7 +213,7 @@ function ContinueWatchingCard({
 							: t.movie.markEpisodeWatched}
 					</button>
 				) : (
-					<span className="flex min-h-10 items-center gap-2 rounded-md border border-border/10 bg-primary/80 px-3 py-2 text-xs font-medium text-white shadow-glow-red">
+					<span className="flex min-h-10 items-center gap-2 rounded-md border border-border/10 bg-primary/80 px-3 py-2 text-xs font-medium text-white shadow-control-lift">
 						<CheckCircle2 className="h-4 w-4" aria-hidden="true" />
 						{t.movie.episodeWatched}
 					</span>
