@@ -27,6 +27,23 @@ async function clickAndWaitForAction(
 	await responsePromise;
 }
 
+/**
+ * Waits for the movie to appear in the "watched" tab of the library.
+ *
+ * Les mutations revalident via `after()`, donc APRÈS la réponse de la Server Action : un test
+ * qui navigue aussitôt peut devancer la revalidation et tomber sur la page encore en cache.
+ * On recharge donc jusqu'à convergence au lieu d'attendre sur un seul rendu.
+ */
+async function expectInWatchedTab(page: import('@playwright/test').Page) {
+	await expect(async () => {
+		await page.goto('/en/library');
+		await page.getByRole('tab', { name: /regardés|watched/i }).click();
+		await expect(page.getByText(MOVIE_TITLE).first()).toBeVisible({
+			timeout: 3000,
+		});
+	}).toPass({ timeout: 20000 });
+}
+
 /** Best-effort isolation: drive the movie back to "not in watchlist" before each test (re-navigates each pass to avoid stale handles). */
 async function ensureMovieRemoved(page: import('@playwright/test').Page) {
 	for (let pass = 0; pass < 3; pass++) {
@@ -110,10 +127,6 @@ test.describe('Watchlist', () => {
 	});
 
 	test('mark a movie as watched and unmark', async ({ page }) => {
-		test.fixme(
-			true,
-			'Known issue: unmarking a "watched" movie on the detail page intermittently does not refresh the server state (the "Watched on …" line and the watched WatchButton persist). Mitigated by the revalidate-localized fix (passes in isolation) but still races in the full suite. The detail page renders 4 WatchButton instances (banner + sticky bar) with independent optimistic state; root-causing needs interactive debugging beyond E2E snapshots and a rework of the shared watch state — tracked for a dedicated PR.'
-		);
 		await page.goto(`/en/movie/${MOVIE_ID}`);
 		await expect(page.getByRole('heading', { level: 1 })).toContainText(
 			MOVIE_TITLE,
@@ -142,11 +155,7 @@ test.describe('Watchlist', () => {
 				.first()
 		);
 
-		await page.goto('/en/library');
-		await page.getByRole('tab', { name: /regardés|watched/i }).click();
-		await expect(page.getByText(MOVIE_TITLE)).toBeVisible({
-			timeout: 10000,
-		});
+		await expectInWatchedTab(page);
 		await page.goto(`/en/movie/${MOVIE_ID}`);
 		await expect(
 			page
