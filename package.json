@@ -40,7 +40,8 @@
 		"simple-icons": "^16.24.1",
 		"sonner": "^2.0.7",
 		"tailwind-merge": "^3.6.0",
-		"virtua": "^0.49.3"
+		"virtua": "^0.49.3",
+		"web-push": "^3.6.7"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.61.1",
@@ -48,6 +49,7 @@
 		"@types/node": "^25.9.4",
 		"@types/react": "^19.2.17",
 		"@types/react-dom": "^19.2.3",
+		"@types/web-push": "^3.6.4",
 		"@vitest/coverage-v8": "^4.1.9",
 		"dotenv": "^17.4.2",
 		"eslint": "^9.39.4",

@@ -12,7 +12,7 @@ declare global {
 	}
 }
 
-declare const self: WorkerGlobalScope;
+declare const self: ServiceWorkerGlobalScope & WorkerGlobalScope;
 
 const NETWORK_TIMEOUT_SECONDS = 3;
 const PAGE_CACHE_MAX_ENTRIES = 32;
@@ -62,6 +62,61 @@ const boundedPageCache: RuntimeCaching[] = [
 		handler: boundedPageStrategy(PAGES_CACHE_NAME.html),
 	},
 ];
+
+interface PushPayload {
+	title: string;
+	body: string;
+	url: string;
+	icon?: string;
+	tag?: string;
+}
+
+const DEFAULT_PUSH_ICON = '/maskable_icon_x192.png';
+
+self.addEventListener('push', (event) => {
+	const pushEvent = event as PushEvent;
+	if (!pushEvent.data) return;
+
+	let payload: PushPayload;
+	try {
+		payload = pushEvent.data.json() as PushPayload;
+	} catch {
+		return;
+	}
+	if (!payload.title) return;
+
+	pushEvent.waitUntil(
+		self.registration.showNotification(payload.title, {
+			body: payload.body,
+			icon: payload.icon ?? DEFAULT_PUSH_ICON,
+			badge: DEFAULT_PUSH_ICON,
+			tag: payload.tag,
+			data: { url: payload.url },
+		})
+	);
+});
+
+self.addEventListener('notificationclick', (event) => {
+	const clickEvent = event as NotificationEvent;
+	clickEvent.notification.close();
+
+	const target = (clickEvent.notification.data as { url?: string })?.url ?? '/';
+
+	clickEvent.waitUntil(
+		self.clients
+			.matchAll({ type: 'window', includeUncontrolled: true })
+			.then((windowClients) => {
+				const focused = windowClients.find(
+					(client) => 'focus' in client
+				);
+				if (focused) {
+					void focused.navigate(target);
+					return focused.focus();
+				}
+				return self.clients.openWindow(target);
+			})
+	);
+});
 
 const serwist = new Serwist({
 	precacheEntries: self.__SW_MANIFEST,

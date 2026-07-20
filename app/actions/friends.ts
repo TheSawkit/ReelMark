@@ -6,6 +6,8 @@ import { getPrivacySettings } from '@/app/actions/profile';
 import { FRIENDSHIP_COLUMNS } from '@/lib/supabase/columns';
 import { resolveAvatarUrl } from '@/lib/avatar';
 import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
+import { sendFriendPush } from '@/lib/push/notify-friend';
+import { after } from 'next/server';
 import type {
 	Friendship,
 	FriendEntry,
@@ -186,6 +188,13 @@ export async function sendFriendRequest(addresseeId: string): Promise<void> {
 		throw new Error(error.message);
 	}
 
+	after(() =>
+		sendFriendPush(
+			addresseeId,
+			user.user_metadata.username ?? null,
+			'friend_request'
+		)
+	);
 	revalidateProfileAfterResponse(supabase, user, addresseeId);
 }
 
@@ -210,6 +219,15 @@ export async function acceptFriendRequest(
 
 	if (error) throw new Error(error.message);
 
+	if (requesterId) {
+		after(() =>
+			sendFriendPush(
+				requesterId,
+				user.user_metadata.username ?? null,
+				'friend_accepted'
+			)
+		);
+	}
 	revalidateProfileAfterResponse(supabase, user, requesterId);
 }
 
