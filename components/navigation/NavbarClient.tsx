@@ -23,6 +23,7 @@ import { useMediaHeader } from '@/lib/media-header-store';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 import { NotificationsProvider } from '@/components/notifications/NotificationsProvider';
+import { RealtimeUserSync } from '@/components/sync/RealtimeUserSync';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import type { NavbarUser } from '@/types/components';
 
@@ -306,6 +307,7 @@ export function NavbarClient({
 			userId={user.id}
 			initialUnreadCount={initialUnreadCount}
 		>
+			<RealtimeUserSync userId={user.id} />
 			{content}
 		</NotificationsProvider>
 	) : (
