@@ -24,7 +24,15 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
 	NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm build
+# Depuis l'activation de Cache Components, le build prérend les shells et remplit les
+# entrées "use cache" : il appelle donc TMDB. Le token passe par un secret BuildKit, jamais
+# par un ARG — un build-arg resterait lisible dans l'historique de l'image.
+RUN --mount=type=secret,id=tmdb_token \
+	if [ ! -s /run/secrets/tmdb_token ]; then \
+		echo "ERREUR: secret de build 'tmdb_token' manquant — le prerender appelle TMDB." >&2; \
+		exit 1; \
+	fi; \
+	TMDB_READ_ACCESS_TOKEN="$(cat /run/secrets/tmdb_token)" pnpm build
 
 FROM base AS runner
 ENV NODE_ENV=production \
