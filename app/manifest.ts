@@ -40,7 +40,7 @@ export default function manifest(): MetadataRoute.Manifest {
 		display_override: ['standalone', 'minimal-ui'],
 		background_color: '#000000',
 		theme_color: '#000000',
-		orientation: 'portrait-primary',
+		orientation: 'any',
 		lang: 'en',
 		dir: 'ltr',
 		categories: ['entertainment', 'lifestyle'],

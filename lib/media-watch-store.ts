@@ -40,6 +40,17 @@ export const mediaWatchStore = {
 		notify();
 	},
 
+	applyRemote(
+		mediaType: MediaType,
+		mediaId: number,
+		status: MediaWatchStatus
+	) {
+		const key = mediaKey(mediaType, mediaId);
+		if (media.get(key)?.status === status) return;
+		media.set(key, { status, dirty: true });
+		notify();
+	},
+
 	get(mediaType: MediaType, mediaId: number): MediaWatchState | undefined {
 		return media.get(mediaKey(mediaType, mediaId));
 	},

@@ -14,6 +14,7 @@ import {
 	updateNotificationPreferences,
 } from '@/app/actions/notifications';
 import { useTranslation } from '@/lib/i18n/context';
+import { usePushSubscription } from '@/hooks/usePushSubscription';
 import {
 	DEFAULT_NOTIFICATION_PREFERENCES,
 	type NotificationPreferences,
@@ -28,9 +29,17 @@ const KEYS = [
 
 export function NotificationSettings() {
 	const { t } = useTranslation();
+	const push = usePushSubscription();
 	const [prefs, setPrefs] = useState<NotificationPreferences>(
 		DEFAULT_NOTIFICATION_PREFERENCES
 	);
+
+	const pushHint =
+		push.status === 'unsupported'
+			? t.settings.notifications.pushUnsupported
+			: push.status === 'ios-needs-install'
+				? t.settings.notifications.iosHint
+				: null;
 
 	useEffect(() => {
 		void getNotificationPreferences().then(setPrefs);
@@ -51,6 +60,25 @@ export function NotificationSettings() {
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
+				<div className="mb-6 flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+					<div className="min-w-0">
+						<p className="text-sm font-medium text-text">
+							{t.settings.notifications.push}
+						</p>
+						<p className="mt-0.5 text-xs text-muted">
+							{pushHint ?? t.settings.notifications.pushDesc}
+						</p>
+					</div>
+					<Switch
+						checked={push.status === 'on'}
+						disabled={push.isPending || !!pushHint}
+						onCheckedChange={(checked) =>
+							void (checked ? push.enable() : push.disable())
+						}
+						aria-label={t.settings.notifications.push}
+					/>
+				</div>
+
 				<p className="mb-3 text-sm font-medium text-text">
 					{t.settings.notifications.types}
 				</p>

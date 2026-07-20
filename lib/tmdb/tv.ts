@@ -91,35 +91,45 @@ export async function getOnTheAirTvShows(
 }
 
 /**
- * Fetches full TV show details including certification for the user's region.
+ * Full TV show details. Viewer-independent and cached, so a detail page can prerender its
+ * shell — the age certification lives in `getTvShowCertification`.
  *
  * @param id - TMDB TV show ID.
- * @returns Full TV show details with optional certification field.
  */
 export async function getTvShowDetails(
 	id: number,
 	lang?: Language
 ): Promise<TvShowDetails> {
-	const details = await fetchTMDB<TvShowDetails>(
+	return fetchTMDB<TvShowDetails>(
 		`/tv/${id}`,
 		{},
 		{ revalidate: 86400, lang }
 	);
+}
 
+/**
+ * Age certification for the viewer's own region, resolved separately from the details fetch.
+ * It reads the session, so awaiting it outside a Suspense boundary would stop the detail
+ * page from prerendering a static shell.
+ */
+export async function getTvShowCertification(
+	id: number,
+	lang?: Language
+): Promise<string | undefined> {
 	try {
-		const ratings = await fetchTMDB<ContentRatingsResponse>(
-			`/tv/${id}/content_ratings`,
-			{},
-			{ revalidate: 86400, lang }
-		);
-		const userRegion = await getUserRegion(lang);
-		details.certification = findTvCertification(ratings, userRegion);
+		const [ratings, userRegion] = await Promise.all([
+			fetchTMDB<ContentRatingsResponse>(
+				`/tv/${id}/content_ratings`,
+				{},
+				{ revalidate: 86400, lang }
+			),
+			getUserRegion(lang),
+		]);
+		return findTvCertification(ratings, userRegion);
 	} catch (error) {
 		reportSwallowed('tmdb/tv:certification', error);
-		details.certification = undefined;
+		return undefined;
 	}
-
-	return details;
 }
 
 /**
@@ -281,15 +291,15 @@ export async function getTvShowWatchProviders(
 	lang?: Language
 ): Promise<WatchProvidersRegion | null> {
 	try {
-		const region = await getUserRegion(lang);
-		const [tmdbData, watchmode] = await Promise.all([
+		const [tmdbData, region] = await Promise.all([
 			fetchTMDB<WatchProvidersResponse>(
 				`/tv/${id}/watch/providers`,
 				{},
 				{ revalidate: 43200, lang }
 			),
-			getWatchmodeProviders(id, 'tv', region),
+			getUserRegion(lang),
 		]);
+		const watchmode = await getWatchmodeProviders(id, 'tv', region);
 		const tmdb = tmdbData.results[region] ?? null;
 
 		if (watchmode) {

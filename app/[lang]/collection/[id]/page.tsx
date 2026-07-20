@@ -6,11 +6,17 @@ import { getTranslations } from '@/lib/i18n/server';
 import { buildPageMetadata, localizedAlternates } from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';
 
-export const dynamic = 'force-dynamic';
-
 type CollectionPageParams = Promise<{ lang: Language; id: string }>;
 interface CollectionPageProps {
 	params: CollectionPageParams;
+}
+
+/**
+ * Sample params so Cache Components can validate this route at build time.
+ * Everything else is rendered on demand (`dynamicParams` stays on).
+ */
+export async function generateStaticParams() {
+	return [{ id: '10' }];
 }
 
 export async function generateMetadata({

@@ -25,8 +25,6 @@ import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkel
 import { SeasonEpisodesList } from '@/components/media/tv/SeasonEpisodesList';
 import { localizedAlternates } from '@/lib/metadata';
 
-export const dynamic = 'force-dynamic';
-
 type SeasonPageParams = Promise<{
 	lang: Language;
 	id: string;
@@ -47,6 +45,14 @@ async function SeasonProvidersSection({
 		() => null
 	);
 	return <WatchProviders providers={providers} />;
+}
+
+/**
+ * Sample params so Cache Components can validate this route at build time.
+ * Everything else is rendered on demand (`dynamicParams` stays on).
+ */
+export async function generateStaticParams() {
+	return [{ id: '1399', seasonNumber: '1' }];
 }
 
 export async function generateMetadata({

@@ -9,6 +9,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { ProfileHero } from '@/components/profile/ProfileHero';
 import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { ProfileTabsSkeleton } from '@/components/profile/ProfileTabsSkeleton';
+import { ProfileHeroSkeleton } from '@/components/profile/ProfileHeroSkeleton';
 import { FriendshipButton } from '@/components/profile/FriendshipButton';
 import { ProfileOptionsMenu } from '@/components/profile/ProfileOptionsMenu';
 import {
@@ -27,13 +28,19 @@ import { ListMetadataBackfill } from '@/components/library/ListMetadataBackfill'
 import type { WatchlistEntry } from '@/types/tmdb';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
 
-export const dynamic = 'force-dynamic';
-
 interface Props {
 	params: Promise<{ lang: Language; username: string }>;
 }
 
 type Friendship = Awaited<ReturnType<typeof getFriendshipStatus>>;
+
+/**
+ * One sample value so Cache Components can validate this route at build time.
+ * Real profiles are rendered on demand (`dynamicParams` stays on).
+ */
+export async function generateStaticParams() {
+	return [{ username: 'reelmark-sample-profile' }];
+}
 
 export async function generateMetadata({
 	params,
@@ -154,7 +161,22 @@ async function ProfileTabsSection({
 	);
 }
 
-export default async function ProfilePage({ params }: Props) {
+export default function ProfilePage({ params }: Props) {
+	return (
+		<Suspense
+			fallback={
+				<PageLayout>
+					<ProfileHeroSkeleton />
+					<ProfileTabsSkeleton />
+				</PageLayout>
+			}
+		>
+			<ProfileContent params={params} />
+		</Suspense>
+	);
+}
+
+async function ProfileContent({ params }: Props) {
 	const { lang, username } = await params;
 
 	const [currentUser, profile] = await Promise.all([

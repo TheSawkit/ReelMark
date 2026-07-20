@@ -17,8 +17,6 @@ import { getTvShowsTotalEpisodes, getGenres } from '@/lib/tmdb';
 import { BASE_URL, buildPageMetadata } from '@/lib/metadata';
 import type { MediaType } from '@/types/tmdb';
 
-export const dynamic = 'force-dynamic';
-
 export async function generateMetadata({ params }: Props) {
 	const { lang } = await params;
 	const t = await getTranslations(lang);

@@ -5,7 +5,10 @@ import {
 	getOptionalUser,
 } from '@/lib/supabase/auth-helpers';
 import { getTranslations } from '@/lib/i18n/server';
-import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
+import {
+	revalidateProfileAfterResponse,
+	revalidatePlaylistMetaAfterResponse,
+} from '@/app/actions/_helpers';
 import { parseVisibility, isVisibility } from '@/lib/privacy';
 import { getListMediaMetadata } from '@/lib/tmdb';
 import { resolveAvatarUrl } from '@/lib/avatar';
@@ -156,6 +159,7 @@ export async function updatePlaylist(
 
 	if (error) throw new Error(error.message);
 	revalidateProfileAfterResponse(supabase, user);
+	revalidatePlaylistMetaAfterResponse(playlistId);
 }
 
 /**
@@ -182,6 +186,7 @@ export async function updatePlaylistVisibility(
 
 	if (error) throw new Error(error.message);
 	revalidateProfileAfterResponse(supabase, user);
+	revalidatePlaylistMetaAfterResponse(playlistId);
 }
 
 /**
@@ -200,6 +205,7 @@ export async function deletePlaylist(playlistId: string): Promise<void> {
 
 	if (error) throw new Error(error.message);
 	revalidateProfileAfterResponse(supabase, user);
+	revalidatePlaylistMetaAfterResponse(playlistId);
 }
 
 /**
@@ -250,6 +256,7 @@ export async function addToPlaylist(
 
 	if (error) throw new Error(error.message);
 	revalidateProfileAfterResponse(supabase, user);
+	revalidatePlaylistMetaAfterResponse(playlistId);
 }
 
 /**
@@ -285,4 +292,5 @@ export async function removeFromPlaylist(
 
 	if (error) throw new Error(error.message);
 	revalidateProfileAfterResponse(supabase, user);
+	revalidatePlaylistMetaAfterResponse(playlistId);
 }

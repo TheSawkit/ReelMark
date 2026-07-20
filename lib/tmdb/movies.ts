@@ -144,39 +144,45 @@ export async function getNowPlayingMovies(
 }
 
 /**
- * Fetches full movie details including certification for the user's region.
- * Certification is fetched separately and injected into the returned object.
+ * Full movie details. Viewer-independent and cached, so a detail page can prerender its
+ * shell — the age certification lives in `getMovieCertification`.
  *
  * @param id - TMDB movie ID.
- * @returns Full movie details with optional certification field.
  */
 export async function getMovieDetails(
 	id: number,
 	lang?: Language
 ): Promise<MovieDetails> {
-	const details = await fetchTMDB<MovieDetails>(
+	return fetchTMDB<MovieDetails>(
 		`/movie/${id}`,
 		{},
 		{ revalidate: 86400, lang }
 	);
+}
 
+/**
+ * Age certification for the viewer's own region, resolved separately from the details fetch.
+ * It reads the session, so awaiting it outside a Suspense boundary would stop the detail
+ * page from prerendering a static shell.
+ */
+export async function getMovieCertification(
+	id: number,
+	lang?: Language
+): Promise<string | undefined> {
 	try {
-		const releaseDates = await fetchTMDB<ReleaseDatesResponse>(
-			`/movie/${id}/release_dates`,
-			{},
-			{ revalidate: 86400, lang }
-		);
-		const userRegion = await getUserRegion(lang);
-		details.certification = findLocalCertification(
-			releaseDates,
-			userRegion
-		);
+		const [releaseDates, userRegion] = await Promise.all([
+			fetchTMDB<ReleaseDatesResponse>(
+				`/movie/${id}/release_dates`,
+				{},
+				{ revalidate: 86400, lang }
+			),
+			getUserRegion(lang),
+		]);
+		return findLocalCertification(releaseDates, userRegion);
 	} catch (error) {
 		reportSwallowed('tmdb/movies:certification', error);
-		details.certification = undefined;
+		return undefined;
 	}
-
-	return details;
 }
 
 /** @returns Cast and crew credits for the given movie. */
@@ -294,15 +300,15 @@ export async function getMovieWatchProviders(
 	lang?: Language
 ): Promise<WatchProvidersRegion | null> {
 	try {
-		const region = await getUserRegion(lang);
-		const [tmdbData, watchmode] = await Promise.all([
+		const [tmdbData, region] = await Promise.all([
 			fetchTMDB<WatchProvidersResponse>(
 				`/movie/${id}/watch/providers`,
 				{},
 				{ revalidate: 43200, lang }
 			),
-			getWatchmodeProviders(id, 'movie', region),
+			getUserRegion(lang),
 		]);
+		const watchmode = await getWatchmodeProviders(id, 'movie', region);
 		const tmdb = tmdbData.results[region] ?? null;
 
 		if (watchmode) {

@@ -36,6 +36,13 @@ export async function proxy(request: NextRequest) {
 	return handleAuthRouting(request, locale, requestHeaders, access);
 }
 
+/**
+ * Excludes static assets by extension rather than "any path containing a dot": the loose
+ * form let a crafted path like `/profile/john.doe` skip the proxy entirely, and with it the
+ * auth guard that now lives here.
+ */
 export const config = {
-	matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+	matcher: [
+		'/((?!_next/static|_next/image|favicon.ico|.*\\.(?:js|css|map|json|webmanifest|txt|xml|ico|png|jpg|jpeg|gif|svg|webp|avif|woff|woff2|ttf|otf)$).*)',
+	],
 };

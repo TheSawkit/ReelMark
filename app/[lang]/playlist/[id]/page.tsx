@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getTranslations } from '@/lib/i18n/server';
@@ -6,7 +7,9 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PlaylistHero } from '@/components/profile/PlaylistHero';
 import { PlaylistItemsView } from '@/components/profile/PlaylistItemsView';
+import { PlaylistPageSkeleton } from '@/components/profile/PlaylistPageSkeleton';
 import { getPlaylistById } from '@/app/actions/playlists';
+import { getPublicPlaylistMeta } from '@/lib/playlists/public-metadata';
 import { getUserReviewRatings } from '@/app/actions/reviews';
 import { playlistItemToMediaItem } from '@/lib/mappers';
 import { getGenres } from '@/lib/tmdb';
@@ -17,50 +20,63 @@ interface Props {
 	params: Promise<{ lang: Language; id: string }>;
 }
 
-export const dynamic = 'force-dynamic';
+/**
+ * One sample value so Cache Components can validate this route at build time.
+ * Real playlists are rendered on demand (`dynamicParams` stays on).
+ */
+export async function generateStaticParams() {
+	return [{ id: '00000000-0000-0000-0000-000000000000' }];
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { lang, id } = await params;
-	const t = await getTranslations(lang);
-	const result = await getPlaylistById(id);
+	const [t, meta] = await Promise.all([
+		getTranslations(lang),
+		getPublicPlaylistMeta(id),
+	]);
 
-	if (!result) {
+	if (!meta) {
 		return { robots: { index: false, follow: false } };
 	}
 
-	const { playlist, ownerUsername } = result;
-	const owner = ownerUsername ?? t.profile.unknownUser;
+	const owner = meta.ownerUsername ?? t.profile.unknownUser;
 	const description = t.metadata.playlistDescription.replace(
 		'${owner}',
 		owner
 	);
-	const posterPath = playlist.items?.[0]?.poster_path;
-	const ogImage = posterPath ? getImageUrl(posterPath, 'w342') : undefined;
-	const isPublic = playlist.visibility === 'public';
+	const ogImage = meta.posterPath
+		? getImageUrl(meta.posterPath, 'w342')
+		: undefined;
 
 	return {
-		title: playlist.name,
+		title: meta.name,
 		description,
-		robots: isPublic
-			? { index: true, follow: true }
-			: { index: false, follow: false },
+		robots: { index: true, follow: true },
 		alternates: localizedAlternates(lang, `/playlist/${id}`),
 		openGraph: {
-			title: playlist.name,
+			title: meta.name,
 			description,
 			type: 'website',
 			images: ogImage ? [{ url: ogImage }] : undefined,
 		},
 		twitter: {
 			card: ogImage ? 'summary_large_image' : 'summary',
-			title: playlist.name,
+			title: meta.name,
 			description,
 			images: ogImage ? [ogImage] : undefined,
 		},
 	};
 }
 
-export default async function PlaylistPage({ params }: Props) {
+export default function PlaylistPage({ params }: Props) {
+	return (
+		<Suspense fallback={<PlaylistPageSkeleton />}>
+			<PlaylistContent params={params} />
+		</Suspense>
+	);
+}
+
+async function PlaylistContent({ params }: Props) {
 	const { lang, id } = await params;
 	const t = await getTranslations(lang);
 	const result = await getPlaylistById(id);

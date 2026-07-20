@@ -134,13 +134,7 @@ export function MediaBanner({
 								</InfoBadge>
 							)}
 
-							{certification && (
-								<InfoBadge>
-									<span className="font-semibold text-text">
-										{certification}
-									</span>
-								</InfoBadge>
-							)}
+							{certification}
 						</div>
 
 						{genres && genres.length > 0 && (

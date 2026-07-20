@@ -106,6 +106,29 @@ export const episodeWatchStore = {
 		notify();
 	},
 
+	/**
+	 * Applies an episode change made on another device. Ignored when the season's episode
+	 * set is not loaded: without it the update can only bump a counter, which would
+	 * double-count the echo of this device's own write.
+	 */
+	applyRemoteEpisode(
+		tvId: number,
+		seasonNumber: number,
+		episodeNumber: number,
+		watched: boolean
+	) {
+		const key = seasonKey(tvId, seasonNumber);
+		const prev = seasons.get(key);
+		if (!prev?.episodes) return;
+		if (prev.episodes.has(episodeNumber) === watched) return;
+
+		const episodes = new Set(prev.episodes);
+		if (watched) episodes.add(episodeNumber);
+		else episodes.delete(episodeNumber);
+		seasons.set(key, { count: episodes.size, episodes, dirty: true });
+		notify();
+	},
+
 	get(tvId: number, seasonNumber: number): SeasonWatchState | undefined {
 		return seasons.get(seasonKey(tvId, seasonNumber));
 	},

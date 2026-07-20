@@ -1,14 +1,13 @@
+'use client';
+
 import Link from 'next/link';
 import { ListVideo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
+import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 
-export default async function PlaylistNotFound() {
-	const [t, lang] = await Promise.all([
-		getTranslations(),
-		getServerLanguage(),
-	]);
+export default function PlaylistNotFound() {
+	const { t, lang } = useTranslation();
 
 	return (
 		<div className="centered-section">

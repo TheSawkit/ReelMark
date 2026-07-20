@@ -50,7 +50,7 @@ export interface MediaBannerProps {
 	voteAverage?: number;
 	releaseDate?: string;
 	runtime?: number;
-	certification?: string;
+	certification?: ReactNode;
 	genres?: { id: number; name: string }[];
 	actions?: ReactNode;
 	communityBadge?: ReactNode;

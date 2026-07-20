@@ -9,7 +9,7 @@ interface GlowBorderProps {
 	className?: string;
 }
 
-/** Wraps content with an animated rotating conic-gradient border (accent → gold). */
+/** Wraps content with an animated rotating light-sheen border, like a specular reflection. */
 export function GlowBorder({
 	children,
 	radius = 16,
@@ -26,7 +26,7 @@ export function GlowBorder({
 				className="absolute -inset-[40%]"
 				style={{
 					background:
-						'conic-gradient(from 0deg, transparent 0deg, rgb(var(--color-red-rgb)) 40deg, var(--gold) 80deg, transparent 130deg, transparent 360deg)',
+						'conic-gradient(from 0deg, transparent 0deg, color-mix(in srgb, var(--text) 25%, transparent) 40deg, color-mix(in srgb, var(--text) 80%, transparent) 80deg, transparent 130deg, transparent 360deg)',
 					animation: run
 						? 'conic-spin 4.5s linear infinite'
 						: undefined,

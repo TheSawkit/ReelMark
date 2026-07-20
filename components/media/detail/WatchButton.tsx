@@ -131,7 +131,7 @@ export function WatchButton({
 						'border text-sm font-semibold',
 						'transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
 						isActive
-							? 'bg-primary/50 text-white border-white/10 shadow-glow-red'
+							? 'bg-primary/50 text-white border-white/10 shadow-control-lift'
 							: 'bg-surface/70 text-text border-white/10 hover:bg-surface/85 hover:text-text shadow-card-sm'
 					)}
 				>
@@ -157,7 +157,7 @@ export function WatchButton({
 					'flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11 w-full shrink-0',
 					blur && 'backdrop-blur-2xl',
 					isActive
-						? 'bg-primary/50 text-white border-white/10 shadow-glow-red'
+						? 'bg-primary/50 text-white border-white/10 shadow-control-lift'
 						: onDark
 							? 'bg-black/50 text-white/90 border-white/10 hover:bg-black/65 hover:text-white shadow-card-sm'
 							: 'bg-surface/70 text-text border-white/10 hover:bg-surface/85 hover:text-text shadow-card-sm'
