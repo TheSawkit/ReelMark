@@ -100,13 +100,9 @@ export function MediaBanner({
 						)}
 
 						<div className="flex flex-wrap items-center gap-4 md:gap-6 mb-4">
-							<RatingBadge
-								value={
-									voteAverage && voteAverage > 0
-										? voteAverage.toFixed(1)
-										: t.movie.notRated
-								}
-							/>
+							{voteAverage && voteAverage > 0 ? (
+								<RatingBadge value={voteAverage.toFixed(1)} />
+							) : null}
 
 							{communityBadge}
 

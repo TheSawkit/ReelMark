@@ -53,6 +53,11 @@ export function MediaCard({
 	const { t, lang } = useTranslation();
 	const locale = getLocale(lang);
 
+	// Une note absente (upcoming, titre obscur) affichait un « N/A » doré à étoile, qui
+	// suggère une note inexistante. On masque le badge : décidé côté serveur, donc affiché
+	// correctement dès le premier rendu sans dépendre de l'hydratation.
+	const showRatingBadge = !hideRating && media.vote_average > 0;
+
 	const href = localizedHref(lang, getMediaHref(media));
 	const isWatched = watchlistEntry?.status === 'watched';
 	const badgeEntry = watchlistEntry ?? media.watchlistEntry;
@@ -153,7 +158,7 @@ export function MediaCard({
 					<div className="absolute top-3 right-3 z-20">{action}</div>
 				)}
 
-				{!hideRating && (
+				{showRatingBadge && (
 					<div
 						className={cn(
 							'absolute top-3 left-3 z-10 transition-all duration-(--duration-base) pointer-events-none',
@@ -166,9 +171,7 @@ export function MediaCard({
 								aria-hidden="true"
 							/>
 							<span className="drop-shadow-text">
-								{media.vote_average > 0
-									? media.vote_average.toFixed(1)
-									: t.movie.notRated}
+								{media.vote_average.toFixed(1)}
 							</span>
 						</div>
 					</div>
