@@ -449,6 +449,17 @@ a {
 		backdrop-filter: var(--glass-filter);
 	}
 
+	/* Floating menus/popovers portaled over arbitrary content (posters, heroes) —
+	   near-opaque so text stays readable whatever sits behind, in both themes. */
+	.glass-popover {
+		--glass-filter: blur(40px) saturate(150%);
+		background-color: color-mix(in srgb, var(--surface) 85%, transparent);
+		-webkit-backdrop-filter: var(--glass-filter);
+		backdrop-filter: var(--glass-filter);
+		border: 1px solid var(--border);
+		border-top-color: var(--glass-border-hover);
+	}
+
 	/* Glass layered over media / dark backdrops (cards, buttons on posters). */
 	.glass-overlay {
 		--glass-filter: blur(40px) saturate(150%);

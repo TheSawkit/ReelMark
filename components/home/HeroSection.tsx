@@ -69,7 +69,7 @@ export default async function HeroSection({
 						href={localizedHref(lang, '/signup')}
 						className="group/cta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl"
 					>
-						<GlowBorder radius={16} pad={1.5}>
+						<GlowBorder radius="var(--radius-2xl)">
 							<span className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-white px-8 text-lg font-bold text-black transition-transform duration-(--duration-fast) ease-apple group-hover/cta:scale-[1.02]">
 								<Play className="h-5 w-5 fill-current" />
 								{t.hero.cta}

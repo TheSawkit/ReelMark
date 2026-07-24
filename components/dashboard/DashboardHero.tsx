@@ -115,7 +115,7 @@ export async function DashboardHero({
 						)}
 
 						<div className="mt-5 inline-flex">
-							<GlowBorder radius={14} pad={1.5}>
+							<GlowBorder>
 								<span className="flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 font-bold text-black">
 									<Play className="h-5 w-5 fill-current" />
 									{cta}
