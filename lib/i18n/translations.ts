@@ -18,6 +18,7 @@ import { danger } from './messages/danger';
 import { metadata } from './messages/metadata';
 import { onboarding } from './messages/onboarding';
 import { oauth } from './messages/oauth';
+import { support } from './messages/support';
 
 export const translations = {
 	fr: {
@@ -41,6 +42,7 @@ export const translations = {
 		metadata: metadata.fr,
 		onboarding: onboarding.fr,
 		oauth: oauth.fr,
+		support: support.fr,
 	},
 	en: {
 		common: common.en,
@@ -63,6 +65,7 @@ export const translations = {
 		metadata: metadata.en,
 		onboarding: onboarding.en,
 		oauth: oauth.en,
+		support: support.en,
 	},
 };
 

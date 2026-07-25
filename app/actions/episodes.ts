@@ -9,6 +9,7 @@ import {
 	revalidateLocalizedAfterResponse,
 } from '@/app/actions/_helpers';
 import { getCachedTvShowDetails } from '@/lib/tmdb/cached';
+import { fetchAllRows } from '@/lib/supabase/pagination';
 import { reportCritical, reportSwallowed } from '@/lib/report';
 import type { SupabaseServerClient } from '@/lib/supabase/server';
 import type { WatchStatus } from '@/types/tmdb';
@@ -394,14 +395,19 @@ export async function getTvShowWatchProgress(
 
 	if (!userId) return new Map();
 
-	const { data: watches } = await supabase
-		.from('episode_watches')
-		.select('season_number')
-		.eq('user_id', userId)
-		.eq('tv_id', tvId);
+	const watches = await fetchAllRows((from, to) =>
+		supabase
+			.from('episode_watches')
+			.select('season_number, episode_number')
+			.eq('user_id', userId)
+			.eq('tv_id', tvId)
+			.order('season_number')
+			.order('episode_number')
+			.range(from, to)
+	);
 
 	const progress = new Map<number, number>();
-	for (const w of watches ?? []) {
+	for (const w of watches) {
 		progress.set(w.season_number, (progress.get(w.season_number) ?? 0) + 1);
 	}
 	return progress;

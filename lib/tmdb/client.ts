@@ -57,14 +57,21 @@ export async function getImageLanguageFilter(lang?: Language): Promise<string> {
 type TMDBResult<T> =
 	{ ok: true; data: T } | { ok: false; status: number; statusText: string };
 
-const FAILED_LOOKUP_CACHE = { stale: 0, revalidate: 60, expire: 300 };
+const TRANSIENT_FAILURE_CACHE = { stale: 0, revalidate: 60, expire: 300 };
+const MISSING_ENTRY_CACHE = { stale: 0, revalidate: 3600, expire: 86400 };
+const TMDB_TIMEOUT_MS = 10_000;
+
+function retryDelay(attempt: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
+}
 
 /**
- * Cached TMDB call. **Never throws on an HTTP failure**: an exception crossing a
- * `"use cache"` boundary comes back digested, from the `Cache` environment, and takes down
- * the surrounding render even when the caller has a try/catch. A TMDB 404 is routine — a
- * deleted title, a recommendations endpoint with no entry — so failures are returned as
- * data and turned back into an exception by `fetchTMDB`, outside the cache scope.
+ * Cached TMDB call. **Never throws**: an exception crossing a `"use cache"` boundary
+ * comes back digested, from the `Cache` environment, and takes down the surrounding
+ * render even when the caller has a try/catch. HTTP failures (a 404 is routine — deleted
+ * title, recommendations endpoint with no entry) AND network errors (timeout, DNS, reset)
+ * are returned as data and turned back into an exception by `fetchTMDB`, outside the
+ * cache scope. Dead 404s stay cached longer than transient failures.
  */
 async function fetchTMDBUrl<T>(
 	url: string,
@@ -75,9 +82,25 @@ async function fetchTMDBUrl<T>(
 	cacheLife({ stale: 300, revalidate, expire: revalidate * 24 });
 
 	for (let attempt = 0; ; attempt++) {
-		const response = await fetch(url, {
-			headers: { Authorization: `Bearer ${TMDB_READ_ACCESS_TOKEN}` },
-		});
+		let response: Response;
+		try {
+			response = await fetch(url, {
+				headers: { Authorization: `Bearer ${TMDB_READ_ACCESS_TOKEN}` },
+				signal: AbortSignal.timeout(TMDB_TIMEOUT_MS),
+			});
+		} catch (error) {
+			if (attempt < retries) {
+				await retryDelay(attempt);
+				continue;
+			}
+			cacheLife(TRANSIENT_FAILURE_CACHE);
+			return {
+				ok: false,
+				status: 0,
+				statusText:
+					error instanceof Error ? error.name : 'NetworkError',
+			};
+		}
 
 		if (response.ok)
 			return { ok: true, data: (await response.json()) as T };
@@ -85,14 +108,22 @@ async function fetchTMDBUrl<T>(
 		const isRetryable = response.status === 429 || response.status >= 500;
 		if (isRetryable && attempt < retries) {
 			const retryAfter = Number(response.headers.get('retry-after'));
-			const delayMs =
-				retryAfter > 0 ? retryAfter * 1000 : 300 * (attempt + 1);
-			await new Promise((resolve) => setTimeout(resolve, delayMs));
+			if (retryAfter > 0) {
+				await new Promise((resolve) =>
+					setTimeout(resolve, retryAfter * 1000)
+				);
+			} else {
+				await retryDelay(attempt);
+			}
 			continue;
 		}
 
 		// Lowest cacheLife wins, so a failure is not frozen for the success TTL.
-		cacheLife(FAILED_LOOKUP_CACHE);
+		cacheLife(
+			response.status === 404
+				? MISSING_ENTRY_CACHE
+				: TRANSIENT_FAILURE_CACHE
+		);
 		return {
 			ok: false,
 			status: response.status,

@@ -44,9 +44,12 @@
 	--radius-md: 0.5rem;
 	--radius-lg: 0.75rem;
 	--radius-xl: 1rem;
+	--radius-2xl: 1.5rem;
 	--radius-full: 9999px;
 	--radius-poster: 0.375rem;
 	--radius-cinema: 0.5rem;
+	--radius-banner: 1.375rem;
+	--radius-app-icon: 22.5%;
 
 	--shadow-card: var(--shadow-card);
 	--shadow-card-sm: var(--shadow-card-sm);
@@ -447,6 +450,17 @@ a {
 		background-color: color-mix(in srgb, var(--surface) 70%, transparent);
 		-webkit-backdrop-filter: var(--glass-filter);
 		backdrop-filter: var(--glass-filter);
+	}
+
+	/* Floating menus/popovers portaled over arbitrary content (posters, heroes) —
+	   near-opaque so text stays readable whatever sits behind, in both themes. */
+	.glass-popover {
+		--glass-filter: blur(40px) saturate(150%);
+		background-color: color-mix(in srgb, var(--surface) 85%, transparent);
+		-webkit-backdrop-filter: var(--glass-filter);
+		backdrop-filter: var(--glass-filter);
+		border: 1px solid var(--border);
+		border-top-color: var(--glass-border-hover);
 	}
 
 	/* Glass layered over media / dark backdrops (cards, buttons on posters). */

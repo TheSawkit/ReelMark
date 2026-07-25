@@ -2,6 +2,7 @@
 
 import { getOptionalUser } from '@/lib/supabase/auth-helpers';
 import { getWatchlistWithProgress } from '@/lib/data/watchlist';
+import { fetchAllRows } from '@/lib/supabase/pagination';
 import { getSeasonDetails } from '@/lib/tmdb';
 import { getCachedTvShowDetails } from '@/lib/tmdb/cached';
 import { findNextEpisode, type SeasonEpisodeCount } from '@/lib/next-episode';
@@ -138,17 +139,23 @@ export async function getContinueWatching(): Promise<ContinueWatchingItem[]> {
 		})
 		.slice(0, SHOW_LIMIT);
 
-	const { data: watches } = await supabase
-		.from('episode_watches')
-		.select('tv_id, season_number, episode_number')
-		.eq('user_id', userId)
-		.in(
-			'tv_id',
-			selected.map((entry) => entry.media_id)
-		);
+	const watches = await fetchAllRows((from, to) =>
+		supabase
+			.from('episode_watches')
+			.select('tv_id, season_number, episode_number')
+			.eq('user_id', userId)
+			.in(
+				'tv_id',
+				selected.map((entry) => entry.media_id)
+			)
+			.order('tv_id')
+			.order('season_number')
+			.order('episode_number')
+			.range(from, to)
+	);
 
 	const watchedByShow = new Map<number, WatchedBySeason>();
-	for (const watch of watches ?? []) {
+	for (const watch of watches) {
 		const show = watchedByShow.get(watch.tv_id) ?? new Map();
 		const episodes = show.get(watch.season_number) ?? new Set<number>();
 		episodes.add(watch.episode_number);

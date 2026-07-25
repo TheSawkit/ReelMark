@@ -67,10 +67,10 @@ export default async function HeroSection({
 				>
 					<Link
 						href={localizedHref(lang, '/signup')}
-						className="group/cta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl"
+						className="group/cta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
 					>
-						<GlowBorder radius={16} pad={1.5}>
-							<span className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-white px-8 text-lg font-bold text-black transition-transform duration-(--duration-fast) ease-apple group-hover/cta:scale-[1.02]">
+						<GlowBorder>
+							<span className="flex h-14 items-center justify-center gap-2 rounded-xl bg-white px-8 text-lg font-bold text-black transition-transform duration-(--duration-fast) ease-apple group-hover/cta:scale-[1.02]">
 								<Play className="h-5 w-5 fill-current" />
 								{t.hero.cta}
 							</span>
@@ -79,7 +79,7 @@ export default async function HeroSection({
 
 					<Link
 						href={localizedHref(lang, '/login')}
-						className="glass-surface inline-flex h-14 items-center justify-center rounded-2xl px-8 text-lg font-semibold text-text transition-colors duration-(--duration-fast) ease-apple hover:bg-glass-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+						className="glass-surface inline-flex h-14 items-center justify-center rounded-xl px-8 text-lg font-semibold text-text transition-colors duration-(--duration-fast) ease-apple hover:bg-glass-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 					>
 						{t.hero.login}
 					</Link>

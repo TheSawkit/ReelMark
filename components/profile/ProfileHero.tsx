@@ -126,7 +126,7 @@ export function ProfileHero({
 	}>;
 
 	return (
-		<div className="relative mb-10 overflow-hidden rounded-3xl border border-border bg-surface">
+		<div className="relative mb-10 overflow-hidden rounded-2xl border border-border bg-surface">
 			<div className="relative h-28 overflow-hidden sm:h-36">
 				<div className="absolute inset-0 bg-linear-to-br from-primary/25 via-surface-2 to-surface" />
 				<Aurora intensity={0.6} />

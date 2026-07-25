@@ -39,7 +39,7 @@ export function PWAInstallPrompt() {
 					alt="ReelMark"
 					width={44}
 					height={44}
-					className="rounded-[10px] shrink-0"
+					className="rounded-(--radius-app-icon) shrink-0"
 				/>
 
 				<div className="flex-1 min-w-0">

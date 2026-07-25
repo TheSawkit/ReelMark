@@ -27,6 +27,7 @@ import { getGenres } from '@/lib/tmdb';
 import { ListMetadataBackfill } from '@/components/library/ListMetadataBackfill';
 import type { WatchlistEntry } from '@/types/tmdb';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
+import { fetchAllRows } from '@/lib/supabase/pagination';
 
 interface Props {
 	params: Promise<{ lang: Language; username: string }>;
@@ -89,6 +90,7 @@ async function ProfileTabsSection({
 	const [
 		privacy,
 		reviewsPage,
+		reviewsCountData,
 		playlists,
 		allFriendEntries,
 		watchlistData,
@@ -98,14 +100,21 @@ async function ProfileTabsSection({
 	] = await Promise.all([
 		getPrivacySettings(profileUserId),
 		getUserReviews(profileUserId),
+		supabase
+			.from('reviews')
+			.select('id', { count: 'exact', head: true })
+			.eq('user_id', profileUserId),
 		getUserPlaylists(profileUserId),
 		getFriendsWithProfiles(profileUserId),
-		supabase
-			.from('watchlist')
-			.select(WATCHLIST_COLUMNS)
-			.eq('user_id', profileUserId)
-			.order('created_at', { ascending: false })
-			.limit(1000),
+		fetchAllRows((from, to) =>
+			supabase
+				.from('watchlist')
+				.select(WATCHLIST_COLUMNS)
+				.eq('user_id', profileUserId)
+				.order('created_at', { ascending: false })
+				.order('id')
+				.range(from, to)
+		),
 		isOwnProfile ? getPendingRequestsWithProfiles() : Promise.resolve([]),
 		getGenres(lang),
 		isOwnProfile
@@ -113,7 +122,7 @@ async function ProfileTabsSection({
 			: Promise.resolve<Record<string, number>>({}),
 	]);
 
-	const watchlist = (watchlistData.data ?? []) as WatchlistEntry[];
+	const watchlist = watchlistData as WatchlistEntry[];
 
 	function canView(visibility: string): boolean {
 		if (isOwnProfile) return true;
@@ -132,6 +141,9 @@ async function ProfileTabsSection({
 	const filteredReviews = canView(privacy.reviews_visibility)
 		? reviewsPage.reviews
 		: [];
+	const reviewsCount = canView(privacy.reviews_visibility)
+		? (reviewsCountData.count ?? 0)
+		: 0;
 	const initialReviewsCursor = canView(privacy.reviews_visibility)
 		? reviewsPage.nextCursor
 		: null;
@@ -146,6 +158,7 @@ async function ProfileTabsSection({
 				toWatch={toWatch}
 				watched={watched}
 				reviews={filteredReviews}
+				reviewsCount={reviewsCount}
 				initialReviewsCursor={initialReviewsCursor}
 				profileUserId={profileUserId}
 				playlists={playlists}

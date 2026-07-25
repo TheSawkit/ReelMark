@@ -176,7 +176,7 @@ async function UpcomingSection({
 function SpotlightTrendingSkeleton() {
 	return (
 		<>
-			<Skeleton className="mb-10 h-52 w-full rounded-[22px] sm:h-56" />
+			<Skeleton className="mb-10 h-52 w-full rounded-(--radius-banner) sm:h-56" />
 			<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
 		</>
 	);

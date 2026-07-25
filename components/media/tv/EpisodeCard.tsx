@@ -90,12 +90,12 @@ export function EpisodeCard({
 						<span className="text-sm">{noImage}</span>
 					</div>
 				)}
-				<div className="absolute top-2 left-2 bg-poster-overlay-heavy border border-white/10 shadow-card-sm text-text font-bold text-sm px-2 py-1 rounded">
+				<div className="absolute top-2 left-2 bg-surface border border-border shadow-card-sm text-text font-bold text-sm px-2 py-1 rounded">
 					E{episode.episode_number.toString().padStart(2, '0')}
 				</div>
 				<div
 					className={cn(
-						'absolute top-2 right-2 bg-poster-overlay-heavy border border-white/10 px-2 py-1 rounded shadow-card-sm',
+						'absolute top-2 right-2 bg-surface border border-border px-2 py-1 rounded shadow-card-sm',
 						'flex items-center gap-1 text-xs font-bold text-gold'
 					)}
 				>

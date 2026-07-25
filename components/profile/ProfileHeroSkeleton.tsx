@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function ProfileHeroSkeleton() {
 	return (
-		<div className="mb-10 overflow-hidden rounded-3xl border border-border bg-surface">
+		<div className="mb-10 overflow-hidden rounded-2xl border border-border bg-surface">
 			<Skeleton className="h-28 w-full rounded-none sm:h-36" />
 			<div className="px-5 pb-6 sm:px-7">
 				<div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end">

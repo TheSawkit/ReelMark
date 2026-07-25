@@ -48,7 +48,7 @@ export function PlaylistGrid({
 	if (items.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center min-h-60 gap-4 px-8 text-center py-10">
-				<div className="w-16 h-16 rounded-2xl bg-surface-2 flex items-center justify-center">
+				<div className="w-16 h-16 rounded-xl bg-surface-2 flex items-center justify-center">
 					<ListVideo className="h-8 w-8 text-muted opacity-40" />
 				</div>
 				<div className="space-y-1">

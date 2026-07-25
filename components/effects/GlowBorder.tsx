@@ -3,16 +3,16 @@ import { cn } from '@/lib/utils';
 
 interface GlowBorderProps {
 	children: ReactNode;
-	radius?: number;
+	radius?: string;
 	pad?: number;
 	run?: boolean;
 	className?: string;
 }
 
-/** Wraps content with an animated rotating light-sheen border, like a specular reflection. */
+/** Wraps content with an animated rotating light-sheen border; pass the child's radius token so the sheen stays concentric with its corners. */
 export function GlowBorder({
 	children,
-	radius = 16,
+	radius = 'var(--radius-xl)',
 	pad = 1.5,
 	run = true,
 	className,
@@ -20,7 +20,7 @@ export function GlowBorder({
 	return (
 		<div
 			className={cn('relative overflow-hidden', className)}
-			style={{ borderRadius: radius, padding: pad }}
+			style={{ borderRadius: `calc(${radius} + ${pad}px)`, padding: pad }}
 		>
 			<div
 				className="absolute -inset-[40%]"
@@ -35,7 +35,7 @@ export function GlowBorder({
 			<div
 				className="relative h-full"
 				style={{
-					borderRadius: radius - pad,
+					borderRadius: radius,
 					background: 'var(--surface)',
 				}}
 			>

@@ -27,10 +27,10 @@ export async function SpotlightPick({
 
 	return (
 		<div className="mb-10">
-			<GlowBorder radius={22} pad={1.5}>
+			<GlowBorder radius="var(--radius-banner)">
 				<Link
 					href={localizedHref(lang, getMediaHref(item))}
-					className="relative block h-52 overflow-hidden rounded-[20px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-56"
+					className="relative block h-52 overflow-hidden rounded-(--radius-banner) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-56"
 				>
 					{item.backdrop_path ? (
 						<Image

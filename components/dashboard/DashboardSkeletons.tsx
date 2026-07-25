@@ -1,14 +1,14 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function DashboardHeroSkeleton() {
-	return <Skeleton className="mb-10 h-104 w-full rounded-3xl sm:h-112" />;
+	return <Skeleton className="mb-10 h-104 w-full rounded-2xl sm:h-112" />;
 }
 
 export function BentoStatsSkeleton() {
 	return (
 		<div className="mb-10 grid grid-cols-3 gap-3 sm:gap-4">
 			{Array.from({ length: 3 }).map((_, i) => (
-				<Skeleton key={i} className="h-28 rounded-2xl" />
+				<Skeleton key={i} className="h-28 rounded-xl" />
 			))}
 		</div>
 	);

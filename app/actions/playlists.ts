@@ -5,6 +5,7 @@ import {
 	getOptionalUser,
 } from '@/lib/supabase/auth-helpers';
 import { getTranslations } from '@/lib/i18n/server';
+import { fetchAllRows } from '@/lib/supabase/pagination';
 import {
 	revalidateProfileAfterResponse,
 	revalidatePlaylistMetaAfterResponse,
@@ -25,15 +26,17 @@ import type { Playlist, PrivacyVisibility } from '@/types/profile';
 export async function getUserPlaylists(userId: string): Promise<Playlist[]> {
 	const { supabase } = await getAuthenticatedUser();
 
-	const { data, error } = await supabase
-		.from('playlists')
-		.select('*, items:playlist_items(*)')
-		.eq('user_id', userId)
-		.order('created_at', { ascending: false })
-		.limit(100);
+	const data = await fetchAllRows((from, to) =>
+		supabase
+			.from('playlists')
+			.select('*, items:playlist_items(*)')
+			.eq('user_id', userId)
+			.order('created_at', { ascending: false })
+			.order('id')
+			.range(from, to)
+	);
 
-	if (error) throw new Error(error.message);
-	return (data as Playlist[]) ?? [];
+	return data as Playlist[];
 }
 
 /**

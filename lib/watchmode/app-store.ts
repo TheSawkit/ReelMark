@@ -75,7 +75,7 @@ export async function getAppStoreIconMap(
 		const uniqueIds = [...new Set(Object.values(PROVIDER_APP_IDS))];
 		const res = await fetch(
 			`https://itunes.apple.com/lookup?id=${uniqueIds.join(',')}&entity=software&country=${country.toLowerCase()}`,
-			{ next: { revalidate: 604800 } }
+			{ next: { revalidate: 604800 }, signal: AbortSignal.timeout(5000) }
 		);
 		if (!res.ok) return new Map();
 

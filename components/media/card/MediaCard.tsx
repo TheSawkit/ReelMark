@@ -53,6 +53,11 @@ export function MediaCard({
 	const { t, lang } = useTranslation();
 	const locale = getLocale(lang);
 
+	// Une note absente (upcoming, titre obscur) affichait un « N/A » doré à étoile, qui
+	// suggère une note inexistante. On masque le badge : décidé côté serveur, donc affiché
+	// correctement dès le premier rendu sans dépendre de l'hydratation.
+	const showRatingBadge = !hideRating && media.vote_average > 0;
+
 	const href = localizedHref(lang, getMediaHref(media));
 	const isWatched = watchlistEntry?.status === 'watched';
 	const badgeEntry = watchlistEntry ?? media.watchlistEntry;
@@ -111,7 +116,7 @@ export function MediaCard({
 				)}
 
 				{compact && badgeEntry && (
-					<div className="absolute top-1.5 right-1.5 z-10 grid size-6 place-items-center rounded-full bg-poster-overlay-heavy border border-white/10 shadow-card-sm">
+					<div className="absolute top-1.5 right-1.5 z-10 grid size-6 place-items-center rounded-full bg-surface border border-border shadow-card-sm">
 						{badgeEntry.status === 'watched' ? (
 							<Eye
 								className="h-3 w-3 text-success"
@@ -153,23 +158,19 @@ export function MediaCard({
 					<div className="absolute top-3 right-3 z-20">{action}</div>
 				)}
 
-				{!hideRating && (
+				{showRatingBadge && (
 					<div
 						className={cn(
 							'absolute top-3 left-3 z-10 transition-all duration-(--duration-base) pointer-events-none',
 							'translate-y-0 group-hover:-translate-y-1'
 						)}
 					>
-						<div className="flex items-center gap-1.5 rounded-md bg-poster-overlay-heavy px-2 py-1 text-xs font-mono font-bold text-gold-bright border border-white/10 shadow-card-sm">
+						<div className="flex items-center gap-1.5 rounded-md bg-surface px-2 py-1 text-xs font-mono font-bold text-rating-gold border border-border shadow-card-sm">
 							<Star
-								className="h-3 w-3 fill-current drop-shadow-text"
+								className="h-3 w-3 fill-current"
 								aria-hidden="true"
 							/>
-							<span className="drop-shadow-text">
-								{media.vote_average > 0
-									? media.vote_average.toFixed(1)
-									: t.movie.notRated}
-							</span>
+							<span>{media.vote_average.toFixed(1)}</span>
 						</div>
 					</div>
 				)}

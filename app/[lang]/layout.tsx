@@ -382,9 +382,15 @@ export default async function RootLayout({
 						<div className="container mx-auto px-6 lg:px-12 pt-8 page-bottom-clearance flex flex-col items-center gap-3 text-sm text-muted sm:flex-row sm:justify-between">
 							<p>© {COPYRIGHT_YEAR} ReelMark</p>
 							<nav
-								aria-label={t.pages.legal.terms.title}
+								aria-label={t.common.footerNav}
 								className="flex items-center gap-4"
 							>
+								<Link
+									href={localizedHref(lang, '/support')}
+									className="hover:text-text transition-colors"
+								>
+									{t.support.nav}
+								</Link>
 								<Link
 									href={localizedHref(lang, '/terms')}
 									className="hover:text-text transition-colors"
