@@ -4,6 +4,7 @@ import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { createAdminClient } from '@/lib/supabase/server';
 import { getPrivacySettings } from '@/app/actions/profile';
 import { FRIENDSHIP_COLUMNS } from '@/lib/supabase/columns';
+import { fetchAllRows } from '@/lib/supabase/pagination';
 import { resolveAvatarUrl } from '@/lib/avatar';
 import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
 import { sendFriendPush } from '@/lib/push/notify-friend';
@@ -24,15 +25,17 @@ export async function getPendingRequestsWithProfiles(): Promise<
 > {
 	const { supabase, userId } = await getAuthenticatedUser();
 
-	const { data: rawPending, error } = await supabase
-		.from('friendships')
-		.select(FRIENDSHIP_COLUMNS)
-		.eq('addressee_id', userId)
-		.eq('status', 'pending')
-		.limit(100);
+	const rawPending = await fetchAllRows((from, to) =>
+		supabase
+			.from('friendships')
+			.select(FRIENDSHIP_COLUMNS)
+			.eq('addressee_id', userId)
+			.eq('status', 'pending')
+			.order('id')
+			.range(from, to)
+	);
 
-	if (error) throw new Error(error.message);
-	if (!rawPending || rawPending.length === 0) return [];
+	if (rawPending.length === 0) return [];
 
 	const pending = rawPending as Friendship[];
 	const requesterIds = pending.map((f) => f.requester_id);
@@ -81,15 +84,17 @@ export async function getFriendsWithProfiles(
 
 	const supabase = createAdminClient();
 
-	const { data: rawFriends, error } = await supabase
-		.from('friendships')
-		.select(FRIENDSHIP_COLUMNS)
-		.or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
-		.eq('status', 'accepted')
-		.limit(100);
+	const rawFriends = await fetchAllRows((from, to) =>
+		supabase
+			.from('friendships')
+			.select(FRIENDSHIP_COLUMNS)
+			.or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
+			.eq('status', 'accepted')
+			.order('id')
+			.range(from, to)
+	);
 
-	if (error) throw new Error(error.message);
-	if (!rawFriends || rawFriends.length === 0) return [];
+	if (rawFriends.length === 0) return [];
 
 	const friends = rawFriends as Friendship[];
 	const friendUserIds = friends.map((f) =>

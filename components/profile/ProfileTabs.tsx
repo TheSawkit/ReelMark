@@ -24,6 +24,7 @@ interface ProfileTabsProps {
 	toWatch: WatchlistEntry[];
 	watched: WatchlistEntry[];
 	reviews: Review[];
+	reviewsCount: number;
 	initialReviewsCursor: string | null;
 	profileUserId: string;
 	playlists: Playlist[];
@@ -40,6 +41,7 @@ export function ProfileTabs({
 	toWatch,
 	watched,
 	reviews,
+	reviewsCount,
 	initialReviewsCursor,
 	profileUserId,
 	playlists,
@@ -72,7 +74,7 @@ export function ProfileTabs({
 			{
 				id: 'reviews',
 				label: t.profile.tabs.reviews,
-				count: reviews.length,
+				count: reviewsCount,
 			},
 			{
 				id: 'playlists',

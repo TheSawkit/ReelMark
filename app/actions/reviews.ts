@@ -5,6 +5,8 @@ import {
 	getOptionalUser,
 } from '@/lib/supabase/auth-helpers';
 import { createClient } from '@/lib/supabase/server';
+import { fetchAllRows } from '@/lib/supabase/pagination';
+import { reportSwallowed } from '@/lib/report';
 import { getTranslations } from '@/lib/i18n/server';
 import {
 	validateRating,
@@ -77,17 +79,23 @@ export async function getUserReviewRatings(
 ): Promise<Record<string, number>> {
 	const supabase = await createClient();
 
-	const { data, error } = await supabase
-		.from('reviews')
-		.select('media_id, media_type, rating')
-		.eq('user_id', userId)
-		.in('media_type', ['movie', 'tv'])
-		.not('rating', 'is', null);
-
-	if (error) return {};
+	const data = await fetchAllRows((from, to) =>
+		supabase
+			.from('reviews')
+			.select('media_id, media_type, rating')
+			.eq('user_id', userId)
+			.in('media_type', ['movie', 'tv'])
+			.not('rating', 'is', null)
+			.order('media_type')
+			.order('media_id')
+			.range(from, to)
+	).catch((error: unknown) => {
+		reportSwallowed('reviews:ratings', error);
+		return [];
+	});
 
 	const map: Record<string, number> = {};
-	for (const row of data ?? []) {
+	for (const row of data) {
 		if (row.rating !== null) {
 			map[`${row.media_type}-${row.media_id}`] = row.rating;
 		}
