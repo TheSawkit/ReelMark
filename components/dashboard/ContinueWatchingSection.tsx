@@ -87,6 +87,7 @@ function ContinueWatchingCard({
 			item.seasonWatchedEpisodes.length,
 			item.seasonWatchedEpisodes
 		);
+		mediaWatchStore.seed('tv', item.tvId, 'to_watch');
 	}, [item.tvId, item.seasonNumber, item.seasonWatchedEpisodes]);
 
 	const watchedTotal = useTvWatchTotal(item.tvId, item.seasonWatched);

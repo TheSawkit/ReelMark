@@ -1,10 +1,17 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Play, Star } from 'lucide-react';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { getMediaHref } from '@/lib/media';
-import { getServerLanguage } from '@/lib/i18n/server';
+import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
+import {
+	showWatchedTotal,
+	useEpisodeWatchVersion,
+} from '@/lib/episode-watch-store';
+import { pickResumableHero } from '@/lib/dashboard-hero';
 import { TiltCard } from '@/components/effects/TiltCard';
 import { Aurora } from '@/components/effects/Aurora';
 import { Spotlight } from '@/components/effects/Spotlight';
@@ -27,19 +34,32 @@ export interface FeaturedHero {
 }
 
 interface DashboardHeroProps {
-	item: FeaturedHero;
+	items: FeaturedHero[];
 	resumeLabel: string;
 	discoverLabel: string;
 }
 
-/** Cinematic "resume / discover" hero featuring the user's next title to watch. */
-export async function DashboardHero({
-	item,
+/**
+ * Cinematic "resume / discover" hero featuring the show the user can pick up right now.
+ *
+ * Receives the next few resumable shows so that finishing one from the row below swaps the
+ * hero to the following one instantly, instead of waiting for the next server render.
+ */
+export function DashboardHero({
+	items,
 	resumeLabel,
 	discoverLabel,
 }: DashboardHeroProps) {
+	const { lang } = useTranslation();
+	useEpisodeWatchVersion();
+
+	const item = pickResumableHero(items, showWatchedTotal);
+	if (!item) return null;
+
+	const watched = item.progress
+		? showWatchedTotal(item.id, item.progress.watched)
+		: 0;
 	const cta = item.resume ? resumeLabel : discoverLabel;
-	const lang = await getServerLanguage();
 
 	return (
 		<div className="mb-10">
@@ -108,8 +128,10 @@ export async function DashboardHero({
 						{item.progress && item.progress.total > 0 && (
 							<div className="mt-4 max-w-md">
 								<ProgressBar
-									watched={item.progress.watched}
+									watched={watched}
 									total={item.progress.total}
+									className="h-1.5 rounded-full bg-white/25"
+									innerClassName="rounded-full bg-linear-to-r from-primary to-gold"
 								/>
 							</div>
 						)}

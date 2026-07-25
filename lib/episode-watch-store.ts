@@ -7,16 +7,26 @@ export interface SeasonWatchState {
 	count: number;
 	episodes: ReadonlySet<number> | null;
 	dirty: boolean;
+	baseCount: number;
 }
 
 const {
 	entries: seasons,
 	notify,
 	subscribe,
+	version,
 } = createKeyedStore<SeasonWatchState>();
 
 const seasonKey = (tvId: number, seasonNumber: number) =>
 	`${tvId}:${seasonNumber}`;
+
+type SeasonWrite = Omit<SeasonWatchState, 'baseCount'>;
+
+/** Keeps the server-rendered count alive across mutations so views can derive a session delta. */
+function write(key: string, next: SeasonWrite, countBefore: number) {
+	const prev = seasons.get(key);
+	seasons.set(key, { ...next, baseCount: prev?.baseCount ?? countBefore });
+}
 
 /**
  * Client-side source of truth for per-season watch progress, shared between
@@ -37,7 +47,7 @@ export const episodeWatchStore = {
 			? new Set(episodeNumbers)
 			: (prev?.episodes ?? null);
 		if (prev && prev.count === count && prev.episodes === episodes) return;
-		seasons.set(key, { count, episodes, dirty: false });
+		seasons.set(key, { count, episodes, dirty: false, baseCount: count });
 		notify();
 	},
 
@@ -53,14 +63,22 @@ export const episodeWatchStore = {
 			const episodes = new Set(prev.episodes);
 			if (watched) episodes.add(episodeNumber);
 			else episodes.delete(episodeNumber);
-			seasons.set(key, { count: episodes.size, episodes, dirty: true });
+			write(
+				key,
+				{ count: episodes.size, episodes, dirty: true },
+				prev.count
+			);
 		} else {
 			const base = prev?.count ?? (watched ? 0 : 1);
-			seasons.set(key, {
-				count: Math.max(0, base + (watched ? 1 : -1)),
-				episodes: null,
-				dirty: true,
-			});
+			write(
+				key,
+				{
+					count: Math.max(0, base + (watched ? 1 : -1)),
+					episodes: null,
+					dirty: true,
+				},
+				base
+			);
 		}
 		notify();
 	},
@@ -70,12 +88,13 @@ export const episodeWatchStore = {
 		seasonNumber: number,
 		episodeNumbers: number[]
 	) {
+		const key = seasonKey(tvId, seasonNumber);
 		const episodes = new Set(episodeNumbers);
-		seasons.set(seasonKey(tvId, seasonNumber), {
-			count: episodes.size,
-			episodes,
-			dirty: true,
-		});
+		write(
+			key,
+			{ count: episodes.size, episodes, dirty: true },
+			seasons.get(key)?.count ?? episodes.size
+		);
 		notify();
 	},
 
@@ -84,7 +103,11 @@ export const episodeWatchStore = {
 		const prev = seasons.get(key);
 		const episodes = new Set(prev?.episodes ?? []);
 		for (let i = 1; i <= upToEpisode; i++) episodes.add(i);
-		seasons.set(key, { count: episodes.size, episodes, dirty: true });
+		write(
+			key,
+			{ count: episodes.size, episodes, dirty: true },
+			prev?.count ?? 0
+		);
 		notify();
 	},
 
@@ -98,11 +121,11 @@ export const episodeWatchStore = {
 		const episodes = watched
 			? new Set(Array.from({ length: totalEpisodes }, (_, i) => i + 1))
 			: new Set<number>();
-		seasons.set(key, {
-			count: watched ? totalEpisodes : 0,
-			episodes,
-			dirty: true,
-		});
+		write(
+			key,
+			{ count: watched ? totalEpisodes : 0, episodes, dirty: true },
+			seasons.get(key)?.count ?? (watched ? 0 : totalEpisodes)
+		);
 		notify();
 	},
 
@@ -125,7 +148,7 @@ export const episodeWatchStore = {
 		const episodes = new Set(prev.episodes);
 		if (watched) episodes.add(episodeNumber);
 		else episodes.delete(episodeNumber);
-		seasons.set(key, { count: episodes.size, episodes, dirty: true });
+		write(key, { count: episodes.size, episodes, dirty: true }, prev.count);
 		notify();
 	},
 
@@ -136,13 +159,13 @@ export const episodeWatchStore = {
 	clearShow(tvId: number) {
 		const prefix = `${tvId}:`;
 		let changed = false;
-		for (const key of seasons.keys()) {
+		for (const [key, state] of seasons) {
 			if (!key.startsWith(prefix)) continue;
-			seasons.set(key, {
-				count: 0,
-				episodes: new Set(),
-				dirty: true,
-			});
+			write(
+				key,
+				{ count: 0, episodes: new Set(), dirty: true },
+				state.count
+			);
 			changed = true;
 		}
 		if (changed) notify();
@@ -159,6 +182,45 @@ export const episodeWatchStore = {
 		notify();
 	},
 };
+
+/**
+ * Episodes ticked (or unticked) in this session versus what the server rendered.
+ *
+ * @param tvId - Restricts the delta to one show; omit for the whole session.
+ */
+export function episodeWatchDelta(tvId?: number): number {
+	const prefix = tvId === undefined ? undefined : `${tvId}:`;
+	let delta = 0;
+	for (const [key, state] of seasons) {
+		if (prefix && !key.startsWith(prefix)) continue;
+		delta += state.count - state.baseCount;
+	}
+	return delta;
+}
+
+/** Reactive `episodeWatchDelta`, so a server-rendered total stays accurate without re-fetching. */
+export function useEpisodeWatchDelta(tvId?: number): number {
+	return useSyncExternalStore(
+		subscribe,
+		() => episodeWatchDelta(tvId),
+		() => 0
+	);
+}
+
+/** Server-rendered watched count for a show, kept live from this session's episode changes. */
+export function useShowWatchedTotal(tvId: number, serverTotal: number): number {
+	return serverTotal + useEpisodeWatchDelta(tvId);
+}
+
+/** Same as `useShowWatchedTotal` without subscribing — for views comparing several shows in one pass. */
+export function showWatchedTotal(tvId: number, serverTotal: number): number {
+	return serverTotal + episodeWatchDelta(tvId);
+}
+
+/** Bumps on every episode change; lets a view re-derive totals for several shows at once. */
+export function useEpisodeWatchVersion(): number {
+	return useSyncExternalStore(subscribe, version, () => 0);
+}
 
 /** Reactive per-season watch state; undefined until seeded or mutated. */
 export function useSeasonWatch(

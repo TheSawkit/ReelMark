@@ -14,6 +14,7 @@ describe('mediaWatchStore.seed', () => {
 		expect(mediaWatchStore.get('movie', MOVIE_ID)).toEqual({
 			status: 'to_watch',
 			dirty: false,
+			baseStatus: 'to_watch',
 		});
 	});
 
@@ -25,6 +26,7 @@ describe('mediaWatchStore.seed', () => {
 		expect(mediaWatchStore.get('movie', MOVIE_ID)).toEqual({
 			status: 'watched',
 			dirty: true,
+			baseStatus: 'none',
 		});
 	});
 
@@ -48,6 +50,7 @@ describe('mediaWatchStore.set / restore', () => {
 		expect(mediaWatchStore.get('movie', MOVIE_ID)).toEqual({
 			status: 'none',
 			dirty: true,
+			baseStatus: 'none',
 		});
 	});
 
@@ -61,6 +64,7 @@ describe('mediaWatchStore.set / restore', () => {
 		expect(mediaWatchStore.get('movie', MOVIE_ID)).toEqual({
 			status: 'to_watch',
 			dirty: false,
+			baseStatus: 'to_watch',
 		});
 	});
 
