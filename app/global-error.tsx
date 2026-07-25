@@ -1,8 +1,9 @@
 'use client';
 
 import './globals.css';
+import * as Sentry from '@sentry/nextjs';
 import { translations, type Language } from '@/lib/i18n/translations';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Inter, Bebas_Neue } from 'next/font/google';
 
 const sans = Inter({
@@ -19,11 +20,16 @@ const display = Bebas_Neue({
 });
 
 export default function GlobalError({
+	error,
 	reset,
 }: {
 	error: Error & { digest?: string };
 	reset: () => void;
 }) {
+	useEffect(() => {
+		Sentry.captureException(error);
+	}, [error]);
+
 	const [lang] = useState<Language>(() => {
 		if (typeof document === 'undefined') return 'en';
 		const match = document.cookie.match(

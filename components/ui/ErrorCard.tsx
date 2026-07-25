@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -7,18 +9,28 @@ import { useTranslation } from '@/lib/i18n/context';
 import type { LucideIcon } from 'lucide-react';
 
 interface ErrorCardProps {
+	error?: Error & { digest?: string };
 	reset: () => void;
 	icon?: LucideIcon;
 	backHref?: '/explorer' | '/dashboard' | null;
 }
 
-/** Centered glass error card with retry + optional back link. */
+/**
+ * Centered glass error card with retry + optional back link. Client-only errors
+ * (no digest) are reported to Sentry here — server errors already arrive via
+ * `onRequestError` and would be duplicated.
+ */
 export function ErrorCard({
+	error,
 	reset,
 	icon: Icon = AlertTriangle,
 	backHref = '/explorer',
 }: ErrorCardProps) {
 	const { t } = useTranslation();
+
+	useEffect(() => {
+		if (error && !error.digest) Sentry.captureException(error);
+	}, [error]);
 	const backLabel =
 		backHref === '/dashboard'
 			? t.common.errorBackHome
