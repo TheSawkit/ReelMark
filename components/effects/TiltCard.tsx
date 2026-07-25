@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 interface TiltCardProps {
 	children: ReactNode;
 	max?: number;
-	radius?: number;
+	radius?: string;
 	glow?: boolean;
 	className?: string;
 	onClick?: () => void;
@@ -31,7 +31,7 @@ const GLOW_SIZE = 360;
 export function TiltCard({
 	children,
 	max = 10,
-	radius = 14,
+	radius = 'var(--radius-xl)',
 	glow = true,
 	className,
 	onClick,

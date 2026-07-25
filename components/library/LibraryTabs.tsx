@@ -136,7 +136,7 @@ export function LibraryTabs({
 	return (
 		<div>
 			<div
-				className="relative flex p-1 mb-8 rounded-2xl bg-surface-2 border border-border"
+				className="relative flex p-1 mb-8 rounded-xl bg-surface-2 border border-border"
 				role="tablist"
 				aria-label={t.library.filtersLabel}
 			>

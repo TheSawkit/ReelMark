@@ -31,7 +31,7 @@ export function BentoStats({
 				{cells.map(({ icon: Icon, value, label }, i) => (
 					<div
 						key={label}
-						className="relative overflow-hidden rounded-2xl border border-border bg-surface p-4 sm:p-5"
+						className="relative overflow-hidden rounded-xl border border-border bg-surface p-4 sm:p-5"
 					>
 						{i === 0 && <Aurora intensity={0.35} />}
 						<div className="relative">

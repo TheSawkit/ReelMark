@@ -43,10 +43,10 @@ export async function DashboardHero({
 
 	return (
 		<div className="mb-10">
-			<TiltCard max={5} radius={24} glow={false}>
+			<TiltCard max={5} radius="var(--radius-2xl)" glow={false}>
 				<Link
 					href={localizedHref(lang, getMediaHref(item))}
-					className="relative block h-104 sm:h-112 overflow-hidden rounded-3xl border border-border shadow-card-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+					className="relative block h-104 sm:h-112 overflow-hidden rounded-2xl border border-border shadow-card-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 				>
 					{item.backdropPath ? (
 						<Image
