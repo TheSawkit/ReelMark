@@ -35,7 +35,10 @@ import {
 	BentoStatsSkeleton,
 	TrendingMarqueeSkeleton,
 } from '@/components/dashboard/DashboardSkeletons';
-import { getContinueWatching } from '@/app/actions/continue-watching';
+import {
+	getContinueWatching,
+	type ContinueWatchingItem,
+} from '@/lib/data/continue-watching';
 import {
 	getWatchlistWithProgress,
 	mergeWithWatchlist,
@@ -62,13 +65,15 @@ type Props = {
 async function buildHero(
 	watchlist: Awaited<ReturnType<typeof getUserWatchlist>>,
 	tvProgress: Record<number, number>,
+	resumable: ContinueWatchingItem | null,
 	lang: Language
 ): Promise<FeaturedHero | null> {
 	const candidates = watchlist.filter((e) => e.status !== 'abandoned');
 	const featured =
-		candidates.find(
-			(e) => e.media_type === 'tv' && (tvProgress[e.media_id] ?? 0) > 0
-		) ??
+		(resumable &&
+			candidates.find(
+				(e) => e.media_type === 'tv' && e.media_id === resumable.tvId
+			)) ??
 		candidates.find((e) => e.status === 'to_watch') ??
 		candidates[0];
 	if (!featured) return null;
@@ -89,7 +94,7 @@ async function buildHero(
 					watched > 0 && d.number_of_episodes > 0
 						? { watched, total: d.number_of_episodes }
 						: null,
-				resume: watched > 0,
+				resume: featured.media_id === resumable?.tvId,
 			};
 		}
 		const d = await getMovieDetails(featured.media_id, lang);
@@ -111,8 +116,16 @@ async function buildHero(
 }
 
 async function HeroSection({ t, lang }: { t: Translations; lang: Language }) {
-	const { watchlist, tvProgress } = await getWatchlistWithProgress();
-	const hero = await buildHero(watchlist, tvProgress, lang);
+	const [{ watchlist, tvProgress }, resumable] = await Promise.all([
+		getWatchlistWithProgress(),
+		getContinueWatching(),
+	]);
+	const hero = await buildHero(
+		watchlist,
+		tvProgress,
+		resumable[0] ?? null,
+		lang
+	);
 	if (!hero) return null;
 
 	return (

@@ -1,12 +1,16 @@
-'use server';
-
+import { cache } from 'react';
 import { getOptionalUser } from '@/lib/supabase/auth-helpers';
 import { getWatchlistWithProgress } from '@/lib/data/watchlist';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { getSeasonDetails } from '@/lib/tmdb';
 import { getCachedTvShowDetails } from '@/lib/tmdb/cached';
 import { findNextEpisode, type SeasonEpisodeCount } from '@/lib/next-episode';
+import { orderByWatchRecency } from '@/lib/continue-watching';
 import type { WatchlistEntry } from '@/types/tmdb';
+
+type SupabaseServerClient = Awaited<
+	ReturnType<typeof getOptionalUser>
+>['supabase'];
 
 export interface ContinueWatchingEpisode {
 	seasonNumber: number;
@@ -28,7 +32,8 @@ export interface ContinueWatchingItem {
 
 const SHOW_LIMIT = 10;
 const QUEUE_LIMIT = 10;
-const RECENT_WATCHES_LIMIT = 300;
+const WAVE_SIZE = 10;
+const SCAN_LIMIT = 40;
 
 type WatchedBySeason = Map<number, Set<number>>;
 
@@ -95,50 +100,11 @@ async function buildItem(
 	};
 }
 
-/**
- * TV shows the user can pick up right now, each resolved to its next unwatched episode
- * plus the aired episodes that follow it, so the dashboard card can advance without a refetch.
- *
- * @returns At most 10 shows, most recently watched first; empty when unauthenticated.
- */
-export async function getContinueWatching(): Promise<ContinueWatchingItem[]> {
-	const { supabase, userId } = await getOptionalUser();
-	if (!userId) return [];
-
-	const { watchlist, tvProgress } = await getWatchlistWithProgress();
-	const candidates = watchlist.filter(
-		(entry) => entry.media_type === 'tv' && entry.status === 'to_watch'
-	);
-	if (candidates.length === 0) return [];
-
-	const candidateIds = candidates.map((entry) => entry.media_id);
-	const { data: recentWatches } = await supabase
-		.from('episode_watches')
-		.select('tv_id, watched_at')
-		.eq('user_id', userId)
-		.in('tv_id', candidateIds)
-		.order('watched_at', { ascending: false, nullsFirst: false })
-		.limit(RECENT_WATCHES_LIMIT);
-
-	const recencyRank = new Map<number, number>();
-	for (const [index, watch] of (recentWatches ?? []).entries()) {
-		if (!recencyRank.has(watch.tv_id)) recencyRank.set(watch.tv_id, index);
-	}
-
-	const rankOf = (entry: WatchlistEntry) =>
-		recencyRank.get(entry.media_id) ?? Number.MAX_SAFE_INTEGER;
-
-	const selected = [...candidates]
-		.sort((a, b) => {
-			const byRecency = rankOf(a) - rankOf(b);
-			if (byRecency !== 0) return byRecency;
-			const byProgress =
-				(tvProgress[b.media_id] ?? 0) - (tvProgress[a.media_id] ?? 0);
-			if (byProgress !== 0) return byProgress;
-			return b.created_at.localeCompare(a.created_at);
-		})
-		.slice(0, SHOW_LIMIT);
-
+async function buildWave(
+	supabase: SupabaseServerClient,
+	userId: string,
+	entries: WatchlistEntry[]
+): Promise<ContinueWatchingItem[]> {
 	const watches = await fetchAllRows((from, to) =>
 		supabase
 			.from('episode_watches')
@@ -146,7 +112,7 @@ export async function getContinueWatching(): Promise<ContinueWatchingItem[]> {
 			.eq('user_id', userId)
 			.in(
 				'tv_id',
-				selected.map((entry) => entry.media_id)
+				entries.map((entry) => entry.media_id)
 			)
 			.order('tv_id')
 			.order('season_number')
@@ -164,10 +130,63 @@ export async function getContinueWatching(): Promise<ContinueWatchingItem[]> {
 	}
 
 	const items = await Promise.all(
-		selected.map((entry) =>
+		entries.map((entry) =>
 			buildItem(entry, watchedByShow.get(entry.media_id) ?? new Map())
 		)
 	);
 
 	return items.filter((item) => item !== null);
 }
+
+/**
+ * TV shows the user can pick up right now, each resolved to its next unwatched episode
+ * plus the aired episodes that follow it, so the dashboard card can advance without a refetch.
+ *
+ * Shows are ranked by the timestamp of their last watched episode; those with nothing left to
+ * watch (finished, or next episode unaired) drop out and the next-most-recent show takes the
+ * slot, which is why candidates are resolved in waves instead of being truncated upfront.
+ *
+ * Request-cached: the dashboard hero and the row below it share one resolution.
+ *
+ * @returns At most 10 shows, most recently watched first; empty when unauthenticated.
+ */
+export const getContinueWatching = cache(
+	async (): Promise<ContinueWatchingItem[]> => {
+		const { supabase, userId } = await getOptionalUser();
+		if (!userId) return [];
+
+		const { watchlist, tvProgress } = await getWatchlistWithProgress();
+		const candidates = watchlist.filter(
+			(entry) => entry.media_type === 'tv' && entry.status === 'to_watch'
+		);
+		if (candidates.length === 0) return [];
+
+		const { data: lastWatches } = await supabase.rpc(
+			'episode_last_watches'
+		);
+		const lastWatchedAt = new Map<number, string>();
+		for (const row of lastWatches ?? []) {
+			if (row.last_watched_at)
+				lastWatchedAt.set(row.tv_id, row.last_watched_at);
+		}
+
+		const ordered = orderByWatchRecency(
+			candidates,
+			lastWatchedAt,
+			tvProgress
+		);
+		const scannable = Math.min(ordered.length, SCAN_LIMIT);
+		const items: ContinueWatchingItem[] = [];
+
+		for (
+			let start = 0;
+			start < scannable && items.length < SHOW_LIMIT;
+			start += WAVE_SIZE
+		) {
+			const wave = ordered.slice(start, start + WAVE_SIZE);
+			items.push(...(await buildWave(supabase, userId, wave)));
+		}
+
+		return items.slice(0, SHOW_LIMIT);
+	}
+);

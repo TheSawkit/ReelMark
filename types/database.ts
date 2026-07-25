@@ -465,6 +465,13 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
+			episode_last_watches: {
+				Args: never;
+				Returns: {
+					last_watched_at: string;
+					tv_id: number;
+				}[];
+			};
 			episode_watch_counts: {
 				Args: never;
 				Returns: {
