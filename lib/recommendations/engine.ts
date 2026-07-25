@@ -114,6 +114,39 @@ export function genreAffinity(
 	return { favorites, disliked };
 }
 
+/**
+ * Whether the user is done with a title: a watched movie, or a show either marked watched
+ * or with every episode ticked. A show left mid-way — or abandoned — is not done, so it can
+ * still be suggested.
+ *
+ * @param entry - Watchlist entry to judge.
+ * @param episodesWatched - Watched episode count per show id.
+ */
+export function isConsumed(
+	entry: WatchlistEntry,
+	episodesWatched: Readonly<Record<number, number>>
+): boolean {
+	if (entry.media_type === 'movie') return entry.status === 'watched';
+	if (entry.status === 'watched') return true;
+	const total = entry.total_episodes ?? 0;
+	return total > 0 && (episodesWatched[entry.media_id] ?? 0) >= total;
+}
+
+/** Keys of every title the user is done with — what suggestions must never surface again. */
+export function consumedKeys(
+	entries: readonly WatchlistEntry[],
+	episodesWatched: Readonly<Record<number, number>>
+): Set<string> {
+	const keys = new Set<string>();
+	for (const entry of entries) {
+		if (!isConsumed(entry, episodesWatched)) continue;
+		keys.add(
+			getMediaKey({ media_type: entry.media_type, id: entry.media_id })
+		);
+	}
+	return keys;
+}
+
 export interface DismissedRecommendation {
 	media_id: number;
 	media_type: WatchlistEntry['media_type'];

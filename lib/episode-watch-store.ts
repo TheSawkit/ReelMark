@@ -22,10 +22,17 @@ const seasonKey = (tvId: number, seasonNumber: number) =>
 
 type SeasonWrite = Omit<SeasonWatchState, 'baseCount'>;
 
-/** Keeps the server-rendered count alive across mutations so views can derive a session delta. */
+const touchOrder = new Map<number, number>();
+let touchCounter = 0;
+
+/**
+ * Keeps the server-rendered count alive across mutations so views can derive a session delta,
+ * and records which show was touched last so the dashboard hero can follow the user.
+ */
 function write(key: string, next: SeasonWrite, countBefore: number) {
 	const prev = seasons.get(key);
 	seasons.set(key, { ...next, baseCount: prev?.baseCount ?? countBefore });
+	touchOrder.set(Number(key.split(':')[0]), ++touchCounter);
 }
 
 /**
@@ -220,6 +227,18 @@ export function showWatchedTotal(tvId: number, serverTotal: number): number {
 /** Bumps on every episode change; lets a view re-derive totals for several shows at once. */
 export function useEpisodeWatchVersion(): number {
 	return useSyncExternalStore(subscribe, version, () => 0);
+}
+
+/**
+ * Show whose episodes were ticked most recently in this session — the one the user is
+ * actually watching right now, which outranks the order the server sent.
+ */
+export function lastTouchedShowId(): number | null {
+	let latest: { tvId: number; order: number } | null = null;
+	for (const [tvId, order] of touchOrder) {
+		if (!latest || order > latest.order) latest = { tvId, order };
+	}
+	return latest?.tvId ?? null;
 }
 
 /** Reactive per-season watch state; undefined until seeded or mutated. */

@@ -45,4 +45,22 @@ describe('pickResumableHero', () => {
 	it('returns undefined without candidates', () => {
 		expect(pickResumableHero([], serverCounts)).toBeUndefined();
 	});
+
+	it('features the show just watched, even when it is not the first candidate', () => {
+		const items = [show(1, 3, 20), show(2, 5, 30), show(3, 0, 8)];
+
+		expect(pickResumableHero(items, serverCounts, 3)?.id).toBe(3);
+	});
+
+	it('ignores a just-watched show that has no episode left', () => {
+		const items = [show(1, 3, 20), show(2, 10, 10)];
+
+		expect(pickResumableHero(items, serverCounts, 2)?.id).toBe(1);
+	});
+
+	it('ignores a just-watched show that is not among the candidates', () => {
+		const items = [show(1, 3, 20), show(2, 5, 30)];
+
+		expect(pickResumableHero(items, serverCounts, 99)?.id).toBe(1);
+	});
 });

@@ -62,7 +62,8 @@ type Props = {
 	params: Promise<{ lang: Language }>;
 };
 
-const HERO_CANDIDATES = 3;
+/** Every show of the "continue watching" row, so ticking any of them can promote it to the hero. */
+const HERO_CANDIDATES = 10;
 
 async function buildHero(
 	watchlist: Awaited<ReturnType<typeof getUserWatchlist>>,

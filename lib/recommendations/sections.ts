@@ -23,6 +23,7 @@ import {
 } from '@/lib/data/watchlist';
 import {
 	applyDismissals,
+	consumedKeys,
 	genreAffinity,
 	isPersonSeedRating,
 	pickFavoritePerson,
@@ -43,6 +44,17 @@ import type {
 type WatchlistWithProgress = Awaited<
 	ReturnType<typeof getWatchlistWithProgress>
 >;
+
+const MIN_ROW_ITEMS = 12;
+const MAX_RECOMMENDATION_PAGES = 3;
+
+const toMediaItems = (
+	results: Movie[] | TvShow[],
+	isMovie: boolean
+): MediaItem[] =>
+	isMovie
+		? (results as Movie[]).map(movieToMediaItem)
+		: (results as TvShow[]).map(tvShowToMediaItem);
 
 export interface DashboardSection {
 	title: string;
@@ -224,28 +236,41 @@ export async function buildLibrarySections(
 
 	const seedCandidates = seeds.map(({ weight }, index) => ({
 		weight,
-		items: isMovie
-			? (recommendationsResults[index] as Movie[]).map(movieToMediaItem)
-			: (recommendationsResults[index] as TvShow[]).map(
-					tvShowToMediaItem
-				),
+		items: toMediaItems(recommendationsResults[index], isMovie),
 	}));
-	const excludedKeys = new Set(
-		typeEntries.map((entry) =>
-			getMediaKey({ media_type: entry.media_type, id: entry.media_id })
-		)
-	);
+	const excludedKeys = consumedKeys(typeEntries, tvProgress);
 	const affinity = genreAffinity(typeEntries, ratingByKey);
 	applyDismissals(
 		excludedKeys,
 		affinity,
 		dismissals.filter((dismissal) => dismissal.media_type === type)
 	);
-	const forYouItems = rankRecommendations(
+
+	let forYouItems = rankRecommendations(
 		seedCandidates,
 		excludedKeys,
 		affinity
 	);
+	for (
+		let page = 2;
+		page <= MAX_RECOMMENDATION_PAGES && forYouItems.length < MIN_ROW_ITEMS;
+		page++
+	) {
+		const extraResults = await Promise.all(
+			seeds.map(({ entry }) => getRecs(entry.media_id, lang, page))
+		);
+		seedCandidates.push(
+			...seeds.map(({ weight }, index) => ({
+				weight,
+				items: toMediaItems(extraResults[index], isMovie),
+			}))
+		);
+		forYouItems = rankRecommendations(
+			seedCandidates,
+			excludedKeys,
+			affinity
+		);
+	}
 
 	const onServicesItems = await buildOnServicesItems(
 		type,
