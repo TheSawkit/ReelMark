@@ -15,6 +15,7 @@ import { BASE_URL, DEFAULT_OG_IMAGE } from '@/lib/metadata';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
 import { PreventImageContextMenu } from '@/components/shared/PreventImageContextMenu';
 import { PWAInstallPrompt } from '@/components/shared/PWAInstallPrompt';
+import { SupportBadge } from '@/components/support/SupportBadge';
 import NextTopLoader from 'nextjs-toploader';
 import Link from 'next/link';
 import { localizedHref } from '@/lib/i18n/utils';
@@ -379,30 +380,30 @@ export default async function RootLayout({
 						{children}
 					</main>
 					<footer className="border-t border-border-subtle mt-auto">
-						<div className="container mx-auto px-6 lg:px-12 pt-8 page-bottom-clearance flex flex-col items-center gap-3 text-sm text-muted sm:flex-row sm:justify-between">
+						<div className="container mx-auto px-6 lg:px-12 pt-8 page-bottom-clearance flex flex-col items-center gap-4 text-sm text-muted sm:flex-row sm:justify-between">
 							<p>© {COPYRIGHT_YEAR} ReelMark</p>
 							<nav
 								aria-label={t.common.footerNav}
-								className="flex items-center gap-4"
+								className="flex flex-col items-center gap-4 sm:flex-row"
 							>
-								<Link
-									href={localizedHref(lang, '/support')}
-									className="hover:text-text transition-colors"
-								>
-									{t.support.nav}
-								</Link>
-								<Link
-									href={localizedHref(lang, '/terms')}
-									className="hover:text-text transition-colors"
-								>
-									{t.pages.legal.terms.title}
-								</Link>
-								<Link
-									href={localizedHref(lang, '/privacy')}
-									className="hover:text-text transition-colors"
-								>
-									{t.pages.legal.privacy.title}
-								</Link>
+								<SupportBadge
+									lang={lang}
+									label={t.support.nav}
+								/>
+								<span className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+									<Link
+										href={localizedHref(lang, '/terms')}
+										className="hover:text-text whitespace-nowrap transition-colors"
+									>
+										{t.pages.legal.terms.title}
+									</Link>
+									<Link
+										href={localizedHref(lang, '/privacy')}
+										className="hover:text-text whitespace-nowrap transition-colors"
+									>
+										{t.pages.legal.privacy.title}
+									</Link>
+								</span>
 							</nav>
 						</div>
 					</footer>
