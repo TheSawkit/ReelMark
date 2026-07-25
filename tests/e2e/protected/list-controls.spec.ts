@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { hasValidAuth } from '../../helpers/auth';
+import { pageButton } from '../../helpers/controls';
 
 const SEED_MOVIE_ID = 603;
 
@@ -13,10 +14,7 @@ test.beforeEach(() => {
 async function ensureLibraryHasItem(page: import('@playwright/test').Page) {
 	await page.goto(`/en/movie/${SEED_MOVIE_ID}`);
 	await page.getByRole('heading', { level: 1 }).waitFor({ timeout: 10000 });
-	const addBtn = page
-		.locator('button:not([disabled])')
-		.filter({ hasText: /ajouter à la liste|add to list/i })
-		.first();
+	const addBtn = pageButton(page, /ajouter à la liste|add to list/i);
 	if (await addBtn.isVisible().catch(() => false)) {
 		const response = page.waitForResponse(
 			(resp) =>

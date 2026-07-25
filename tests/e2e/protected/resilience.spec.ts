@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { pageButton } from '../../helpers/controls';
 
 /** Le bouton de la frontière d'erreur (`ErrorCard`) — présent seulement si la page a planté. */
 function errorBoundary(page: Page) {
@@ -59,10 +60,7 @@ test.describe('Résilience de rendu', () => {
 		await page.goto('/en/movie/550', { waitUntil: 'domcontentloaded' });
 
 		for (let i = 0; i < 3; i++) {
-			const button = page
-				.locator('button:not([disabled])')
-				.filter({ hasText: /watch|vu|ajout|added|list/i })
-				.first();
+			const button = pageButton(page, /watch|vu|ajout|added|list/i);
 			if (!(await button.isVisible().catch(() => false))) break;
 			await button.click({ timeout: 5000 }).catch(() => {});
 			await page.waitForTimeout(250);

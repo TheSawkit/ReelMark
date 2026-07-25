@@ -179,7 +179,11 @@ export function MediaCard({
 					<div
 						className={cn(
 							'absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 transition-all duration-(--duration-base) z-10',
-							'translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100'
+							'translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100',
+							// Sans hover, l'overlay ne s'affiche jamais (Tailwind v4 borne `hover:` à
+							// @media (hover:hover)) : un tap au bas du poster tombait sur le WatchButton
+							// invisible et ajoutait le titre à la watchlist au lieu de naviguer.
+							'pointer-events-none group-hover:pointer-events-auto'
 						)}
 					>
 						<div>
