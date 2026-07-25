@@ -116,7 +116,7 @@ export function MediaCard({
 				)}
 
 				{compact && badgeEntry && (
-					<div className="absolute top-1.5 right-1.5 z-10 grid size-6 place-items-center rounded-full bg-poster-overlay-heavy border border-white/10 shadow-card-sm">
+					<div className="absolute top-1.5 right-1.5 z-10 grid size-6 place-items-center rounded-full bg-surface border border-border shadow-card-sm">
 						{badgeEntry.status === 'watched' ? (
 							<Eye
 								className="h-3 w-3 text-success"
@@ -165,14 +165,12 @@ export function MediaCard({
 							'translate-y-0 group-hover:-translate-y-1'
 						)}
 					>
-						<div className="flex items-center gap-1.5 rounded-md bg-poster-overlay-heavy px-2 py-1 text-xs font-mono font-bold text-gold-bright border border-white/10 shadow-card-sm">
+						<div className="flex items-center gap-1.5 rounded-md bg-surface px-2 py-1 text-xs font-mono font-bold text-rating-gold border border-border shadow-card-sm">
 							<Star
-								className="h-3 w-3 fill-current drop-shadow-text"
+								className="h-3 w-3 fill-current"
 								aria-hidden="true"
 							/>
-							<span className="drop-shadow-text">
-								{media.vote_average.toFixed(1)}
-							</span>
+							<span>{media.vote_average.toFixed(1)}</span>
 						</div>
 					</div>
 				)}

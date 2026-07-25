@@ -159,7 +159,7 @@ function ContinueWatchingCard({
 					)}
 
 					{episodeCode && (
-						<span className="absolute left-2 top-2 rounded px-2 py-1 text-sm font-bold text-text bg-poster-overlay-heavy border border-white/10 shadow-card-sm">
+						<span className="absolute left-2 top-2 rounded px-2 py-1 text-sm font-bold text-text bg-surface border border-border shadow-card-sm">
 							{episodeCode}
 						</span>
 					)}
@@ -197,7 +197,7 @@ function ContinueWatchingCard({
 						disabled={loading}
 						aria-label={t.movie.markEpisodeWatched}
 						className={cn(
-							'flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-border/10 border-t-border/20 bg-poster-overlay-heavy px-3 py-2 text-xs font-medium text-muted shadow-card-sm transition-colors',
+							'flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-border/10 border-t-border/20 bg-surface px-3 py-2 text-xs font-medium text-muted shadow-card-sm transition-colors',
 							'hover:border-border hover:bg-surface-2 hover:text-text',
 							'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 							'disabled:cursor-not-allowed disabled:opacity-50'
