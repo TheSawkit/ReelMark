@@ -8,15 +8,13 @@ import { getMediaHref } from '@/lib/media';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 import {
+	lastTouchedShowId,
 	showWatchedTotal,
 	useEpisodeWatchVersion,
 } from '@/lib/episode-watch-store';
 import { pickResumableHero } from '@/lib/dashboard-hero';
 import { TiltCard } from '@/components/effects/TiltCard';
-import { Aurora } from '@/components/effects/Aurora';
-import { Spotlight } from '@/components/effects/Spotlight';
 import { Grain } from '@/components/effects/Grain';
-import { PauseWhenOffscreen } from '@/components/effects/PauseWhenOffscreen';
 import { GlowBorder } from '@/components/effects/GlowBorder';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { BlurredPosterBackdrop } from '@/components/shared/BlurredPosterBackdrop';
@@ -53,7 +51,11 @@ export function DashboardHero({
 	const { lang } = useTranslation();
 	useEpisodeWatchVersion();
 
-	const item = pickResumableHero(items, showWatchedTotal);
+	const item = pickResumableHero(
+		items,
+		showWatchedTotal,
+		lastTouchedShowId()
+	);
 	if (!item) return null;
 
 	const watched = item.progress
@@ -84,10 +86,6 @@ export function DashboardHero({
 						/>
 					)}
 
-					<PauseWhenOffscreen className="absolute inset-0">
-						<Aurora intensity={0.65} />
-						<Spotlight />
-					</PauseWhenOffscreen>
 					<Grain />
 					<div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/45 to-transparent" />
 

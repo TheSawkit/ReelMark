@@ -216,12 +216,13 @@ export async function getMovieVideos(
  */
 export async function getMovieRecommendations(
 	id: number,
-	lang?: Language
+	lang?: Language,
+	page = 1
 ): Promise<Movie[]> {
 	try {
 		const { results } = await fetchTMDB<{ results: Movie[] }>(
 			`/movie/${id}/recommendations`,
-			{},
+			{ page: String(page) },
 			{ revalidate: 86400, lang }
 		);
 		return results;
@@ -237,12 +238,13 @@ export async function getMovieRecommendations(
  */
 export async function getSimilarMovies(
 	id: number,
-	lang?: Language
+	lang?: Language,
+	page = 1
 ): Promise<Movie[]> {
 	try {
 		const { results } = await fetchTMDB<{ results: Movie[] }>(
 			`/movie/${id}/similar`,
-			{},
+			{ page: String(page) },
 			{ revalidate: 86400, lang }
 		);
 		return results;

@@ -225,12 +225,13 @@ export async function getTvShowImages(
  */
 export async function getTvShowRecommendations(
 	id: number,
-	lang?: Language
+	lang?: Language,
+	page = 1
 ): Promise<TvShow[]> {
 	try {
 		const { results } = await fetchTMDB<{ results: TvShow[] }>(
 			`/tv/${id}/recommendations`,
-			{},
+			{ page: String(page) },
 			{ revalidate: 86400, lang }
 		);
 		return results;
@@ -246,12 +247,13 @@ export async function getTvShowRecommendations(
  */
 export async function getSimilarTvShows(
 	id: number,
-	lang?: Language
+	lang?: Language,
+	page = 1
 ): Promise<TvShow[]> {
 	try {
 		const { results } = await fetchTMDB<{ results: TvShow[] }>(
 			`/tv/${id}/similar`,
-			{},
+			{ page: String(page) },
 			{ revalidate: 86400, lang }
 		);
 		return results;
