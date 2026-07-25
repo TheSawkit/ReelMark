@@ -13,6 +13,7 @@ import { useIsUnreleased } from '@/hooks/useIsUnreleased';
 import { mediaWatchStore, useMediaWatch } from '@/lib/media-watch-store';
 import { episodeWatchStore } from '@/lib/episode-watch-store';
 import { mediaRatingStore } from '@/lib/media-rating-store';
+import { promptStore } from '@/lib/prompts/store';
 import type { WatchButtonProps } from '@/types/components';
 
 const ReviewDialog = dynamic(
@@ -98,6 +99,9 @@ export function WatchButton({
 			onSuccess: () => {
 				if (mediaType === 'tv' && target === 'none') {
 					episodeWatchStore.clearShow(mediaId);
+				}
+				if (mediaType === 'tv' && target !== 'none') {
+					promptStore.requestPush();
 				}
 				if (changesMembership) router.refresh();
 				if (target === 'watched') setReviewOpen(true);

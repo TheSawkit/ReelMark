@@ -14,7 +14,7 @@ import { notFound } from 'next/navigation';
 import { BASE_URL, DEFAULT_OG_IMAGE } from '@/lib/metadata';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
 import { PreventImageContextMenu } from '@/components/shared/PreventImageContextMenu';
-import { PWAInstallPrompt } from '@/components/shared/PWAInstallPrompt';
+import { PromptSlot } from '@/components/prompts/PromptSlot';
 import { SupportBadge } from '@/components/support/SupportBadge';
 import NextTopLoader from 'nextjs-toploader';
 import Link from 'next/link';
@@ -407,7 +407,9 @@ export default async function RootLayout({
 							</nav>
 						</div>
 					</footer>
-					<PWAInstallPrompt />
+					<Suspense fallback={null}>
+						<PromptSlot />
+					</Suspense>
 				</Providers>
 				<Toaster />
 			</body>

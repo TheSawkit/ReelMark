@@ -8,14 +8,20 @@ import {
 	useCallback,
 	type ReactNode,
 } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import {
 	getUnreadCount,
 	markAllNotificationsRead,
+	markNotificationRead,
 } from '@/app/actions/notifications';
+import { NotificationToast } from '@/components/notifications/NotificationToast';
 import { rowToAppNotification, notificationMessage } from '@/lib/notifications';
+import { promptStore } from '@/lib/prompts/store';
+import { reportSwallowed } from '@/lib/report';
 import { useTranslation } from '@/lib/i18n/context';
+import { localizedHref } from '@/lib/i18n/utils';
 
 interface NotificationsContextValue {
 	unreadCount: number;
@@ -42,7 +48,8 @@ export function NotificationsProvider({
 	initialUnreadCount,
 	children,
 }: ProviderProps) {
-	const { t } = useTranslation();
+	const { t, lang } = useTranslation();
+	const router = useRouter();
 	const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
 
 	const refresh = useCallback(async () => {
@@ -77,7 +84,40 @@ export function NotificationsProvider({
 							typeof rowToAppNotification
 						>[0]
 					);
-					toast(notificationMessage(n, t.notifications.templates));
+					if (n.type === 'friend_request') promptStore.requestPush();
+
+					const url = n.url;
+					toast.custom((id) => (
+						<NotificationToast
+							notification={n}
+							message={notificationMessage(
+								n,
+								t.notifications.templates
+							)}
+							openLabel={t.notifications.open}
+							onOpen={
+								url
+									? () => {
+											toast.dismiss(id);
+											setUnreadCount((c) =>
+												Math.max(0, c - 1)
+											);
+											void markNotificationRead(
+												n.id
+											).catch((error) =>
+												reportSwallowed(
+													'notifications:markRead',
+													error
+												)
+											);
+											router.push(
+												localizedHref(lang, url)
+											);
+										}
+									: undefined
+							}
+						/>
+					));
 				}
 			)
 			.on(
@@ -105,7 +145,14 @@ export function NotificationsProvider({
 		return () => {
 			void supabase.removeChannel(channel);
 		};
-	}, [userId, refresh, t.notifications.templates]);
+	}, [
+		userId,
+		refresh,
+		router,
+		lang,
+		t.notifications.templates,
+		t.notifications.open,
+	]);
 
 	return (
 		<NotificationsContext.Provider

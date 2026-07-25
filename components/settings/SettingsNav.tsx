@@ -3,14 +3,25 @@
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/context';
 
-export type SettingsTab =
-	| 'profile'
-	| 'security'
-	| 'notifications'
-	| 'appearance'
-	| 'services'
-	| 'data'
-	| 'privacy';
+export const SETTINGS_TABS = [
+	'profile',
+	'security',
+	'notifications',
+	'appearance',
+	'services',
+	'data',
+	'privacy',
+] as const;
+
+export type SettingsTab = (typeof SETTINGS_TABS)[number];
+
+/** Narrows the `?section=` query param used by the call-to-actions that deep-link here. */
+export function isSettingsTab(value: string | undefined): value is SettingsTab {
+	return (
+		value !== undefined &&
+		(SETTINGS_TABS as readonly string[]).includes(value)
+	);
+}
 
 interface SettingsNavProps {
 	onTabChange: (tab: SettingsTab) => void;

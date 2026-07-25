@@ -2,6 +2,7 @@ import { common } from './messages/common';
 import { pwa } from './messages/pwa';
 import { navbar } from './messages/navbar';
 import { notifications } from './messages/notifications';
+import { prompts } from './messages/prompts';
 import { hero } from './messages/hero';
 import { features } from './messages/features';
 import { explorer } from './messages/explorer';
@@ -26,6 +27,7 @@ export const translations = {
 		pwa: pwa.fr,
 		navbar: navbar.fr,
 		notifications: notifications.fr,
+		prompts: prompts.fr,
 		hero: hero.fr,
 		features: features.fr,
 		explorer: explorer.fr,
@@ -49,6 +51,7 @@ export const translations = {
 		pwa: pwa.en,
 		navbar: navbar.en,
 		notifications: notifications.en,
+		prompts: prompts.en,
 		hero: hero.en,
 		features: features.en,
 		explorer: explorer.en,
