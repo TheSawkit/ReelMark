@@ -18,7 +18,7 @@ import { HorizontalScroll } from '@/components/shared/HorizontalScroll';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { StaggeredItem } from '@/components/ui/StaggeredItem';
-import type { ContinueWatchingItem } from '@/app/actions/continue-watching';
+import type { ContinueWatchingItem } from '@/lib/data/continue-watching';
 
 const CARD_ANIMATION_DELAY_MS = 50;
 
@@ -98,19 +98,23 @@ function ContinueWatchingCard({
 		const previous = episodeWatchStore.get(item.tvId, episode.seasonNumber);
 
 		await run({
-			apply: () =>
+			apply: () => {
 				episodeWatchStore.setEpisode(
 					item.tvId,
 					episode.seasonNumber,
 					episode.episodeNumber,
 					true
-				),
-			rollback: () =>
+				);
+				setQueueIndex((index) => index + 1);
+			},
+			rollback: () => {
 				episodeWatchStore.restore(
 					item.tvId,
 					episode.seasonNumber,
 					previous
-				),
+				);
+				setQueueIndex((index) => Math.max(0, index - 1));
+			},
 			action: () =>
 				setEpisodeWatched(
 					item.tvId,
@@ -120,7 +124,6 @@ function ContinueWatchingCard({
 				),
 			onSuccess: (result) => {
 				mediaWatchStore.set('tv', item.tvId, result.tvStatus);
-				setQueueIndex((index) => index + 1);
 			},
 		});
 	}
