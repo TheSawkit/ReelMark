@@ -7,6 +7,7 @@ import { getImageUrl } from '@/lib/tmdb/images';
 import { Star, Eye, Clock, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WatchButton } from '@/components/media/detail/WatchButton';
+import { useShowWatchedTotal } from '@/lib/episode-watch-store';
 import { useTranslation } from '@/lib/i18n/context';
 import { getLocale, localizedHref } from '@/lib/i18n/utils';
 import { formatShortDate } from '@/lib/format';
@@ -52,6 +53,11 @@ export function MediaCard({
 }: Props) {
 	const { t, lang } = useTranslation();
 	const locale = getLocale(lang);
+	const watchedNow = useShowWatchedTotal(media.id, tvProgress?.watched ?? 0);
+	const liveProgress = tvProgress && {
+		...tvProgress,
+		watched: watchedNow,
+	};
 
 	// Une note absente (upcoming, titre obscur) affichait un « N/A » doré à étoile, qui
 	// suggère une note inexistante. On masque le badge : décidé côté serveur, donc affiché
@@ -136,18 +142,18 @@ export function MediaCard({
 					</div>
 				)}
 
-				{tvProgress && tvProgress.total > 0 && (
+				{liveProgress && liveProgress.total > 0 && (
 					<div className="absolute bottom-0 inset-x-0 z-20">
 						<div className="w-full h-1 bg-surface/10">
 							<div
 								className={cn(
 									'h-full transition-all duration-(--duration-slow)',
-									tvProgress.watched === tvProgress.total
+									liveProgress.watched >= liveProgress.total
 										? 'bg-success'
 										: 'bg-linear-to-r from-primary to-gold'
 								)}
 								style={{
-									width: `${Math.min(100, Math.round((tvProgress.watched / tvProgress.total) * 100))}%`,
+									width: `${Math.min(100, Math.round((liveProgress.watched / liveProgress.total) * 100))}%`,
 								}}
 							/>
 						</div>

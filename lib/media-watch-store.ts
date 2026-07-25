@@ -9,6 +9,7 @@ export type MediaWatchStatus = WatchStatus | 'none';
 interface MediaWatchState {
 	status: MediaWatchStatus;
 	dirty: boolean;
+	baseStatus: MediaWatchStatus;
 }
 
 const {
@@ -31,12 +32,18 @@ export const mediaWatchStore = {
 		const key = mediaKey(mediaType, mediaId);
 		const prev = media.get(key);
 		if (prev?.dirty || prev?.status === status) return;
-		media.set(key, { status, dirty: false });
+		media.set(key, { status, dirty: false, baseStatus: status });
 		notify();
 	},
 
 	set(mediaType: MediaType, mediaId: number, status: MediaWatchStatus) {
-		media.set(mediaKey(mediaType, mediaId), { status, dirty: true });
+		const key = mediaKey(mediaType, mediaId);
+		const prev = media.get(key);
+		media.set(key, {
+			status,
+			dirty: true,
+			baseStatus: prev?.baseStatus ?? prev?.status ?? 'none',
+		});
 		notify();
 	},
 
@@ -46,8 +53,13 @@ export const mediaWatchStore = {
 		status: MediaWatchStatus
 	) {
 		const key = mediaKey(mediaType, mediaId);
-		if (media.get(key)?.status === status) return;
-		media.set(key, { status, dirty: true });
+		const prev = media.get(key);
+		if (prev?.status === status) return;
+		media.set(key, {
+			status,
+			dirty: true,
+			baseStatus: prev?.baseStatus ?? prev?.status ?? 'none',
+		});
 		notify();
 	},
 
@@ -66,6 +78,38 @@ export const mediaWatchStore = {
 		notify();
 	},
 };
+
+/**
+ * Net change in how many entries hold `target` since the server rendered.
+ *
+ * @param target - Watchlist status being counted.
+ * @param mediaType - Restricts the count to movies or shows; omit for both.
+ */
+export function watchStatusDelta(
+	target: MediaWatchStatus,
+	mediaType?: MediaType
+): number {
+	let delta = 0;
+	for (const [key, state] of media) {
+		if (mediaType && !key.startsWith(`${mediaType}:`)) continue;
+		if (state.baseStatus === state.status) continue;
+		if (state.status === target) delta += 1;
+		else if (state.baseStatus === target) delta -= 1;
+	}
+	return delta;
+}
+
+/** Reactive `watchStatusDelta`, so counters stay accurate after a mutation without re-fetching. */
+export function useWatchStatusDelta(
+	status: MediaWatchStatus,
+	mediaType?: MediaType
+): number {
+	return useSyncExternalStore(
+		subscribe,
+		() => watchStatusDelta(status, mediaType),
+		() => 0
+	);
+}
 
 /** Bumps on every store change; lets list views re-derive buckets from mutated statuses. */
 export function useMediaWatchVersion(): number {

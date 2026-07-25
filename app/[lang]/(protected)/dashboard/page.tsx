@@ -62,6 +62,8 @@ type Props = {
 	params: Promise<{ lang: Language }>;
 };
 
+const HERO_CANDIDATES = 3;
+
 async function buildHero(
 	watchlist: Awaited<ReturnType<typeof getUserWatchlist>>,
 	tvProgress: Record<number, number>,
@@ -120,17 +122,20 @@ async function HeroSection({ t, lang }: { t: Translations; lang: Language }) {
 		getWatchlistWithProgress(),
 		getContinueWatching(),
 	]);
-	const hero = await buildHero(
-		watchlist,
-		tvProgress,
-		resumable[0] ?? null,
-		lang
-	);
-	if (!hero) return null;
+
+	const upNext = resumable.slice(0, HERO_CANDIDATES);
+	const heroes = (
+		await Promise.all(
+			(upNext.length > 0 ? upNext : [null]).map((item) =>
+				buildHero(watchlist, tvProgress, item, lang)
+			)
+		)
+	).filter((hero) => hero !== null);
+	if (heroes.length === 0) return null;
 
 	return (
 		<DashboardHero
-			item={hero}
+			items={heroes}
 			resumeLabel={t.pages.dashboard.resume}
 			discoverLabel={t.pages.dashboard.discover}
 		/>

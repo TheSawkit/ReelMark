@@ -1,6 +1,10 @@
+'use client';
+
 import { Film, Tv, Bookmark, type LucideIcon } from 'lucide-react';
 import { Aurora } from '@/components/effects/Aurora';
 import { SectionHeading } from '@/components/ui/SectionHeading';
+import { useEpisodeWatchDelta } from '@/lib/episode-watch-store';
+import { useWatchStatusDelta } from '@/lib/media-watch-store';
 
 interface BentoStatsProps {
 	title: string;
@@ -10,7 +14,10 @@ interface BentoStatsProps {
 	labels: { movies: string; episodes: string; toWatch: string };
 }
 
-/** Compact stat grid summarizing the user's watch activity (data-backed counts). */
+/**
+ * Compact stat grid summarizing the user's watch activity. Server counts are the baseline;
+ * this session's mutations are added on top so the numbers move as the user ticks episodes.
+ */
 export function BentoStats({
 	title,
 	moviesWatched,
@@ -18,10 +25,26 @@ export function BentoStats({
 	toWatch,
 	labels,
 }: BentoStatsProps) {
+	const episodesDelta = useEpisodeWatchDelta();
+	const moviesDelta = useWatchStatusDelta('watched', 'movie');
+	const toWatchDelta = useWatchStatusDelta('to_watch');
+
 	const cells: { icon: LucideIcon; value: number; label: string }[] = [
-		{ icon: Film, value: moviesWatched, label: labels.movies },
-		{ icon: Tv, value: episodesWatched, label: labels.episodes },
-		{ icon: Bookmark, value: toWatch, label: labels.toWatch },
+		{
+			icon: Film,
+			value: Math.max(0, moviesWatched + moviesDelta),
+			label: labels.movies,
+		},
+		{
+			icon: Tv,
+			value: Math.max(0, episodesWatched + episodesDelta),
+			label: labels.episodes,
+		},
+		{
+			icon: Bookmark,
+			value: Math.max(0, toWatch + toWatchDelta),
+			label: labels.toWatch,
+		},
 	];
 
 	return (
