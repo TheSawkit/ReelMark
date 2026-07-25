@@ -14,6 +14,7 @@ import { PrivacySettings } from './PrivacySettings';
 import { DataSettings } from './DataSettings';
 import { NotificationSettings } from './NotificationSettings';
 import { StreamingSettings } from './StreamingSettings';
+import { SupportSettings } from './SupportSettings';
 import { SettingsNav, type SettingsTab } from './SettingsNav';
 import { SignoutButton } from '@/components/auth/SignoutButton';
 import type {
@@ -83,6 +84,7 @@ export function SettingsContent({
 						<LanguageSettings />
 						<RegionalSettings user={user} />
 						<DataSettings />
+						<SupportSettings />
 						<DangerZone isOAuthOnly={isOAuthOnly} />
 					</div>
 				)}

@@ -33,6 +33,7 @@ const fr = {
 	clearSearch: 'Effacer la recherche',
 	close: 'Fermer',
 	skipToMainContent: 'Aller au contenu principal',
+	footerNav: 'Liens de pied de page',
 	notFoundTitle: 'Page introuvable',
 	notFoundDescription:
 		"La page que vous cherchez n'existe pas ou a été déplacée.",
@@ -73,6 +74,7 @@ const en = {
 	clearSearch: 'Clear search',
 	close: 'Close',
 	skipToMainContent: 'Skip to main content',
+	footerNav: 'Footer links',
 	notFoundTitle: 'Page not found',
 	notFoundDescription:
 		'The page you are looking for does not exist or has been moved.',
