@@ -3,6 +3,10 @@ import { requireAuth } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { isOAuthOnly } from '@/lib/supabase/auth-helpers';
 import { SettingsContent } from '@/components/settings/SettingsContent';
+import {
+	isSettingsTab,
+	type SettingsTab,
+} from '@/components/settings/SettingsNav';
 import { SettingsContentSkeleton } from '@/components/settings/SettingsContentSkeleton';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { getTranslations } from '@/lib/i18n/server';
@@ -16,6 +20,7 @@ import type { User } from '@supabase/supabase-js';
 
 type Props = {
 	params: Promise<{ lang: Language }>;
+	searchParams: Promise<{ section?: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
@@ -32,7 +37,15 @@ export async function generateMetadata({ params }: Props) {
 	};
 }
 
-async function SettingsSection({ user, lang }: { user: User; lang: Language }) {
+async function SettingsSection({
+	user,
+	lang,
+	initialTab,
+}: {
+	user: User;
+	lang: Language;
+	initialTab: SettingsTab;
+}) {
 	const supabase = await createClient();
 
 	const [profileResult, privacyResult, region, selectedProviderIds] =
@@ -65,12 +78,13 @@ async function SettingsSection({ user, lang }: { user: User; lang: Language }) {
 			isOAuthOnly={isOAuthOnly(user)}
 			streamingProviders={streamingProviders}
 			selectedProviderIds={selectedProviderIds}
+			initialTab={initialTab}
 		/>
 	);
 }
 
-export default async function SettingsPage({ params }: Props) {
-	const { lang } = await params;
+export default async function SettingsPage({ params, searchParams }: Props) {
+	const [{ lang }, { section }] = await Promise.all([params, searchParams]);
 	const user = await requireAuth();
 	const t = await getTranslations(lang);
 
@@ -81,7 +95,11 @@ export default async function SettingsPage({ params }: Props) {
 				subtitle={t.settings.subtitle}
 			/>
 			<Suspense fallback={<SettingsContentSkeleton />}>
-				<SettingsSection user={user} lang={lang} />
+				<SettingsSection
+					user={user}
+					lang={lang}
+					initialTab={isSettingsTab(section) ? section : 'profile'}
+				/>
 			</Suspense>
 		</PageLayout>
 	);

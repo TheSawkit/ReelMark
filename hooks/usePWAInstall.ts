@@ -7,18 +7,10 @@ interface BeforeInstallPromptEvent extends Event {
 	userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-const DISMISS_KEY = 'pwa-install-dismissed';
-const DISMISS_TTL_DAYS = 30;
+/** Let the page settle before asking anything. */
+const REVEAL_DELAY_MS = 3000;
 
-function isDismissed(): boolean {
-	try {
-		const raw = localStorage.getItem(DISMISS_KEY);
-		if (!raw) return false;
-		return Date.now() - Number(raw) < DISMISS_TTL_DAYS * 86_400_000;
-	} catch {
-		return false;
-	}
-}
+export type InstallMode = 'prompt' | 'ios-safari' | 'ios-other';
 
 function isStandalone(): boolean {
 	return (
@@ -35,6 +27,14 @@ function detectIOS(): boolean {
 	return /iPad|iPhone|iPod/.test(ua) || isIPadOS;
 }
 
+/**
+ * Every iOS browser runs WebKit, but only Safari itself exposes "Add to Home Screen",
+ * so anywhere else the user has to be sent back to Safari first.
+ */
+function isIOSSafari(): boolean {
+	return !/CriOS|FxiOS|EdgiOS|OPiOS|GSA|DuckDuckGo/.test(navigator.userAgent);
+}
+
 function isMobile(): boolean {
 	return (
 		/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
@@ -42,20 +42,26 @@ function isMobile(): boolean {
 	);
 }
 
+/** Whether this device can still install the app, and by which route. */
 export function usePWAInstall() {
-	const [state, setState] = useState({ visible: false, isIOS: false });
+	const [state, setState] = useState<{ visible: boolean; mode: InstallMode }>({
+		visible: false,
+		mode: 'prompt',
+	});
 	const promptRef = useRef<BeforeInstallPromptEvent | null>(null);
 
 	useEffect(() => {
-		if (!isMobile() || isStandalone() || isDismissed()) return;
+		if (!isMobile() || isStandalone()) return;
 
-		const ios = detectIOS();
 		let timer: ReturnType<typeof setTimeout>;
 
-		if (ios) {
+		if (detectIOS()) {
+			const mode: InstallMode = isIOSSafari()
+				? 'ios-safari'
+				: 'ios-other';
 			timer = setTimeout(
-				() => setState({ visible: true, isIOS: true }),
-				3000
+				() => setState({ visible: true, mode }),
+				REVEAL_DELAY_MS
 			);
 			return () => clearTimeout(timer);
 		}
@@ -64,8 +70,8 @@ export function usePWAInstall() {
 			e.preventDefault();
 			promptRef.current = e as BeforeInstallPromptEvent;
 			timer = setTimeout(
-				() => setState({ visible: true, isIOS: false }),
-				3000
+				() => setState({ visible: true, mode: 'prompt' }),
+				REVEAL_DELAY_MS
 			);
 		};
 
@@ -76,27 +82,12 @@ export function usePWAInstall() {
 		};
 	}, []);
 
-	function dismiss() {
-		try {
-			localStorage.setItem(DISMISS_KEY, String(Date.now()));
-		} catch {}
-		setState((s) => ({ ...s, visible: false }));
-	}
-
 	async function triggerInstall() {
 		const prompt = promptRef.current;
 		if (!prompt) return;
 		await prompt.prompt();
-		const { outcome } = await prompt.userChoice;
-		if (outcome === 'accepted') {
-			setState((s) => ({ ...s, visible: false }));
-		}
+		await prompt.userChoice;
 	}
 
-	return {
-		visible: state.visible,
-		isIOS: state.isIOS,
-		dismiss,
-		triggerInstall,
-	};
+	return { visible: state.visible, mode: state.mode, triggerInstall };
 }

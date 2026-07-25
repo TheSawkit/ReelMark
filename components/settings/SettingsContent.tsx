@@ -30,6 +30,7 @@ interface SettingsContentProps {
 	isOAuthOnly: boolean;
 	streamingProviders: WatchProvider[];
 	selectedProviderIds: number[];
+	initialTab: SettingsTab;
 }
 
 export function SettingsContent({
@@ -39,8 +40,9 @@ export function SettingsContent({
 	isOAuthOnly,
 	streamingProviders,
 	selectedProviderIds,
+	initialTab,
 }: SettingsContentProps) {
-	const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
+	const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
 
 	return (
 		<div className="flex flex-col lg:flex-row gap-6 lg:gap-8">

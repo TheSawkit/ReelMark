@@ -5,9 +5,10 @@ const fr = {
 	seeAll: 'Voir tout',
 	new: 'Nouveau',
 	delete: 'Supprimer',
+	open: 'Ouvrir la notification',
 	templates: {
-		friend_request: '{user} vous a envoyé une demande d’ami',
-		friend_accepted: '{user} a accepté votre demande d’ami',
+		friend_request: '{user} t’a envoyé une demande d’ami',
+		friend_accepted: '{user} a accepté ta demande d’ami',
 		new_episode: 'Nouvel épisode de {title} : S{season}E{episode}',
 		suggestion: 'À voir : {title}',
 	},
@@ -20,6 +21,7 @@ const en = {
 	seeAll: 'See all',
 	new: 'New',
 	delete: 'Delete',
+	open: 'Open notification',
 	templates: {
 		friend_request: '{user} sent you a friend request',
 		friend_accepted: '{user} accepted your friend request',
