@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { hasValidAuth } from '../../helpers/auth';
+import { pageButton } from '../../helpers/controls';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -51,10 +52,7 @@ async function ensureMovieRemoved(page: import('@playwright/test').Page) {
 		await page
 			.getByRole('heading', { level: 1 })
 			.waitFor({ timeout: 10000 });
-		const active = page
-			.locator('button:not([disabled])')
-			.filter({ hasText: /^vu$|^watched$|^ajouté$|^added$/i })
-			.first();
+		const active = pageButton(page, /^vu$|^watched$|^ajouté$|^added$/i);
 		if (!(await active.isVisible().catch(() => false))) return;
 		await clickAndWaitForAction(page, active).catch(() => {});
 	}
@@ -73,39 +71,24 @@ test.describe('Watchlist', () => {
 		);
 
 		// If movie is in "watched" state, clicking it falls back to "to_watch" (fallbackStatus="to_watch")
-		const watchedActiveBtn = page
-			.locator('button:not([disabled])')
-			.filter({ hasText: /^vu$|^watched$/i })
-			.first();
+		const watchedActiveBtn = pageButton(page, /^vu$|^watched$/i);
 		if (await watchedActiveBtn.isVisible()) {
 			await clickAndWaitForAction(page, watchedActiveBtn);
-			await expect(
-				page
-					.locator('button:not([disabled])')
-					.filter({ hasText: /^ajouté$|^added$/i })
-					.first()
-			).toBeVisible({ timeout: 5000 });
+			await expect(pageButton(page, /^ajouté$|^added$/i)).toBeVisible({
+				timeout: 5000,
+			});
 		}
 
 		// If movie is in "to_watch" state, remove it entirely
-		const addedBtn = page
-			.locator('button:not([disabled])')
-			.filter({ hasText: /^ajouté$|^added$/i })
-			.first();
+		const addedBtn = pageButton(page, /^ajouté$|^added$/i);
 		if (await addedBtn.isVisible()) {
 			await clickAndWaitForAction(page, addedBtn);
 			await expect(
-				page
-					.locator('button:not([disabled])')
-					.filter({ hasText: /ajouter à la liste|add to list/i })
-					.first()
+				pageButton(page, /ajouter à la liste|add to list/i)
 			).toBeVisible({ timeout: 5000 });
 		}
 
-		const addBtn = page
-			.locator('button:not([disabled])')
-			.filter({ hasText: /ajouter à la liste|add to list/i })
-			.first();
+		const addBtn = pageButton(page, /ajouter à la liste|add to list/i);
 		await clickAndWaitForAction(page, addBtn);
 
 		await page.goto('/en/library');
@@ -116,10 +99,7 @@ test.describe('Watchlist', () => {
 		await page.goto(`/en/movie/${MOVIE_ID}`);
 		await clickAndWaitForAction(
 			page,
-			page
-				.locator('button:not([disabled])')
-				.filter({ hasText: /^ajouté$|^added$/i })
-				.first()
+			pageButton(page, /^ajouté$|^added$/i)
 		);
 
 		await page.goto('/en/library');
@@ -133,48 +113,27 @@ test.describe('Watchlist', () => {
 			{ timeout: 10000 }
 		);
 
-		const watchedBtn = page
-			.locator('button:not([disabled])')
-			.filter({ hasText: /^vu$|^watched$/i })
-			.first();
+		const watchedBtn = pageButton(page, /^vu$|^watched$/i);
 		if (await watchedBtn.isVisible()) {
 			await clickAndWaitForAction(page, watchedBtn);
 			await expect(
-				page
-					.locator('button:not([disabled])')
-					.filter({ hasText: /marquer comme vu|mark as watched/i })
-					.first()
+				pageButton(page, /marquer comme vu|mark as watched/i)
 			).toBeVisible({ timeout: 5000 });
 		}
 
 		await clickAndWaitForAction(
 			page,
-			page
-				.locator('button:not([disabled])')
-				.filter({ hasText: /marquer comme vu|mark as watched/i })
-				.first()
+			pageButton(page, /marquer comme vu|mark as watched/i)
 		);
 
 		await expectInWatchedTab(page);
 		await page.goto(`/en/movie/${MOVIE_ID}`);
+		await expect(pageButton(page, /^vu$|^watched$/i)).toBeVisible({
+			timeout: 5000,
+		});
+		await clickAndWaitForAction(page, pageButton(page, /^vu$|^watched$/i));
 		await expect(
-			page
-				.locator('button:not([disabled])')
-				.filter({ hasText: /^vu$|^watched$/i })
-				.first()
-		).toBeVisible({ timeout: 5000 });
-		await clickAndWaitForAction(
-			page,
-			page
-				.locator('button:not([disabled])')
-				.filter({ hasText: /^vu$|^watched$/i })
-				.first()
-		);
-		await expect(
-			page
-				.locator('button:not([disabled])')
-				.filter({ hasText: /marquer comme vu|mark as watched/i })
-				.first()
+			pageButton(page, /marquer comme vu|mark as watched/i)
 		).toBeVisible({ timeout: 10000 });
 	});
 });
