@@ -5,7 +5,7 @@ import {
 	SHARED_REVALIDATE_PATHS,
 	revalidateLocalizedAfterResponse,
 } from '@/app/actions/_helpers';
-import { getCachedTvShowDetails } from '@/lib/tmdb/cached';
+import { getTvShowDetails } from '@/lib/tmdb/tv';
 import { reportCritical, reportSwallowed } from '@/lib/report';
 import type { SupabaseServerClient } from '@/lib/supabase/server';
 import type { WatchStatus } from '@/types/tmdb';
@@ -32,7 +32,10 @@ async function syncTvShowWatchlistStatus(
 	userId: string,
 	tvId: number
 ): Promise<TvWatchlistStatus> {
-	const details = await getCachedTvShowDetails(tvId).catch(() => null);
+	const details = await getTvShowDetails(tvId).catch((error: unknown) => {
+		reportSwallowed('episodes:tv-details', error);
+		return null;
+	});
 
 	let totalEpisodes = (details?.seasons ?? [])
 		.filter((s: { season_number: number }) => s.season_number > 0)
