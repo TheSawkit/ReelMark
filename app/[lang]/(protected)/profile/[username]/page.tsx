@@ -12,10 +12,7 @@ import { ProfileTabsSkeleton } from '@/components/profile/ProfileTabsSkeleton';
 import { ProfileHeroSkeleton } from '@/components/profile/ProfileHeroSkeleton';
 import { FriendshipButton } from '@/components/profile/FriendshipButton';
 import { ProfileOptionsMenu } from '@/components/profile/ProfileOptionsMenu';
-import {
-	getProfileByUsername,
-	getPrivacySettings,
-} from '@/lib/data/profile';
+import { getProfileByUsername, getPrivacySettings } from '@/lib/data/profile';
 import { getUserReviews, getUserReviewRatings } from '@/lib/data/reviews';
 import { getUserPlaylists } from '@/lib/data/playlists';
 import {

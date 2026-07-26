@@ -53,16 +53,16 @@ async function SettingsSection({
 		selectedProviderIds,
 		notificationPreferences,
 	] = await Promise.all([
-			supabase
-				.from('user_profiles')
-				.select(USER_PROFILE_COLUMNS)
-				.eq('user_id', user.id)
-				.maybeSingle(),
-			supabase
-				.from('privacy_settings')
-				.select(PRIVACY_COLUMNS)
-				.eq('user_id', user.id)
-				.maybeSingle(),
+		supabase
+			.from('user_profiles')
+			.select(USER_PROFILE_COLUMNS)
+			.eq('user_id', user.id)
+			.maybeSingle(),
+		supabase
+			.from('privacy_settings')
+			.select(PRIVACY_COLUMNS)
+			.eq('user_id', user.id)
+			.maybeSingle(),
 		getUserRegion(lang),
 		getMyStreamingProviders(),
 		getNotificationPreferences(),

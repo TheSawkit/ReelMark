@@ -10,11 +10,7 @@ import {
 	getMyDismissals,
 	getMyStreamingProviders,
 } from '@/lib/data/recommendations';
-import type {
-	MediaItem,
-	MediaType,
-	WatchlistEntry,
-} from '@/types/tmdb';
+import type { MediaItem, MediaType, WatchlistEntry } from '@/types/tmdb';
 
 /** Every watchlist row of the authenticated user, newest first; empty when signed out. */
 export async function getUserWatchlist(): Promise<WatchlistEntry[]> {
