@@ -1,3 +1,4 @@
+import { isTMDBNotFound } from '@/lib/tmdb/errors';
 import type {
 	Movie,
 	MovieDetails,
@@ -227,7 +228,8 @@ export async function getMovieRecommendations(
 		);
 		return results;
 	} catch (error) {
-		reportSwallowed('tmdb/movies:recommendations', error);
+		if (!isTMDBNotFound(error))
+			reportSwallowed('tmdb/movies:recommendations', error);
 		return [];
 	}
 }
@@ -249,7 +251,8 @@ export async function getSimilarMovies(
 		);
 		return results;
 	} catch (error) {
-		reportSwallowed('tmdb/movies:similar', error);
+		if (!isTMDBNotFound(error))
+			reportSwallowed('tmdb/movies:similar', error);
 		return [];
 	}
 }

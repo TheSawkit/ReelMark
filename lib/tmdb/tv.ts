@@ -1,3 +1,4 @@
+import { isTMDBNotFound } from '@/lib/tmdb/errors';
 import type {
 	TvShow,
 	TvShowDetails,
@@ -236,7 +237,8 @@ export async function getTvShowRecommendations(
 		);
 		return results;
 	} catch (error) {
-		reportSwallowed('tmdb/tv:recommendations', error);
+		if (!isTMDBNotFound(error))
+			reportSwallowed('tmdb/tv:recommendations', error);
 		return [];
 	}
 }
@@ -258,7 +260,7 @@ export async function getSimilarTvShows(
 		);
 		return results;
 	} catch (error) {
-		reportSwallowed('tmdb/tv:similar', error);
+		if (!isTMDBNotFound(error)) reportSwallowed('tmdb/tv:similar', error);
 		return [];
 	}
 }
