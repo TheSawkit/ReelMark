@@ -13,7 +13,12 @@ export const ACCOUNT_PROMPTS = new Set<PromptKey>(['import', 'streaming']);
 export const DEVICE_PROMPTS = new Set<PromptKey>(['install', 'push']);
 
 /** Order the banner slot resolves ties in: install first, since iOS push requires the PWA. */
-export const BANNER_PRIORITY = ['install', 'push', 'import'] as const;
+export const BANNER_PRIORITY = [
+	'install',
+	'push',
+	'import',
+	'streaming',
+] as const;
 
 export function isPromptKey(value: string): value is PromptKey {
 	return (PROMPT_KEYS as readonly string[]).includes(value);

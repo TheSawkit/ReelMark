@@ -77,7 +77,12 @@ describe('pickPrompt', () => {
 		).toBeNull();
 	});
 
-	it('ignores an eligible key that has no banner slot', () => {
-		expect(pickPrompt(context({ eligible: ['streaming'] }))).toBeNull();
+	it('shows the streaming prompt, the last of the four', () => {
+		expect(pickPrompt(context({ eligible: ['streaming'] }))).toBe(
+			'streaming'
+		);
+		expect(pickPrompt(context({ eligible: ['streaming', 'import'] }))).toBe(
+			'import'
+		);
 	});
 });
