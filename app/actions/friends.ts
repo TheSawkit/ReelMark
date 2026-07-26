@@ -3,7 +3,11 @@
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
 import { sendFriendPush } from '@/lib/push/notify-friend';
+import { enforceUserRateLimit } from '@/lib/rate-limiter';
 import { after } from 'next/server';
+
+const FRIEND_REQUEST_LIMIT = 30;
+const FRIEND_REQUEST_WINDOW_MS = 3_600_000;
 
 /**
  * Cancels a pending friend request sent by the authenticated user.
@@ -32,14 +36,25 @@ export async function cancelFriendRequest(
 /**
  * Sends a friend request from the authenticated user to another user.
  *
+ * Rate-limited: each accepted request fires a push notification, so the budget bounds how
+ * fast one account can notify its way through the user base.
+ *
  * @param addresseeId - Supabase user ID of the recipient.
  * @throws Error('SELF_REQUEST') if trying to friend oneself.
  * @throws Error('DUPLICATE_REQUEST') if a request already exists.
+ * @throws Error('RATE_LIMITED') once the hourly request budget is exhausted.
  */
 export async function sendFriendRequest(addresseeId: string): Promise<void> {
 	const { supabase, userId, user } = await getAuthenticatedUser();
 
 	if (addresseeId === userId) throw new Error('SELF_REQUEST');
+
+	enforceUserRateLimit(
+		'friend-request',
+		userId,
+		FRIEND_REQUEST_LIMIT,
+		FRIEND_REQUEST_WINDOW_MS
+	);
 
 	const { error } = await supabase
 		.from('friendships')

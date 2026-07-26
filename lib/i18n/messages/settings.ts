@@ -172,6 +172,7 @@ const fr = {
 			'Télécharge toutes tes données (watchlist, avis, épisodes vus) au format JSON.',
 		exportButton: 'Exporter',
 		exportSuccess: 'Export téléchargé',
+		exportRateLimited: "Trop d'exports demandés, réessaie dans un moment",
 		importTitle: 'Importer des données',
 		importDescription:
 			'Importe ton historique depuis Letterboxd, Trakt ou un export ReelMark.',
@@ -405,6 +406,7 @@ const en = {
 			'Download all your data (watchlist, reviews, watched episodes) as JSON.',
 		exportButton: 'Export',
 		exportSuccess: 'Export downloaded',
+		exportRateLimited: 'Too many exports requested, try again in a while',
 		importTitle: 'Import Data',
 		importDescription:
 			'Import your history from Letterboxd, Trakt, or a ReelMark export.',

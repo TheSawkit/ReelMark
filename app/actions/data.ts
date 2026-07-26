@@ -4,6 +4,7 @@ import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { parseVisibility } from '@/lib/privacy';
 import { reportCritical } from '@/lib/report';
+import { enforceUserRateLimit } from '@/lib/rate-limiter';
 import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
 import { VALID_STATUSES, validateRating } from '@/lib/validators';
 import {
@@ -19,6 +20,9 @@ import type {
 } from '@/lib/data-transfer/types';
 import type { WatchStatus } from '@/types/tmdb';
 
+const EXPORT_LIMIT = 5;
+const EXPORT_WINDOW_MS = 3_600_000;
+
 type WatchlistRow = {
 	user_id: string;
 	media_id: number;
@@ -28,8 +32,16 @@ type WatchlistRow = {
 	status: WatchStatus;
 };
 
+/**
+ * Full RGPD export of the authenticated user's data.
+ * Rate-limited: one call dumps every watchlist, review and episode row the account owns.
+ *
+ * @throws Error('RATE_LIMITED') once the hourly export budget is exhausted.
+ */
 export async function exportUserData(): Promise<ExportData> {
 	const { supabase, userId } = await getAuthenticatedUser();
+
+	enforceUserRateLimit('export', userId, EXPORT_LIMIT, EXPORT_WINDOW_MS);
 
 	const [watchlistRows, reviewRows, episodeRows] = await Promise.all([
 		fetchAllRows((from, to) =>

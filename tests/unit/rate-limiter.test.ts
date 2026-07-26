@@ -1,5 +1,6 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { checkRateLimit } from '@/lib/rate-limiter';
+import { checkRateLimit, enforceUserRateLimit } from '@/lib/rate-limiter';
+import { RATE_LIMITED } from '@/lib/action-errors';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
@@ -54,5 +55,43 @@ describe('checkRateLimit', () => {
 		expect(first.remaining).toBe(0);
 		const second = checkRateLimit(key, 1, 60_000);
 		expect(second.allowed).toBe(false);
+	});
+});
+
+describe('enforceUserRateLimit', () => {
+	it('stays silent while the budget lasts, then throws RATE_LIMITED', () => {
+		for (let i = 0; i < 3; i++) {
+			expect(() =>
+				enforceUserRateLimit('scope-a', 'user-1', 3, 60_000)
+			).not.toThrow();
+		}
+		expect(() =>
+			enforceUserRateLimit('scope-a', 'user-1', 3, 60_000)
+		).toThrow(RATE_LIMITED);
+	});
+
+	it('budgets each user separately', () => {
+		for (let i = 0; i < 3; i++)
+			enforceUserRateLimit('scope-b', 'user-1', 3, 60_000);
+		expect(() =>
+			enforceUserRateLimit('scope-b', 'user-2', 3, 60_000)
+		).not.toThrow();
+	});
+
+	it('budgets each scope separately for the same user', () => {
+		for (let i = 0; i < 3; i++)
+			enforceUserRateLimit('scope-c', 'user-3', 3, 60_000);
+		expect(() =>
+			enforceUserRateLimit('scope-d', 'user-3', 3, 60_000)
+		).not.toThrow();
+	});
+
+	it('lets the user through again once the window expires', () => {
+		for (let i = 0; i < 3; i++)
+			enforceUserRateLimit('scope-e', 'user-4', 3, 60_000);
+		vi.advanceTimersByTime(61_000);
+		expect(() =>
+			enforceUserRateLimit('scope-e', 'user-4', 3, 60_000)
+		).not.toThrow();
 	});
 });

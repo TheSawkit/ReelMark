@@ -1,3 +1,5 @@
+import { RATE_LIMITED } from '@/lib/action-errors';
+
 interface RateLimitEntry {
 	count: number;
 	resetAt: number;
@@ -59,4 +61,20 @@ export function checkRateLimit(
 		remaining: limit - entry.count,
 		resetAt: entry.resetAt,
 	};
+}
+
+/**
+ * Applies a per-user budget to an authenticated Server Action, keyed on the user rather
+ * than the IP so shared NATs are not punished and IP rotation does not reset the window.
+ *
+ * @throws Error(RATE_LIMITED) once the budget for this scope is exhausted.
+ */
+export function enforceUserRateLimit(
+	scope: string,
+	userId: string,
+	limit: number,
+	windowMs: number
+): void {
+	const { allowed } = checkRateLimit(`${scope}:${userId}`, limit, windowMs);
+	if (!allowed) throw new Error(RATE_LIMITED);
 }

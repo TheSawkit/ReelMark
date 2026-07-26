@@ -11,6 +11,7 @@ import {
 	cancelFriendRequest,
 } from '@/app/actions/friends';
 import { createClient } from '@/lib/supabase/client';
+import { RATE_LIMITED } from '@/lib/action-errors';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Friendship } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
@@ -101,6 +102,8 @@ export function FriendshipButton({
 					toast.error(t.profile.errors.selfRequest);
 				else if (msg === 'DUPLICATE_REQUEST')
 					toast.error(t.profile.errors.duplicateRequest);
+				else if (msg === RATE_LIMITED)
+					toast.error(t.profile.errors.rateLimited);
 				else toast.error(t.common.actionError);
 			}
 		});
