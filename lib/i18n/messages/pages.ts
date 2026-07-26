@@ -3,63 +3,63 @@ const fr = {
 		privacy: {
 			title: 'Politique de confidentialité',
 			updated: 'Dernière mise à jour : 12 juillet 2026',
-			intro: 'ReelMark respecte votre vie privée. Cette déclaration explique quelles données personnelles nous traitons, pourquoi, et quels sont vos droits, conformément au Règlement général sur la protection des données (RGPD, UE 2016/679) et à la loi belge du 30 juillet 2018.',
+			intro: 'ReelMark respecte ta vie privée. Cette déclaration explique quelles données personnelles nous traitons, pourquoi, et quels sont tes droits, conformément au Règlement général sur la protection des données (RGPD, UE 2016/679) et à la loi belge du 30 juillet 2018.',
 			sections: [
 				{
 					title: '1. Responsable du traitement',
 					body: [
-						"ReelMark est édité par Silexio (Belgique). Pour toute question relative à vos données personnelles, contactez-nous à l'adresse : contact@silexio.be.",
+						"ReelMark est édité par Silexio (Belgique). Pour toute question relative à tes données personnelles, écris-nous à l'adresse : contact@silexio.be.",
 					],
 				},
 				{
 					title: '2. Données que nous collectons',
 					body: [
-						"Données de compte : adresse e-mail, mot de passe (haché, jamais stocké en clair), nom d'utilisateur, nom affiché, avatar, langue et région préférées. Si vous vous connectez avec Google, nous recevons votre e-mail et les informations de base de votre profil Google.",
-						"Contenu que vous créez : votre watchlist, les épisodes marqués comme vus, vos notes et critiques, vos playlists et vos relations d'amis sur la plateforme.",
-						"Données techniques : cookies strictement nécessaires (session de connexion, préférence de langue, répartition de charge), préférences stockées localement dans votre navigateur (thème, affichage) et journaux d'erreurs techniques.",
+						"Données de compte : adresse e-mail, mot de passe (haché, jamais stocké en clair), nom d'utilisateur, nom affiché, avatar, langue et région préférées. Si tu te connectes avec Google, nous recevons ton e-mail et les informations de base de ton profil Google.",
+						"Contenu que tu crées : ta watchlist, les épisodes marqués comme vus, tes notes et critiques, tes playlists et tes relations d'amis sur la plateforme.",
+						"Données techniques : cookies strictement nécessaires (session de connexion, préférence de langue, répartition de charge), préférences stockées localement dans ton navigateur (thème, affichage) et journaux d'erreurs techniques.",
 						'Nous ne collectons aucune donnée publicitaire et ne réalisons aucun profilage commercial.',
 					],
 				},
 				{
 					title: '3. Finalités et bases légales',
 					body: [
-						'Fournir le service (création de compte, sauvegarde de votre bibliothèque, fonctionnalités sociales) : exécution du contrat qui nous lie lorsque vous créez un compte.',
+						'Fournir le service (création de compte, sauvegarde de ta bibliothèque, fonctionnalités sociales) : exécution du contrat qui nous lie lorsque tu crées un compte.',
 						"Assurer la sécurité de la plateforme (prévention des abus, journaux d'erreurs) : intérêt légitime.",
-						'Mémoriser vos préférences (langue, thème) : consentement, exprimé par votre usage de ces réglages.',
+						'Mémoriser tes préférences (langue, thème) : consentement, exprimé par ton usage de ces réglages.',
 					],
 				},
 				{
 					title: '4. Destinataires et sous-traitants',
 					body: [
-						'Vos données sont traitées par nos sous-traitants techniques : Supabase (base de données et authentification), Infomaniak (hébergement en Suisse, pays reconnu adéquat par la Commission européenne) et Cloudflare (sécurité et diffusion du contenu, encadré par des clauses contractuelles types).',
+						'Tes données sont traitées par nos sous-traitants techniques : Supabase (base de données et authentification), Infomaniak (hébergement en Suisse, pays reconnu adéquat par la Commission européenne) et Cloudflare (sécurité et diffusion du contenu, encadré par des clauses contractuelles types).',
 						'Les informations sur les films et séries proviennent de TMDB ; aucune donnée personnelle ne lui est transmise.',
-						'Nous ne vendons ni ne louons vos données. Elles ne sont communiquées à aucun autre tiers, sauf obligation légale.',
+						'Nous ne vendons ni ne louons tes données. Elles ne sont communiquées à aucun autre tiers, sauf obligation légale.',
 					],
 				},
 				{
 					title: '5. Durée de conservation',
 					body: [
-						'Vos données sont conservées tant que votre compte est actif. La suppression de votre compte (Réglages → Zone de danger) entraîne la suppression de vos données personnelles. Les journaux techniques sont conservés pour une durée limitée.',
+						'Tes données sont conservées tant que ton compte est actif. La suppression de ton compte (Réglages → Zone de danger) entraîne la suppression de tes données personnelles. Les journaux techniques sont conservés pour une durée limitée.',
 					],
 				},
 				{
-					title: '6. Vos droits',
+					title: '6. Tes droits',
 					body: [
-						"Vous disposez des droits d'accès, de rectification, d'effacement, de portabilité, de limitation et d'opposition, ainsi que du droit de retirer votre consentement à tout moment.",
-						"Vous pouvez exporter vos données à tout moment (Réglages → Données), modifier votre profil ou supprimer votre compte directement dans l'application, ou nous écrire à contact@silexio.be.",
-						"Vous pouvez introduire une réclamation auprès de l'Autorité de protection des données belge (APD) : www.autoriteprotectiondonnees.be.",
+						"Tu disposes des droits d'accès, de rectification, d'effacement, de portabilité, de limitation et d'opposition, ainsi que du droit de retirer ton consentement à tout moment.",
+						"Tu peux exporter tes données à tout moment (Réglages → Données), modifier ton profil ou supprimer ton compte directement dans l'application, ou nous écrire à contact@silexio.be.",
+						"Tu peux introduire une réclamation auprès de l'Autorité de protection des données belge (APD) : www.autoriteprotectiondonnees.be.",
 					],
 				},
 				{
 					title: '7. Sécurité',
 					body: [
-						"Vos données sont chiffrées en transit (TLS), les mots de passe sont hachés, et l'accès aux données est restreint par des règles de sécurité au niveau de la base de données.",
+						"Tes données sont chiffrées en transit (TLS), les mots de passe sont hachés, et l'accès aux données est restreint par des règles de sécurité au niveau de la base de données.",
 					],
 				},
 				{
 					title: '8. Cookies et stockage local',
 					body: [
-						"Nous n'utilisons que des cookies strictement nécessaires au fonctionnement du service : session de connexion, préférence de langue et répartition de charge. Vos préférences d'affichage (thème) sont stockées localement dans votre navigateur. Aucun cookie publicitaire ni traceur tiers n'est utilisé.",
+						"Nous n'utilisons que des cookies strictement nécessaires au fonctionnement du service : session de connexion, préférence de langue et répartition de charge. Tes préférences d'affichage (thème) sont stockées localement dans ton navigateur. Aucun cookie publicitaire ni traceur tiers n'est utilisé.",
 					],
 				},
 				{
@@ -79,18 +79,18 @@ const fr = {
 		terms: {
 			title: "Conditions d'utilisation",
 			updated: 'Dernière mise à jour : 12 juillet 2026',
-			intro: "Les présentes conditions régissent l'utilisation de ReelMark, une plateforme personnelle de suivi de films et de séries. En créant un compte ou en utilisant le service, vous les acceptez.",
+			intro: "Les présentes conditions régissent l'utilisation de ReelMark, une plateforme personnelle de suivi de films et de séries. En créant un compte ou en utilisant le service, tu les acceptes.",
 			sections: [
 				{
 					title: '1. Le service',
 					body: [
-						'ReelMark vous permet de suivre les films et séries que vous avez vus ou souhaitez voir, de noter et critiquer des œuvres, de créer des playlists et de partager votre activité avec des amis.',
+						'ReelMark te permet de suivre les films et séries que tu as vus ou souhaites voir, de noter et critiquer des œuvres, de créer des playlists et de partager ton activité avec des amis.',
 					],
 				},
 				{
-					title: '2. Votre compte',
+					title: '2. Ton compte',
 					body: [
-						"Vous devez avoir au moins 13 ans pour créer un compte. Vous êtes responsable de la confidentialité de vos identifiants et de l'activité réalisée depuis votre compte. Les informations fournies doivent être exactes.",
+						"Tu dois avoir au moins 13 ans pour créer un compte. Tu es responsable de la confidentialité de tes identifiants et de l'activité réalisée depuis ton compte. Les informations fournies doivent être exactes.",
 					],
 				},
 				{
@@ -100,9 +100,9 @@ const fr = {
 					],
 				},
 				{
-					title: '4. Votre contenu',
+					title: '4. Ton contenu',
 					body: [
-						'Vous restez propriétaire des critiques, notes et playlists que vous créez. Vous nous accordez une licence limitée pour les afficher dans le service, selon les réglages de visibilité que vous choisissez. Nous pouvons retirer tout contenu contraire à ces conditions.',
+						'Tu restes propriétaire des critiques, notes et playlists que tu crées. Tu nous accordes une licence limitée pour les afficher dans le service, selon les réglages de visibilité que tu choisis. Nous pouvons retirer tout contenu contraire à ces conditions.',
 					],
 				},
 				{
@@ -120,7 +120,7 @@ const fr = {
 				{
 					title: '7. Résiliation',
 					body: [
-						'Vous pouvez supprimer votre compte à tout moment depuis les réglages. Nous pouvons suspendre ou supprimer un compte en cas de violation de ces conditions.',
+						'Tu peux supprimer ton compte à tout moment depuis les réglages. Nous pouvons suspendre ou supprimer un compte en cas de violation de ces conditions.',
 					],
 				},
 				{
@@ -132,7 +132,7 @@ const fr = {
 				{
 					title: '9. Droit applicable',
 					body: [
-						'Les présentes conditions sont régies par le droit belge. Tout litige relève des tribunaux belges compétents, sans préjudice des droits impératifs dont vous bénéficiez en tant que consommateur.',
+						'Les présentes conditions sont régies par le droit belge. Tout litige relève des tribunaux belges compétents, sans préjudice des droits impératifs dont tu bénéficies en tant que consommateur.',
 					],
 				},
 				{
@@ -146,19 +146,19 @@ const fr = {
 	},
 	dashboard: {
 		title: 'Tableau de bord',
-		welcome: 'Bonjour, content de vous revoir !',
+		welcome: 'Bonjour, content de te revoir !',
 		subtitle:
-			'Voici quelques recommandations pour votre prochaine soirée ciné.',
-		nextWatchings: 'Vos prochains visionnages',
+			'Voici quelques recommandations pour ta prochaine soirée ciné.',
+		nextWatchings: 'Tes prochains visionnages',
 		emptyLibrary:
-			'Votre bibliothèque est vide. Commencez à explorer pour obtenir des recommandations !',
+			'Ta bibliothèque est vide. Commence à explorer pour obtenir des recommandations !',
 		exploreButton: 'Explorer les films',
 		recommendations: 'Recommandations',
-		forYou: 'Pour vous',
-		onYourServices: 'Sur vos services',
-		becauseYouLike: 'Parce que vous aimez ${name}',
-		upcomingForYou: 'Bientôt, pour vous',
-		onAirForYou: 'En ce moment, pour vous',
+		forYou: 'Pour toi',
+		onYourServices: 'Sur tes services',
+		becauseYouLike: 'Parce que tu aimes ${name}',
+		upcomingForYou: 'Bientôt, pour toi',
+		onAirForYou: 'En ce moment, pour toi',
 		notInterested: 'Pas intéressé',
 		similarTo: 'Similaire à ${movie.movie_title}',
 		resume: 'Reprendre',
@@ -169,12 +169,12 @@ const fr = {
 		statsEpisodesWatched: 'Épisodes vus',
 		statsToWatch: 'À voir',
 		continueWatching: 'Continuer à regarder',
-		continueWatchingCaughtUp: 'Vous êtes à jour',
+		continueWatchingCaughtUp: 'Tu es à jour',
 		episodeCode: 'S{season}E{episode}',
 	},
 	explorer: {
 		title: 'Explorateur',
-		subtitle: 'Découvrez des films et séries à ajouter à votre collection.',
+		subtitle: 'Découvre des films et séries à ajouter à ta collection.',
 		trending: 'Tendances de la semaine',
 		nowPlaying: 'Actuellement au cinéma',
 		popular: 'Populaires',

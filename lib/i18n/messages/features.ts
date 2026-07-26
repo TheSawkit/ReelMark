@@ -1,21 +1,20 @@
 const fr = {
 	title: 'Fonctionnalités',
 	feature1Title: 'Suivi personnel',
-	feature1Desc:
-		'Gardez une trace complète de votre parcours cinématographique',
+	feature1Desc: 'Garde une trace complète de ton parcours cinématographique',
 	feature2Title: 'Découverte',
-	feature2Desc: 'Explorez de nouveaux films basés sur vos préférences',
+	feature2Desc: 'Explore de nouveaux films basés sur tes préférences',
 	feature3Title: 'Organisation',
-	feature3Desc: 'Créez des listes et des catégories personnalisées',
+	feature3Desc: 'Crée des listes et des catégories personnalisées',
 	feature4Title: 'Notes et avis',
 	feature4Desc:
-		'Ajoutez vos propres notes et évaluations à chaque contenu pour vous souvenir de ce que vous avez pensé.',
+		'Ajoute tes propres notes et évaluations à chaque contenu pour te souvenir de ce que tu en as pensé.',
 	feature5Title: 'Installable partout',
 	feature5Desc:
-		'Installez ReelMark sur iPhone, Android, Mac, Windows ou Linux — sans passer par un store, comme une app native.',
+		'Installe ReelMark sur iPhone, Android, Mac, Windows ou Linux — sans passer par un store, comme une app native.',
 	feature6Title: 'Amis & communauté',
 	feature6Desc:
-		"Suivez les critiques et listes de vos amis, envoyez des demandes d'amis et découvrez ce que regardent les autres.",
+		"Suis les critiques et listes de tes amis, envoie des demandes d'amis et découvre ce que regardent les autres.",
 };
 
 const en = {

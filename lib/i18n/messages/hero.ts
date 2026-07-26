@@ -1,7 +1,7 @@
 const fr = {
 	title: 'ReelMark',
-	subtitle: 'Votre compagnon personnel pour suivre et organiser',
-	description: 'tous les films, séries et contenus que vous avez déjà vus',
+	subtitle: 'Ton compagnon personnel pour suivre et organiser',
+	description: 'tous les films, séries et contenus que tu as déjà vus',
 	cta: 'Créer un compte',
 	login: 'Se connecter',
 };

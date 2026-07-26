@@ -32,7 +32,7 @@ export default function manifest(): MetadataRoute.Manifest {
 		description: 'Track and organize movies & TV shows you watched.',
 		description_localized: {
 			fr: {
-				value: 'Suivez, organisez et découvrez tous les films et séries que vous avez regardés ou voulez regarder.',
+				value: 'Suis, organise et découvre tous les films et séries que tu as regardés ou veux regarder.',
 			},
 		},
 		start_url: '/',
@@ -54,7 +54,7 @@ export default function manifest(): MetadataRoute.Manifest {
 					'Your personal library of movies and TV shows to watch or already seen.',
 				description_localized: {
 					fr: {
-						value: 'Votre bibliothèque personnelle de films et séries à regarder ou déjà vus.',
+						value: 'Ta bibliothèque personnelle de films et séries à regarder ou déjà vus.',
 					},
 				},
 				url: '/library',
@@ -69,7 +69,7 @@ export default function manifest(): MetadataRoute.Manifest {
 					'Discover movies and TV shows to add to your collection.',
 				description_localized: {
 					fr: {
-						value: 'Découvrez des films et séries à ajouter à votre collection.',
+						value: 'Découvre des films et séries à ajouter à ta collection.',
 					},
 				},
 				url: '/explorer',
@@ -84,7 +84,7 @@ export default function manifest(): MetadataRoute.Manifest {
 					'Access your personal dashboard with recommendations and watch history.',
 				description_localized: {
 					fr: {
-						value: 'Accédez à votre tableau de bord personnel avec vos recommandations et votre historique de visionnage.',
+						value: 'Accède à ton tableau de bord personnel avec tes recommandations et ton historique de visionnage.',
 					},
 				},
 				url: '/dashboard',

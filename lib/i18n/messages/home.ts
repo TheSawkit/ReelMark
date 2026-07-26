@@ -5,7 +5,7 @@ const fr = {
 	cta: {
 		title: 'Prêt à commencer ?',
 		subtitle:
-			'Rejoignez la communauté de cinéphiles et commencez à tracker vos films favoris dès maintenant.',
+			'Rejoins la communauté de cinéphiles et commence à tracker tes films favoris dès maintenant.',
 		button: 'Créer un compte gratuitement',
 		alreadyHave: "J'ai déjà un compte",
 	},

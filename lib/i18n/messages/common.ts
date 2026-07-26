@@ -36,7 +36,7 @@ const fr = {
 	footerNav: 'Liens de pied de page',
 	notFoundTitle: 'Page introuvable',
 	notFoundDescription:
-		"La page que vous cherchez n'existe pas ou a été déplacée.",
+		"La page que tu cherches n'existe pas ou a été déplacée.",
 };
 
 const en = {

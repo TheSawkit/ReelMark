@@ -1,55 +1,55 @@
 const fr = {
-	defaultMovieDescription: 'Suivez et découvrez des films sur ReelMark',
-	defaultTvDescription: 'Suivez et découvrez des séries sur ReelMark',
+	defaultMovieDescription: 'Suis et découvre des films sur ReelMark',
+	defaultTvDescription: 'Suis et découvre des séries sur ReelMark',
 	defaultCrewDescription:
-		'Explorez les artistes et leur filmographie sur ReelMark',
-	watchMovieOn: 'Regardez ${title} sur ReelMark',
-	watchShowOn: 'Regardez ${title} sur ReelMark',
-	exploreCrewOn: 'Explorez la filmographie de ${name} sur ReelMark',
+		'Explore les artistes et leur filmographie sur ReelMark',
+	watchMovieOn: 'Regarde ${title} sur ReelMark',
+	watchShowOn: 'Regarde ${title} sur ReelMark',
+	exploreCrewOn: 'Explore la filmographie de ${name} sur ReelMark',
 	dashboardTitle: 'Tableau de bord',
 	dashboardDescription:
-		'Accédez à votre tableau de bord personnel avec vos recommandations et votre historique de visionnage.',
+		'Accède à ton tableau de bord personnel avec tes recommandations et ton historique de visionnage.',
 	explorerTitle: 'Explorateur',
 	explorerDescription:
-		'Découvrez des films et séries à ajouter à votre collection.',
+		'Découvre des films et séries à ajouter à ta collection.',
 	libraryDescription:
-		'Votre bibliothèque personnelle de films et séries à regarder ou déjà vus.',
+		'Ta bibliothèque personnelle de films et séries à regarder ou déjà vus.',
 	loginTitle: 'Connexion',
 	loginDescription:
-		'Connectez-vous à votre compte ReelMark pour suivre vos films et séries.',
+		'Connecte-toi à ton compte ReelMark pour suivre tes films et séries.',
 	signupTitle: 'Inscription',
 	signupDescription:
-		'Créez votre compte ReelMark et commencez à suivre vos films et séries.',
-	landingTitle: 'ReelMark — Votre suivi de films et séries',
+		'Crée ton compte ReelMark et commence à suivre tes films et séries.',
+	landingTitle: 'ReelMark — Ton suivi de films et séries',
 	landingDescription:
-		'Suivez, organisez et découvrez tous les films et séries que vous avez regardés ou voulez regarder.',
+		'Suis, organise et découvre tous les films et séries que tu as regardés ou veux regarder.',
 	profileDescription:
-		'Découvrez le profil de @${username} sur ReelMark — watchlist, avis et plus.',
+		'Découvre le profil de @${username} sur ReelMark — watchlist, avis et plus.',
 	playlistDescription: 'Playlist de @${owner} sur ReelMark',
 	authErrorTitle: "Erreur d'authentification",
 	authErrorDescription:
-		'Une erreur est survenue lors de la connexion. Retournez à la page de connexion pour réessayer.',
+		'Une erreur est survenue lors de la connexion. Retourne à la page de connexion pour réessayer.',
 	categories: {
 		popularMovies:
-			'Découvrez les films et séries TV les plus populaires du moment sur ReelMark.',
+			'Découvre les films et séries TV les plus populaires du moment sur ReelMark.',
 		topRatedMovies:
-			'Explorez les films les mieux notés de tous les temps sur ReelMark.',
+			'Explore les films les mieux notés de tous les temps sur ReelMark.',
 		upcomingMovies:
-			'Découvrez les films à venir et attendus prochainement sur ReelMark.',
+			'Découvre les films à venir et attendus prochainement sur ReelMark.',
 		nowPlayingMovies:
-			'Regardez les films actuellement en salles sur ReelMark.',
+			'Regarde les films actuellement en salles sur ReelMark.',
 		trendingMovies:
-			'Découvrez les films qui font tendance cette semaine sur ReelMark.',
+			'Découvre les films qui font tendance cette semaine sur ReelMark.',
 		tvPopular:
-			'Découvrez les séries TV les plus populaires du moment sur ReelMark.',
+			'Découvre les séries TV les plus populaires du moment sur ReelMark.',
 		tvTopRated:
-			'Explorez les séries TV les mieux notées de tous les temps sur ReelMark.',
+			'Explore les séries TV les mieux notées de tous les temps sur ReelMark.',
 		tvTrending:
-			'Découvrez les séries TV qui font tendance cette semaine sur ReelMark.',
+			'Découvre les séries TV qui font tendance cette semaine sur ReelMark.',
 		tvAiringToday:
-			"Regardez les séries TV diffusées aujourd'hui sur ReelMark.",
+			"Regarde les séries TV diffusées aujourd'hui sur ReelMark.",
 		tvOnTheAir:
-			'Découvrez les séries TV actuellement en diffusion sur ReelMark.',
+			'Découvre les séries TV actuellement en diffusion sur ReelMark.',
 	},
 };
 
