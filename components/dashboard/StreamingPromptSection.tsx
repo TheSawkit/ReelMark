@@ -1,5 +1,8 @@
-import { getMyStreamingProviders } from '@/app/actions/recommendations';
-import { getPromptStates } from '@/app/actions/prompts';
+import { getCachedStreamingProviders } from '@/lib/data/watchlist';
+import {
+	getCachedPromptStates,
+	getCachedWatchlistCount,
+} from '@/lib/data/prompts';
 import { getUserContext } from '@/lib/supabase/auth-helpers';
 import { StreamingPromptCard } from '@/components/dashboard/StreamingPromptCard';
 
@@ -7,21 +10,18 @@ import { StreamingPromptCard } from '@/components/dashboard/StreamingPromptCard'
 const MIN_WATCHLIST_ENTRIES = 5;
 
 export async function StreamingPromptSection() {
-	const { supabase, user } = await getUserContext();
+	const { user } = await getUserContext();
 	if (!user) return null;
 
-	const [providerIds, states, watchlist] = await Promise.all([
-		getMyStreamingProviders(),
-		getPromptStates(),
-		supabase
-			.from('watchlist')
-			.select('id', { count: 'exact', head: true })
-			.eq('user_id', user.id),
+	const [providerIds, states, watchlistCount] = await Promise.all([
+		getCachedStreamingProviders(),
+		getCachedPromptStates(),
+		getCachedWatchlistCount(),
 	]);
 
 	if (providerIds.length > 0) return null;
 	if (states.streaming !== undefined) return null;
-	if ((watchlist.count ?? 0) < MIN_WATCHLIST_ENTRIES) return null;
+	if (watchlistCount < MIN_WATCHLIST_ENTRIES) return null;
 
 	return <StreamingPromptCard />;
 }
