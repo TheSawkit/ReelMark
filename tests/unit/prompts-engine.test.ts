@@ -40,7 +40,9 @@ describe('pickPrompt', () => {
 	});
 
 	it('never asks twice, whatever the previous answer was', () => {
-		expect(pickPrompt(context({ states: { push: 'dismissed' } }))).toBeNull();
+		expect(
+			pickPrompt(context({ states: { push: 'dismissed' } }))
+		).toBeNull();
 		expect(pickPrompt(context({ states: { push: 'done' } }))).toBeNull();
 	});
 

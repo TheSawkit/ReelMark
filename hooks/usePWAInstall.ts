@@ -44,10 +44,12 @@ function isMobile(): boolean {
 
 /** Whether this device can still install the app, and by which route. */
 export function usePWAInstall() {
-	const [state, setState] = useState<{ visible: boolean; mode: InstallMode }>({
-		visible: false,
-		mode: 'prompt',
-	});
+	const [state, setState] = useState<{ visible: boolean; mode: InstallMode }>(
+		{
+			visible: false,
+			mode: 'prompt',
+		}
+	);
 	const promptRef = useRef<BeforeInstallPromptEvent | null>(null);
 
 	useEffect(() => {
@@ -69,6 +71,7 @@ export function usePWAInstall() {
 		const handler = (e: Event) => {
 			e.preventDefault();
 			promptRef.current = e as BeforeInstallPromptEvent;
+			clearTimeout(timer);
 			timer = setTimeout(
 				() => setState({ visible: true, mode: 'prompt' }),
 				REVEAL_DELAY_MS

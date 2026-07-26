@@ -116,11 +116,12 @@ export function PromptHost({
 	const [pending, setPending] = useState(false);
 
 	useEffect(() => {
+		const visits = countVisit();
+
 		const eligible: PromptKey[] = [];
 		if (pwa.visible) eligible.push('install');
 		if (pushRequested && push.status === 'off') eligible.push('push');
-		if (canImport && countVisit() >= IMPORT_MIN_VISITS)
-			eligible.push('import');
+		if (canImport && visits >= IMPORT_MIN_VISITS) eligible.push('import');
 
 		promptStore.evaluate(
 			eligible,
