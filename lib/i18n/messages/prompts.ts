@@ -2,7 +2,8 @@ const fr = {
 	dismiss: 'Plus tard',
 	push: {
 		title: 'Activer les notifications',
-		description: 'Sois prévenu dès qu’un nouvel épisode de tes séries sort.',
+		description:
+			'Sois prévenu dès qu’un nouvel épisode de tes séries sort.',
 		action: 'Activer',
 	},
 	import: {

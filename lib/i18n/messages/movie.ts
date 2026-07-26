@@ -100,7 +100,7 @@ const fr = {
 		},
 	},
 	runtime: '${hours}h ${mins}min',
-	scrollEnd: 'Vous avez tout vu !',
+	scrollEnd: 'Tu as tout vu !',
 	scrollEndCount: 'titres affichés',
 	episodes: 'épisodes',
 	episodesCapitalized: 'Épisodes',

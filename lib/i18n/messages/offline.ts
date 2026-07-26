@@ -1,6 +1,6 @@
 const fr = {
-	title: 'Vous êtes hors ligne',
-	description: 'Vérifiez votre connexion et réessayez.',
+	title: 'Tu es hors ligne',
+	description: 'Vérifie ta connexion et réessaie.',
 	retry: 'Réessayer',
 };
 

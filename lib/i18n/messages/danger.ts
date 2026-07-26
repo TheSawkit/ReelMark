@@ -1,13 +1,13 @@
 const fr = {
 	warning: '⚠️ Avertissement important',
-	allDataWillBeDeleted: 'Toutes vos données seront supprimées définitivement',
-	accountCannotBeRecovered: 'Votre compte ne pourra pas être récupéré',
+	allDataWillBeDeleted: 'Toutes tes données seront supprimées définitivement',
+	accountCannotBeRecovered: 'Ton compte ne pourra pas être récupéré',
 	actionCannotBeUndone: 'Cette action ne peut pas être annulée',
-	willBeLoggedOut: 'Vous serez déconnecté immédiatement',
-	typeToConfirm: 'Tapez "SUPPRIMER" pour confirmer',
+	willBeLoggedOut: 'Tu seras déconnecté immédiatement',
+	typeToConfirm: 'Tape "SUPPRIMER" pour confirmer',
 	confirmPlaceholder: 'SUPPRIMER',
 	additionalWarning:
-		"Cette action est irréversible. Assurez-vous d'avoir sauvegardé vos données.",
+		"Cette action est irréversible. Assure-toi d'avoir sauvegardé tes données.",
 	deleting: 'Suppression...',
 };
 

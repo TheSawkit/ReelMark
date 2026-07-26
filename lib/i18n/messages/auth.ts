@@ -1,11 +1,11 @@
 const fr = {
 	signup: {
-		title: 'Rentrez en scène et créez votre compte',
+		title: 'Rentre en scène et crée ton compte',
 		email: 'E-mail',
 		password: 'Mot de passe',
 		confirmPassword: 'Confirmer le mot de passe',
 		button: 'Créer mon compte',
-		orEmail: 'Ou continuer avec votre email',
+		orEmail: 'Ou continuer avec ton email',
 		alreadyHaveAccount: 'Déjà un compte ?',
 		login: 'Se connecter',
 		google: 'Continuer avec Google',
@@ -16,16 +16,16 @@ const fr = {
 		},
 		region: 'Pays / Région',
 		regionDescription:
-			'Ceci permet de synchroniser les sorties cinéma avec votre pays local.',
+			'Ceci permet de synchroniser les sorties cinéma avec ton pays local.',
 	},
 	login: {
-		title: 'Connectez-vous à votre compte',
-		description: 'Entrez vos identifiants pour accéder à votre compte',
+		title: 'Connecte-toi à ton compte',
+		description: 'Entre tes identifiants pour accéder à ton compte',
 		email: 'E-mail',
 		password: 'Mot de passe',
 		button: 'Se connecter',
-		orEmail: 'Ou continuer avec votre email',
-		dontHaveAccount: "Vous n'avez pas de compte ?",
+		orEmail: 'Ou continuer avec ton email',
+		dontHaveAccount: "Tu n'as pas de compte ?",
 		signup: "S'inscrire",
 		google: 'Continuer avec Google',
 		forgotPassword: 'Mot de passe oublié ?',
@@ -42,16 +42,16 @@ const fr = {
 	resetPassword: {
 		metaTitle: 'Réinitialiser le mot de passe',
 		metaDescription:
-			'Recevez un lien pour réinitialiser votre mot de passe ReelMark.',
-		title: 'Réinitialiser votre mot de passe',
+			'Reçois un lien pour réinitialiser ton mot de passe ReelMark.',
+		title: 'Réinitialiser ton mot de passe',
 		description:
-			'Entrez votre adresse e-mail. Nous vous enverrons un lien de réinitialisation.',
+			'Entre ton adresse e-mail. Nous t’enverrons un lien de réinitialisation.',
 		email: 'E-mail',
 		button: 'Envoyer le lien',
 		backToLogin: 'Retour à la connexion',
 		successTitle: 'E-mail envoyé',
 		successDescription:
-			'Si un compte existe pour cette adresse, vous recevrez un e-mail avec un lien.',
+			'Si un compte existe pour cette adresse, tu recevras un e-mail avec un lien.',
 		placeholders: {
 			email: 'chuck@example.com',
 		},
@@ -59,16 +59,16 @@ const fr = {
 	updatePassword: {
 		metaTitle: 'Choisir un nouveau mot de passe',
 		metaDescription:
-			'Définissez un nouveau mot de passe pour votre compte ReelMark.',
+			'Définis un nouveau mot de passe pour ton compte ReelMark.',
 		title: 'Choisir un nouveau mot de passe',
 		description:
-			'Entrez votre nouveau mot de passe pour finaliser la réinitialisation.',
+			'Entre ton nouveau mot de passe pour finaliser la réinitialisation.',
 		password: 'Nouveau mot de passe',
 		confirmPassword: 'Confirmer le mot de passe',
 		button: 'Mettre à jour',
-		note: 'Vous serez redirigé vers votre tableau de bord après la mise à jour.',
+		note: 'Tu seras redirigé vers ton tableau de bord après la mise à jour.',
 		footerHint:
-			'Si le lien a expiré, demandez un nouveau lien depuis la page de connexion.',
+			'Si le lien a expiré, demande un nouveau lien depuis la page de connexion.',
 		placeholders: {
 			password: '••••••••',
 			confirmPassword: '••••••••',
@@ -81,13 +81,11 @@ const fr = {
 		retry: 'Réessayer',
 		backHome: "Retour à l'accueil",
 		invalidCredentials: 'Email ou mot de passe incorrect',
-		emailNotConfirmed:
-			'Veuillez confirmer votre adresse email avant de vous connecter',
+		emailNotConfirmed: 'Confirme ton adresse email avant de te connecter',
 		emailAlreadyUsed: 'Un compte existe déjà avec cette adresse email',
-		rateLimitExceeded:
-			'Trop de tentatives, réessayez dans quelques minutes',
+		rateLimitExceeded: 'Trop de tentatives, réessaie dans quelques minutes',
 	},
-	terms: 'En continuant, vous acceptez nos',
+	terms: 'En continuant, tu acceptes nos',
 	termsLink: "Conditions d'utilisation",
 	privacyLink: 'Politique de confidentialité',
 	notAuthenticated: 'Non authentifié',
