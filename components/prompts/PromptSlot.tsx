@@ -1,5 +1,8 @@
 import { getUserContext } from '@/lib/supabase/auth-helpers';
-import { getPromptStates } from '@/app/actions/prompts';
+import {
+	getCachedPromptStates,
+	getCachedWatchlistCount,
+} from '@/lib/data/prompts';
 import { PromptHost } from '@/components/prompts/PromptHost';
 
 /** Below this many watchlist entries, importing an existing library is worth offering. */
@@ -7,7 +10,7 @@ const IMPORT_THRESHOLD = 3;
 
 /** Feeds the call-to-action slot with what only the server knows; anonymous visitors still get the install banner. */
 export async function PromptSlot() {
-	const { supabase, user } = await getUserContext();
+	const { user } = await getUserContext();
 
 	if (!user)
 		return (
@@ -18,12 +21,9 @@ export async function PromptSlot() {
 			/>
 		);
 
-	const [states, watchlist] = await Promise.all([
-		getPromptStates(),
-		supabase
-			.from('watchlist')
-			.select('id', { count: 'exact', head: true })
-			.eq('user_id', user.id),
+	const [states, watchlistCount] = await Promise.all([
+		getCachedPromptStates(),
+		getCachedWatchlistCount(),
 	]);
 
 	const createdAt = Date.parse(user.created_at);
@@ -32,7 +32,7 @@ export async function PromptSlot() {
 		<PromptHost
 			initialStates={states}
 			accountCreatedAt={Number.isFinite(createdAt) ? createdAt : null}
-			canImport={(watchlist.count ?? 0) < IMPORT_THRESHOLD}
+			canImport={watchlistCount < IMPORT_THRESHOLD}
 		/>
 	);
 }
