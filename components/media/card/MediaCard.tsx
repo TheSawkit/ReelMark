@@ -64,11 +64,6 @@ export function MediaCard({
 	// correctement dès le premier rendu sans dépendre de l'hydratation.
 	const showRatingBadge = !hideRating && media.vote_average > 0;
 
-	// Une note absente (upcoming, titre obscur) affichait un « N/A » doré à étoile, qui
-	// suggère une note inexistante. On masque le badge : décidé côté serveur, donc affiché
-	// correctement dès le premier rendu sans dépendre de l'hydratation.
-	const showRatingBadge = !hideRating && media.vote_average > 0;
-
 	const href = localizedHref(lang, getMediaHref(media));
 	const isWatched = watchlistEntry?.status === 'watched';
 	const badgeEntry = watchlistEntry ?? media.watchlistEntry;
