@@ -41,6 +41,26 @@ function isIOS(): boolean {
 	return /iPad|iPhone|iPod/.test(navigator.userAgent) || isIPadOS;
 }
 
+/** Au-delà, on considère qu'aucun service worker ne prendra le contrôle de la page. */
+const SERVICE_WORKER_WAIT_MS = 4000;
+
+/**
+ * Le service worker actif, ou `null` s'il n'y en a aucun. `navigator.serviceWorker.ready`
+ * reste en attente indéfiniment tant qu'aucun worker n'est activé — le cas du serveur de
+ * dev, qui ne génère pas `sw.js` — et laissait l'état d'abonnement bloqué sur « loading ».
+ */
+async function activeServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+	const existing = await navigator.serviceWorker.getRegistration();
+	if (existing?.active) return existing;
+
+	return Promise.race([
+		navigator.serviceWorker.ready,
+		new Promise<null>((resolve) =>
+			setTimeout(() => resolve(null), SERVICE_WORKER_WAIT_MS)
+		),
+	]);
+}
+
 function toSubscriptionInput(subscription: PushSubscription) {
 	const json = subscription.toJSON();
 	return {
@@ -71,7 +91,9 @@ export function usePushSubscription() {
 					: 'unsupported';
 			}
 			try {
-				const registration = await navigator.serviceWorker.ready;
+				const registration = await activeServiceWorker();
+				if (!registration) return 'unsupported';
+
 				const subscription =
 					await registration.pushManager.getSubscription();
 				return subscription ? 'on' : 'off';
@@ -96,7 +118,12 @@ export function usePushSubscription() {
 		try {
 			if ((await Notification.requestPermission()) !== 'granted') return;
 
-			const registration = await navigator.serviceWorker.ready;
+			const registration = await activeServiceWorker();
+			if (!registration) {
+				setStatus('unsupported');
+				return;
+			}
+
 			const subscription = await registration.pushManager.subscribe({
 				userVisibleOnly: true,
 				applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
@@ -114,9 +141,9 @@ export function usePushSubscription() {
 	const disable = useCallback(async () => {
 		setIsPending(true);
 		try {
-			const registration = await navigator.serviceWorker.ready;
+			const registration = await activeServiceWorker();
 			const subscription =
-				await registration.pushManager.getSubscription();
+				await registration?.pushManager.getSubscription();
 			if (subscription) {
 				await deletePushSubscription(subscription.endpoint);
 				await subscription.unsubscribe();
