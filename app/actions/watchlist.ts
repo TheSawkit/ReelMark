@@ -1,18 +1,13 @@
 'use server';
 
-import {
-	getAuthenticatedUser,
-	getOptionalUser,
-} from '@/lib/supabase/auth-helpers';
+import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import {
 	SHARED_REVALIDATE_PATHS,
 	revalidateLocalizedAfterResponse,
 } from '@/app/actions/_helpers';
 import { VALID_STATUSES, VALID_MEDIA_TYPES } from '@/lib/validators';
-import type { WatchStatus, WatchlistEntry, MediaType } from '@/types/tmdb';
-import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
+import type { WatchStatus, MediaType } from '@/types/tmdb';
 import type { Database } from '@/types/database';
-import { fetchAllRows } from '@/lib/supabase/pagination';
 import { getListMediaMetadata, type ListMediaMetadata } from '@/lib/tmdb';
 
 function revalidateWatchlistPaths(mediaType: MediaType, mediaId: number) {
@@ -257,59 +252,4 @@ export async function removeFromWatchlist(
 	}
 
 	revalidateWatchlistPaths(mediaType, mediaId);
-}
-
-export async function getUserWatchlist(): Promise<WatchlistEntry[]> {
-	const { supabase, userId } = await getOptionalUser();
-
-	if (!userId) return [];
-
-	const entries = await fetchAllRows((from, to) =>
-		supabase
-			.from('watchlist')
-			.select(WATCHLIST_COLUMNS)
-			.eq('user_id', userId)
-			.order('created_at', { ascending: false })
-			.order('id')
-			.range(from, to)
-	);
-
-	return entries as WatchlistEntry[];
-}
-
-export async function getMediaWatchlistEntry(
-	mediaId: number,
-	mediaType: MediaType
-): Promise<WatchlistEntry | null> {
-	const { supabase, userId } = await getOptionalUser();
-
-	if (!userId) return null;
-
-	const { data: entry } = await supabase
-		.from('watchlist')
-		.select(WATCHLIST_COLUMNS)
-		.eq('user_id', userId)
-		.eq('media_id', mediaId)
-		.eq('media_type', mediaType)
-		.maybeSingle();
-
-	return (entry as WatchlistEntry) ?? null;
-}
-
-export async function getMediaWatchlistEntries(
-	mediaIds: number[]
-): Promise<WatchlistEntry[]> {
-	const { supabase, userId } = await getOptionalUser();
-
-	if (!userId || mediaIds.length === 0) return [];
-
-	const { data: entries, error } = await supabase
-		.from('watchlist')
-		.select(WATCHLIST_COLUMNS)
-		.eq('user_id', userId)
-		.in('media_id', mediaIds);
-
-	if (error) throw new Error(error.message);
-
-	return (entries as WatchlistEntry[]) ?? [];
 }

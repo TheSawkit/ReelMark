@@ -10,7 +10,8 @@ import { getTranslations } from '@/lib/i18n/server';
 import { USER_PROFILE_COLUMNS, PRIVACY_COLUMNS } from '@/lib/supabase/columns';
 import { getAvailableProviders } from '@/lib/tmdb';
 import { getUserRegion } from '@/lib/tmdb/client';
-import { getMyStreamingProviders } from '@/app/actions/recommendations';
+import { getMyStreamingProviders } from '@/lib/data/recommendations';
+import { getNotificationPreferences } from '@/lib/data/notifications';
 import type { Language } from '@/lib/i18n/translations';
 import type { UserProfile, PrivacySettings } from '@/types/profile';
 import type { User } from '@supabase/supabase-js';
@@ -45,8 +46,13 @@ async function SettingsSection({
 }) {
 	const supabase = await createClient();
 
-	const [profileResult, privacyResult, region, selectedProviderIds] =
-		await Promise.all([
+	const [
+		profileResult,
+		privacyResult,
+		region,
+		selectedProviderIds,
+		notificationPreferences,
+	] = await Promise.all([
 			supabase
 				.from('user_profiles')
 				.select(USER_PROFILE_COLUMNS)
@@ -57,9 +63,10 @@ async function SettingsSection({
 				.select(PRIVACY_COLUMNS)
 				.eq('user_id', user.id)
 				.maybeSingle(),
-			getUserRegion(lang),
-			getMyStreamingProviders(),
-		]);
+		getUserRegion(lang),
+		getMyStreamingProviders(),
+		getNotificationPreferences(),
+	]);
 
 	const streamingProviders = await getAvailableProviders(region, lang);
 
@@ -75,6 +82,7 @@ async function SettingsSection({
 			isOAuthOnly={isOAuthOnly(user)}
 			streamingProviders={streamingProviders}
 			selectedProviderIds={selectedProviderIds}
+			notificationPreferences={notificationPreferences}
 			initialTab={initialTab}
 		/>
 	);

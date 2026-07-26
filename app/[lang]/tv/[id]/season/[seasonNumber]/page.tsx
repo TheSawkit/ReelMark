@@ -9,12 +9,12 @@ import {
 } from '@/lib/tmdb';
 import { getServerLocale, getTranslations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
-import { getSeasonEpisodeWatches } from '@/app/actions/episodes';
+import { getSeasonEpisodeWatches } from '@/lib/data/episodes';
 import {
 	getSeasonAverageRating,
 	getPublicEpisodeReviews,
 	getMyEpisodeReviews,
-} from '@/app/actions/reviews';
+} from '@/lib/data/reviews';
 import { SeasonBanner } from '@/components/media/tv/SeasonBanner';
 import { SeasonWatchButton } from '@/components/media/tv/SeasonWatchButton';
 import { MediaActionsBar } from '@/components/media/detail/MediaActionsBar';

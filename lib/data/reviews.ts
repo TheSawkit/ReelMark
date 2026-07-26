@@ -1,0 +1,230 @@
+import 'server-only';
+
+import { getOptionalUser } from '@/lib/supabase/auth-helpers';
+import { createClient } from '@/lib/supabase/server';
+import { fetchAllRows } from '@/lib/supabase/pagination';
+import { reportSwallowed } from '@/lib/report';
+import { REVIEW_COLUMNS } from '@/lib/supabase/columns';
+import type {
+	Review,
+	PublicReview,
+	ReviewMediaType,
+	UserReviewsPage,
+} from '@/types/profile';
+
+export const REVIEWS_PAGE_SIZE = 20;
+const REVIEWS_MAX_PAGE_SIZE = 50;
+
+function parseRatingRow(data: unknown): { avg: number; count: number } | null {
+	const row =
+		(data as Array<{ avg: string | null; count: string }> | null)?.[0] ??
+		null;
+	if (!row || row.avg === null) return null;
+	return { avg: Number(row.avg), count: Number(row.count) };
+}
+
+/**
+ * Returns a page of reviews for a given user, newest first.
+ * Pass nextCursor from the previous page to get the next batch.
+ */
+export async function getUserReviews(
+	userId: string,
+	cursor?: string,
+	limit: number = REVIEWS_PAGE_SIZE
+): Promise<UserReviewsPage> {
+	const supabase = await createClient();
+	const pageSize = Math.min(Math.max(1, limit), REVIEWS_MAX_PAGE_SIZE);
+
+	let query = supabase
+		.from('reviews')
+		.select(REVIEW_COLUMNS)
+		.eq('user_id', userId)
+		.order('created_at', { ascending: false })
+		.order('id', { ascending: false })
+		.limit(pageSize + 1);
+
+	if (cursor) query = query.lt('created_at', cursor);
+
+	const { data, error } = await query;
+	if (error) throw new Error(error.message);
+
+	const rows = (data as Review[]) ?? [];
+	const hasMore = rows.length > pageSize;
+	const reviews = hasMore ? rows.slice(0, pageSize) : rows;
+	const nextCursor = hasMore ? reviews[reviews.length - 1].created_at : null;
+
+	return { reviews, nextCursor };
+}
+
+/**
+ * Returns a `media_key → rating` map of a user's own movie/tv ratings, for sorting lists
+ * by user rating. Reviews RLS restricts direct reads to the user's own rows, so callers
+ * should only request the rating map of the list owner viewing their own profile.
+ *
+ * @param userId - Owner of the reviews.
+ */
+export async function getUserReviewRatings(
+	userId: string
+): Promise<Record<string, number>> {
+	const supabase = await createClient();
+
+	const data = await fetchAllRows((from, to) =>
+		supabase
+			.from('reviews')
+			.select('media_id, media_type, rating')
+			.eq('user_id', userId)
+			.in('media_type', ['movie', 'tv'])
+			.not('rating', 'is', null)
+			.order('media_type')
+			.order('media_id')
+			.range(from, to)
+	).catch((error: unknown) => {
+		reportSwallowed('reviews:ratings', error);
+		return [];
+	});
+
+	const map: Record<string, number> = {};
+	for (const row of data) {
+		if (row.rating !== null) {
+			map[`${row.media_type}-${row.media_id}`] = row.rating;
+		}
+	}
+	return map;
+}
+
+/** Returns the authenticated user's own `media_key → rating` map, or an empty map if signed out. */
+export async function getMyReviewRatings(): Promise<Record<string, number>> {
+	const { userId } = await getOptionalUser();
+	if (!userId) return {};
+	return getUserReviewRatings(userId);
+}
+
+/**
+ * Returns the authenticated user's review for a specific media item, or null if none.
+ */
+export async function getMediaReview(
+	mediaId: number,
+	mediaType: ReviewMediaType
+): Promise<Review | null> {
+	const { supabase, userId } = await getOptionalUser();
+	if (!userId) return null;
+
+	const { data } = await supabase
+		.from('reviews')
+		.select(REVIEW_COLUMNS)
+		.eq('user_id', userId)
+		.eq('media_id', mediaId)
+		.eq('media_type', mediaType)
+		.maybeSingle();
+
+	return (data as Review) ?? null;
+}
+
+/**
+ * Returns the authenticated user's own episode reviews, keyed by episode ID, so a season
+ * page can render inline ratings without one query per episode.
+ */
+export async function getMyEpisodeReviews(
+	episodeIds: number[]
+): Promise<Record<number, Review>> {
+	if (episodeIds.length === 0) return {};
+	const { supabase, userId } = await getOptionalUser();
+	if (!userId) return {};
+
+	const { data } = await supabase
+		.from('reviews')
+		.select(REVIEW_COLUMNS)
+		.eq('user_id', userId)
+		.eq('media_type', 'episode')
+		.in('media_id', episodeIds);
+
+	const byEpisodeId: Record<number, Review> = {};
+	for (const review of (data ?? []) as Review[]) {
+		byEpisodeId[review.media_id] = review;
+	}
+	return byEpisodeId;
+}
+
+/**
+ * Returns the community average rating (1–10 scale) and count for a media item.
+ * Returns null if no ratings exist.
+ */
+export async function getAverageRating(
+	mediaId: number,
+	mediaType: ReviewMediaType
+): Promise<{ avg: number; count: number } | null> {
+	const supabase = await createClient();
+
+	const { data } = await supabase.rpc('get_media_rating', {
+		p_media_id: mediaId,
+		p_media_type: mediaType,
+	});
+	return parseRatingRow(data);
+}
+
+/**
+ * Returns the community average rating for a season, aggregated from its episode reviews.
+ * Returns null if no episode ratings exist for this season.
+ */
+export async function getSeasonAverageRating(
+	tvId: number,
+	seasonNumber: number
+): Promise<{ avg: number; count: number } | null> {
+	const supabase = await createClient();
+
+	const { data } = await supabase.rpc('get_season_rating', {
+		p_tv_id: tvId,
+		p_season_number: seasonNumber,
+	});
+	return parseRatingRow(data);
+}
+
+/**
+ * Returns the community average rating for a show, aggregated from all its episode reviews.
+ * Returns null if no ratings exist.
+ */
+export async function getShowAverageRating(
+	tvId: number
+): Promise<{ avg: number; count: number } | null> {
+	const supabase = await createClient();
+
+	const { data } = await supabase.rpc('get_show_rating', { p_tv_id: tvId });
+	return parseRatingRow(data);
+}
+
+/**
+ * Returns public reviews for a media item, filtered by the viewer's auth/friendship status.
+ */
+export async function getPublicReviews(
+	mediaId: number,
+	mediaType: ReviewMediaType
+): Promise<PublicReview[]> {
+	const { supabase, userId } = await getOptionalUser();
+
+	const { data, error } = await supabase.rpc('get_public_reviews', {
+		p_media_id: mediaId,
+		p_media_type: mediaType,
+		p_viewer_id: userId ?? undefined,
+	});
+
+	if (error) return [];
+	return (data as PublicReview[]) ?? [];
+}
+
+/**
+ * Returns public reviews for a set of episode IDs, filtered by viewer's auth/friendship status.
+ */
+export async function getPublicEpisodeReviews(
+	episodeIds: number[]
+): Promise<PublicReview[]> {
+	if (episodeIds.length === 0) return [];
+	const { supabase, userId } = await getOptionalUser();
+
+	const { data, error } = await supabase.rpc('get_public_episode_reviews', {
+		p_episode_ids: episodeIds,
+		p_viewer_id: userId ?? undefined,
+	});
+
+	if (error) return [];
+	return (data as PublicReview[]) ?? [];
+}

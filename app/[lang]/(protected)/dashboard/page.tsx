@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { getUserWatchlist } from '@/app/actions/watchlist';
+import { getUserWatchlist } from '@/lib/data/watchlist';
 import {
 	getMovieDetails,
 	getTvShowDetails,

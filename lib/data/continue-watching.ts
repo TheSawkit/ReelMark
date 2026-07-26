@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { cache } from 'react';
 import { getOptionalUser } from '@/lib/supabase/auth-helpers';
 import { getWatchlistWithProgress } from '@/lib/data/watchlist';

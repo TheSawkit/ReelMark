@@ -1,8 +1,30 @@
-import { cache } from 'react';
-import { getPromptStates } from '@/app/actions/prompts';
-import { getUserContext } from '@/lib/supabase/auth-helpers';
+import 'server-only';
 
-export const getCachedPromptStates = cache(getPromptStates);
+import { cache } from 'react';
+import { getUserContext } from '@/lib/supabase/auth-helpers';
+import {
+	isPromptKey,
+	isPromptState,
+	type PromptStates,
+} from '@/lib/prompts/keys';
+
+/** Answers already given to account-scoped call-to-actions, so none is ever asked twice. */
+export const getCachedPromptStates = cache(async (): Promise<PromptStates> => {
+	const { supabase, user } = await getUserContext();
+	if (!user) return {};
+
+	const { data } = await supabase
+		.from('user_prompts')
+		.select('prompt_key, state')
+		.eq('user_id', user.id);
+
+	const states: PromptStates = {};
+	for (const row of data ?? []) {
+		if (isPromptKey(row.prompt_key) && isPromptState(row.state))
+			states[row.prompt_key] = row.state;
+	}
+	return states;
+});
 
 /**
  * Watchlist size only, request-deduped: the call-to-action slot renders on every page,

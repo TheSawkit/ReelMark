@@ -1,4 +1,4 @@
-import { getPublicReviews } from '@/app/actions/reviews';
+import { getPublicReviews } from '@/lib/data/reviews';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { getTranslations } from '@/lib/i18n/server';
 import { ReviewsList } from '@/components/media/reviews/ReviewsList';

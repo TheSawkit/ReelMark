@@ -35,6 +35,7 @@
 		"nextjs-toploader": "^3.9.17",
 		"react": "19.2.7",
 		"react-dom": "19.2.7",
+		"server-only": "^0.0.1",
 		"serwist": "^9.5.12",
 		"simple-icons": "^16.27.1",
 		"sonner": "^2.0.7",

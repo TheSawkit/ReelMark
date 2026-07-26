@@ -15,14 +15,14 @@ import { ProfileOptionsMenu } from '@/components/profile/ProfileOptionsMenu';
 import {
 	getProfileByUsername,
 	getPrivacySettings,
-} from '@/app/actions/profile';
-import { getUserReviews, getUserReviewRatings } from '@/app/actions/reviews';
-import { getUserPlaylists } from '@/app/actions/playlists';
+} from '@/lib/data/profile';
+import { getUserReviews, getUserReviewRatings } from '@/lib/data/reviews';
+import { getUserPlaylists } from '@/lib/data/playlists';
 import {
 	getFriendsWithProfiles,
 	getFriendshipStatus,
 	getPendingRequestsWithProfiles,
-} from '@/app/actions/friends';
+} from '@/lib/data/friends';
 import { getGenres } from '@/lib/tmdb';
 import { ListMetadataBackfill } from '@/components/library/ListMetadataBackfill';
 import type { WatchlistEntry } from '@/types/tmdb';
