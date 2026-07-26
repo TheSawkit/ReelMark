@@ -29,6 +29,8 @@ export function PromptBanner({
 		<div
 			role="region"
 			aria-label={title}
+			aria-hidden={!visible}
+			inert={!visible}
 			className={cn(
 				'fixed left-0 right-0 z-40',
 				'top-[calc(4rem+env(safe-area-inset-top))]',
