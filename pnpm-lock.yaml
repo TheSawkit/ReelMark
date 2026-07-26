@@ -58,7 +58,7 @@ importers:
                 specifier: ^7.5.0
                 version: 7.5.0
             lucide-react:
-                specifier: ^1.27.0
+                specifier: '>=1.27.0'
                 version: 1.27.0(react@19.2.7)
             next:
                 specifier: 16.2.10
@@ -76,7 +76,7 @@ importers:
                 specifier: ^9.5.12
                 version: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
             simple-icons:
-                specifier: ^16.27.1
+                specifier: '>=16.27.1'
                 version: 16.27.1
             sonner:
                 specifier: ^2.0.7
