@@ -2,6 +2,7 @@ import { cache } from 'react';
 import { cacheLife } from 'next/cache';
 import { getServerLocale, getServerLanguage } from '@/lib/i18n/server';
 import { createClient } from '@/lib/supabase/server';
+import { TMDBNotFoundError } from '@/lib/tmdb/errors';
 import type { Language } from '@/lib/i18n/translations';
 
 export interface FetchTMDBOptions {
@@ -155,6 +156,7 @@ export async function fetchTMDB<T>(
 
 	const result = await fetchTMDBUrl<T>(url, revalidate, retries);
 	if (!result.ok) {
+		if (result.status === 404) throw new TMDBNotFoundError(safeEndpoint);
 		throw new Error(
 			`TMDB API Error: ${result.status} ${result.statusText}`
 		);
