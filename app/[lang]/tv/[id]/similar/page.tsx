@@ -9,6 +9,7 @@ import { RelatedMediaPage } from '@/components/media/RelatedMediaPage';
 import { getTranslations } from '@/lib/i18n/server';
 import { buildPageMetadata, localizedAlternates } from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';
+import { reportSwallowed } from '@/lib/report';
 
 type SimilarPageParams = Promise<{ lang: Language; id: string }>;
 interface SimilarPageProps {
@@ -53,7 +54,8 @@ export default async function SimilarTvShowsPage(props: SimilarPageProps) {
 	let details;
 	try {
 		details = await getTvShowDetails(tvId, lang);
-	} catch {
+	} catch (error) {
+		reportSwallowed('tv/similar:details', error);
 		notFound();
 	}
 	const t = await getTranslations(lang);

@@ -24,6 +24,7 @@ import { WatchProviders } from '@/components/media/detail/WatchProviders';
 import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { SeasonEpisodesList } from '@/components/media/tv/SeasonEpisodesList';
 import { localizedAlternates } from '@/lib/metadata';
+import { reportSwallowed } from '@/lib/report';
 
 type SeasonPageParams = Promise<{
 	lang: Language;
@@ -118,7 +119,8 @@ export default async function SeasonPage(props: SeasonPageProps) {
 			getTvShowDetails(tvId, lang),
 			getSeasonDetails(tvId, seasonNumber, lang),
 		]);
-	} catch {
+	} catch (error) {
+		reportSwallowed('season:details', error);
 		notFound();
 	}
 

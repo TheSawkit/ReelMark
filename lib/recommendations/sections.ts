@@ -33,6 +33,7 @@ import {
 import { getMediaKey } from '@/lib/media';
 import type { Translations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
+import { reportSwallowed } from '@/lib/report';
 import type {
 	Movie,
 	TvShow,
@@ -225,13 +226,19 @@ export async function buildLibrarySections(
 			),
 			Promise.all(
 				personSeedEntries.map((entry) =>
-					getCredits(entry.media_id, lang).catch(() => null)
+					getCredits(entry.media_id, lang).catch((error: unknown) => {
+						reportSwallowed('recommendations:credits', error);
+						return null;
+					})
 				)
 			),
 			(isMovie
 				? getUpcomingMovies(1, lang)
 				: getOnTheAirTvShows(1, lang)
-			).catch((): Movie[] | TvShow[] => []),
+			).catch((error: unknown): Movie[] | TvShow[] => {
+				reportSwallowed('recommendations:fresh-titles', error);
+				return [];
+			}),
 		]);
 
 	const seedCandidates = seeds.map(({ weight }, index) => ({
