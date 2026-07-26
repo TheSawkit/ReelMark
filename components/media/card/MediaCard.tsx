@@ -115,8 +115,9 @@ export function MediaCard({
 				{!compact && (
 					<div
 						className={cn(
-							'absolute inset-0 bg-linear-to-t from-black/90 via-black/60 to-transparent transition-opacity duration-(--duration-base)',
-							'opacity-0 group-hover:opacity-100'
+							'pointer-events-none absolute inset-0 bg-linear-to-t from-black/90 via-black/60 to-transparent transition-opacity duration-(--duration-base)',
+							'opacity-0 group-hover:opacity-100',
+							'pointer-coarse:opacity-100'
 						)}
 					/>
 				)}
@@ -186,10 +187,11 @@ export function MediaCard({
 						className={cn(
 							'absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 transition-all duration-(--duration-base) z-10',
 							'translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100',
-							// Sans hover, l'overlay ne s'affiche jamais (Tailwind v4 borne `hover:` à
-							// @media (hover:hover)) : un tap au bas du poster tombait sur le WatchButton
-							// invisible et ajoutait le titre à la watchlist au lieu de naviguer.
-							'pointer-events-none group-hover:pointer-events-auto'
+							'pointer-events-none group-hover:pointer-events-auto',
+							// `hover:` ne se déclenche jamais sur tactile (Tailwind v4 le borne à
+							// @media (hover:hover)) : l'overlay y reste donc affiché et actif, sinon
+							// le bouton watchlist serait soit invisible et tapable, soit inatteignable.
+							'pointer-coarse:translate-y-0 pointer-coarse:opacity-100 pointer-coarse:pointer-events-auto'
 						)}
 					>
 						<div>

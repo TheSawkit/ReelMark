@@ -127,9 +127,12 @@ export function SeasonCard({
 					'absolute top-2 right-2 z-10 transition-all duration-(--duration-base)',
 					watched > 0
 						? 'opacity-100'
-						: // Masqué sans hover : sans `pointer-events-none`, un tap sur ce coin
-							// marquait toute la saison comme vue sur mobile, où l'icône est invisible.
-							'opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto'
+						: cn(
+								'opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto',
+								// Sur tactile `hover:` ne se déclenche pas : l'icône y reste visible
+								// et active, sinon elle serait tapable à l'aveugle ou inatteignable.
+								'pointer-coarse:opacity-100 pointer-coarse:pointer-events-auto'
+							)
 				)}
 			>
 				<SeasonWatchIcon
