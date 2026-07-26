@@ -52,7 +52,7 @@ export async function resolvePrompt(
 	);
 	if (error) throw new Error(error.message);
 }
-'use server';
+('use server');
 
 import {
 	getAuthenticatedUser,
