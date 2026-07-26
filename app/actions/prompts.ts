@@ -54,10 +54,14 @@ export async function resolvePrompt(
 }
 'use server';
 
-import { getAuthenticatedUser, getOptionalUser } from '@/lib/supabase/auth-helpers';
+import {
+	getAuthenticatedUser,
+	getOptionalUser,
+} from '@/lib/supabase/auth-helpers';
 import {
 	ACCOUNT_PROMPTS,
-	PROMPT_KEYS,
+	isPromptKey,
+	isPromptState,
 	type PromptKey,
 	type PromptState,
 	type PromptStates,
@@ -77,8 +81,8 @@ export async function getPromptStates(): Promise<PromptStates> {
 
 	const states: PromptStates = {};
 	for (const row of data ?? []) {
-		const key = row.prompt_key as PromptKey;
-		if (PROMPT_KEYS.includes(key)) states[key] = row.state as PromptState;
+		if (isPromptKey(row.prompt_key) && isPromptState(row.state))
+			states[row.prompt_key] = row.state;
 	}
 	return states;
 }
@@ -89,7 +93,7 @@ export async function resolvePrompt(
 	state: PromptState
 ): Promise<void> {
 	if (!ACCOUNT_PROMPTS.has(key)) throw new Error('Invalid prompt_key');
-	if (!VALID_STATES.has(state)) throw new Error('Invalid state');
+	if (!isPromptState(state)) throw new Error('Invalid state');
 
 	const { supabase, userId } = await getAuthenticatedUser();
 
