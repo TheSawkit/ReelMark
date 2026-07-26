@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Bell, FolderDown } from 'lucide-react';
+import { Bell, FolderDown, Tv } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PromptBanner } from '@/components/prompts/PromptBanner';
 import { IosInstallHint } from '@/components/prompts/IosInstallHint';
@@ -87,6 +87,14 @@ function promptCopy(
 			actionLabel: t.prompts.push.action,
 		};
 
+	if (key === 'streaming')
+		return {
+			icon: <Tv className="size-5" aria-hidden />,
+			title: t.prompts.streaming.title,
+			description: t.prompts.streaming.description,
+			actionLabel: t.prompts.streaming.action,
+		};
+
 	return {
 		icon: <FolderDown className="size-5" aria-hidden />,
 		title: t.prompts.import.title,
@@ -95,10 +103,17 @@ function promptCopy(
 	};
 }
 
+/** Onglet des réglages que chaque call-to-action ouvre. */
+const SETTINGS_TARGET: Partial<Record<PromptKey, string>> = {
+	import: '/settings?section=data',
+	streaming: '/settings?section=services',
+};
+
 interface PromptHostProps {
 	initialStates: PromptStates;
 	accountCreatedAt: number | null;
 	canImport: boolean;
+	canPickServices: boolean;
 }
 
 /** Renders the single call-to-action the prompt engine allows for this session, if any. */
@@ -106,6 +121,7 @@ export function PromptHost({
 	initialStates,
 	accountCreatedAt,
 	canImport,
+	canPickServices,
 }: PromptHostProps) {
 	const { t, lang } = useTranslation();
 	const router = useRouter();
@@ -122,6 +138,7 @@ export function PromptHost({
 		if (pwa.visible) eligible.push('install');
 		if (pushRequested && push.status === 'off') eligible.push('push');
 		if (canImport && visits >= IMPORT_MIN_VISITS) eligible.push('import');
+		if (canPickServices) eligible.push('streaming');
 
 		promptStore.evaluate(
 			eligible,
@@ -134,6 +151,7 @@ export function PromptHost({
 		pushRequested,
 		push.status,
 		canImport,
+		canPickServices,
 		initialStates,
 		accountCreatedAt,
 	]);
@@ -167,8 +185,10 @@ export function PromptHost({
 				await settle('push', 'done');
 				return;
 			}
-			router.push(localizedHref(lang, '/settings?section=data'));
-			await settle('import', 'done');
+
+			const target = SETTINGS_TARGET[active];
+			if (target) router.push(localizedHref(lang, target));
+			await settle(active, 'done');
 		} finally {
 			setPending(false);
 		}

@@ -29,7 +29,6 @@ import {
 import { BentoStats } from '@/components/dashboard/BentoStats';
 import { TrendingMarquee } from '@/components/dashboard/TrendingMarquee';
 import { ContinueWatchingSection } from '@/components/dashboard/ContinueWatchingSection';
-import { StreamingPromptSection } from '@/components/dashboard/StreamingPromptSection';
 import { ContinueWatchingSkeleton } from '@/components/dashboard/ContinueWatchingSkeleton';
 import {
 	DashboardHeroSkeleton,
@@ -326,10 +325,6 @@ export default async function DashboardPage({ params: paramsPromise }: Props) {
 
 			<Suspense fallback={<TrendingMarqueeSkeleton />}>
 				<TrendingSection t={t} lang={lang} />
-			</Suspense>
-
-			<Suspense fallback={null}>
-				<StreamingPromptSection />
 			</Suspense>
 
 			<Suspense fallback={<div className="h-11.5 mb-8" />}>
