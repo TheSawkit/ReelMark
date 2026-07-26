@@ -1,7 +1,22 @@
+import { networkInterfaces } from 'node:os';
 import type { NextConfig } from 'next';
 import withSerwist from '@serwist/next';
 
 const isDev = process.env.NODE_ENV === 'development';
+
+/**
+ * IPv4 de la machine sur son réseau, pour tester depuis un téléphone en dev.
+ * Sans elles, Next bloque `/_next/*` en cross-origin : le routeur client et les
+ * Server Actions ne répondent plus et l'app paraît figée. Résolues à chaud plutôt
+ * qu'écrites en dur, l'adresse changeant avec le réseau.
+ */
+function localNetworkOrigins(): string[] {
+	return Object.values(networkInterfaces())
+		.flat()
+		.filter((details) => details?.family === 'IPv4' && !details.internal)
+		.map((details) => details?.address ?? '')
+		.filter(Boolean);
+}
 const supabaseHost = new URL(
 	process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://localhost'
 ).hostname;
@@ -44,6 +59,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
 	output: 'standalone',
 	cacheComponents: true,
+	allowedDevOrigins: localNetworkOrigins(),
 	experimental: {
 		optimizePackageImports: [
 			'lucide-react',
