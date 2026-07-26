@@ -3,10 +3,7 @@ import { requireAuth } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { isOAuthOnly } from '@/lib/supabase/auth-helpers';
 import { SettingsContent } from '@/components/settings/SettingsContent';
-import {
-	isSettingsTab,
-	type SettingsTab,
-} from '@/components/settings/SettingsNav';
+import { isSettingsTab, type SettingsTab } from '@/components/settings/tabs';
 import { SettingsContentSkeleton } from '@/components/settings/SettingsContentSkeleton';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { getTranslations } from '@/lib/i18n/server';
