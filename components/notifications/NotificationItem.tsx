@@ -31,6 +31,7 @@ export function NotificationItem({
 
 	const visual = isFriend ? (
 		<UserAvatar
+			picture={notification.senderAvatarUrl ?? undefined}
 			fullName={notification.senderUsername ?? undefined}
 			size={40}
 			className="h-10 w-10 shrink-0"

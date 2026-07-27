@@ -1,7 +1,9 @@
 import 'server-only';
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
+import { resolveAvatarUrl } from '@/lib/avatar';
 import { rowToAppNotification } from '@/lib/notifications';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import {
 	DEFAULT_NOTIFICATION_PREFERENCES,
 	type AppNotification,
@@ -9,7 +11,30 @@ import {
 } from '@/types/notifications';
 
 const NOTIFICATION_COLUMNS =
-	'id, type, sender_username, media_id, media_type, media_title, poster_path, season_number, episode_number, url, read_at, created_at';
+	'id, type, sender_id, sender_username, media_id, media_type, media_title, poster_path, season_number, episode_number, url, read_at, created_at';
+
+/**
+ * Senders' avatars keyed by user id. Fetched separately rather than embedded: `sender_id` has
+ * no declared foreign key to `user_profiles`, so PostgREST cannot join the two.
+ */
+async function getSenderAvatars(
+	supabase: SupabaseClient,
+	senderIds: string[]
+): Promise<Map<string, string>> {
+	if (senderIds.length === 0) return new Map();
+
+	const { data } = await supabase
+		.from('user_profiles')
+		.select('user_id, avatar_url')
+		.in('user_id', senderIds);
+
+	const avatars = new Map<string, string>();
+	for (const profile of data ?? []) {
+		const url = resolveAvatarUrl(profile.avatar_url, null);
+		if (url) avatars.set(profile.user_id, url);
+	}
+	return avatars;
+}
 
 /** Returns the authenticated user's notifications, newest first. */
 export async function getNotifications(limit = 30): Promise<AppNotification[]> {
@@ -21,7 +46,15 @@ export async function getNotifications(limit = 30): Promise<AppNotification[]> {
 		.order('created_at', { ascending: false })
 		.limit(limit);
 	if (error) throw new Error(error.message);
-	return (data ?? []).map(rowToAppNotification);
+
+	const rows = data ?? [];
+	const avatars = await getSenderAvatars(supabase, [
+		...new Set(rows.map((row) => row.sender_id).filter(Boolean)),
+	]);
+
+	return rows.map((row) =>
+		rowToAppNotification(row, avatars.get(row.sender_id) ?? null)
+	);
 }
 
 /** Returns the count of unread notifications for the authenticated user. */

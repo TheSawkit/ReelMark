@@ -14,25 +14,34 @@ export function notificationMessage(
 		.replace('{episode}', String(n.episodeNumber ?? ''));
 }
 
-/** Maps a Supabase notifications row to the camelCase app shape. */
-export function rowToAppNotification(row: {
-	id: string;
-	type: string;
-	sender_username: string | null;
-	media_id: number | null;
-	media_type: string | null;
-	media_title: string | null;
-	poster_path: string | null;
-	season_number: number | null;
-	episode_number: number | null;
-	url: string | null;
-	read_at: string | null;
-	created_at: string;
-}): AppNotification {
+/**
+ * Maps a Supabase notifications row to the camelCase app shape.
+ *
+ * @param senderAvatarUrl - Looked up by the caller: the row carries `sender_id`, never the
+ * picture, and the realtime payload cannot join, so each caller passes what it could resolve.
+ */
+export function rowToAppNotification(
+	row: {
+		id: string;
+		type: string;
+		sender_username: string | null;
+		media_id: number | null;
+		media_type: string | null;
+		media_title: string | null;
+		poster_path: string | null;
+		season_number: number | null;
+		episode_number: number | null;
+		url: string | null;
+		read_at: string | null;
+		created_at: string;
+	},
+	senderAvatarUrl: string | null = null
+): AppNotification {
 	return {
 		id: row.id,
 		type: row.type as NotificationType,
 		senderUsername: row.sender_username,
+		senderAvatarUrl,
 		mediaId: row.media_id,
 		mediaType: row.media_type as 'movie' | 'tv' | null,
 		mediaTitle: row.media_title,
