@@ -52,9 +52,9 @@ export function AbandonShowMenu({
 					disabled={loading}
 					aria-label={t.movie.moreActions}
 					className={cn(
-						'flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-text',
-						'border border-border/10 transition-colors cursor-pointer',
-						'hover:bg-surface-2/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+						'flex h-8 w-8 items-center justify-center rounded-full glass-overlay-button text-text',
+						'shadow-card-sm cursor-pointer',
+						'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 						'disabled:opacity-50 disabled:cursor-not-allowed',
 						className
 					)}

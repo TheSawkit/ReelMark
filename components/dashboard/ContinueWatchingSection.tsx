@@ -163,7 +163,7 @@ function ContinueWatchingCard({
 					)}
 
 					{episodeCode && (
-						<span className="absolute left-2 top-2 rounded px-2 py-1 text-sm font-bold text-text bg-surface border border-border shadow-card-sm">
+						<span className="absolute left-2 top-2 rounded px-2 py-1 text-sm font-bold text-text glass-overlay shadow-card-sm">
 							{episodeCode}
 						</span>
 					)}
@@ -201,8 +201,7 @@ function ContinueWatchingCard({
 						disabled={loading}
 						aria-label={t.movie.markEpisodeWatched}
 						className={cn(
-							'flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-border/10 border-t-border/20 bg-surface px-3 py-2 text-xs font-medium text-muted shadow-card-sm transition-colors',
-							'hover:border-border hover:bg-surface-2 hover:text-text',
+							'flex min-h-10 cursor-pointer items-center gap-2 rounded-md glass-overlay-button px-3 py-2 text-xs font-medium text-text shadow-card-sm',
 							'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 							'disabled:cursor-not-allowed disabled:opacity-50'
 						)}
@@ -217,7 +216,7 @@ function ContinueWatchingCard({
 							: t.movie.markEpisodeWatched}
 					</button>
 				) : (
-					<span className="flex min-h-10 items-center gap-2 rounded-md border border-border/10 bg-primary/80 px-3 py-2 text-xs font-medium text-white shadow-card-sm">
+					<span className="flex min-h-10 items-center gap-2 rounded-md border border-border/10 bg-primary/65 backdrop-blur-2xl px-3 py-2 text-xs font-medium text-white shadow-card-sm">
 						<CheckCircle2 className="h-4 w-4" aria-hidden="true" />
 						{t.movie.episodeWatched}
 					</span>

@@ -77,7 +77,7 @@ export function ForYouSection({ title, items }: ForYouSectionProps) {
 								}}
 								aria-label={t.pages.dashboard.notInterested}
 								title={t.pages.dashboard.notInterested}
-								className="flex h-8 w-8 items-center justify-center rounded-full bg-poster-overlay-heavy border border-white/10 text-white/70 shadow-card-sm transition-colors cursor-pointer hover:text-white hover:bg-red/40 hover:border-red/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+								className="flex h-8 w-8 items-center justify-center rounded-full glass-overlay-button text-text/70 shadow-card-sm cursor-pointer hover:text-white hover:bg-red/70 hover:border-red/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 							>
 								<X className="h-4 w-4" />
 							</button>

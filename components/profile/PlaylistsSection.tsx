@@ -203,7 +203,7 @@ function PlaylistCard({
 								e.stopPropagation();
 								openEditDialog();
 							}}
-							className="p-2 rounded-lg bg-black/70 border border-glass-border text-white/55 hover:text-white hover:bg-black/85 transition-colors"
+							className="p-2 rounded-lg glass-overlay-button text-text/60 hover:text-text"
 							aria-label={t.profile.editPlaylist}
 						>
 							<Pencil className="h-3.5 w-3.5" />
@@ -213,7 +213,7 @@ function PlaylistCard({
 								e.stopPropagation();
 								setConfirmDelete(true);
 							}}
-							className="p-2 rounded-lg bg-black/70 border border-glass-border text-white/55 hover:text-red hover:bg-red/20 hover:border-red/30 transition-colors"
+							className="p-2 rounded-lg glass-overlay-button text-text/60 hover:text-white hover:bg-red/70 hover:border-red/50"
 							aria-label={t.profile.deletePlaylist}
 						>
 							<Trash2 className="h-3.5 w-3.5" />
