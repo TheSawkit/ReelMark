@@ -9,10 +9,16 @@ test.use({
 test.describe('MediaCard on touch devices', () => {
 	test('tapping the bottom of a card navigates instead of firing a watchlist action', async ({
 		page,
+		baseURL,
 	}) => {
+		// Scoped to our own origin: Sentry ships its envelopes over POST too, and counting
+		// those made the assertion fail on a perfectly innocent tap.
+		const origin = new URL(baseURL ?? 'http://localhost:3000').origin;
 		const serverActions: string[] = [];
 		page.on('request', (request) => {
-			if (request.method() === 'POST') serverActions.push(request.url());
+			const url = request.url();
+			if (request.method() === 'POST' && url.startsWith(origin))
+				serverActions.push(url);
 		});
 
 		await page.goto('/en/movie/550');
