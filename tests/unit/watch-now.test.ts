@@ -103,6 +103,36 @@ describe('matchMyProviders', () => {
 		).toHaveLength(0);
 	});
 
+	it('refuses a javascript: link and falls back to the title page', () => {
+		const options = matchMyProviders(
+			[provider('Netflix', { web_url: 'javascript:alert(1)' })],
+			[provider('Netflix')],
+			JUSTWATCH
+		);
+
+		expect(options[0].href).toBe(JUSTWATCH);
+	});
+
+	it('drops the offer when every candidate link has a dangerous scheme', () => {
+		expect(
+			matchMyProviders(
+				[provider('Netflix', { web_url: 'javascript:alert(1)' })],
+				[provider('Netflix')],
+				'data:text/html,<script>alert(1)</script>'
+			)
+		).toHaveLength(0);
+	});
+
+	it('keeps a protocol-relative or app-scheme link out of the href', () => {
+		expect(
+			matchMyProviders(
+				[provider('Netflix', { web_url: 'nflx://title/1' })],
+				[provider('Netflix')],
+				'//evil.example/x'
+			)
+		).toHaveLength(0);
+	});
+
 	it('deduplicates a service listed twice by the offers', () => {
 		const options = matchMyProviders(
 			[

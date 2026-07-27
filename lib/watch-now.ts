@@ -11,6 +11,14 @@ export interface WatchNowOption {
 export type WatchNowVariant = 'banner' | 'bar';
 
 /**
+ * Offer links come from third parties and land in an `href`, where a `javascript:` scheme
+ * would execute on click. Only plain web links get through.
+ */
+function webLinkOrNull(url: string | undefined): string | null {
+	return url && /^https?:\/\//i.test(url) ? url : null;
+}
+
+/**
  * The user's own streaming services that carry this title, with the deepest link available.
  * Subscription offers only: renting a title is not "watching it on your platform".
  *
@@ -33,7 +41,8 @@ export function matchMyProviders(
 		);
 		if (!owned) continue;
 
-		const href = offer.web_url || fallbackHref;
+		const href =
+			webLinkOrNull(offer.web_url) ?? webLinkOrNull(fallbackHref);
 		if (!href) continue;
 
 		const key = providerNameKey(owned.provider_name);

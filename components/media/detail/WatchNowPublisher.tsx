@@ -1,12 +1,39 @@
 import { WatchNowSeed } from '@/components/media/detail/WatchNowSeed';
 import { getCachedStreamingProviders } from '@/lib/data/watchlist';
 import { getAvailableProviders } from '@/lib/tmdb/providers';
-import { matchMyProviders } from '@/lib/watch-now';
+import { reportSwallowed } from '@/lib/report';
+import { matchMyProviders, type WatchNowOption } from '@/lib/watch-now';
 import type { WatchProvidersRegion } from '@/types/tmdb';
 
 interface WatchNowPublisherProps {
 	providers: WatchProvidersRegion | null;
 	region: string;
+}
+
+/**
+ * Hosting the play options inside "where to watch" must never make that section depend on the
+ * session being readable, so a failure here degrades to no play button instead of no section.
+ */
+async function resolveMyOptions(
+	providers: WatchProvidersRegion,
+	region: string
+): Promise<WatchNowOption[]> {
+	try {
+		const myProviderIds = await getCachedStreamingProviders();
+		if (myProviderIds.length === 0) return [];
+
+		const available = await getAvailableProviders(region);
+		const mine = new Set(myProviderIds);
+
+		return matchMyProviders(
+			providers.flatrate,
+			available.filter((provider) => mine.has(provider.provider_id)),
+			providers.link
+		);
+	} catch (error) {
+		reportSwallowed('watch-now:publisher', error);
+		return [];
+	}
 }
 
 /**
@@ -20,17 +47,7 @@ export async function WatchNowPublisher({
 }: WatchNowPublisherProps) {
 	if (!providers?.flatrate?.length) return null;
 
-	const myProviderIds = await getCachedStreamingProviders();
-	if (myProviderIds.length === 0) return null;
-
-	const available = await getAvailableProviders(region);
-	const mine = new Set(myProviderIds);
-
-	const options = matchMyProviders(
-		providers.flatrate,
-		available.filter((provider) => mine.has(provider.provider_id)),
-		providers.link
-	);
+	const options = await resolveMyOptions(providers, region);
 	if (options.length === 0) return null;
 
 	return <WatchNowSeed options={options} />;
