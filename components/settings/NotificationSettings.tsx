@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
 	Card,
 	CardContent,
@@ -9,16 +9,10 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import {
-	getNotificationPreferences,
-	updateNotificationPreferences,
-} from '@/app/actions/notifications';
+import { updateNotificationPreferences } from '@/app/actions/notifications';
 import { useTranslation } from '@/lib/i18n/context';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
-import {
-	DEFAULT_NOTIFICATION_PREFERENCES,
-	type NotificationPreferences,
-} from '@/types/notifications';
+import type { NotificationPreferences } from '@/types/notifications';
 
 const KEYS = [
 	'friend_requests',
@@ -27,12 +21,17 @@ const KEYS = [
 	'suggestions',
 ] as const;
 
-export function NotificationSettings() {
+interface NotificationSettingsProps {
+	initialPreferences: NotificationPreferences;
+}
+
+export function NotificationSettings({
+	initialPreferences,
+}: NotificationSettingsProps) {
 	const { t } = useTranslation();
 	const push = usePushSubscription();
-	const [prefs, setPrefs] = useState<NotificationPreferences>(
-		DEFAULT_NOTIFICATION_PREFERENCES
-	);
+	const [prefs, setPrefs] =
+		useState<NotificationPreferences>(initialPreferences);
 
 	const pushHint =
 		push.status === 'unsupported'
@@ -40,10 +39,6 @@ export function NotificationSettings() {
 			: push.status === 'ios-needs-install'
 				? t.settings.notifications.iosHint
 				: null;
-
-	useEffect(() => {
-		void getNotificationPreferences().then(setPrefs);
-	}, []);
 
 	const toggle = (key: (typeof KEYS)[number]) => {
 		const next = { ...prefs, [key]: !prefs[key] };

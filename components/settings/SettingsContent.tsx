@@ -22,6 +22,7 @@ import type {
 	PrivacySettings as PrivacySettingsType,
 } from '@/types/profile';
 import type { WatchProvider } from '@/types/tmdb';
+import type { NotificationPreferences } from '@/types/notifications';
 
 interface SettingsContentProps {
 	user: User | null;
@@ -30,6 +31,7 @@ interface SettingsContentProps {
 	isOAuthOnly: boolean;
 	streamingProviders: WatchProvider[];
 	selectedProviderIds: number[];
+	notificationPreferences: NotificationPreferences;
 	initialTab: SettingsTab;
 }
 
@@ -40,6 +42,7 @@ export function SettingsContent({
 	isOAuthOnly,
 	streamingProviders,
 	selectedProviderIds,
+	notificationPreferences,
 	initialTab,
 }: SettingsContentProps) {
 	const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
@@ -66,7 +69,11 @@ export function SettingsContent({
 						<PasskeySettings />
 					</div>
 				)}
-				{activeTab === 'notifications' && <NotificationSettings />}
+				{activeTab === 'notifications' && (
+					<NotificationSettings
+						initialPreferences={notificationPreferences}
+					/>
+				)}
 				{activeTab === 'appearance' && (
 					<div className="space-y-6">
 						<ThemeSettings />

@@ -1,6 +1,6 @@
 import { getTranslations } from '@/lib/i18n/server';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
-import { getNotifications } from '@/app/actions/notifications';
+import { getNotifications } from '@/lib/data/notifications';
 import { NotificationsList } from '@/components/notifications/NotificationsList';
 import { BASE_URL, buildPageMetadata } from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';

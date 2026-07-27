@@ -1,8 +1,8 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
-import { getAllTvShowsWatchProgress } from '@/app/actions/episodes';
+import { getAllTvShowsWatchProgress } from '@/lib/data/episodes';
 import { getCachedUserWatchlist } from '@/lib/data/watchlist';
-import { getMyReviewRatings } from '@/app/actions/reviews';
+import { getMyReviewRatings } from '@/lib/data/reviews';
 import {
 	LibraryView,
 	LibraryLiveSubtitle,

@@ -1,9 +1,12 @@
+import 'server-only';
+
 import { cache } from 'react';
 import { getOptionalUser } from '@/lib/supabase/auth-helpers';
 import { getWatchlistWithProgress } from '@/lib/data/watchlist';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { getSeasonDetails } from '@/lib/tmdb';
-import { getCachedTvShowDetails } from '@/lib/tmdb/cached';
+import { getTvShowDetails } from '@/lib/tmdb/tv';
+import { reportSwallowed } from '@/lib/report';
 import { findNextEpisode, type SeasonEpisodeCount } from '@/lib/next-episode';
 import { orderByWatchRecency } from '@/lib/continue-watching';
 import type { WatchlistEntry } from '@/types/tmdb';
@@ -44,8 +47,11 @@ async function buildItem(
 	entry: WatchlistEntry,
 	watchedBySeason: WatchedBySeason
 ): Promise<ContinueWatchingItem | null> {
-	const details = await getCachedTvShowDetails(entry.media_id).catch(
-		() => null
+	const details = await getTvShowDetails(entry.media_id).catch(
+		(error: unknown) => {
+			reportSwallowed('continue-watching:tv-details', error);
+			return null;
+		}
 	);
 	if (!details) return null;
 
@@ -62,7 +68,10 @@ async function buildItem(
 	const season = await getSeasonDetails(
 		entry.media_id,
 		next.seasonNumber
-	).catch(() => null);
+	).catch((error: unknown) => {
+		reportSwallowed('continue-watching:season-details', error);
+		return null;
+	});
 	if (!season) return null;
 
 	const watchedEpisodes = watchedBySeason.get(next.seasonNumber) ?? new Set();

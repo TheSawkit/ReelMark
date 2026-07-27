@@ -22,6 +22,7 @@ import { mergeWithWatchlist } from '@/lib/data/watchlist';
 import { getTranslations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
 import { localizedAlternates } from '@/lib/metadata';
+import { reportSwallowed } from '@/lib/report';
 
 type CrewPageParams = Promise<{ lang: Language; id: string }>;
 interface CrewPageProps {
@@ -155,7 +156,8 @@ export default async function CrewPage(props: CrewPageProps) {
 	let crew;
 	try {
 		crew = await getCrewDetails(crewId, lang);
-	} catch {
+	} catch (error) {
+		reportSwallowed('crew:details', error);
 		notFound();
 	}
 

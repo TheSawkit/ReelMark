@@ -1,7 +1,6 @@
 'use server';
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
-import { createClient } from '@/lib/supabase/server';
 import { formStr } from '@/lib/validators';
 import { getTranslations } from '@/lib/i18n/server';
 import {
@@ -9,32 +8,6 @@ import {
 	revalidateLocalizedAfterResponse,
 } from '@/app/actions/_helpers';
 import { parseVisibility } from '@/lib/privacy';
-import { USER_PROFILE_COLUMNS, PRIVACY_COLUMNS } from '@/lib/supabase/columns';
-import type {
-	PrivacySettings,
-	PrivacyDefaults,
-	UserProfile,
-} from '@/types/profile';
-
-/**
- * Returns the public profile for a given username (case-insensitive), or null if not found.
- *
- * @param username - The profile's username slug.
- * @returns UserProfile or null.
- */
-export async function getProfileByUsername(
-	username: string
-): Promise<UserProfile | null> {
-	const supabase = await createClient();
-
-	const { data } = await supabase
-		.from('user_profiles')
-		.select(USER_PROFILE_COLUMNS)
-		.ilike('username', username)
-		.maybeSingle();
-
-	return data ?? null;
-}
 
 export async function updateSocialLinks(
 	prevState: unknown,
@@ -113,33 +86,6 @@ export async function updateSocialLinks(
 		success: true,
 		message: t.settings.social.title + t.settings.successUpdate,
 	};
-}
-
-/**
- * Returns privacy settings for a given user, falling back to all-public defaults.
- *
- * @param userId - Supabase user ID.
- * @returns PrivacySettings object.
- */
-export async function getPrivacySettings(
-	userId: string
-): Promise<PrivacySettings> {
-	const supabase = await createClient();
-
-	const { data } = await supabase
-		.from('privacy_settings')
-		.select(PRIVACY_COLUMNS)
-		.eq('user_id', userId)
-		.maybeSingle();
-
-	const fallback: PrivacyDefaults = {
-		watchlist_visibility: 'public',
-		watched_visibility: 'public',
-		reviews_visibility: 'public',
-		playlists_visibility: 'public',
-		friends_visibility: 'public',
-	};
-	return (data as PrivacySettings) ?? { user_id: userId, ...fallback };
 }
 
 export async function updatePrivacySettings(

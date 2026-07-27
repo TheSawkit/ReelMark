@@ -2,39 +2,23 @@
 
 import { revalidateLocalizedAfterResponse } from '@/app/actions/_helpers';
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
-import { rowToAppNotification } from '@/lib/notifications';
 import {
-	DEFAULT_NOTIFICATION_PREFERENCES,
-	type AppNotification,
-	type NotificationPreferences,
+	getNotifications as readNotifications,
+	getUnreadCount as readUnreadCount,
+} from '@/lib/data/notifications';
+import type {
+	AppNotification,
+	NotificationPreferences,
 } from '@/types/notifications';
 
-const NOTIFICATION_COLUMNS =
-	'id, type, sender_username, media_id, media_type, media_title, poster_path, season_number, episode_number, url, read_at, created_at';
-
-/** Returns the authenticated user's notifications, newest first. */
+/** Lazy-loaded notification list for the dropdown panel, which only opens on demand. */
 export async function getNotifications(limit = 30): Promise<AppNotification[]> {
-	const { supabase, userId } = await getAuthenticatedUser();
-	const { data, error } = await supabase
-		.from('notifications')
-		.select(NOTIFICATION_COLUMNS)
-		.eq('user_id', userId)
-		.order('created_at', { ascending: false })
-		.limit(limit);
-	if (error) throw new Error(error.message);
-	return (data ?? []).map(rowToAppNotification);
+	return readNotifications(limit);
 }
 
-/** Returns the count of unread notifications for the authenticated user. */
+/** Badge count resynced by the client after a realtime update or delete. */
 export async function getUnreadCount(): Promise<number> {
-	const { supabase, userId } = await getAuthenticatedUser();
-	const { count, error } = await supabase
-		.from('notifications')
-		.select('id', { count: 'exact', head: true })
-		.eq('user_id', userId)
-		.is('read_at', null);
-	if (error) throw new Error(error.message);
-	return count ?? 0;
+	return readUnreadCount();
 }
 
 export async function markNotificationRead(id: string): Promise<void> {
@@ -69,16 +53,6 @@ export async function deleteNotification(id: string): Promise<void> {
 		.eq('user_id', userId);
 	if (error) throw new Error(error.message);
 	revalidateLocalizedAfterResponse(['/notifications']);
-}
-
-export async function getNotificationPreferences(): Promise<NotificationPreferences> {
-	const { supabase, userId } = await getAuthenticatedUser();
-	const { data } = await supabase
-		.from('notification_preferences')
-		.select('friend_requests, friend_accepted, new_episodes, suggestions')
-		.eq('user_id', userId)
-		.maybeSingle();
-	return data ?? DEFAULT_NOTIFICATION_PREFERENCES;
 }
 
 export async function updateNotificationPreferences(

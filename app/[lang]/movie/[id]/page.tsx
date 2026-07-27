@@ -25,8 +25,8 @@ import {
 	WatchActionsSkeleton,
 } from '@/components/media/detail/MediaDetailSkeleton';
 import { PublicReviewsSection } from '@/components/media/reviews/PublicReviewsSection';
-import { getMediaWatchlistEntry } from '@/app/actions/watchlist';
-import { getAverageRating, getMediaReview } from '@/app/actions/reviews';
+import { getMediaWatchlistEntry } from '@/lib/data/watchlist';
+import { getAverageRating, getMediaReview } from '@/lib/data/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
 import { MediaCommunityRating } from '@/components/media/detail/MediaCommunityRating';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';

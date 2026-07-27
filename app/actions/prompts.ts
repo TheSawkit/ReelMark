@@ -1,35 +1,12 @@
 'use server';
 
-import {
-	getAuthenticatedUser,
-	getOptionalUser,
-} from '@/lib/supabase/auth-helpers';
+import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import {
 	ACCOUNT_PROMPTS,
-	isPromptKey,
 	isPromptState,
 	type PromptKey,
 	type PromptState,
-	type PromptStates,
 } from '@/lib/prompts/keys';
-
-/** Answers already given to account-scoped call-to-actions, so none is ever asked twice. */
-export async function getPromptStates(): Promise<PromptStates> {
-	const { supabase, userId } = await getOptionalUser();
-	if (!userId) return {};
-
-	const { data } = await supabase
-		.from('user_prompts')
-		.select('prompt_key, state')
-		.eq('user_id', userId);
-
-	const states: PromptStates = {};
-	for (const row of data ?? []) {
-		if (isPromptKey(row.prompt_key) && isPromptState(row.state))
-			states[row.prompt_key] = row.state;
-	}
-	return states;
-}
 
 /** Records the user's answer to a call-to-action; deliberately never revalidates. */
 export async function resolvePrompt(

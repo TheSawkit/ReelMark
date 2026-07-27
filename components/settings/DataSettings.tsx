@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/context';
 import { exportUserData, importBatch, importLists } from '@/app/actions/data';
+import { RATE_LIMITED } from '@/lib/action-errors';
 import type { ImportItem, ImportedList } from '@/lib/data-transfer/types';
 import { parseImportFile, type Platform } from '@/lib/parsers/import-watchlist';
 import {
@@ -105,8 +106,13 @@ export function DataSettings() {
 				document.body.removeChild(a);
 				URL.revokeObjectURL(url);
 				toast.success(td.exportSuccess);
-			} catch {
-				toast.error(t.common.actionError);
+			} catch (err) {
+				const msg = err instanceof Error ? err.message : '';
+				toast.error(
+					msg === RATE_LIMITED
+						? td.exportRateLimited
+						: t.common.actionError
+				);
 			}
 		});
 	}

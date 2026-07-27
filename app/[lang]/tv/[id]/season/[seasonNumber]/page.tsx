@@ -9,12 +9,12 @@ import {
 } from '@/lib/tmdb';
 import { getServerLocale, getTranslations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
-import { getSeasonEpisodeWatches } from '@/app/actions/episodes';
+import { getSeasonEpisodeWatches } from '@/lib/data/episodes';
 import {
 	getSeasonAverageRating,
 	getPublicEpisodeReviews,
 	getMyEpisodeReviews,
-} from '@/app/actions/reviews';
+} from '@/lib/data/reviews';
 import { SeasonBanner } from '@/components/media/tv/SeasonBanner';
 import { SeasonWatchButton } from '@/components/media/tv/SeasonWatchButton';
 import { MediaActionsBar } from '@/components/media/detail/MediaActionsBar';
@@ -24,6 +24,7 @@ import { WatchProviders } from '@/components/media/detail/WatchProviders';
 import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { SeasonEpisodesList } from '@/components/media/tv/SeasonEpisodesList';
 import { localizedAlternates } from '@/lib/metadata';
+import { reportSwallowed } from '@/lib/report';
 
 type SeasonPageParams = Promise<{
 	lang: Language;
@@ -118,7 +119,8 @@ export default async function SeasonPage(props: SeasonPageProps) {
 			getTvShowDetails(tvId, lang),
 			getSeasonDetails(tvId, seasonNumber, lang),
 		]);
-	} catch {
+	} catch (error) {
+		reportSwallowed('season:details', error);
 		notFound();
 	}
 

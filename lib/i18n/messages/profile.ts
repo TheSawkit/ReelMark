@@ -93,6 +93,7 @@ const fr = {
 		invalidVisibility: 'Visibilité invalide',
 		selfRequest: "Tu ne peux pas t'inviter toi-même",
 		duplicateRequest: 'Une demande existe déjà avec cet utilisateur',
+		rateLimited: 'Trop de demandes envoyées, réessaie dans un moment',
 	},
 };
 
@@ -190,6 +191,7 @@ const en = {
 		invalidVisibility: 'Invalid visibility value',
 		selfRequest: 'You cannot send an invitation to yourself',
 		duplicateRequest: 'A friend request already exists with this user',
+		rateLimited: 'Too many requests sent, try again in a while',
 	},
 } satisfies typeof fr;
 

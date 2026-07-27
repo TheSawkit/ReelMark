@@ -21,7 +21,7 @@ import {
 } from '@/lib/tmdb';
 import type { MediaItem, MediaType, WatchlistEntry } from '@/types/tmdb';
 import { getMediaKey } from '@/lib/media';
-import { getMediaWatchlistEntries } from './watchlist';
+import { getMediaWatchlistEntries } from '@/lib/data/watchlist';
 
 /**
  * Enriches a list of media items with their corresponding watchlist entries for the current user.
