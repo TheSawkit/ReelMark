@@ -3,14 +3,10 @@ const NAME_ALIASES: Record<string, string> = {
 	amazonprime: 'amazonprimevideo',
 	hbomax: 'max',
 	hbo: 'max',
-	paramountplus: 'paramountplus',
 	paramount: 'paramountplus',
-	peacockpremium: 'peacockpremium',
 	peacock: 'peacockpremium',
-	nowtv: 'nowtv',
 	now: 'nowtv',
 	disney: 'disneyplus',
-	disneyplus: 'disneyplus',
 };
 
 const PREFIX_MATCH_MIN_LENGTH = 5;
