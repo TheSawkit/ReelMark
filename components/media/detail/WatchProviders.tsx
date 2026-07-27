@@ -8,6 +8,7 @@ import {
 	normalizeName,
 } from '@/lib/tmdb/watch-providers';
 import { getAppStoreIconMap } from '@/lib/watchmode/app-store';
+import { WatchNowPublisher } from '@/components/media/detail/WatchNowPublisher';
 import type { WatchProvidersRegion, WatchProvider } from '@/types/tmdb';
 
 interface WatchProvidersProps {
@@ -181,6 +182,7 @@ export async function WatchProviders({ providers }: WatchProvidersProps) {
 
 	return (
 		<section className="space-y-5">
+			<WatchNowPublisher providers={providers} region={region} />
 			<SectionHeading>{td.whereToWatch}</SectionHeading>
 
 			{!providers ||
