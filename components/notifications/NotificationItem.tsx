@@ -31,6 +31,7 @@ export function NotificationItem({
 
 	const visual = isFriend ? (
 		<UserAvatar
+			picture={notification.senderAvatarUrl ?? undefined}
 			fullName={notification.senderUsername ?? undefined}
 			size={40}
 			className="h-10 w-10 shrink-0"
@@ -68,12 +69,12 @@ export function NotificationItem({
 	);
 
 	const itemClassName = cn(
-		'group flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors',
+		'flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors',
 		'hover:bg-surface-2 active:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
 	);
 
 	return (
-		<div className="relative">
+		<div className="group relative">
 			{notification.url ? (
 				<Link
 					href={localizedHref(lang, notification.url)}
@@ -87,7 +88,10 @@ export function NotificationItem({
 				<div className={itemClassName}>{inner}</div>
 			)}
 			{onDelete && (
-				<div className="absolute right-1 top-1 opacity-0 transition-opacity group-hover:opacity-100">
+				// Visible d'emblée au doigt : `hover:` est borné à @media (hover:hover), donc au
+				// tactile le bouton restait invisible tout en captant le tap — viser la
+				// notification pour l'ouvrir la supprimait.
+				<div className="absolute right-1 top-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
 					<DeleteIconButton
 						onClick={() => onDelete(notification.id)}
 						ariaLabel={t.notifications.delete}

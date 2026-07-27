@@ -16,6 +16,23 @@ export async function register() {
 		);
 	}
 
+	const degradesSilently = [
+		'NEXT_PUBLIC_SENTRY_DSN',
+		'SENTRY_DSN',
+		'WATCHMODE_API_KEY',
+		'NEXT_PUBLIC_VAPID_PUBLIC_KEY',
+		'VAPID_PRIVATE_KEY',
+		'VAPID_SUBJECT',
+	];
+
+	const absent = degradesSilently.filter((key) => !process.env[key]);
+
+	if (absent.length > 0) {
+		console.warn(
+			`[instrumentation] Feature disabled, no runtime error will be raised: ${absent.join(', ')}`
+		);
+	}
+
 	if (process.env.NEXT_RUNTIME === 'nodejs') {
 		await import('./sentry.server.config');
 	}

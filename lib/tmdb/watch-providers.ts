@@ -1,30 +1,14 @@
 import { fetchTMDB } from './client';
+import { normalizeName, providerAlias } from '@/lib/provider-identity';
 import type { Language } from '@/lib/i18n/translations';
 import { reportSwallowed } from '@/lib/report';
+
+export { normalizeName } from '@/lib/provider-identity';
 
 interface TmdbProviderItem {
 	logo_path: string;
 	provider_id: number;
 	provider_name: string;
-}
-
-const NAME_ALIASES: Record<string, string> = {
-	amazon: 'amazonprimevideo',
-	amazonprime: 'amazonprimevideo',
-	hbomax: 'max',
-	hbo: 'max',
-	paramountplus: 'paramountplus',
-	paramount: 'paramountplus',
-	peacockpremium: 'peacockpremium',
-	peacock: 'peacockpremium',
-	nowtv: 'nowtv',
-	now: 'nowtv',
-	disney: 'disneyplus',
-	disneyplus: 'disneyplus',
-};
-
-export function normalizeName(name: string): string {
-	return name.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
 async function fetchProviderList(
@@ -84,7 +68,7 @@ export function resolveProviderLogo(
 	const exact = logoMap.get(key);
 	if (exact) return `https://image.tmdb.org/t/p/w92${exact}`;
 
-	const alias = NAME_ALIASES[key];
+	const alias = providerAlias(key);
 	if (alias) {
 		const aliased = logoMap.get(alias);
 		if (aliased) return `https://image.tmdb.org/t/p/w92${aliased}`;

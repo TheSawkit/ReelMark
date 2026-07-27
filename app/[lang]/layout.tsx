@@ -36,11 +36,12 @@ const display = Bebas_Neue({
 	variable: '--font-display',
 });
 
+// Le pincement pour zoomer reste ouvert : le verrouiller échoue au critère WCAG 1.4.4 et
+// prive les malvoyants d'agrandir. Le zoom iOS au focus, seule raison de le verrouiller, ne
+// se déclenche pas ici — les champs sont en `text-base` (16 px) sur mobile.
 export const viewport: Viewport = {
 	width: 'device-width',
 	initialScale: 1,
-	maximumScale: 1,
-	userScalable: false,
 	viewportFit: 'cover',
 	interactiveWidget: 'resizes-content',
 	colorScheme: 'dark light',

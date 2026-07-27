@@ -8,6 +8,8 @@ import {
 	normalizeName,
 } from '@/lib/tmdb/watch-providers';
 import { getAppStoreIconMap } from '@/lib/watchmode/app-store';
+import { webLinkOrNull } from '@/lib/safe-link';
+import { WatchNowPublisher } from '@/components/media/detail/WatchNowPublisher';
 import type { WatchProvidersRegion, WatchProvider } from '@/types/tmdb';
 
 interface WatchProvidersProps {
@@ -52,12 +54,14 @@ function ProviderLogo({
 	showPrice,
 	logoMap,
 	appStoreMap,
+	fallbackUrl,
 }: {
 	p: WatchProvider;
 	region: string;
 	showPrice?: boolean;
 	logoMap: Map<string, string>;
 	appStoreMap: Map<string, string>;
+	fallbackUrl?: string;
 }) {
 	const key = normalizeName(p.provider_name);
 	const logoSrc =
@@ -104,14 +108,22 @@ function ProviderLogo({
 		</div>
 	);
 
-	if (p.web_url) {
+	// Watchmode fournit l'URL profonde vers la plateforme, mais son quota est vite épuisé ;
+	// on retombe alors sur les données TMDB, dépourvues d'URL par plateforme. Sans ce repli
+	// vers la page JustWatch du titre, les logos cessaient d'être des liens du tout.
+	const href = webLinkOrNull(p.web_url) ?? webLinkOrNull(fallbackUrl);
+
+	if (href) {
+		// Le logo ne fait que 40 px : le pseudo-élément porte la cible tactile à 48 px sans
+		// décaler la grille. `active:` redonne au doigt le retour visuel que le
+		// `-webkit-tap-highlight-color: transparent` global supprime.
 		return (
 			<a
-				href={p.web_url}
+				href={href}
 				target="_blank"
 				rel="noopener noreferrer"
 				aria-label={p.provider_name}
-				className="hover:opacity-75 transition-opacity"
+				className="relative inline-flex transition-opacity hover:opacity-75 active:opacity-60 before:absolute before:-inset-1 before:content-['']"
 				title={p.provider_name}
 			>
 				{inner}
@@ -129,6 +141,7 @@ function ProviderGroup({
 	showPrice,
 	logoMap,
 	appStoreMap,
+	fallbackUrl,
 }: {
 	label: string;
 	providers: WatchProvider[];
@@ -136,6 +149,7 @@ function ProviderGroup({
 	showPrice?: boolean;
 	logoMap: Map<string, string>;
 	appStoreMap: Map<string, string>;
+	fallbackUrl?: string;
 }) {
 	return (
 		<div className="space-y-2">
@@ -151,6 +165,7 @@ function ProviderGroup({
 						showPrice={showPrice}
 						logoMap={logoMap}
 						appStoreMap={appStoreMap}
+						fallbackUrl={fallbackUrl}
 					/>
 				))}
 			</div>
@@ -168,6 +183,7 @@ export async function WatchProviders({ providers }: WatchProvidersProps) {
 
 	return (
 		<section className="space-y-5">
+			<WatchNowPublisher providers={providers} region={region} />
 			<SectionHeading>{td.whereToWatch}</SectionHeading>
 
 			{!providers ||
@@ -184,6 +200,7 @@ export async function WatchProviders({ providers }: WatchProvidersProps) {
 							region={region}
 							logoMap={logoMap}
 							appStoreMap={appStoreMap}
+							fallbackUrl={providers.link}
 						/>
 					)}
 					{providers.rent && providers.rent.length > 0 && (
@@ -194,6 +211,7 @@ export async function WatchProviders({ providers }: WatchProvidersProps) {
 							showPrice
 							logoMap={logoMap}
 							appStoreMap={appStoreMap}
+							fallbackUrl={providers.link}
 						/>
 					)}
 					{providers.buy && providers.buy.length > 0 && (
@@ -204,6 +222,7 @@ export async function WatchProviders({ providers }: WatchProvidersProps) {
 							showPrice
 							logoMap={logoMap}
 							appStoreMap={appStoreMap}
+							fallbackUrl={providers.link}
 						/>
 					)}
 				</div>

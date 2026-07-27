@@ -111,18 +111,18 @@ export function PlaylistGrid({
 								className={cn(
 									'absolute top-2 right-2 z-20',
 									'w-6 h-6 rounded-full flex items-center justify-center',
-									'bg-poster-overlay-heavy border border-white/10 shadow-sm',
+									'glass-overlay-button shadow-card-sm text-text',
 									'transition-all duration-(--duration-instant)',
 									'sm:opacity-0 sm:scale-75 sm:group-hover:opacity-100 sm:group-hover:scale-100',
 									isRemoving
 										? 'opacity-100 scale-100'
-										: 'cursor-pointer hover:bg-red/20 hover:border-red/30'
+										: 'cursor-pointer hover:bg-red/70 hover:border-red/50 hover:text-white'
 								)}
 							>
 								{isRemoving ? (
 									<Loader2 className="h-3 w-3 animate-spin text-muted" />
 								) : (
-									<X className="h-3 w-3 text-white" />
+									<X className="h-3 w-3" />
 								)}
 							</button>
 						)}

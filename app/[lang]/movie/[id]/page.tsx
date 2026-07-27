@@ -19,6 +19,7 @@ import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
 import { SagaSection } from '@/components/media/detail/SagaSection';
 import { SimilarSection } from '@/components/media/detail/SimilarSection';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
+import { WatchNowSlot } from '@/components/media/detail/WatchNowSlot';
 import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
 import {
 	DetailSectionSkeleton,
@@ -214,17 +215,28 @@ export default async function MoviePage(props: MoviePageProps) {
 				</Suspense>
 			}
 			actions={
-				<Suspense fallback={<WatchActionsSkeleton variant="banner" />}>
-					<MovieUserActions movie={movieDetails} variant="banner" />
-				</Suspense>
+				<>
+					<WatchNowSlot variant="banner" />
+					<Suspense
+						fallback={<WatchActionsSkeleton variant="banner" />}
+					>
+						<MovieUserActions
+							movie={movieDetails}
+							variant="banner"
+						/>
+					</Suspense>
+				</>
 			}
 		/>
 	);
 
 	const actionsBar = (
-		<Suspense fallback={<WatchActionsSkeleton variant="bar" />}>
-			<MovieUserActions movie={movieDetails} variant="bar" />
-		</Suspense>
+		<>
+			<WatchNowSlot variant="bar" />
+			<Suspense fallback={<WatchActionsSkeleton variant="bar" />}>
+				<MovieUserActions movie={movieDetails} variant="bar" />
+			</Suspense>
+		</>
 	);
 
 	return (

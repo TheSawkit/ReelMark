@@ -58,7 +58,12 @@ export function sanitizeRedirectPath(
 	fallback: string
 ): string {
 	if (!path) return fallback;
-	if (!path.startsWith('/') || path.startsWith('//') || path.includes('://'))
+	if (
+		!path.startsWith('/') ||
+		path.startsWith('//') ||
+		path.includes('://') ||
+		path.includes('\\')
+	)
 		return fallback;
 	return path;
 }

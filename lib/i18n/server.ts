@@ -29,9 +29,17 @@ export const getServerLanguage = cache(async (): Promise<Language> => {
 	return DEFAULT_LANGUAGE;
 });
 
-/** Returns the translation object for the given language, or the request-resolved one when omitted. */
+/**
+ * Returns the translation object for the given language, or the request-resolved one when the
+ * argument is missing or not a supported language.
+ *
+ * The guard is not decorative: `generateMetadata` receives the raw `[lang]` URL segment and runs
+ * before the layout can `notFound()` an unknown one, so any unmatched single-segment path — a
+ * missing static file, a bot probing `/config.json` — reached this with garbage and crashed the
+ * render on `undefined`.
+ */
 export const getTranslations = cache(async (lang?: Language) => {
-	const resolved = lang ?? (await getServerLanguage());
+	const resolved = isLanguage(lang) ? lang : await getServerLanguage();
 	return translations[resolved];
 });
 

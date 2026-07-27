@@ -464,13 +464,27 @@ a {
 	}
 
 	/* Glass layered over media / dark backdrops (cards, buttons on posters). */
-	.glass-overlay {
+	.glass-overlay,
+	.glass-overlay-button {
 		--glass-filter: blur(40px) saturate(150%);
-		background-color: color-mix(in srgb, var(--surface) 55%, transparent);
+		background-color: color-mix(in srgb, var(--surface) 65%, transparent);
 		-webkit-backdrop-filter: var(--glass-filter);
 		backdrop-filter: var(--glass-filter);
 		border: 1px solid var(--border);
 		border-top-color: var(--glass-border-hover);
+	}
+
+	/* Interactive variant: hover densifies the glass instead of tinting it. */
+	.glass-overlay-button {
+		transition:
+			background-color var(--duration-fast) var(--ease-apple),
+			border-color var(--duration-fast) var(--ease-apple),
+			color var(--duration-fast) var(--ease-apple);
+	}
+
+	.glass-overlay-button:hover {
+		background-color: color-mix(in srgb, var(--surface) 80%, transparent);
+		border-color: var(--glass-border-hover);
 	}
 
 	.top-nav-safe-area {

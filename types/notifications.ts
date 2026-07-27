@@ -11,6 +11,7 @@ export interface AppNotification {
 	id: string;
 	type: NotificationType;
 	senderUsername: string | null;
+	senderAvatarUrl: string | null;
 	mediaId: number | null;
 	mediaType: 'movie' | 'tv' | null;
 	mediaTitle: string | null;

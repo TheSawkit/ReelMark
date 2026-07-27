@@ -8,6 +8,7 @@ function isBypassedPath(pathname: string): boolean {
 	return (
 		pathname.startsWith('/api') ||
 		pathname.startsWith('/auth') ||
+		pathname.startsWith('/monitoring') ||
 		pathname === '/og'
 	);
 }

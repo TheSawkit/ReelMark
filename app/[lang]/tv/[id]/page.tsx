@@ -18,6 +18,7 @@ import { TvWatchActions } from '@/components/media/detail/TvWatchActions';
 import { MediaDetailLayout } from '@/components/media/detail/MediaDetailLayout';
 import { SimilarSection } from '@/components/media/detail/SimilarSection';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
+import { WatchNowSlot } from '@/components/media/detail/WatchNowSlot';
 import { MediaTrailers } from '@/components/media/detail/MediaTrailers';
 import {
 	DetailSectionSkeleton,
@@ -282,6 +283,7 @@ export default async function TvShowPage(props: TvPageProps) {
 			}
 			actions={
 				<div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+					<WatchNowSlot variant="banner" />
 					<div className="w-full sm:w-auto">
 						<Suspense
 							fallback={
@@ -304,9 +306,12 @@ export default async function TvShowPage(props: TvPageProps) {
 	);
 
 	const actionsBar = (
-		<Suspense fallback={<WatchActionsSkeleton variant="bar" />}>
-			<TvUserActions show={tvDetails} variant="bar" />
-		</Suspense>
+		<>
+			<WatchNowSlot variant="bar" />
+			<Suspense fallback={<WatchActionsSkeleton variant="bar" />}>
+				<TvUserActions show={tvDetails} variant="bar" />
+			</Suspense>
+		</>
 	);
 
 	const seasonsSection =

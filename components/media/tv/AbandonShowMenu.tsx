@@ -52,9 +52,12 @@ export function AbandonShowMenu({
 					disabled={loading}
 					aria-label={t.movie.moreActions}
 					className={cn(
-						'flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-text',
-						'border border-border/10 transition-colors cursor-pointer',
-						'hover:bg-surface-2/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+						'relative flex h-8 w-8 items-center justify-center rounded-full glass-overlay-button text-text',
+						'shadow-card-sm cursor-pointer',
+						// Cible tactile élargie, mais d'un cran seulement : dans « Continuer à
+						// regarder » le voisin n'est qu'à 6 px, qu'un `-inset-2` recouvrirait.
+						"before:absolute before:-inset-1 before:content-['']",
+						'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 						'disabled:opacity-50 disabled:cursor-not-allowed',
 						className
 					)}

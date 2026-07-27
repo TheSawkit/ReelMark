@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
 	}
 
 	if (query.startsWith('@')) {
-		const username = query.slice(1);
+		const username = query.slice(1).replace(/[^a-zA-Z0-9_]/g, '');
 		if (!username)
 			return NextResponse.json(
 				{ users: [] },

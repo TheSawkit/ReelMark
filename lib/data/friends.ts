@@ -6,6 +6,7 @@ import { getPrivacySettings } from '@/lib/data/profile';
 import { FRIENDSHIP_COLUMNS } from '@/lib/supabase/columns';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { resolveAvatarUrl } from '@/lib/avatar';
+import { validateUUID } from '@/lib/validators';
 import type {
 	Friendship,
 	FriendEntry,
@@ -92,6 +93,8 @@ export async function getFriendsWithProfiles(
 	userId: string
 ): Promise<FriendEntry[]> {
 	const { userId: viewerId } = await getAuthenticatedUser();
+
+	if (validateUUID(userId) === null) throw new Error('Invalid user ID');
 
 	if (viewerId !== userId) {
 		const { friends_visibility } = await getPrivacySettings(userId);

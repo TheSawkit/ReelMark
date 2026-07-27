@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, Layers } from 'lucide-react';
@@ -30,6 +30,7 @@ interface SeasonBannerProps {
 	totalEpisodes: number;
 	genres: { id: number; name: string }[];
 	rating: { avg: number; count: number } | null;
+	watchNowButton?: ReactNode;
 }
 
 /**
@@ -49,6 +50,7 @@ export function SeasonBanner({
 	totalEpisodes,
 	genres,
 	rating,
+	watchNowButton,
 }: SeasonBannerProps) {
 	const { t, lang } = useTranslation();
 	const locale = getLocale(lang);
@@ -160,6 +162,7 @@ export function SeasonBanner({
 							ref={bottomRef}
 							className="flex flex-col sm:flex-row sm:items-center gap-3 mt-2"
 						>
+							{watchNowButton}
 							<SeasonWatchButton
 								tvId={tvId}
 								seasonNumber={seasonNumber}

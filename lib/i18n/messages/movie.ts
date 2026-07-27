@@ -158,6 +158,9 @@ const fr = {
 	rent: 'Location',
 	buy: 'Achat',
 	noProviders: 'Non disponible dans ta région',
+	watchNow: 'Regarder',
+	watchOn: 'Regarder sur ${provider}',
+	chooseProvider: 'Où veux-tu le regarder ?',
 };
 
 const en = {
@@ -320,6 +323,9 @@ const en = {
 	rent: 'Rent',
 	buy: 'Buy',
 	noProviders: 'Not available in your region',
+	watchNow: 'Watch',
+	watchOn: 'Watch on ${provider}',
+	chooseProvider: 'Where do you want to watch it?',
 } satisfies typeof fr;
 
 export const movie = { fr, en };

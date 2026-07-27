@@ -21,6 +21,7 @@ export function NotificationToast({
 }: NotificationToastProps) {
 	const visual = notification.type.startsWith('friend') ? (
 		<UserAvatar
+			picture={notification.senderAvatarUrl ?? undefined}
 			fullName={notification.senderUsername ?? undefined}
 			size={36}
 			className="h-9 w-9 shrink-0"

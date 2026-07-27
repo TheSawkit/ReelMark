@@ -21,6 +21,7 @@ import { MediaActionsBar } from '@/components/media/detail/MediaActionsBar';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { CommunityRating } from '@/components/media/detail/CommunityRating';
 import { WatchProviders } from '@/components/media/detail/WatchProviders';
+import { WatchNowSlot } from '@/components/media/detail/WatchNowSlot';
 import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { SeasonEpisodesList } from '@/components/media/tv/SeasonEpisodesList';
 import { localizedAlternates } from '@/lib/metadata';
@@ -173,9 +174,11 @@ export default async function SeasonPage(props: SeasonPageProps) {
 				totalEpisodes={totalEpisodes}
 				genres={tvDetails.genres}
 				rating={seasonRating}
+				watchNowButton={<WatchNowSlot variant="banner" />}
 			/>
 
 			<MediaActionsBar>
+				<WatchNowSlot variant="bar" />
 				<SeasonWatchButton
 					tvId={tvId}
 					seasonNumber={seasonNumber}
