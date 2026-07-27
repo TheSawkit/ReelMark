@@ -8,6 +8,7 @@ import {
 	normalizeName,
 } from '@/lib/tmdb/watch-providers';
 import { getAppStoreIconMap } from '@/lib/watchmode/app-store';
+import { webLinkOrNull } from '@/lib/safe-link';
 import { WatchNowPublisher } from '@/components/media/detail/WatchNowPublisher';
 import type { WatchProvidersRegion, WatchProvider } from '@/types/tmdb';
 
@@ -110,7 +111,7 @@ function ProviderLogo({
 	// Watchmode fournit l'URL profonde vers la plateforme, mais son quota est vite épuisé ;
 	// on retombe alors sur les données TMDB, dépourvues d'URL par plateforme. Sans ce repli
 	// vers la page JustWatch du titre, les logos cessaient d'être des liens du tout.
-	const href = p.web_url || fallbackUrl;
+	const href = webLinkOrNull(p.web_url) ?? webLinkOrNull(fallbackUrl);
 
 	if (href) {
 		// Le logo ne fait que 40 px : le pseudo-élément porte la cible tactile à 48 px sans

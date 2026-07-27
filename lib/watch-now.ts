@@ -1,4 +1,5 @@
 import { isSameProvider, providerNameKey } from '@/lib/provider-identity';
+import { webLinkOrNull } from '@/lib/safe-link';
 import type { WatchProvider } from '@/types/tmdb';
 
 export interface WatchNowOption {
@@ -9,14 +10,6 @@ export interface WatchNowOption {
 }
 
 export type WatchNowVariant = 'banner' | 'bar';
-
-/**
- * Offer links come from third parties and land in an `href`, where a `javascript:` scheme
- * would execute on click. Only plain web links get through.
- */
-function webLinkOrNull(url: string | undefined): string | null {
-	return url && /^https?:\/\//i.test(url) ? url : null;
-}
 
 /**
  * The user's own streaming services that carry this title, with the deepest link available.
