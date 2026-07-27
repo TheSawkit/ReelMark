@@ -1,4 +1,5 @@
 import { networkInterfaces } from 'node:os';
+import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import withSerwist from '@serwist/next';
 
@@ -125,7 +126,7 @@ const nextConfig: NextConfig = {
 
 const offlineRevision = crypto.randomUUID();
 
-export default withSerwist({
+const withPWA = withSerwist({
 	swSrc: 'app/service-worker.ts',
 	swDest: 'public/sw.js',
 	disable: isDev,
@@ -135,3 +136,20 @@ export default withSerwist({
 		{ url: '/fr/offline', revision: offlineRevision },
 	],
 })(nextConfig);
+
+/**
+ * Source maps and the same-origin tunnel. Without the wrapper every Bugsink stack trace reads
+ * `chunk-a3f2.js:1:48291`, and events sent straight to the third-party DSN are dropped by
+ * ad blockers. Upload is skipped when SENTRY_AUTH_TOKEN is unset, so local builds stay offline.
+ */
+export default withSentryConfig(withPWA, {
+	org: process.env.SENTRY_ORG,
+	project: process.env.SENTRY_PROJECT,
+	sentryUrl: process.env.SENTRY_URL,
+	authToken: process.env.SENTRY_AUTH_TOKEN,
+	tunnelRoute: '/monitoring',
+	widenClientFileUpload: true,
+	webpack: { treeshake: { removeDebugLogging: true } },
+	silent: !process.env.CI,
+	sourcemaps: { deleteSourcemapsAfterUpload: true },
+});

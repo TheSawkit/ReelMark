@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { BASE_URL } from '@/lib/metadata';
 import { getServerLanguage, getTranslations } from '@/lib/i18n/server';
@@ -33,13 +32,6 @@ function mapAuthError(message: string, t: AuthTranslations): string {
 	)
 		return t.auth.errors.rateLimitExceeded;
 	return message;
-}
-
-async function getOrigin(): Promise<string> {
-	const h = await headers();
-	const proto = h.get('x-forwarded-proto') ?? 'https';
-	const host = h.get('x-forwarded-host') ?? h.get('host');
-	return host ? `${proto}://${host}` : BASE_URL;
 }
 
 export async function login(prevState: unknown, formData: FormData) {
@@ -86,12 +78,11 @@ export async function signup(prevState: unknown, formData: FormData) {
 
 	if (existingProfile) return { error: t.settings.usernameTaken };
 
-	const origin = await getOrigin();
 	const { data, error } = await supabase.auth.signUp({
 		email,
 		password,
 		options: {
-			emailRedirectTo: `${origin}/auth/confirm?next=/dashboard`,
+			emailRedirectTo: `${BASE_URL}/auth/confirm?next=/dashboard`,
 			data: {
 				full_name: username,
 				username,
@@ -150,12 +141,11 @@ export async function requestMagicLink(
 	if (!validEmail) return { error: t.settings.missingFields };
 
 	const supabase = await createClient();
-	const origin = await getOrigin();
 	const { error } = await supabase.auth.signInWithOtp({
 		email: validEmail,
 		options: {
 			shouldCreateUser: false,
-			emailRedirectTo: `${origin}/auth/confirm?next=/dashboard`,
+			emailRedirectTo: `${BASE_URL}/auth/confirm?next=/dashboard`,
 		},
 	});
 
@@ -178,9 +168,8 @@ export async function requestPasswordReset(
 	if (!email) return { error: t.settings.missingFields };
 
 	const supabase = await createClient();
-	const origin = await getOrigin();
 	const { error } = await supabase.auth.resetPasswordForEmail(email, {
-		redirectTo: `${origin}/auth/confirm?next=/auth/update-password`,
+		redirectTo: `${BASE_URL}/auth/confirm?next=/auth/update-password`,
 	});
 
 	if (error) return { error: error.message };

@@ -24,15 +24,21 @@ export function formatDate(
 		day: 'numeric',
 	};
 
-	return new Date(dateString).toLocaleDateString(locale, {
+	const date = new Date(dateString);
+	if (Number.isNaN(date.getTime())) return null;
+
+	return date.toLocaleDateString(locale, {
 		...(options ?? defaultOptions),
 		timeZone: DISPLAY_TIME_ZONE,
 	});
 }
 
-/** Short localized date (e.g. "15 Jul 2023") from an ISO string. */
+/** Short localized date (e.g. "15 Jul 2023") from an ISO string; empty when unparseable. */
 export function formatShortDate(dateString: string, locale: string): string {
-	return new Date(dateString).toLocaleDateString(locale, {
+	const date = new Date(dateString);
+	if (Number.isNaN(date.getTime())) return '';
+
+	return date.toLocaleDateString(locale, {
 		day: 'numeric',
 		month: 'short',
 		year: 'numeric',

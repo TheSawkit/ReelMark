@@ -24,6 +24,15 @@ export function revalidateLocalizedAfterResponse(paths: readonly string[]) {
 }
 
 /**
+ * Deferred whole-layout revalidation, for mutations that change what the shell renders
+ * (username, avatar). Synchronously it would ship the caller's full RSC payload back with
+ * the mutation response — the exact cost `revalidateLocalizedAfterResponse` exists to avoid.
+ */
+export function revalidateLayoutAfterResponse() {
+	after(() => revalidatePath('/', 'layout'));
+}
+
+/**
  * Drops the cached Open Graph metadata of a playlist after the response.
  * Without it a renamed — or newly private — playlist keeps advertising its old name for the
  * whole `cacheLife` of `getPublicPlaylistMeta`.

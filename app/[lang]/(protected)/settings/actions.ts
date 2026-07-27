@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { revalidateLayoutAfterResponse } from '@/app/actions/_helpers';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { isOAuthOnly } from '@/lib/supabase/auth-helpers';
 import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
@@ -119,7 +120,7 @@ export async function updateProfile(prevState: unknown, formData: FormData) {
 		return { error: t.settings.usernameTaken, success: false };
 	if (syncError) return { error: syncError, success: false };
 
-	revalidatePath('/', 'layout');
+	revalidateLayoutAfterResponse();
 	return {
 		error: undefined,
 		success: true,
@@ -214,7 +215,7 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
 		return { error: error.message, success: false };
 	}
 
-	revalidatePath('/', 'layout');
+	revalidateLayoutAfterResponse();
 	return {
 		error: undefined,
 		success: true,
