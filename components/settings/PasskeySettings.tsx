@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { KeyRound, Plus } from 'lucide-react';
 import type { PasskeyListItem } from '@supabase/supabase-js';
@@ -11,6 +11,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
+import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { Button } from '@/components/ui/button';
 import { DeleteIconButton } from '@/components/ui/DeleteIconButton';
 import { createClient } from '@/lib/supabase/client';
@@ -25,7 +26,7 @@ export function PasskeySettings() {
 	const locale = getLocale(lang);
 	const supabase = createClient();
 	const [passkeys, setPasskeys] = useState<PasskeyListItem[]>([]);
-	const [isPending, startTransition] = useTransition();
+	const [isPending, startTransition] = useGuardedTransition();
 	const supported = usePasskeySupport();
 
 	const tp = t.settings.passkeys;

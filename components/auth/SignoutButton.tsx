@@ -1,13 +1,13 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { signout } from '@/app/auth/actions';
 import { LogOut } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
 import { clearUserScopedCaches } from '@/lib/pwa-cache';
 
 export function SignoutButton() {
-	const [isPending, startTransition] = useTransition();
+	const [isPending, startTransition] = useGuardedTransition();
 	const { t } = useTranslation();
 
 	const handleSignout = () => {

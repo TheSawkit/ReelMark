@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useTransition, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
+import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { Button } from '@/components/ui/button';
 import { UserPlus, UserCheck, Clock, Check } from 'lucide-react';
 import {
@@ -28,7 +29,7 @@ export function FriendshipButton({
 	friendship,
 }: FriendshipButtonProps) {
 	const { t } = useTranslation();
-	const [isPending, startTransition] = useTransition();
+	const [isPending, startTransition] = useGuardedTransition();
 	const [localFriendship, setLocalFriendship] = useState<Friendship | null>(
 		friendship
 	);

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { VisibilitySelector } from '@/components/profile/VisibilitySelector';
@@ -25,7 +26,7 @@ export function CreatePlaylistForm({
 	const [description, setDescription] = useState('');
 	const [visibility, setVisibility] =
 		useState<PrivacyVisibility>(defaultVisibility);
-	const [isPending, startTransition] = useTransition();
+	const [isPending, startTransition] = useGuardedTransition();
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();

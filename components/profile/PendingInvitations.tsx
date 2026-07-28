@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { Mail, ChevronDown, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/shared/UserAvatar';
@@ -25,7 +26,7 @@ export function PendingInvitations({
 	const { t } = useTranslation();
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [pending, setPending] = useState(requests);
-	const [isPending, startTransition] = useTransition();
+	const [isPending, startTransition] = useGuardedTransition();
 
 	if (pending.length === 0) return null;
 
