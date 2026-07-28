@@ -57,7 +57,9 @@ describe('createInFlightGuard', () => {
 
 	it('releases the guard when the action throws', async () => {
 		const guard = createInFlightGuard();
-		await expect(guard.run(() => Promise.reject(new Error('boom')))).rejects.toThrow('boom');
+		await expect(
+			guard.run(() => Promise.reject(new Error('boom')))
+		).rejects.toThrow('boom');
 		expect(guard.busy).toBe(false);
 		await expect(guard.run(() => 'recovered')).resolves.toBe('recovered');
 	});

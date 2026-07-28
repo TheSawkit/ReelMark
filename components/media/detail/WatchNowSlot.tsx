@@ -37,7 +37,9 @@ export function WatchNowSlot({ variant }: { variant: WatchNowVariant }) {
 		>
 			<Play className="h-4 w-4 fill-current" aria-hidden />
 			<span
-				className={variant === 'bar' ? 'inline max-lg:hidden' : undefined}
+				className={
+					variant === 'bar' ? 'inline max-lg:hidden' : undefined
+				}
 			>
 				{label}
 			</span>
