@@ -81,14 +81,16 @@ async function TvProvidersSection({
 async function TvTrailersSection({
 	tvId,
 	lang,
+	backdropPath,
 }: {
 	tvId: number;
 	lang: Language;
+	backdropPath: string | null;
 }) {
 	const videos = await getTvShowVideos(tvId, lang);
 	const trailers = await filterAvailableVideos(filterTrailers(videos));
 	if (trailers.length === 0) return null;
-	return <MediaTrailers trailers={trailers} />;
+	return <MediaTrailers trailers={trailers} backdropPath={backdropPath} />;
 }
 
 async function TvUserActions({
@@ -381,7 +383,11 @@ export default async function TvShowPage(props: TvPageProps) {
 				}
 				trailers={
 					<Suspense fallback={<DetailSectionSkeleton />}>
-						<TvTrailersSection tvId={tvId} lang={lang} />
+						<TvTrailersSection
+							tvId={tvId}
+							lang={lang}
+							backdropPath={tvDetails.backdrop_path}
+						/>
 					</Suspense>
 				}
 				cast={credits.cast}

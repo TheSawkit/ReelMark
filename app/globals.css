@@ -434,8 +434,9 @@ a {
 }
 
 @layer components {
-	/* -webkit- MUST come before the standard property: lightningcss merges the
-	   pair and keeps only the LAST form (Chrome 2026 dropped the -webkit- alias). */
+	/* lightningcss derives -webkit-backdrop-filter from the build targets on its own.
+	   Written by hand it MUST come before the standard property: the pair is merged
+	   and only the LAST form survives. */
 	.glass-surface {
 		--glass-filter: blur(24px) saturate(150%);
 		background-color: var(--glass-bg-hover);
@@ -485,6 +486,22 @@ a {
 	.glass-overlay-button:hover {
 		background-color: color-mix(in srgb, var(--surface) 80%, transparent);
 		border-color: var(--glass-border-hover);
+	}
+
+	/* Without backdrop-filter — Chrome on a blocklisted GPU or with acceleration off,
+	   older Android WebViews, Firefox where the property is disabled — a translucent
+	   fill lets the page scroll through. These materials sit over arbitrary media or
+	   text, so they fall back to an opaque surface rather than stay unreadable. */
+	@supports not (
+		(backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+	) {
+		.glass-bar,
+		.glass-popover,
+		.glass-overlay,
+		.glass-overlay-button,
+		.glass-overlay-button:hover {
+			background-color: var(--surface);
+		}
 	}
 
 	.top-nav-safe-area {
