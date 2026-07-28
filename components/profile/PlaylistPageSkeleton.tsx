@@ -21,7 +21,7 @@ export function PlaylistPageSkeleton() {
 							<div className="h-9 w-20 rounded-lg bg-surface-3" />
 						</div>
 					</div>
-					<div className="hidden lg:flex items-end gap-0">
+					<div className="flex max-lg:hidden items-end gap-0">
 						{Array.from({ length: 5 }).map((_, i) => (
 							<div
 								key={i}

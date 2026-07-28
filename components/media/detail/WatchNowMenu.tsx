@@ -26,7 +26,7 @@ interface WatchNowMenuProps {
 /** Platform picker used when several of the user's services carry the title. */
 export function WatchNowMenu({ options, variant }: WatchNowMenuProps) {
 	const { t } = useTranslation();
-	const labelClass = variant === 'bar' ? 'hidden lg:inline' : undefined;
+	const labelClass = variant === 'bar' ? 'inline max-lg:hidden' : undefined;
 
 	return (
 		<DropdownMenu>

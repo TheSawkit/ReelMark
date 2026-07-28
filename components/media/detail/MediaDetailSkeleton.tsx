@@ -5,7 +5,7 @@ export function DetailBannerSkeleton() {
 		<Skeleton className="relative w-full -mt-16 min-h-[70vh] md:min-h-[80vh] flex items-end pb-12 rounded-none">
 			<div className="container mx-auto px-6 lg:px-12 relative z-10">
 				<div className="flex gap-6 md:gap-8 items-end">
-					<div className="hidden md:block w-48 lg:w-56 aspect-2/3 rounded-lg bg-surface/50 border-2 border-border/10 h-full" />
+					<div className="block max-md:hidden w-48 lg:w-56 aspect-2/3 rounded-lg bg-surface/50 border-2 border-border/10 h-full" />
 
 					<div className="flex-1 space-y-4">
 						<div className="h-12 md:h-16 lg:h-20 w-3/4 bg-surface/50 rounded-lg" />

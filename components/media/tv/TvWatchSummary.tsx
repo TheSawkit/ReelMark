@@ -24,7 +24,7 @@ export function TvWatchSummary({
 	const overallPercent = Math.round((totalWatched / totalEpisodes) * 100);
 
 	return (
-		<div className="hidden sm:flex items-center gap-3 px-4 py-2 rounded-md glass-overlay">
+		<div className="flex max-sm:hidden items-center gap-3 px-4 py-2 rounded-md glass-overlay">
 			<div className="flex flex-col gap-1">
 				<span className="text-xs font-medium text-muted">
 					{totalWatched}/{totalEpisodes} {t.movie.episodes}

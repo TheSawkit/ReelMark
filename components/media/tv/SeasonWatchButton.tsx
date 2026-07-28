@@ -59,7 +59,7 @@ export function SeasonWatchButton({
 					icon={CheckCheck}
 					className="h-5 w-5"
 				/>
-				<span className="hidden lg:inline">{stateLabel}</span>
+				<span className="inline max-lg:hidden">{stateLabel}</span>
 			</button>
 		);
 	}
