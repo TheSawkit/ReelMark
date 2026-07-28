@@ -352,7 +352,12 @@ export default async function RootLayout({
 					}}
 				/>
 			</head>
+			{/* Les extensions posent leurs attributs sur le body avant que React n'hydrate
+			    (`cz-shortcut-listen` de ColorZilla, `data-gr-*` de Grammarly…) et chacune
+			    lève un mismatch d'hydratation. `suppressHydrationWarning` ne se propage pas
+			    depuis <html> : il ne couvre que l'élément qui le porte. */}
 			<body
+				suppressHydrationWarning
 				className={`${sans.variable} ${display.variable} antialiased bg-background text-text`}
 			>
 				<PreventImageContextMenu />

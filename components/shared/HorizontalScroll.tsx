@@ -35,7 +35,7 @@ export function HorizontalScroll({
 			{title && (
 				<div className="flex items-center justify-between mb-4 px-1">
 					{title}
-					<div className="hidden md:flex gap-2 opacity-0 group-hover/section:opacity-100 transition-opacity duration-(--duration-base)">
+					<div className="flex max-md:hidden gap-2 opacity-0 group-hover/section:opacity-100 transition-opacity duration-(--duration-base)">
 						<Button
 							variant="outline"
 							size="icon"

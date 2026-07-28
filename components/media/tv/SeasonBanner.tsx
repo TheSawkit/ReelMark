@@ -87,7 +87,7 @@ export function SeasonBanner({
 			<CinematicBackdrop src={backdropUrl} alt={seasonName} />
 
 			<div className="relative z-10 container mx-auto px-6 lg:px-12 h-full flex flex-col justify-end pb-4 sm:pb-12">
-				<div className="w-full justify-start mb-6 md:mb-8 z-20 hidden md:flex">
+				<div className="w-full justify-start mb-6 md:mb-8 z-20 flex max-md:hidden">
 					<Link
 						href={localizedHref(lang, `/tv/${tvId}`)}
 						aria-label={`${t.movie.backTo} ${tvName}`}

@@ -165,7 +165,7 @@ export function LibraryTabs({
 									: 'text-muted hover:text-text'
 							)}
 						>
-							<tab.icon className="hidden sm:block h-4 w-4 shrink-0" />
+							<tab.icon className="block max-sm:hidden h-4 w-4 shrink-0" />
 							<span className="truncate">{tab.label}</span>
 							<span
 								className={cn(

@@ -21,7 +21,7 @@ export function CinematicBackdrop({ src, alt }: CinematicBackdropProps) {
 				className="page-top-offset object-cover object-top"
 				sizes="100vw"
 			/>
-			<PauseWhenOffscreen className="hidden md:block absolute inset-0">
+			<PauseWhenOffscreen className="block max-md:hidden absolute inset-0">
 				<Aurora intensity={0.4} />
 				<Spotlight />
 			</PauseWhenOffscreen>

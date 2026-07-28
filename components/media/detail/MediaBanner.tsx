@@ -67,7 +67,7 @@ export function MediaBanner({
 			<CinematicBackdrop src={backdropUrl} alt={title} />
 
 			<div className="relative z-10 container mx-auto px-6 lg:px-12 h-full flex flex-col justify-end pb-4 sm:pb-12">
-				<div className="w-full justify-start mb-6 md:mb-8 z-20 hidden md:flex">
+				<div className="w-full justify-start mb-6 md:mb-8 z-20 flex max-md:hidden">
 					<button
 						onClick={() => router.back()}
 						aria-label={t.common.goBack}

@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import { ListVideo, Pencil, Trash2 } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { deletePlaylist } from '@/app/actions/playlists';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { cn } from '@/lib/utils';
@@ -50,7 +51,7 @@ function PlaylistCard({
 	) => void;
 }) {
 	const { t } = useTranslation();
-	const [isPending, startTransition] = useTransition();
+	const [isPending, startTransition] = useGuardedTransition();
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [dialogKey, setDialogKey] = useState(0);
 	const [dialogMode, setDialogMode] = useState<'edit' | 'view'>('view');

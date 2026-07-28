@@ -2,9 +2,10 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useTransition, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useTransition } from 'react';
 import { Loader2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
+import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { deleteReview, getUserReviews } from '@/app/actions/reviews';
 import { getImageUrl } from '@/lib/tmdb/images';
 import type { Review, PrivacyVisibility } from '@/types/profile';
@@ -38,7 +39,7 @@ export function ReviewsSection({
 }: ReviewsSectionProps) {
 	const { t, lang } = useTranslation();
 	const [reviews, setReviews] = useState(initial);
-	const [isPending, startTransition] = useTransition();
+	const [isPending, startTransition] = useGuardedTransition();
 	const [editingReview, setEditingReview] = useState<Review | null>(null);
 	const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 

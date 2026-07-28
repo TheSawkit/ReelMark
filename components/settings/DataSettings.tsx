@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
 	Upload,
@@ -15,6 +15,8 @@ import {
 	ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useGuardedTransition } from '@/hooks/useGuardedTransition';
+import { createInFlightGuard } from '@/lib/in-flight-guard';
 import { localizedHref } from '@/lib/i18n/utils';
 import {
 	Card,
@@ -76,12 +78,15 @@ export function DataSettings() {
 	const { t, lang } = useTranslation();
 	const td = t.settings.data;
 	const legal = t.pages.legal;
-	const [exportPending, startExportTransition] = useTransition();
+	const [exportPending, startExportTransition] = useGuardedTransition();
 	const [platform, setPlatform] = useState<Platform | null>(null);
 	const [phase, setPhase] = useState<ImportPhase>({ type: 'idle' });
 	const [isDragOver, setIsDragOver] = useState(false);
 	const [showFailed, setShowFailed] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const importGuardRef = useRef<ReturnType<typeof createInFlightGuard>>(null);
+	importGuardRef.current ??= createInFlightGuard();
+	const importGuard = importGuardRef.current;
 
 	const acceptedExtension =
 		platform === 'letterboxd'
@@ -157,6 +162,11 @@ export function DataSettings() {
 	}
 
 	async function handleImport() {
+		if (phase.type !== 'ready' || importGuard.busy) return;
+		await importGuard.run(runImport);
+	}
+
+	async function runImport() {
 		if (phase.type !== 'ready') return;
 		const { items, lists } = phase;
 		const chunks = chunkImportItems(items);

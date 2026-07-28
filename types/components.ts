@@ -62,6 +62,7 @@ export interface MediaDescriptionProps {
 
 export interface MediaTrailersProps {
 	trailers: Video[];
+	backdropPath: string | null;
 }
 
 export interface MediaCastProps {

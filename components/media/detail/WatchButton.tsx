@@ -145,7 +145,7 @@ export function WatchButton({
 						icon={idleIcon}
 						className="h-4 w-4 shrink-0"
 					/>
-					<span className="hidden lg:inline">{stateLabel}</span>
+					<span className="inline max-lg:hidden">{stateLabel}</span>
 				</button>
 				{reviewDialog}
 			</>

@@ -5,9 +5,10 @@ import Image from 'next/image';
 import { Play } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
 import { SectionHeading } from '@/components/ui/SectionHeading';
+import { getImageUrl } from '@/lib/tmdb/images';
 import type { MediaTrailersProps } from '@/types/components';
 
-export function MediaTrailers({ trailers }: MediaTrailersProps) {
+export function MediaTrailers({ trailers, backdropPath }: MediaTrailersProps) {
 	const { t } = useTranslation();
 	const [failedKeys, setFailedKeys] = useState<Set<string>>(new Set());
 
@@ -32,6 +33,7 @@ export function MediaTrailers({ trailers }: MediaTrailersProps) {
 						videoKey={trailer.key}
 						title={trailer.name}
 						site={trailer.site}
+						backdropPath={backdropPath}
 						onError={handleIframeError}
 						unsupportedLabel={t.movie.unsupportedFormat}
 					/>
@@ -45,16 +47,19 @@ function TrailerEmbed({
 	videoKey,
 	title,
 	site,
+	backdropPath,
 	onError,
 	unsupportedLabel,
 }: {
 	videoKey: string;
 	title: string;
 	site: string;
+	backdropPath: string | null;
 	onError: (key: string) => void;
 	unsupportedLabel: string;
 }) {
 	const [isPlaying, setIsPlaying] = useState(false);
+	const [thumbnailBlocked, setThumbnailBlocked] = useState(false);
 
 	if (site !== 'YouTube') {
 		return (
@@ -85,10 +90,15 @@ function TrailerEmbed({
 					className="group/trailer relative block w-full h-full cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
 				>
 					<Image
-						src={`https://i.ytimg.com/vi/${videoKey}/hqdefault.jpg`}
+						src={
+							thumbnailBlocked
+								? getImageUrl(backdropPath, 'w780')
+								: `https://i.ytimg.com/vi/${videoKey}/hqdefault.jpg`
+						}
 						alt={title}
 						fill
 						unoptimized
+						onError={() => setThumbnailBlocked(true)}
 						className="object-cover transition-transform duration-(--duration-base) group-hover/trailer:scale-105"
 						sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
 					/>

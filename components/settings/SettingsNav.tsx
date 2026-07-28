@@ -44,7 +44,7 @@ export function SettingsNav({ onTabChange, activeTab }: SettingsNavProps) {
 					)}
 				>
 					<span className="text-lg">{tab.icon}</span>
-					<span className="hidden lg:inline">{tab.label}</span>
+					<span className="inline max-lg:hidden">{tab.label}</span>
 				</button>
 			))}
 		</nav>

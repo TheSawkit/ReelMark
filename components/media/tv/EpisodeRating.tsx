@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
+import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { StarRating } from '@/components/ui/StarRating';
 import { upsertReview } from '@/app/actions/reviews';
 import { useEpisodeWatched } from '@/lib/episode-watch-store';
@@ -50,7 +51,7 @@ export function EpisodeRating({
 		initialReview?.rating ?? null
 	);
 	const [dialogOpen, setDialogOpen] = useState(false);
-	const [isPending, startTransition] = useTransition();
+	const [isPending, startTransition] = useGuardedTransition();
 
 	const watched = useEpisodeWatched(
 		tvId,

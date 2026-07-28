@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
 import {
@@ -10,6 +10,7 @@ import {
 	DialogTitle,
 	DialogDescription,
 } from '@/components/ui/dialog';
+import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { StarRating } from '@/components/ui/StarRating';
 import { Button } from '@/components/ui/button';
 import { upsertReview, deleteReview } from '@/app/actions/reviews';
@@ -49,7 +50,7 @@ export function ReviewDialog({
 		existingReview?.rating ?? null
 	);
 	const [content, setContent] = useState(existingReview?.content ?? '');
-	const [isPending, startTransition] = useTransition();
+	const [isPending, startTransition] = useGuardedTransition();
 
 	function handleOpenChange(open: boolean) {
 		if (!open) onClose();

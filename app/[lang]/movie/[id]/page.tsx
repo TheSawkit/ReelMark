@@ -72,14 +72,16 @@ async function MovieProvidersSection({
 async function MovieTrailersSection({
 	movieId,
 	lang,
+	backdropPath,
 }: {
 	movieId: number;
 	lang: Language;
+	backdropPath: string | null;
 }) {
 	const videos = await getMovieVideos(movieId, lang);
 	const trailers = await filterAvailableVideos(filterTrailers(videos));
 	if (trailers.length === 0) return null;
-	return <MediaTrailers trailers={trailers} />;
+	return <MediaTrailers trailers={trailers} backdropPath={backdropPath} />;
 }
 
 async function MovieUserActions({
@@ -276,7 +278,11 @@ export default async function MoviePage(props: MoviePageProps) {
 				}
 				trailers={
 					<Suspense fallback={<DetailSectionSkeleton />}>
-						<MovieTrailersSection movieId={movieId} lang={lang} />
+						<MovieTrailersSection
+							movieId={movieId}
+							lang={lang}
+							backdropPath={movieDetails.backdrop_path}
+						/>
 					</Suspense>
 				}
 				relatedSections={

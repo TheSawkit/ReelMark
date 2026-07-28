@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { Button } from '@/components/ui/button';
 import {
 	DropdownMenu,
@@ -25,7 +26,7 @@ export function ProfileOptionsMenu({
 	friendship,
 }: ProfileOptionsMenuProps) {
 	const { t } = useTranslation();
-	const [isPending, startTransition] = useTransition();
+	const [isPending, startTransition] = useGuardedTransition();
 	const [localFriendship, setLocalFriendship] = useState<Friendship | null>(
 		friendship
 	);

@@ -147,7 +147,7 @@ export function NavbarClient({
 						</div>
 
 						{/* Desktop: full navigation */}
-						<div className="hidden lg:grid grid-cols-3 h-16 items-center gap-4">
+						<div className="grid max-lg:hidden grid-cols-3 h-16 items-center gap-4">
 							<div className="flex justify-start col-start-1">
 								{logo}
 							</div>
@@ -297,7 +297,7 @@ export function NavbarClient({
 					{/* Desktop only: media sub-bar that expands on scroll */}
 					<div
 						className={cn(
-							'hidden lg:block overflow-hidden transition-all duration-(--duration-base) ease-in-out',
+							'block max-lg:hidden overflow-hidden transition-all duration-(--duration-base) ease-in-out',
 							isMediaBarActive
 								? 'max-h-12 opacity-100'
 								: 'max-h-0 opacity-0 pointer-events-none'
