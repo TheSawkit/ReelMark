@@ -81,10 +81,7 @@ export function MediaCard({
 
 	const poster = (
 		<Image
-			src={getImageUrl(
-				media.poster_path,
-				imageSize === 'grid' ? 'w342' : 'w185'
-			)}
+			src={getImageUrl(media.poster_path, 'w342')}
 			alt={media.title}
 			fill
 			unoptimized
