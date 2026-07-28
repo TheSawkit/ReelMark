@@ -250,10 +250,10 @@ export default async function TvShowPage(props: TvPageProps) {
 		'w1280'
 	);
 	const standardSeasons = (tvDetails.seasons ?? []).filter(
-		(s: { season_number: number }) => s.season_number > 0
+		(s: Season) => s.season_number > 0 && s.episode_count > 0
 	);
 	const totalEpisodes = standardSeasons.reduce(
-		(sum: number, s: { episode_count: number }) => sum + s.episode_count,
+		(sum: number, s: Season) => sum + s.episode_count,
 		0
 	);
 
