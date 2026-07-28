@@ -30,7 +30,7 @@ const cspDirectives = [
 	"img-src 'self' data: blob: https://image.tmdb.org https://i.ytimg.com https://lh3.googleusercontent.com https://api.dicebear.com https://*.supabase.co https://cdn.watchmode.com https://*.mzstatic.com",
 	"font-src 'self' data: https://fonts.gstatic.com",
 	'frame-src https://www.youtube.com https://www.youtube-nocookie.com',
-	`connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://www.youtube.com https://sentry.silexio.be${isDev ? ' ws: wss:' : ' wss:'}`,
+	`connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://image.tmdb.org https://api.watchmode.com https://www.youtube.com https://sentry.silexio.be${isDev ? ' ws: wss:' : ' wss:'}`,
 	"object-src 'none'",
 	"base-uri 'self'",
 	"form-action 'self'",
