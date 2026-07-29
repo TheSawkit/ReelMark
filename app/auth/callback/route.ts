@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { mirrorOAuthAvatar } from '@/lib/avatar-mirror';
 import { sanitizeRedirectPath } from '@/lib/validators';
 import { getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
@@ -26,6 +27,13 @@ export async function GET(request: Request) {
 			await supabase.auth.exchangeCodeForSession(code);
 
 		if (!error && data.session) {
+			const { id, user_metadata } = data.session.user;
+			after(() =>
+				mirrorOAuthAvatar(
+					id,
+					user_metadata?.avatar_url ?? user_metadata?.picture
+				)
+			);
 			return NextResponse.redirect(
 				`${baseUrl}${localizedHref(lang, next)}`
 			);

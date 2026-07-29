@@ -130,6 +130,38 @@ export function validateAvatarFile(
 	return { valid: true, ext };
 }
 
+const OAUTH_AVATAR_HOST = /^lh\d+\.googleusercontent\.com$/;
+const STORED_AVATAR_MARKER = '/storage/v1/object/public/avatars/';
+
+/**
+ * Guards the server-side avatar copy against SSRF: `user_metadata` is user-writable,
+ * so only https URLs served by a known OAuth provider CDN may be fetched.
+ */
+export function isImportableAvatarUrl(url: unknown): url is string {
+	if (typeof url !== 'string') return false;
+	try {
+		const parsed = new URL(url);
+		return (
+			parsed.protocol === 'https:' &&
+			OAUTH_AVATAR_HOST.test(parsed.hostname)
+		);
+	} catch {
+		return false;
+	}
+}
+
+/** True when the avatar already lives in our own bucket and must not be overwritten. */
+export function isStoredAvatarUrl(url: unknown): url is string {
+	return typeof url === 'string' && url.includes(STORED_AVATAR_MARKER);
+}
+
+/** Maps a fetched avatar's content type to the extension used for its stored file. */
+export function avatarExtensionForMime(contentType: string): string | null {
+	const mime = contentType.split(';')[0].trim().toLowerCase();
+	if (!(ALLOWED_AVATAR_MIMES as readonly string[]).includes(mime)) return null;
+	return mime === 'image/jpeg' ? 'jpg' : mime.slice('image/'.length);
+}
+
 const VALID_NOTIFICATION_TYPES = new Set<string>(NOTIFICATION_TYPES);
 
 export function isValidNotificationType(

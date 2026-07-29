@@ -24,6 +24,7 @@ import {
 import { Upload } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { useTranslation } from '@/lib/i18n/context';
+import { useBrokenImage } from '@/hooks/useBrokenImage';
 
 const initialState = {
 	error: undefined,
@@ -54,6 +55,7 @@ export function ProfileSettings({
 	const currentAvatarUrl =
 		profileAvatarUrl || user?.user_metadata?.avatar_url || '';
 	const [avatarPreview, setAvatarPreview] = useState(currentAvatarUrl);
+	const brokenAvatar = useBrokenImage(avatarPreview);
 	const [fullNameStr, setFullNameStr] = useState(
 		user?.user_metadata?.full_name || ''
 	);
@@ -102,14 +104,17 @@ export function ProfileSettings({
 								</FieldLabel>
 								<div className="flex items-start gap-6 mt-4">
 									<div className="relative">
-										{avatarPreview ? (
+										{avatarPreview &&
+										!brokenAvatar.isBroken ? (
 											<Image
 												src={avatarPreview}
+												onError={brokenAvatar.onError}
 												alt={t.common.userAvatar}
 												width={80}
 												height={80}
 												className="rounded-full object-cover border-2 border-border"
 												unoptimized
+												referrerPolicy="no-referrer"
 											/>
 										) : (
 											<div className="w-20 h-20 rounded-full bg-surface flex items-center justify-center border-2 border-border">

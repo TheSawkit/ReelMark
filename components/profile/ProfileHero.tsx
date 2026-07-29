@@ -11,6 +11,7 @@ import { Grain } from '@/components/effects/Grain';
 import type { UserProfile } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
+import { useBrokenImage } from '@/hooks/useBrokenImage';
 
 interface IconProps {
 	className?: string;
@@ -91,6 +92,7 @@ export function ProfileHero({
 	const { t, lang } = useTranslation();
 	const displayName = fullName || profile.username;
 	const initials = displayName.slice(0, 2).toUpperCase();
+	const broken = useBrokenImage(avatarUrl);
 
 	const socialLinks = [
 		profile.instagram && {
@@ -138,14 +140,16 @@ export function ProfileHero({
 			<div className="relative px-5 pb-6 sm:px-7">
 				<div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end">
 					<div className="shrink-0">
-						{avatarUrl ? (
+						{avatarUrl && !broken.isBroken ? (
 							<Image
 								src={avatarUrl}
+								onError={broken.onError}
 								alt={`${displayName} — ${t.common.userAvatar}`}
 								width={96}
 								height={96}
 								className="h-24 w-24 rounded-full border-4 border-surface object-cover shadow-card"
 								unoptimized
+								referrerPolicy="no-referrer"
 							/>
 						) : (
 							<div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-surface bg-surface-2 shadow-card">
