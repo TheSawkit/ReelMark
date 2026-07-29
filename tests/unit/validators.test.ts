@@ -261,9 +261,9 @@ describe('isImportableAvatarUrl', () => {
 		expect(
 			isImportableAvatarUrl('https://evil.com/lh3.googleusercontent.com')
 		).toBe(false);
-		expect(isImportableAvatarUrl('http://169.254.169.254/latest/meta-data')).toBe(
-			false
-		);
+		expect(
+			isImportableAvatarUrl('http://169.254.169.254/latest/meta-data')
+		).toBe(false);
 		expect(isImportableAvatarUrl('https://googleusercontent.com/a/x')).toBe(
 			false
 		);

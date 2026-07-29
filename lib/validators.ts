@@ -158,7 +158,8 @@ export function isStoredAvatarUrl(url: unknown): url is string {
 /** Maps a fetched avatar's content type to the extension used for its stored file. */
 export function avatarExtensionForMime(contentType: string): string | null {
 	const mime = contentType.split(';')[0].trim().toLowerCase();
-	if (!(ALLOWED_AVATAR_MIMES as readonly string[]).includes(mime)) return null;
+	if (!(ALLOWED_AVATAR_MIMES as readonly string[]).includes(mime))
+		return null;
 	return mime === 'image/jpeg' ? 'jpg' : mime.slice('image/'.length);
 }
 

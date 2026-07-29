@@ -36,8 +36,7 @@ function parseState(raw: string | null): ListControlsState {
 			...DEFAULT_LIST_CONTROLS,
 			...parsed,
 			genreIds: Array.isArray(parsed.genreIds) ? parsed.genreIds : [],
-			actorId:
-				typeof parsed.actorId === 'number' ? parsed.actorId : null,
+			actorId: typeof parsed.actorId === 'number' ? parsed.actorId : null,
 		};
 	} catch {
 		return DEFAULT_LIST_CONTROLS;

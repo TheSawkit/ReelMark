@@ -1,9 +1,4 @@
-import type {
-	MediaItem,
-	Movie,
-	PersonSuggestion,
-	TvShow,
-} from '@/types/tmdb';
+import type { MediaItem, Movie, PersonSuggestion, TvShow } from '@/types/tmdb';
 import { fetchTMDB } from './client';
 import type { Language } from '@/lib/i18n/translations';
 
