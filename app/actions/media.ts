@@ -147,15 +147,19 @@ function normalizeName(value: string): string {
  * case-insensitive. Very long lists are capped to bound the number of TMDB calls.
  *
  * @param items - The list items currently displayed.
- * @param query - Actor name fragment to match.
+ * @param query - Actor name fragment to match, ignored when `personId` is given.
+ * @param personId - TMDB person ID picked from the autocomplete, matched exactly.
  * @returns Matching media keys (`"movie-123"`).
  */
 export async function filterListByActor(
 	items: Array<{ id: number; media_type: MediaType }>,
-	query: string
+	query: string,
+	personId?: number
 ): Promise<string[]> {
+	const actorId = Number.isInteger(personId) ? personId : undefined;
 	const needle = normalizeName(query);
-	if (needle === '') return items.map((item) => getMediaKey(item));
+	if (needle === '' && actorId === undefined)
+		return items.map((item) => getMediaKey(item));
 
 	const ip = clientIpFrom(await headers());
 	const { allowed } = checkRateLimit(
@@ -184,7 +188,9 @@ export async function filterListByActor(
 							? await getTvShowCredits(item.id)
 							: await getMovieCredits(item.id);
 					const hit = credits.cast.some((member) =>
-						normalizeName(member.name).includes(needle)
+						actorId === undefined
+							? normalizeName(member.name).includes(needle)
+							: member.id === actorId
 					);
 					return hit ? getMediaKey(item) : null;
 				} catch (error) {

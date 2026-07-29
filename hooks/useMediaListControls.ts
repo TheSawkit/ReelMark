@@ -7,11 +7,13 @@ import {
 	useState,
 	useSyncExternalStore,
 } from 'react';
-import type { MediaItem } from '@/types/tmdb';
+import type { MediaItem, PersonSuggestion } from '@/types/tmdb';
 import {
 	applyListControls,
 	availableGenres,
 	DEFAULT_LIST_CONTROLS,
+	withActorQuery,
+	withSelectedActor,
 	type ListControlsState,
 	type SortKey,
 } from '@/lib/media-list/controls';
@@ -34,6 +36,8 @@ function parseState(raw: string | null): ListControlsState {
 			...DEFAULT_LIST_CONTROLS,
 			...parsed,
 			genreIds: Array.isArray(parsed.genreIds) ? parsed.genreIds : [],
+			actorId:
+				typeof parsed.actorId === 'number' ? parsed.actorId : null,
 		};
 	} catch {
 		return DEFAULT_LIST_CONTROLS;
@@ -75,6 +79,7 @@ export interface UseMediaListControls {
 	toggleGenre: (id: number) => void;
 	clearGenres: () => void;
 	setActorQuery: (query: string) => void;
+	selectActor: (person: PersonSuggestion) => void;
 	clearActor: () => void;
 	clearAll: () => void;
 	hasActiveFilters: boolean;
@@ -84,6 +89,7 @@ export interface UseMediaListControls {
  * Drives a media list's sort/filter controls: genre + sort run synchronously in memory,
  * the actor filter resolves on demand via a debounced server action, and the whole state
  * persists to `localStorage` under `storageKey` (SSR-safe via useSyncExternalStore).
+ * An actor picked from the autocomplete matches on its TMDB ID and skips the debounce.
  * Returns the processed items plus setters.
  */
 export function useMediaListControls(
@@ -116,7 +122,9 @@ export function useMediaListControls(
 	const [actorKeys, setActorKeys] = useState<Set<string> | null>(null);
 	const [actorLoading, setActorLoading] = useState(false);
 
-	const actorActive = state.actorQuery.trim().length >= ACTOR_MIN_LENGTH;
+	const actorActive =
+		state.actorId !== null ||
+		state.actorQuery.trim().length >= ACTOR_MIN_LENGTH;
 
 	const actorInput = useMemo(
 		() =>
@@ -129,28 +137,32 @@ export function useMediaListControls(
 
 	useEffect(() => {
 		const query = state.actorQuery.trim();
-		if (query.length < ACTOR_MIN_LENGTH) return;
+		const personId = state.actorId;
+		if (personId === null && query.length < ACTOR_MIN_LENGTH) return;
 
 		let cancelled = false;
-		const timer = setTimeout(() => {
-			setActorLoading(true);
-			filterListByActor(actorInput, query)
-				.then((keys) => {
-					if (!cancelled) setActorKeys(new Set(keys));
-				})
-				.catch(() => {
-					if (!cancelled) setActorKeys(new Set());
-				})
-				.finally(() => {
-					if (!cancelled) setActorLoading(false);
-				});
-		}, ACTOR_DEBOUNCE_MS);
+		const timer = setTimeout(
+			() => {
+				setActorLoading(true);
+				filterListByActor(actorInput, query, personId ?? undefined)
+					.then((keys) => {
+						if (!cancelled) setActorKeys(new Set(keys));
+					})
+					.catch(() => {
+						if (!cancelled) setActorKeys(new Set());
+					})
+					.finally(() => {
+						if (!cancelled) setActorLoading(false);
+					});
+			},
+			personId === null ? ACTOR_DEBOUNCE_MS : 0
+		);
 
 		return () => {
 			cancelled = true;
 			clearTimeout(timer);
 		};
-	}, [state.actorQuery, actorInput]);
+	}, [state.actorQuery, state.actorId, actorInput]);
 
 	const effectiveActorKeys = actorActive ? actorKeys : null;
 
@@ -195,17 +207,24 @@ export function useMediaListControls(
 	);
 
 	const setActorQuery = useCallback(
-		(query: string) => setState((prev) => ({ ...prev, actorQuery: query })),
+		(query: string) => setState((prev) => withActorQuery(prev, query)),
+		[setState]
+	);
+
+	const selectActor = useCallback(
+		(person: PersonSuggestion) =>
+			setState((prev) => withSelectedActor(prev, person)),
 		[setState]
 	);
 
 	const clearActor = useCallback(
-		() => setState((prev) => ({ ...prev, actorQuery: '' })),
+		() => setState((prev) => withActorQuery(prev, '')),
 		[setState]
 	);
 
 	const clearAll = useCallback(
-		() => setState((prev) => ({ ...prev, genreIds: [], actorQuery: '' })),
+		() =>
+			setState((prev) => ({ ...withActorQuery(prev, ''), genreIds: [] })),
 		[setState]
 	);
 
@@ -222,6 +241,7 @@ export function useMediaListControls(
 		toggleGenre,
 		clearGenres,
 		setActorQuery,
+		selectActor,
 		clearActor,
 		clearAll,
 		hasActiveFilters,
