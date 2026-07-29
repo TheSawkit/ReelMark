@@ -14,6 +14,7 @@ import { notFound } from 'next/navigation';
 import { BASE_URL, DEFAULT_OG_IMAGE } from '@/lib/metadata';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
 import { PreventImageContextMenu } from '@/components/shared/PreventImageContextMenu';
+import { PreventPinchZoom } from '@/components/shared/PreventPinchZoom';
 import { PromptSlot } from '@/components/prompts/PromptSlot';
 import { SupportBadge } from '@/components/support/SupportBadge';
 import NextTopLoader from 'nextjs-toploader';
@@ -36,9 +37,10 @@ const display = Bebas_Neue({
 	variable: '--font-display',
 });
 
-// Le pincement pour zoomer reste ouvert : le verrouiller échoue au critère WCAG 1.4.4 et
-// prive les malvoyants d'agrandir. Le zoom iOS au focus, seule raison de le verrouiller, ne
-// se déclenche pas ici — les champs sont en `text-base` (16 px) sur mobile.
+// Zoom verrouillé côté produit : pincement et double tap partaient tout seuls pendant le
+// défilement en PWA. Le verrou vit dans `touch-action` (globals.css) et dans PreventPinchZoom
+// pour iOS — pas dans `userScalable`, qu'iOS ignore depuis la version 10. Compromis assumé :
+// le critère WCAG 1.4.4 n'est plus rempli, les malvoyants perdent l'agrandissement natif.
 export const viewport: Viewport = {
 	width: 'device-width',
 	initialScale: 1,
@@ -361,6 +363,7 @@ export default async function RootLayout({
 				className={`${sans.variable} ${display.variable} antialiased bg-background text-text`}
 			>
 				<PreventImageContextMenu />
+				<PreventPinchZoom />
 				<Providers initialLang={lang}>
 					<ScrollToTop />
 					<a

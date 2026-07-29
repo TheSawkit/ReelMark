@@ -51,6 +51,11 @@
 	--radius-banner: 1.375rem;
 	--radius-app-icon: 22.5%;
 
+	/* Bandeaux héros : le backdrop TMDB est un 16/9, un cadre plus plat le rogne
+	   d'autant. `cinema` reste large sans amputer le sujet, `hero` sert au-delà. */
+	--aspect-cinema: 21 / 9;
+	--aspect-hero: 5 / 2;
+
 	--shadow-card: var(--shadow-card);
 	--shadow-card-sm: var(--shadow-card-sm);
 	--shadow-card-xs: var(--shadow-card-xs);
@@ -223,6 +228,16 @@ body {
 ::selection {
 	background-color: var(--color-selection-bg);
 	color: var(--color-text);
+}
+
+/* Zoom verrouillé à la demande du produit : en usage réel le pincement et le
+   double tap se déclenchaient par accident pendant le défilement. `pan-x pan-y`
+   laisse passer les deux axes de défilement et retire les deux gestes de zoom.
+   Compromis assumé : le critère WCAG 1.4.4 n'est plus rempli. WebKit gère le
+   zoom du viewport hors de touch-action, d'où le renfort de PreventPinchZoom. */
+html,
+body {
+	touch-action: pan-x pan-y;
 }
 
 a,

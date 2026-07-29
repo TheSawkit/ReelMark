@@ -5,8 +5,6 @@ import {
 	ArrowUpNarrowWide,
 	ChevronDown,
 	ListFilter,
-	Loader2,
-	Search,
 	X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,6 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SORT_KEYS, type SortKey } from '@/lib/media-list/controls';
 import type { UseMediaListControls } from '@/hooks/useMediaListControls';
+import { ActorFilterInput } from './ActorFilterInput';
 
 interface MediaListControlsProps {
 	controls: UseMediaListControls;
@@ -47,6 +46,7 @@ export function MediaListControls({
 		toggleDir,
 		toggleGenre,
 		setActorQuery,
+		selectActor,
 		clearActor,
 		clearAll,
 		hasActiveFilters,
@@ -141,31 +141,13 @@ export function MediaListControls({
 					</DropdownMenu>
 				)}
 
-				<div className="relative flex-1 min-w-44 max-w-64">
-					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
-					<input
-						type="text"
-						value={state.actorQuery}
-						onChange={(e) => setActorQuery(e.target.value)}
-						placeholder={t.lists.actorPlaceholder}
-						aria-label={t.lists.filterByActor}
-						className="w-full h-11 pl-9 pr-9 rounded-full bg-surface-2 border border-border text-sm text-text placeholder:text-muted outline-none transition-colors duration-(--duration-fast) focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
-					/>
-					{isActorLoading ? (
-						<Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted animate-spin" />
-					) : (
-						state.actorQuery !== '' && (
-							<button
-								type="button"
-								onClick={clearActor}
-								aria-label={t.lists.clearActor}
-								className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-muted hover:text-text hover:bg-surface-3 transition-colors cursor-pointer"
-							>
-								<X className="h-4 w-4" />
-							</button>
-						)
-					)}
-				</div>
+				<ActorFilterInput
+					value={state.actorQuery}
+					isFiltering={isActorLoading}
+					onQueryChange={setActorQuery}
+					onSelect={selectActor}
+					onClear={clearActor}
+				/>
 			</div>
 
 			{hasActiveFilters && (

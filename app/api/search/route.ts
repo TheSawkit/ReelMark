@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { searchMulti } from '@/lib/tmdb';
+import { searchMulti, searchPeople } from '@/lib/tmdb';
 import { rankMedia } from '@/lib/search/score';
 import { getMediaKey } from '@/lib/media';
 import { createClient } from '@/lib/supabase/server';
@@ -9,6 +9,7 @@ import type { MediaItem } from '@/types/tmdb';
 
 const MAX_RESULTS = 6;
 const MAX_USER_RESULTS = 5;
+const MAX_PERSON_RESULTS = 6;
 const FALLBACK_MIN_RESULTS = 3;
 const FALLBACK_MIN_QUERY_LEN = 4;
 const MAX_FALLBACK_QUERIES = 2;
@@ -49,6 +50,22 @@ export async function GET(req: NextRequest) {
 			{ results: [] },
 			{ headers: CDN_CACHE_HEADERS }
 		);
+	}
+
+	if (searchParams.get('type') === 'person') {
+		try {
+			const people = await searchPeople(query, lang);
+			return NextResponse.json(
+				{ people: people.slice(0, MAX_PERSON_RESULTS) },
+				{ headers: CDN_CACHE_HEADERS }
+			);
+		} catch (error) {
+			reportSwallowed('api/search:person', error);
+			return NextResponse.json(
+				{ error: 'Failed to fetch person suggestions' },
+				{ status: 500, headers: NO_STORE_HEADERS }
+			);
+		}
 	}
 
 	if (query.startsWith('@')) {

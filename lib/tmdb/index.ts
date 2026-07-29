@@ -32,7 +32,12 @@ export {
 	getSeasonDetails,
 	getTvShowWatchProviders,
 } from './tv';
-export { searchMulti, movieToMediaItem, tvShowToMediaItem } from './search';
+export {
+	searchMulti,
+	searchPeople,
+	movieToMediaItem,
+	tvShowToMediaItem,
+} from './search';
 export { selectHeroImage, getImageUrl } from './images';
 export { getCrewDetails, getCrewMovieCredits, getCrewTvCredits } from './crew';
 export { getListMediaMetadata } from './list-metadata';

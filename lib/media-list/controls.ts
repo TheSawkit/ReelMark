@@ -1,4 +1,4 @@
-import type { MediaItem } from '@/types/tmdb';
+import type { MediaItem, PersonSuggestion } from '@/types/tmdb';
 import { getMediaKey } from '@/lib/media';
 
 export type SortKey = 'added' | 'year' | 'title' | 'rating';
@@ -9,6 +9,7 @@ export interface ListControlsState {
 	sortDir: SortDir;
 	genreIds: number[];
 	actorQuery: string;
+	actorId: number | null;
 }
 
 export const SORT_KEYS: readonly SortKey[] = [
@@ -23,7 +24,24 @@ export const DEFAULT_LIST_CONTROLS: ListControlsState = {
 	sortDir: 'desc',
 	genreIds: [],
 	actorQuery: '',
+	actorId: null,
 };
+
+/** Sets a free-text actor query, releasing any person previously locked by ID. */
+export function withActorQuery(
+	state: ListControlsState,
+	actorQuery: string
+): ListControlsState {
+	return { ...state, actorQuery, actorId: null };
+}
+
+/** Locks the actor filter onto an exact TMDB person, immune to spelling and homonyms. */
+export function withSelectedActor(
+	state: ListControlsState,
+	person: PersonSuggestion
+): ListControlsState {
+	return { ...state, actorQuery: person.name, actorId: person.id };
+}
 
 function releaseYear(item: MediaItem): number | null {
 	const year = Number.parseInt(item.release_date.slice(0, 4), 10);

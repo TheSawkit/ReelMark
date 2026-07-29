@@ -5,7 +5,6 @@ import { getImageUrl } from '@/lib/tmdb/images';
 import { getMediaHref } from '@/lib/media';
 import { getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
-import { Aurora } from '@/components/effects/Aurora';
 import { Grain } from '@/components/effects/Grain';
 import { GlowBorder } from '@/components/effects/GlowBorder';
 import { BlurredPosterBackdrop } from '@/components/shared/BlurredPosterBackdrop';
@@ -30,15 +29,16 @@ export async function SpotlightPick({
 			<GlowBorder radius="var(--radius-banner)">
 				<Link
 					href={localizedHref(lang, getMediaHref(item))}
-					className="relative block h-52 overflow-hidden rounded-(--radius-banner) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-56"
+					className="group relative block aspect-video overflow-hidden rounded-(--radius-banner) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:aspect-cinema"
 				>
 					{item.backdrop_path ? (
 						<Image
 							src={getImageUrl(item.backdrop_path, 'w1280')}
 							alt={item.title}
 							fill
-							className="object-cover object-top"
-							sizes="(max-width: 1024px) 100vw, 900px"
+							priority
+							className="object-cover object-center transition-transform duration-(--duration-slow) ease-apple group-hover:scale-[1.03]"
+							sizes="(max-width: 1024px) 100vw, 1200px"
 						/>
 					) : (
 						<BlurredPosterBackdrop
@@ -47,24 +47,24 @@ export async function SpotlightPick({
 						/>
 					)}
 
-					<Aurora intensity={0.5} />
-					<Grain opacity={0.06} />
-					<div className="absolute inset-0 bg-linear-to-r from-black/85 via-black/45 to-transparent" />
+					<Grain opacity={0.05} />
+					<div className="absolute inset-0 bg-linear-to-t from-black/95 via-black/35 to-transparent" />
+					<div className="absolute inset-0 bg-linear-to-r from-black/70 via-transparent to-transparent" />
 
-					<div className="absolute inset-0 flex max-w-[80%] flex-col justify-center p-6 sm:max-w-[70%]">
-						<span className="mb-2 inline-flex items-center gap-1.5 self-start text-xs font-bold uppercase tracking-wide text-gold-bright">
+					<div className="absolute inset-x-0 bottom-0 flex flex-col p-6 sm:p-8 lg:p-10">
+						<span className="mb-3 inline-flex items-center gap-1.5 self-start text-xs font-bold uppercase tracking-wide text-gold-bright">
 							<Sparkles className="h-3.5 w-3.5" />
 							{badgeLabel}
 						</span>
-						<h2 className="heading-display leading-none text-3xl text-white drop-shadow-text sm:text-4xl">
+						<h2 className="heading-display max-w-3xl leading-none text-4xl text-white drop-shadow-text sm:text-5xl lg:text-6xl">
 							{item.title}
 						</h2>
 						{item.overview && (
-							<p className="mt-2 line-clamp-2 max-w-md text-sm text-white/70">
+							<p className="mt-3 line-clamp-2 max-w-xl text-sm text-white/75 sm:text-base">
 								{item.overview}
 							</p>
 						)}
-						<span className="mt-4 inline-flex items-center gap-2 self-start rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-black">
+						<span className="mt-5 inline-flex items-center gap-2 self-start rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-black transition-transform duration-(--duration-fast) ease-apple group-hover:scale-105">
 							{ctaLabel}
 							<ArrowRight className="h-4 w-4" />
 						</span>

@@ -147,6 +147,13 @@ export interface Crew {
 	profile_path: string | null;
 }
 
+export interface PersonSuggestion {
+	id: number;
+	name: string;
+	profile_path: string | null;
+	knownFor: string;
+}
+
 export interface CreatedBy {
 	id: number;
 	credit_id: string;

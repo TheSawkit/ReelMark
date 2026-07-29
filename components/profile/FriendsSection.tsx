@@ -7,6 +7,7 @@ import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 import { PrivacyBlock } from '@/components/profile/PrivacyBlock';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useBrokenImage } from '@/hooks/useBrokenImage';
 
 interface FriendsSectionProps {
 	friends: FriendEntry[];
@@ -38,22 +39,11 @@ export function FriendsSection({
 						prefetch={false}
 						className="flex flex-col items-center gap-2 p-3 rounded-lg bg-surface border border-border-subtle shadow-card-sm hover:bg-surface-2 transition duration-(--duration-fast) ease-apple active:scale-[0.97]"
 					>
-						{avatarUrl ? (
-							<Image
-								src={avatarUrl}
-								alt={displayName}
-								width={48}
-								height={48}
-								className="rounded-full object-cover border border-border"
-								unoptimized
-							/>
-						) : (
-							<div className="w-12 h-12 rounded-full bg-surface-2 border border-border flex items-center justify-center">
-								<span className="text-sm font-bold text-muted">
-									{initials}
-								</span>
-							</div>
-						)}
+						<FriendAvatar
+							avatarUrl={avatarUrl}
+							displayName={displayName}
+							initials={initials}
+						/>
 						<div className="text-center min-w-0 w-full">
 							<p className="text-sm font-medium text-text truncate">
 								{displayName}
@@ -66,5 +56,37 @@ export function FriendsSection({
 				);
 			})}
 		</div>
+	);
+}
+
+function FriendAvatar({
+	avatarUrl,
+	displayName,
+	initials,
+}: {
+	avatarUrl: string | null | undefined;
+	displayName: string;
+	initials: string;
+}) {
+	const broken = useBrokenImage(avatarUrl);
+
+	if (!avatarUrl || broken.isBroken)
+		return (
+			<div className="w-12 h-12 rounded-full bg-surface-2 border border-border flex items-center justify-center">
+				<span className="text-sm font-bold text-muted">{initials}</span>
+			</div>
+		);
+
+	return (
+		<Image
+			src={avatarUrl}
+			alt={displayName}
+			width={48}
+			height={48}
+			className="rounded-full object-cover border border-border"
+			unoptimized
+			referrerPolicy="no-referrer"
+			onError={broken.onError}
+		/>
 	);
 }

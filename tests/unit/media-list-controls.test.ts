@@ -3,6 +3,8 @@ import {
 	applyListControls,
 	availableGenres,
 	DEFAULT_LIST_CONTROLS,
+	withActorQuery,
+	withSelectedActor,
 	type ListControlsState,
 } from '@/lib/media-list/controls';
 import type { MediaItem } from '@/types/tmdb';
@@ -136,6 +138,44 @@ describe('applyListControls — actor match set', () => {
 	it('does not filter by actor when match set is null', () => {
 		const result = applyListControls(items, DEFAULT_LIST_CONTROLS, null);
 		expect(result).toHaveLength(3);
+	});
+});
+
+describe('actor selection state', () => {
+	const keanu = {
+		id: 6384,
+		name: 'Keanu Reeves',
+		profile_path: null,
+		knownFor: 'The Matrix',
+	};
+
+	it('locks the query on the picked person name and id', () => {
+		const result = withSelectedActor(DEFAULT_LIST_CONTROLS, keanu);
+		expect(result.actorQuery).toBe('Keanu Reeves');
+		expect(result.actorId).toBe(6384);
+	});
+
+	it('releases the locked id as soon as the query is typed again', () => {
+		const locked = withSelectedActor(DEFAULT_LIST_CONTROLS, keanu);
+		const typed = withActorQuery(locked, 'Keanu R');
+		expect(typed.actorQuery).toBe('Keanu R');
+		expect(typed.actorId).toBeNull();
+	});
+
+	it('clears both query and id when emptied', () => {
+		const locked = withSelectedActor(DEFAULT_LIST_CONTROLS, keanu);
+		expect(withActorQuery(locked, '')).toMatchObject({
+			actorQuery: '',
+			actorId: null,
+		});
+	});
+
+	it('leaves sort and genre filters untouched', () => {
+		const base = state({ sortKey: 'title', genreIds: [878] });
+		expect(withSelectedActor(base, keanu)).toMatchObject({
+			sortKey: 'title',
+			genreIds: [878],
+		});
 	});
 });
 

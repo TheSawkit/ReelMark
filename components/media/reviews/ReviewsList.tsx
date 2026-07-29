@@ -15,6 +15,7 @@ import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 import type { Language } from '@/lib/i18n/translations';
 import type { PublicReview } from '@/types/profile';
+import { useBrokenImage } from '@/hooks/useBrokenImage';
 
 function relativeDate(dateStr: string, lang: string): string {
 	const days = Math.floor(
@@ -35,15 +36,18 @@ function Avatar({
 	avatarUrl: string | null;
 }) {
 	const initial = (username[0] ?? '?').toUpperCase();
+	const broken = useBrokenImage(avatarUrl);
 	return (
 		<div className="relative h-8 w-8 rounded-full overflow-hidden bg-surface-2 border border-border/20 shrink-0">
-			{avatarUrl ? (
+			{avatarUrl && !broken.isBroken ? (
 				<Image
 					src={avatarUrl}
 					alt={username}
 					fill
 					sizes="32px"
 					className="object-cover"
+					referrerPolicy="no-referrer"
+					onError={broken.onError}
 				/>
 			) : (
 				<span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-text">

@@ -1,4 +1,4 @@
-import type { MediaItem, Movie, TvShow } from '@/types/tmdb';
+import type { MediaItem, Movie, PersonSuggestion, TvShow } from '@/types/tmdb';
 import { fetchTMDB } from './client';
 import type { Language } from '@/lib/i18n/translations';
 
@@ -48,6 +48,51 @@ export async function searchMulti(
 			(item) => item.media_type === 'movie' || item.media_type === 'tv'
 		)
 		.map(tmdbMultiResultToMediaItem);
+}
+
+interface TMDBPersonResult {
+	id: number;
+	name: string;
+	profile_path: string | null;
+	known_for?: Array<{ title?: string; name?: string }>;
+}
+
+const KNOWN_FOR_MAX_TITLES = 2;
+
+/**
+ * Searches people via TMDB's person endpoint, for the actor filter autocomplete.
+ * Results keep TMDB's popularity order.
+ *
+ * @param query - Search string.
+ * @param lang - Language to search in; defaults to the request-resolved one.
+ * @returns Normalized person suggestions.
+ */
+export async function searchPeople(
+	query: string,
+	lang?: Language
+): Promise<PersonSuggestion[]> {
+	const { results } = await fetchTMDB<{ results: TMDBPersonResult[] }>(
+		'/search/person',
+		{ query },
+		{ lang }
+	);
+
+	return results.map(tmdbPersonResultToSuggestion);
+}
+
+function tmdbPersonResultToSuggestion(
+	result: TMDBPersonResult
+): PersonSuggestion {
+	return {
+		id: result.id,
+		name: result.name,
+		profile_path: result.profile_path,
+		knownFor: (result.known_for ?? [])
+			.map((entry) => entry.title ?? entry.name ?? '')
+			.filter((title) => title !== '')
+			.slice(0, KNOWN_FOR_MAX_TITLES)
+			.join(' · '),
+	};
 }
 
 /**

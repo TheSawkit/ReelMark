@@ -9,6 +9,9 @@ import {
 	validateAvatarFile,
 	sanitizeRedirectPath,
 	validateReviewContent,
+	isImportableAvatarUrl,
+	isStoredAvatarUrl,
+	avatarExtensionForMime,
 } from '@/lib/validators';
 import { MAX_REVIEW_LENGTH } from '@/types/profile';
 
@@ -239,5 +242,75 @@ describe('validateUUID', () => {
 		expect(validateUUID(undefined)).toBeNull();
 		expect(validateUUID(123)).toBeNull();
 		expect(validateUUID({})).toBeNull();
+	});
+});
+
+describe('isImportableAvatarUrl', () => {
+	it('accepts Google OAuth avatar hosts over https', () => {
+		expect(
+			isImportableAvatarUrl(
+				'https://lh3.googleusercontent.com/a/ACg8ocI=s96-c'
+			)
+		).toBe(true);
+		expect(
+			isImportableAvatarUrl('https://lh6.googleusercontent.com/a/x=s96-c')
+		).toBe(true);
+	});
+
+	it('rejects any other host, blocking SSRF through user-writable metadata', () => {
+		expect(
+			isImportableAvatarUrl('https://evil.com/lh3.googleusercontent.com')
+		).toBe(false);
+		expect(
+			isImportableAvatarUrl('http://169.254.169.254/latest/meta-data')
+		).toBe(false);
+		expect(isImportableAvatarUrl('https://googleusercontent.com/a/x')).toBe(
+			false
+		);
+		expect(
+			isImportableAvatarUrl(
+				'https://lh3.googleusercontent.com.evil.com/a/x'
+			)
+		).toBe(false);
+	});
+
+	it('rejects plain http and non-URL input', () => {
+		expect(
+			isImportableAvatarUrl('http://lh3.googleusercontent.com/a/x')
+		).toBe(false);
+		expect(isImportableAvatarUrl('not a url')).toBe(false);
+		expect(isImportableAvatarUrl(null)).toBe(false);
+		expect(isImportableAvatarUrl(42)).toBe(false);
+	});
+});
+
+describe('isStoredAvatarUrl', () => {
+	it('detects avatars already served from our own bucket', () => {
+		expect(
+			isStoredAvatarUrl(
+				'https://xyz.supabase.co/storage/v1/object/public/avatars/user-1.png?t=1'
+			)
+		).toBe(true);
+	});
+
+	it('rejects provider URLs and non-strings', () => {
+		expect(
+			isStoredAvatarUrl('https://lh3.googleusercontent.com/a/x=s96-c')
+		).toBe(false);
+		expect(isStoredAvatarUrl(null)).toBe(false);
+	});
+});
+
+describe('avatarExtensionForMime', () => {
+	it('maps allowed image types, ignoring charset and case', () => {
+		expect(avatarExtensionForMime('image/jpeg')).toBe('jpg');
+		expect(avatarExtensionForMime('IMAGE/PNG; charset=binary')).toBe('png');
+		expect(avatarExtensionForMime('image/webp')).toBe('webp');
+	});
+
+	it('rejects types outside the avatar allowlist', () => {
+		expect(avatarExtensionForMime('image/svg+xml')).toBeNull();
+		expect(avatarExtensionForMime('text/html')).toBeNull();
+		expect(avatarExtensionForMime('')).toBeNull();
 	});
 });
