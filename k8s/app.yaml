@@ -11,7 +11,7 @@ metadata:
     labels:
         app: reelmark
 spec:
-    replicas: 1
+    replicas: 2
     strategy:
         type: RollingUpdate
         rollingUpdate:
@@ -42,16 +42,16 @@ spec:
                               command: ['sh', '-c', 'sleep 10']
                   resources:
                       requests:
-                          cpu: '100m'
-                          memory: '256Mi'
-                      limits:
-                          cpu: '500m'
+                          cpu: '250m'
                           memory: '512Mi'
+                      limits:
+                          cpu: '1000m'
+                          memory: '1Gi'
                   readinessProbe:
                       httpGet:
                           path: /api/health
                           port: 3000
-                      initialDelaySeconds: 5
+                      initialDelaySeconds: 45
                       periodSeconds: 10
                   livenessProbe:
                       httpGet:
@@ -83,12 +83,12 @@ spec:
         apiVersion: apps/v1
         kind: Deployment
         name: reelmark
-    minReplicas: 1
-    maxReplicas: 5
+    minReplicas: 2
+    maxReplicas: 10
     metrics:
         - type: Resource
           resource:
               name: cpu
               target:
                   type: Utilization
-                  averageUtilization: 70
+                  averageUtilization: 75
