@@ -4,6 +4,10 @@ metadata:
     name: reelmark
     namespace: reelmark
     annotations:
+        # nginx bufferise les réponses upstream par défaut : il attend la réponse complète avant
+        # de l'envoyer, ce qui annule le streaming des sections <Suspense> des fiches détail —
+        # la page arrive d'un bloc au lieu de peindre la bannière en premier.
+        nginx.ingress.kubernetes.io/proxy-buffering: 'off'
         nginx.ingress.kubernetes.io/proxy-body-size: '10m'
         nginx.ingress.kubernetes.io/proxy-buffer-size: '16k'
         nginx.ingress.kubernetes.io/proxy-buffers-number: '8'
