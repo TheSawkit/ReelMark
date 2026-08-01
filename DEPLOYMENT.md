@@ -283,7 +283,14 @@ curl -I https://reelmark.silexio.be
 ## Notes
 
 - **Build** : reste `next build --webpack` (Serwist ne supporte pas Turbopack). Le Dockerfile l'exécute via `pnpm build`. Le stage deps copie `pnpm-workspace.yaml` (il contient `overrides: postcss` + `allowBuilds`) — sinon `pnpm install --frozen-lockfile` échoue (`ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`).
-- **Images** : `next.config.ts` est passé en `images.unoptimized: true` → pods légers, pas de `sharp`. Le resize/format est délégué à **Cloudflare Polish**. Les posters TMDB sont déjà dimensionnés par URL (`w500`, etc.). Pour revenir à l'optim Next in-pod : retirer `unoptimized`, ajouter `sharp` au Dockerfile runner.
+- **Images** : `next.config.ts` est passé en `images.unoptimized: true` → pods légers, pas de
+  `sharp`. Les posters sont servis **directement par le CDN de TMDB** (`image.tmdb.org`), déjà
+  dimensionnés par URL (`w92`, `w500`…). Ils ne traversent donc jamais le proxy Cloudflare du
+  domaine : **Polish ne s'y applique pas**, il ne couvre que les images servies par l'origine.
+  Conséquence assumée — les posters restent en JPEG là où de l'AVIF ferait 30 à 40 % de moins.
+  Les deux façons d'y remédier coûtent plus qu'elles ne rapportent à ce dimensionnement : rendre
+  `unoptimized` et ajouter `sharp` déplace le resize dans des pods à 2 vCPU (le CPU même qui
+  déclenche le HPA), et un loader `/cdn-cgi/image/` demande Cloudflare Image Resizing, payant.
 - **NEXT_PUBLIC_*** : injectés au **build** (inlinés dans le bundle client) ET présents au runtime (SSR). Les secrets serveur sont runtime-only.
 - **Probes** : `/api/health` (route `app/api/health/route.ts`). Un `startupProbe` couvre le
   démarrage (60 s max) ; readiness et liveness ne s'activent qu'ensuite, donc un boot lent sur un
