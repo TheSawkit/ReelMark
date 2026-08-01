@@ -167,6 +167,26 @@ kubectl -n reelmark rollout status deployment/reelmark
 au HPA). `k8s/ingress.yaml` n'est pas dans ce bloc — il est déployé par
 `.github/workflows/infra.yml`, l'edge ne doit pas bouger à chaque push de code.
 
+## 7 bis. Cloisonnement réseau (optionnel, à poser à la main)
+
+`k8s/network-policy.yaml` passe le namespace en default-deny et n'ouvre que trois flux : entrée
+depuis `ingress-nginx` sur 3000, DNS vers `kube-system`, et HTTPS sortant **hors plages RFC1918**.
+Un pod compromis ne peut donc ni scanner le cluster, ni joindre l'API server.
+
+Volontairement hors CI : une erreur de périmètre coupe l'app sans message clair.
+
+```bash
+kubectl apply -f k8s/network-policy.yaml
+kubectl -n reelmark logs -l app=reelmark --tail=50   # guetter les timeouts Supabase/TMDB
+curl -I https://reelmark.silexio.be
+kubectl delete -f k8s/network-policy.yaml            # retour arrière immédiat
+```
+
+Prérequis : Cilium applique les NetworkPolicy standard, c'est déjà le CNI du cluster. Le seul
+point à vérifier avant de poser la policy est **Bugsink** (`sentry.silexio.be`) : la règle suppose
+qu'il est joignable par IP publique. S'il est hébergé sur une IP privée du même Public Cloud, il
+faut lui ajouter un `to.ipBlock` dédié, sinon les rapports d'erreur partent en silence.
+
 ## 8. CI/CD (GitHub Actions)
 
 `.github/workflows/deploy.yml` build l'image, la push sur ghcr.io, puis **applique `k8s/app.yaml`**
@@ -217,7 +237,12 @@ curl -I https://reelmark.silexio.be
 - **NEXT_PUBLIC_*** : injectés au **build** (inlinés dans le bundle client) ET présents au runtime (SSR). Les secrets serveur sont runtime-only.
 - **Probes** : `/api/health` (route `app/api/health/route.ts`). Un `startupProbe` couvre le
   démarrage (60 s max) ; readiness et liveness ne s'activent qu'ensuite, donc un boot lent sur un
-  nœud chargé ne peut plus déclencher un CrashLoopBackOff.
+  nœud chargé ne peut plus déclencher un CrashLoopBackOff. L'endpoint ne touche volontairement
+  aucune dépendance externe : une liveness qui teste Supabase ferait redémarrer tous les pods le
+  jour où Supabase ralentit.
+- **Streaming** : `proxy-buffering: 'off'` sur l'Ingress. nginx bufferise les réponses upstream
+  par défaut et attend la réponse complète, ce qui annule le streaming des sections `<Suspense>`
+  des fiches détail — la bannière ne peint plus avant les données Supabase.
 - **Scaling** : HPA 2→10 pods sur CPU 70 % de la request (350m). Le seuil se lit toujours en
   pourcentage de `requests.cpu`, jamais de la limite — une request trop basse fait scaler le HPA
   en permanence et entraîne le node pool dans le même va-et-vient.
@@ -229,6 +254,26 @@ curl -I https://reelmark.silexio.be
 - **Disponibilité** : PDB `maxUnavailable: 1` (correct quelle que soit la taille du ReplicaSet,
   contrairement à `minAvailable`) + `topologySpreadConstraints` en `ScheduleAnyway` pour répartir
   les pods sans jamais bloquer le scheduling quand le pool n'a qu'un nœud disponible.
+- **Durcissement** : le pod satisfait le profil [Pod Security Standard `restricted`][pss] —
+  `runAsNonRoot` en uid/gid 1001 (l'utilisateur créé par le Dockerfile), `seccompProfile:
+RuntimeDefault`, `allowPrivilegeEscalation: false`, toutes les capabilities retirées,
+  `readOnlyRootFilesystem: true` et `automountServiceAccountToken: false` (l'app ne parle jamais
+  à l'API Kubernetes). Deux `emptyDir` bornés couvrent les seuls chemins que le serveur
+  standalone écrit : `/app/.next/cache` et `/tmp`. Le `fsGroup: 1001` du pod est ce qui les rend
+  inscriptibles — sans lui un `emptyDir` reste `root:root` en 0755 et le conteneur non-root
+  échoue au premier write de cache.
+- **Arrêt** : Next termine les requêtes en vol **et les callbacks `after()`** avant de sortir sur
+  SIGTERM, et [demande un drain de 10 à 30 s][self-host]. Toutes les Server Actions du projet
+  déferrent leur revalidation dans `after()`, d'où `terminationGracePeriodSeconds: 45` (10 s de
+  `preStop` pour sortir du Service, puis 35 s de drain).
+- **Probes** : `timeoutSeconds` vaut 1 s par défaut, ce qui suffit à faire redémarrer un pod dont
+  l'event loop est simplement occupé à rendre du SSR — le grand classique de la [panne en
+  cascade provoquée par la liveness probe][breck]. Les seuils retenus tolèrent 60 s
+  d'indisponibilité franche avant de conclure à un blocage réel.
+
+[pss]: https://kubernetes.io/docs/concepts/security/pod-security-standards/
+[self-host]: https://nextjs.org/docs/app/guides/self-hosting
+[breck]: https://blog.colinbreck.com/kubernetes-liveness-and-readiness-probes-how-to-avoid-shooting-yourself-in-the-foot/
 
 ## Sources
 
