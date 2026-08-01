@@ -139,6 +139,9 @@ metadata:
     namespace: reelmark
 spec:
     maxUnavailable: 1
+    # Un pod déjà cassé ne doit pas immobiliser le budget et bloquer le drain d'un nœud :
+    # l'évincer restaure la disponibilité, il ne la dégrade pas.
+    unhealthyPodEvictionPolicy: AlwaysAllow
     selector:
         matchLabels:
             app: reelmark
@@ -162,3 +165,19 @@ spec:
               target:
                   type: Utilization
                   averageUtilization: 70
+    # Sans `behavior`, le HPA double le nombre de pods toutes les 15 s. Chaque paire de pods
+    # demande un nœud au cluster autoscaler, qui met 1 à 3 min à le provisionner : la montée
+    # brutale réclame des machines que le pic n'aura plus besoin quand elles arriveront.
+    behavior:
+        scaleUp:
+            stabilizationWindowSeconds: 60
+            policies:
+                - type: Pods
+                  value: 2
+                  periodSeconds: 60
+        scaleDown:
+            stabilizationWindowSeconds: 300
+            policies:
+                - type: Percent
+                  value: 50
+                  periodSeconds: 60
