@@ -45,8 +45,10 @@ jobs:
                       NEXT_PUBLIC_BASE_URL=${{ secrets.NEXT_PUBLIC_BASE_URL }}
                       NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
                       NEXT_PUBLIC_VAPID_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+                      NEXT_DEPLOYMENT_ID=${{ github.sha }}
                   secrets: |
                       tmdb_token=${{ secrets.TMDB_READ_ACCESS_TOKEN }}
+                      actions_encryption_key=${{ secrets.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY }}
 
             - uses: azure/setup-kubectl@v4
 
