@@ -187,6 +187,38 @@ point à vérifier avant de poser la policy est **Bugsink** (`sentry.silexio.be`
 qu'il est joignable par IP publique. S'il est hébergé sur une IP privée du même Public Cloud, il
 faut lui ajouter un `to.ipBlock` dédié, sinon les rapports d'erreur partent en silence.
 
+## 7 ter. L'origine est joignable en direct — à traiter
+
+Le LB Octavia a une IP publique. Qui la connaît peut taper l'origine sans passer par Cloudflare,
+donc sans WAF, sans cache, et **sans le rate limiting**. Le cas le plus gênant :
+`lib/rate-limiter.ts` lit `cf-connecting-ip` en premier, un header qu'un appelant direct forge
+librement — il peut donc à la fois usurper une IP et remettre son compteur à zéro à chaque requête.
+
+Le correctif est de n'accepter que les plages Cloudflare ([liste officielle][cf-ips]) :
+
+```yaml
+nginx.ingress.kubernetes.io/whitelist-source-range: '173.245.48.0/20,103.21.244.0/22,...'
+```
+
+**Vérifier d'abord que nginx voit la vraie IP source.** Derrière un LoadBalancer Octavia en
+`externalTrafficPolicy: Cluster` (le défaut), le SNAT remplace l'IP du client par celle du nœud :
+la whitelist rejetterait alors tout le trafic, y compris légitime.
+
+```bash
+kubectl -n ingress-nginx logs -l app.kubernetes.io/component=controller --tail=20
+```
+
+Si l'IP en début de ligne est une adresse Cloudflare, la whitelist est applicable telle quelle.
+Si c'est une adresse en `172.21.x.x` (le subnet du cluster), il faut d'abord passer le Service en
+`externalTrafficPolicy: Local` ou activer le PROXY protocol côté Octavia.
+
+[OPINION] L'alternative sans liste à maintenir est [Authenticated Origin Pulls][cf-mtls] : mTLS
+entre Cloudflare et l'origine, via les annotations `auth-tls-*` de l'Ingress. Plus robuste, plus
+long à câbler — à privilégier si les mises à jour de plages IP deviennent pénibles.
+
+[cf-ips]: https://www.cloudflare.com/ips/
+[cf-mtls]: https://developers.cloudflare.com/ssl/origin-configuration/authenticated-origin-pull/
+
 ## 8. CI/CD (GitHub Actions)
 
 `.github/workflows/deploy.yml` build l'image, la push sur ghcr.io, puis **applique `k8s/app.yaml`**
@@ -218,6 +250,24 @@ Deux workflows, deux rythmes :
 | `NEXT_PUBLIC_BASE_URL`          | build-arg (client)          |
 | `NEXT_PUBLIC_SENTRY_DSN`        | build-arg (client, https)   |
 | `KUBECONFIG_B64`                | `base64 -w0 ~/.kube/config` |
+
+**`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`** — à générer une fois, puis à ne plus jamais changer :
+
+```bash
+openssl rand -base64 32
+```
+
+Next chiffre les variables capturées par une Server Action avant de les envoyer au client, avec
+une clé tirée à chaque build par défaut. Pendant un rolling update les deux versions coexistent :
+une action chiffrée par l'ancien pod ne se déchiffre pas sur le nouveau, et l'utilisateur reçoit
+« Failed to find Server Action ». Une clé fixe supprime la fenêtre. Le build passe sans le secret,
+avec un avertissement.
+
+Le workflow passe aussi `NEXT_DEPLOYMENT_ID=${{ github.sha }}` en build-arg. Next suffixe alors
+les assets en `?dpl=<sha>` et compare l'identifiant du client à celui du serveur : en cas
+d'écart, il déclenche un rechargement complet au lieu de demander un chunk qui n'existe plus.
+C'est le correctif de fond des 404 pendant un déploiement — l'affinité par cookie ne faisait
+qu'en réduire la probabilité.
 
 Les secrets **serveur** (`SUPABASE_SERVICE_ROLE_KEY`, `SENTRY_DSN`, `TMDB_READ_ACCESS_TOKEN`, `WATCHMODE_API_KEY`) vivent **uniquement** dans le secret K8s `reelmark-secrets`, jamais dans l'image.
 
