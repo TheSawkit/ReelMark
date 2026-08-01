@@ -194,13 +194,7 @@ donc sans WAF, sans cache, et **sans le rate limiting**. Le cas le plus gênant 
 `lib/rate-limiter.ts` lit `cf-connecting-ip` en premier, un header qu'un appelant direct forge
 librement — il peut donc à la fois usurper une IP et remettre son compteur à zéro à chaque requête.
 
-Le correctif est de n'accepter que les plages Cloudflare ([liste officielle][cf-ips]) :
-
-```yaml
-nginx.ingress.kubernetes.io/whitelist-source-range: '173.245.48.0/20,103.21.244.0/22,...'
-```
-
-**Vérifier d'abord que nginx voit la vraie IP source.** Derrière un LoadBalancer Octavia en
+**Étape 1 — vérifier que nginx voit la vraie IP source.** Derrière un LoadBalancer Octavia en
 `externalTrafficPolicy: Cluster` (le défaut), le SNAT remplace l'IP du client par celle du nœud :
 la whitelist rejetterait alors tout le trafic, y compris légitime.
 
@@ -208,9 +202,27 @@ la whitelist rejetterait alors tout le trafic, y compris légitime.
 kubectl -n ingress-nginx logs -l app.kubernetes.io/component=controller --tail=20
 ```
 
-Si l'IP en début de ligne est une adresse Cloudflare, la whitelist est applicable telle quelle.
-Si c'est une adresse en `172.21.x.x` (le subnet du cluster), il faut d'abord passer le Service en
-`externalTrafficPolicy: Local` ou activer le PROXY protocol côté Octavia.
+Si l'IP en début de ligne appartient à Cloudflare, passer à l'étape 2. Si c'est une adresse en
+`172.21.x.x` (le subnet du cluster), il faut d'abord passer le Service en
+`externalTrafficPolicy: Local` ou activer le PROXY protocol côté Octavia — sinon la whitelist
+coupe le site.
+
+**Étape 2 — poser la whitelist**, plages lues depuis [la source officielle][cf-ips] plutôt que
+recopiées dans le dépôt, où elles se périmeraient en silence :
+
+```bash
+CF=$(curl -s https://www.cloudflare.com/ips-v4 https://www.cloudflare.com/ips-v6 | paste -sd, -)
+kubectl -n reelmark annotate --overwrite ingress reelmark \
+  nginx.ingress.kubernetes.io/whitelist-source-range="$CF"
+
+curl -I https://reelmark.silexio.be        # doit répondre 200
+kubectl -n reelmark annotate ingress reelmark \
+  nginx.ingress.kubernetes.io/whitelist-source-range-   # retour arrière
+```
+
+L'annotation survit aux déploiements : `infra.yml` applique l'Ingress en `--server-side`, et
+Server-Side Apply ne touche pas aux champs qu'un autre field manager possède. À rejouer quand
+Cloudflare publie de nouvelles plages — quelques fois par an.
 
 [OPINION] L'alternative sans liste à maintenir est [Authenticated Origin Pulls][cf-mtls] : mTLS
 entre Cloudflare et l'origine, via les annotations `auth-tls-*` de l'Ingress. Plus robuste, plus
@@ -218,6 +230,25 @@ long à câbler — à privilégier si les mises à jour de plages IP deviennent
 
 [cf-ips]: https://www.cloudflare.com/ips/
 [cf-mtls]: https://developers.cloudflare.com/ssl/origin-configuration/authenticated-origin-pull/
+
+## 7 quater. Surveillance
+
+Bugsink couvre les erreurs applicatives, rien ne couvre l'infrastructure : un pod qui redémarre en
+boucle, un HPA plafonné ou un nœud plein passent inaperçus jusqu'à ce qu'un visiteur le signale.
+
+[OPINION] Un `kube-prometheus-stack` in-cluster consommerait environ 1 Go de RAM, soit un quart de
+la capacité utile de deux nœuds — disproportionné ici. Un contrôle externe sur `/api/health`
+(Cloudflare Health Checks, ou tout service d'uptime) donne l'essentiel du bénéfice sans rien
+prendre au cluster, et surveille la chaîne complète plutôt que le seul intérieur du cluster.
+
+Ce qu'un `kubectl` ne dira pas tout seul, à regarder après chaque incident :
+
+```bash
+kubectl -n reelmark get pods -o wide                       # redémarrages, répartition sur les nœuds
+kubectl -n reelmark describe hpa reelmark | tail -20       # décisions de scaling et leur raison
+kubectl top nodes                                          # marge réelle par nœud
+kubectl get events -A --sort-by=.lastTimestamp | tail -30  # évictions, drains, OOMKill
+```
 
 ## 8. CI/CD (GitHub Actions)
 
