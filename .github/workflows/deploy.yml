@@ -9,6 +9,10 @@ env:
     IMAGE: ghcr.io/thesawkit/reelmark
     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+concurrency:
+    group: deploy-app
+    cancel-in-progress: false
+
 jobs:
     build-deploy:
         runs-on: ubuntu-latest
@@ -54,8 +58,8 @@ jobs:
                   echo "$KUBECONFIG_B64" | base64 -d > ~/.kube/config
                   chmod 600 ~/.kube/config
 
-            - name: Roll out new image
+            - name: Deploy manifests
               run: |
-                  kubectl -n reelmark set image deployment/reelmark \
-                    reelmark=${{ env.IMAGE }}:${{ github.sha }}
-                  kubectl -n reelmark rollout status deployment/reelmark --timeout=180s
+                  sed "s|__IMAGE_TAG__|${{ github.sha }}|g" k8s/app.yaml \
+                    | kubectl apply --server-side --force-conflicts -f -
+                  kubectl -n reelmark rollout status deployment/reelmark --timeout=300s
