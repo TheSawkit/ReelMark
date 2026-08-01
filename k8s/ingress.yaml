@@ -9,7 +9,7 @@ metadata:
         nginx.ingress.kubernetes.io/proxy-buffers-number: '8'
         nginx.ingress.kubernetes.io/proxy-busy-buffers-size: '32k'
         nginx.ingress.kubernetes.io/affinity: 'cookie'
-        nginx.ingress.kubernetes.io/affinity-mode: 'persistent'
+        nginx.ingress.kubernetes.io/affinity-mode: 'balanced'
         nginx.ingress.kubernetes.io/session-cookie-name: 'reelmark-affinity'
         nginx.ingress.kubernetes.io/session-cookie-max-age: '172800'
         nginx.ingress.kubernetes.io/session-cookie-samesite: 'Lax'
