@@ -49,8 +49,15 @@ jobs:
                     --values k8s/ingress-nginx-values.yaml \
                     --atomic --timeout 10m
 
+            # Le namespace reelmark est créé par k8s/app.yaml, donc par le workflow applicatif.
+            # Sur un cluster neuf ce job peut tourner en premier : ne pas échouer pour ça.
             - name: Apply application Ingress
-              run: kubectl apply --server-side --force-conflicts -f k8s/ingress.yaml
+              run: |
+                  if ! kubectl get namespace reelmark >/dev/null 2>&1; then
+                    echo "Namespace reelmark absent — relancer ce workflow après le premier déploiement applicatif."
+                    exit 0
+                  fi
+                  kubectl apply --server-side --force-conflicts -f k8s/ingress.yaml
 
             - name: Report edge state
               run: |
