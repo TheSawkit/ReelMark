@@ -25,7 +25,19 @@ spec:
             labels:
                 app: reelmark
         spec:
-            terminationGracePeriodSeconds: 30
+            # Next termine les requêtes en vol ET les callbacks after() avant de sortir sur
+            # SIGTERM ; il lui faut un drain de 10 à 30 s. Ici : 10 s de preStop pour laisser
+            # l'endpoint quitter le Service, puis 35 s de drain. Toutes les Server Actions du
+            # projet déferrent leur revalidation dans after() — un drain trop court les perd.
+            terminationGracePeriodSeconds: 45
+            automountServiceAccountToken: false
+            securityContext:
+                runAsNonRoot: true
+                runAsUser: 1001
+                runAsGroup: 1001
+                fsGroup: 1001
+                seccompProfile:
+                    type: RuntimeDefault
             topologySpreadConstraints:
                 - maxSkew: 1
                   topologyKey: kubernetes.io/hostname
@@ -48,6 +60,19 @@ spec:
                   envFrom:
                       - secretRef:
                             name: reelmark-secrets
+                  securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      capabilities:
+                          drop: ['ALL']
+                  # Les deux seuls chemins que le serveur standalone écrit à l'exécution. Le
+                  # `fsGroup` du pod les rend accessibles à l'uid 1001 — sans lui un emptyDir
+                  # reste root:root en 0755 et le conteneur non-root ne peut pas y écrire.
+                  volumeMounts:
+                      - name: next-cache
+                        mountPath: /app/.next/cache
+                      - name: tmp
+                        mountPath: /tmp
                   lifecycle:
                       preStop:
                           exec:
@@ -61,22 +86,38 @@ spec:
                           cpu: '1500m'
                           memory: '1Gi'
                           ephemeral-storage: '2Gi'
+                  # `timeoutSeconds` vaut 1 s par défaut : sous un pic de rendu SSR l'event loop
+                  # dépasse ce seuil, trois fois de suite le pod redémarre, la charge se reporte
+                  # sur les survivants et l'incident se propage. Les seuils ci-dessous laissent
+                  # 60 s d'indisponibilité franche avant de conclure à un blocage réel.
                   startupProbe:
                       httpGet:
                           path: /api/health
                           port: 3000
                       periodSeconds: 3
+                      timeoutSeconds: 3
                       failureThreshold: 20
                   readinessProbe:
                       httpGet:
                           path: /api/health
                           port: 3000
                       periodSeconds: 10
+                      timeoutSeconds: 3
+                      failureThreshold: 3
                   livenessProbe:
                       httpGet:
                           path: /api/health
                           port: 3000
                       periodSeconds: 20
+                      timeoutSeconds: 5
+                      failureThreshold: 3
+            volumes:
+                - name: next-cache
+                  emptyDir:
+                      sizeLimit: 1Gi
+                - name: tmp
+                  emptyDir:
+                      sizeLimit: 256Mi
 ---
 apiVersion: v1
 kind: Service
