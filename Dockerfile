@@ -28,6 +28,10 @@ COPY . .
 # entrées "use cache" : il appelle donc TMDB. Le token passe par un secret BuildKit, jamais
 # par un ARG — un build-arg resterait lisible dans l'historique de l'image.
 RUN --mount=type=secret,id=tmdb_token \
+	set -e; \
+	test -n "$NEXT_PUBLIC_SUPABASE_URL" || { echo "ERREUR: build-arg 'NEXT_PUBLIC_SUPABASE_URL' vide — le bundle client serait inutilisable." >&2; exit 1; }; \
+	test -n "$NEXT_PUBLIC_SUPABASE_ANON_KEY" || { echo "ERREUR: build-arg 'NEXT_PUBLIC_SUPABASE_ANON_KEY' vide — le bundle client serait inutilisable." >&2; exit 1; }; \
+	test -n "$NEXT_PUBLIC_BASE_URL" || { echo "ERREUR: build-arg 'NEXT_PUBLIC_BASE_URL' vide — le bundle client serait inutilisable." >&2; exit 1; }; \
 	if [ ! -s /run/secrets/tmdb_token ]; then \
 		echo "ERREUR: secret de build 'tmdb_token' manquant — le prerender appelle TMDB." >&2; \
 		exit 1; \

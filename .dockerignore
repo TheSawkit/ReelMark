@@ -8,6 +8,9 @@ playwright-report
 test-results
 coverage
 k8s
+docs
+context-ai
+tsconfig.tsbuildinfo
 *.md
 .env*
 Dockerfile
