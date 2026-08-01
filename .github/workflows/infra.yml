@@ -37,9 +37,13 @@ jobs:
                   echo "$KUBECONFIG_B64" | base64 -d > ~/.kube/config
                   chmod 600 ~/.kube/config
 
-            # --atomic rollback l'edge si l'upgrade échoue. Le timeout large couvre le
-            # provisioning d'un nœud par le cluster autoscaler quand l'anti-affinité laisse
-            # le second replica en Pending.
+            # --force-conflicts : le Deployment de l'ingress porte des champs encore détenus par
+            # `kubectl-client-side-apply`, hérités de son installation manuelle. Sans lui, Helm
+            # refuse d'y toucher et l'upgrade échoue — c'est ce qui laissait la release en échec
+            # depuis juillet, donc l'edge à un seul replica.
+            # --rollback-on-failure remplace --atomic, déprécié depuis Helm v4. Le timeout large
+            # couvre le provisioning d'un nœud par l'autoscaler quand l'anti-affinité laisse le
+            # second replica en Pending.
             - name: Upgrade ingress-nginx
               run: |
                   helm upgrade --install ingress-nginx ingress-nginx \
@@ -47,7 +51,7 @@ jobs:
                     --version "$CHART_VERSION" \
                     --namespace ingress-nginx --create-namespace \
                     --values k8s/ingress-nginx-values.yaml \
-                    --atomic --timeout 10m
+                    --force-conflicts --rollback-on-failure --timeout 10m
 
             # Le namespace reelmark est créé par k8s/app.yaml, donc par le workflow applicatif.
             # Sur un cluster neuf ce job peut tourner en premier : ne pas échouer pour ça.
