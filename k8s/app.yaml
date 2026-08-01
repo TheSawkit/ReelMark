@@ -11,7 +11,7 @@ metadata:
     labels:
         app: reelmark
 spec:
-    replicas: 2
+    revisionHistoryLimit: 3
     strategy:
         type: RollingUpdate
         rollingUpdate:
@@ -25,40 +25,99 @@ spec:
             labels:
                 app: reelmark
         spec:
-            terminationGracePeriodSeconds: 30
+            # Next termine les requêtes en vol ET les callbacks after() avant de sortir sur
+            # SIGTERM ; il lui faut un drain de 10 à 30 s. Ici : 10 s de preStop pour laisser
+            # l'endpoint quitter le Service, puis 35 s de drain. Toutes les Server Actions du
+            # projet déferrent leur revalidation dans after() — un drain trop court les perd.
+            terminationGracePeriodSeconds: 45
+            automountServiceAccountToken: false
+            securityContext:
+                runAsNonRoot: true
+                runAsUser: 1001
+                runAsGroup: 1001
+                fsGroup: 1001
+                seccompProfile:
+                    type: RuntimeDefault
+            topologySpreadConstraints:
+                - maxSkew: 1
+                  topologyKey: kubernetes.io/hostname
+                  whenUnsatisfiable: ScheduleAnyway
+                  labelSelector:
+                      matchLabels:
+                          app: reelmark
             imagePullSecrets:
                 - name: ghcr-pull
             containers:
                 - name: reelmark
-                  image: ghcr.io/thesawkit/reelmark:latest
+                  image: ghcr.io/thesawkit/reelmark:__IMAGE_TAG__
                   ports:
                       - containerPort: 3000
+                  # Node dimensionne son heap sur la mémoire de la machine, pas sur la limite
+                  # du conteneur : sans cette borne un pic de rendu SSR se fait OOMKill à 1Gi.
+                  env:
+                      - name: NODE_OPTIONS
+                        value: '--max-old-space-size=768'
                   envFrom:
                       - secretRef:
                             name: reelmark-secrets
+                  securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      capabilities:
+                          drop: ['ALL']
+                  # Les deux seuls chemins que le serveur standalone écrit à l'exécution. Le
+                  # `fsGroup` du pod les rend accessibles à l'uid 1001 — sans lui un emptyDir
+                  # reste root:root en 0755 et le conteneur non-root ne peut pas y écrire.
+                  volumeMounts:
+                      - name: next-cache
+                        mountPath: /app/.next/cache
+                      - name: tmp
+                        mountPath: /tmp
                   lifecycle:
                       preStop:
                           exec:
                               command: ['sh', '-c', 'sleep 10']
                   resources:
                       requests:
-                          cpu: '250m'
-                          memory: '512Mi'
-                      limits:
-                          cpu: '1000m'
+                          cpu: '500m'
                           memory: '1Gi'
+                          ephemeral-storage: '1Gi'
+                      limits:
+                          cpu: '1500m'
+                          memory: '1Gi'
+                          ephemeral-storage: '2Gi'
+                  # `timeoutSeconds` vaut 1 s par défaut : sous un pic de rendu SSR l'event loop
+                  # dépasse ce seuil, trois fois de suite le pod redémarre, la charge se reporte
+                  # sur les survivants et l'incident se propage. Les seuils ci-dessous laissent
+                  # 60 s d'indisponibilité franche avant de conclure à un blocage réel.
+                  startupProbe:
+                      httpGet:
+                          path: /api/health
+                          port: 3000
+                      periodSeconds: 3
+                      timeoutSeconds: 3
+                      failureThreshold: 20
                   readinessProbe:
                       httpGet:
                           path: /api/health
                           port: 3000
-                      initialDelaySeconds: 45
                       periodSeconds: 10
+                      timeoutSeconds: 3
+                      failureThreshold: 3
                   livenessProbe:
                       httpGet:
                           path: /api/health
                           port: 3000
-                      initialDelaySeconds: 15
                       periodSeconds: 20
+                      timeoutSeconds: 5
+                      failureThreshold: 3
+            volumes:
+                - name: next-cache
+                  emptyDir:
+                      sizeLimit: 1Gi
+                - name: tmp
+                  emptyDir:
+                      sizeLimit: 256Mi
 ---
 apiVersion: v1
 kind: Service
@@ -72,6 +131,20 @@ spec:
     ports:
         - port: 80
           targetPort: 3000
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+    name: reelmark
+    namespace: reelmark
+spec:
+    maxUnavailable: 1
+    # Un pod déjà cassé ne doit pas immobiliser le budget et bloquer le drain d'un nœud :
+    # l'évincer restaure la disponibilité, il ne la dégrade pas.
+    unhealthyPodEvictionPolicy: AlwaysAllow
+    selector:
+        matchLabels:
+            app: reelmark
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -91,4 +164,20 @@ spec:
               name: cpu
               target:
                   type: Utilization
-                  averageUtilization: 75
+                  averageUtilization: 70
+    # Sans `behavior`, le HPA double le nombre de pods toutes les 15 s. Chaque paire de pods
+    # demande un nœud au cluster autoscaler, qui met 1 à 3 min à le provisionner : la montée
+    # brutale réclame des machines que le pic n'aura plus besoin quand elles arriveront.
+    behavior:
+        scaleUp:
+            stabilizationWindowSeconds: 60
+            policies:
+                - type: Pods
+                  value: 2
+                  periodSeconds: 60
+        scaleDown:
+            stabilizationWindowSeconds: 300
+            policies:
+                - type: Percent
+                  value: 50
+                  periodSeconds: 60

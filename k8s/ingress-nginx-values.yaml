@@ -1,0 +1,20 @@
+# Values Helm du chart ingress-nginx. Appliquées par .github/workflows/infra.yml.
+controller:
+    replicaCount: 2
+    minAvailable: 1
+    # `required` et non `preferred` : les deux replicas ne peuvent PAS partager un nœud, ce qui
+    # interdit au cluster autoscaler de redescendre le node pool à 1 — le plancher de 2 nœuds
+    # devient structurel au lieu de dépendre d'un réglage du Manager Infomaniak.
+    affinity:
+        podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+                - topologyKey: kubernetes.io/hostname
+                  labelSelector:
+                      matchLabels:
+                          app.kubernetes.io/name: ingress-nginx
+                          app.kubernetes.io/instance: ingress-nginx
+                          app.kubernetes.io/component: controller
+    resources:
+        requests:
+            cpu: '100m'
+            memory: '128Mi'

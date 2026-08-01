@@ -2,7 +2,8 @@
 
 import './globals.css';
 import * as Sentry from '@sentry/nextjs';
-import { translations, type Language } from '@/lib/i18n/translations';
+import { translations } from '@/lib/i18n/translations';
+import { detectClientLanguage } from '@/lib/i18n/client-language';
 import { useEffect, useState } from 'react';
 import { Inter, Bebas_Neue } from 'next/font/google';
 
@@ -30,21 +31,7 @@ export default function GlobalError({
 		Sentry.captureException(error);
 	}, [error]);
 
-	const [lang] = useState<Language>(() => {
-		if (typeof document === 'undefined') return 'en';
-		const match = document.cookie.match(
-			new RegExp('(^| )preferred-language=([^;]+)')
-		);
-		if (match && (match[2] === 'fr' || match[2] === 'en')) {
-			return match[2] as Language;
-		} else if (
-			typeof navigator !== 'undefined' &&
-			navigator.language.startsWith('fr')
-		) {
-			return 'fr';
-		}
-		return 'en';
-	});
+	const [lang] = useState(detectClientLanguage);
 
 	const t = translations[lang].common;
 

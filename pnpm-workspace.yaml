@@ -16,3 +16,7 @@ overrides:
     postcss: '>=8.5.10'
     simple-icons: '>=16.27.1'
     lucide-react: '>=1.27.0'
+    # Next réclame ^0.34.5, dont libvips traîne CVE-2026-33196. Le forçage est sans risque ici :
+    # `images.unoptimized` fait que sharp n'est jamais appelé, et il est déjà dans
+    # ignoredBuiltDependencies donc jamais compilé.
+    sharp: '>=0.35.0'

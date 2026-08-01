@@ -1,0 +1,56 @@
+# Cloisonnement réseau du namespace. NON appliqué par la CI — voir DEPLOYMENT.md avant de le
+# poser : une erreur de périmètre coupe l'app en silence.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: default-deny
+    namespace: reelmark
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: reelmark
+    namespace: reelmark
+spec:
+    podSelector:
+        matchLabels:
+            app: reelmark
+    policyTypes:
+        - Ingress
+        - Egress
+    ingress:
+        - from:
+              - namespaceSelector:
+                    matchLabels:
+                        kubernetes.io/metadata.name: ingress-nginx
+          ports:
+              - protocol: TCP
+                port: 3000
+    egress:
+        - to:
+              - namespaceSelector:
+                    matchLabels:
+                        kubernetes.io/metadata.name: kube-system
+          ports:
+              - protocol: UDP
+                port: 53
+              - protocol: TCP
+                port: 53
+        # Supabase, TMDB, Watchmode et Bugsink sont tous joignables en HTTPS public. Les plages
+        # RFC1918 sont exclues : un pod compromis ne peut ni scanner le cluster ni joindre
+        # l'API server, qui ne lui sert à rien (automountServiceAccountToken est déjà à false).
+        - to:
+              - ipBlock:
+                    cidr: 0.0.0.0/0
+                    except:
+                        - 10.0.0.0/8
+                        - 172.16.0.0/12
+                        - 192.168.0.0/16
+          ports:
+              - protocol: TCP
+                port: 443

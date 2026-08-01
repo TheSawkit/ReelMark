@@ -4,12 +4,16 @@ metadata:
     name: reelmark
     namespace: reelmark
     annotations:
+        # nginx bufferise les réponses upstream par défaut : il attend la réponse complète avant
+        # de l'envoyer, ce qui annule le streaming des sections <Suspense> des fiches détail —
+        # la page arrive d'un bloc au lieu de peindre la bannière en premier.
+        nginx.ingress.kubernetes.io/proxy-buffering: 'off'
         nginx.ingress.kubernetes.io/proxy-body-size: '10m'
+        # Reste actif sans buffering : nginx s'en sert pour lire la première partie de la
+        # réponse, donc les en-têtes — les cookies de session Supabase dépassent le défaut de 4k.
         nginx.ingress.kubernetes.io/proxy-buffer-size: '16k'
-        nginx.ingress.kubernetes.io/proxy-buffers-number: '8'
-        nginx.ingress.kubernetes.io/proxy-busy-buffers-size: '32k'
         nginx.ingress.kubernetes.io/affinity: 'cookie'
-        nginx.ingress.kubernetes.io/affinity-mode: 'persistent'
+        nginx.ingress.kubernetes.io/affinity-mode: 'balanced'
         nginx.ingress.kubernetes.io/session-cookie-name: 'reelmark-affinity'
         nginx.ingress.kubernetes.io/session-cookie-max-age: '172800'
         nginx.ingress.kubernetes.io/session-cookie-samesite: 'Lax'

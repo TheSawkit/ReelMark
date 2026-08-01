@@ -1,0 +1,65 @@
+name: Infra — ingress-nginx
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - 'k8s/ingress-nginx-values.yaml'
+            - 'k8s/ingress.yaml'
+            - '.github/workflows/infra.yml'
+    workflow_dispatch:
+
+env:
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    CHART_VERSION: '4.15.1'
+
+concurrency:
+    group: infra-ingress
+    cancel-in-progress: false
+
+jobs:
+    ingress:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: azure/setup-helm@v4
+
+            - uses: azure/setup-kubectl@v4
+
+            - name: Configure kubeconfig
+              env:
+                  KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+              run: |
+                  mkdir -p ~/.kube
+                  echo "$KUBECONFIG_B64" | base64 -d > ~/.kube/config
+                  chmod 600 ~/.kube/config
+
+            # --atomic rollback l'edge si l'upgrade échoue. Le timeout large couvre le
+            # provisioning d'un nœud par le cluster autoscaler quand l'anti-affinité laisse
+            # le second replica en Pending.
+            - name: Upgrade ingress-nginx
+              run: |
+                  helm upgrade --install ingress-nginx ingress-nginx \
+                    --repo https://kubernetes.github.io/ingress-nginx \
+                    --version "$CHART_VERSION" \
+                    --namespace ingress-nginx --create-namespace \
+                    --values k8s/ingress-nginx-values.yaml \
+                    --atomic --timeout 10m
+
+            # Le namespace reelmark est créé par k8s/app.yaml, donc par le workflow applicatif.
+            # Sur un cluster neuf ce job peut tourner en premier : ne pas échouer pour ça.
+            - name: Apply application Ingress
+              run: |
+                  if ! kubectl get namespace reelmark >/dev/null 2>&1; then
+                    echo "Namespace reelmark absent — relancer ce workflow après le premier déploiement applicatif."
+                    exit 0
+                  fi
+                  kubectl apply --server-side --force-conflicts -f k8s/ingress.yaml
+
+            - name: Report edge state
+              run: |
+                  kubectl -n ingress-nginx get pods -o wide
+                  kubectl -n ingress-nginx get svc ingress-nginx-controller -o wide

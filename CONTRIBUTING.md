@@ -5,6 +5,27 @@
 - Branch from `dev`; open pull requests against `main`.
 - One concern per PR. Keep diffs minimal and scoped — no opportunistic refactors.
 
+### Merging
+
+| Pull request    | Merge mode                |
+| --------------- | ------------------------- |
+| `feature → dev` | **Squash and merge**      |
+| `dev → main`    | **Create a merge commit** |
+
+Squashing a feature branch is fine — it is short-lived and thrown away afterwards. Squashing
+`dev → main` is not: the squash writes a brand-new commit on `main` that does not exist in `dev`,
+so git cannot tell the two histories ever met. Every later pull request then relists all the
+commits already shipped, and the branches drift further apart with each release.
+
+Once `dev → main` uses a merge commit, resynchronising is a fast-forward — never a reset:
+
+```bash
+git checkout dev && git pull   # after the PR is merged
+```
+
+If the branches have already drifted, one merge commit is enough to reconcile them; there is
+nothing to reset and nothing to force-push.
+
 ## Commits
 
 [Conventional Commits](https://www.conventionalcommits.org/): `feat`, `fix`, `chore`, `refactor`, `docs`, `test`.
