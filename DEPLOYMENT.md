@@ -23,7 +23,13 @@ Supabase / TMDB / Bugsink restent externes. Registry d'image : **ghcr.io**.
 
 Via le **Manager Infomaniak** (UI) ou l'API/CLI — voir la [doc Kubernetes](https://docs.infomaniak.cloud/tutorials/kubernetes/kubernetes_services/) et le [repo d&#39;exemple Infomaniak](https://github.com/Infomaniak/Public_Cloud_Kubernetes).
 
-- Control plane managé (facturé) + 1 node pool (2–3 instances pour commencer).
+- Control plane managé (facturé) + 1 node pool en `a2-ram4-disk20-perf1` (2 vCPU / 4 Go / 20 Go).
+- L'autoscaling du node pool Infomaniak va de 1 à 10, non configurable. **Le plancher de 2 nœuds
+  est imposé côté cluster**, par l'anti-affinité `required` des deux replicas d'`ingress-nginx`
+  (`k8s/ingress-nginx-values.yaml`) : ils ne peuvent pas partager un nœud, donc le cluster
+  autoscaler ne peut pas redescendre à 1. Sans ce plancher, `ingress-nginx`, `coredns` et les pods
+  applicatifs tiennent sur le même nœud et chaque scale-down coupe le service 10–30 s
+  (Cloudflare 1016/523, puis 404 « default backend » le temps que l'ingress resynchronise).
 - Récupérer le **kubeconfig** depuis le Manager → `~/.kube/config`.
 - Vérifier : `kubectl get nodes`.
 
@@ -83,11 +89,23 @@ Sans lui, `kubectl get hpa -n reelmark` affiche `cpu: <unknown>` et l'autoscalin
 
 ## 3. Ingress + LoadBalancer
 
+Géré par `.github/workflows/infra.yml` (déclenché par un changement de
+`k8s/ingress-nginx-values.yaml` ou `k8s/ingress.yaml`, sinon `workflow_dispatch`). Pour le premier
+bootstrap, avant que les secrets GitHub existent, la même commande à la main :
+
 ```bash
 helm upgrade --install ingress-nginx ingress-nginx \
   --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx --create-namespace
+  --version 4.15.1 \
+  --namespace ingress-nginx --create-namespace \
+  --values k8s/ingress-nginx-values.yaml
 ```
+
+La version du chart est pinnée dans `.github/workflows/infra.yml` (`CHART_VERSION`) : une version
+flottante ferait passer l'edge en majeure au premier déclenchement du workflow, sans revue.
+
+Le second replica reste `Pending` tant que le cluster n'a qu'un nœud : c'est le signal attendu,
+le cluster autoscaler en provisionne un second dans la foulée.
 
 Le Service `LoadBalancer` provisionne un **LB Octavia** (facturé). Récupérer son IP publique :
 
@@ -105,6 +123,11 @@ kubectl -n ingress-nginx get svc ingress-nginx-controller -o wide
     ```
 3. **Images** : activer **Polish** (WebP/AVIF auto) + **Cache** — remplace l'optim in-pod (voir note images plus bas).
 4. **WAF** : activer les règles managées de base.
+5. **Cache Rule sur les assets** (Rules → Cache Rules) : expression
+   `starts_with(http.request.uri.path, "/_next/static/")` → _Eligible for cache_,
+   Edge TTL 1 an. Ces fichiers sont immutables (hachés par build). C'est l'optimisation la plus
+   rentable du setup : elle sort les assets des pods et fait tomber la charge CPU qui déclenche
+   le HPA.
 
 ## 5. Registry ghcr.io — pull secret
 
@@ -130,17 +153,41 @@ kubectl -n reelmark create secret generic reelmark-secrets \
 
 ## 7. Déployer les manifests
 
-L'image est déjà réglée (`ghcr.io/thesawkit/reelmark`). Déployer :
+`k8s/app.yaml` porte le placeholder `__IMAGE_TAG__` au lieu d'un tag figé : le CI y substitue le
+SHA du commit. Un `kubectl apply` brut échouerait en `ImagePullBackOff` — c'est voulu, ça vaut
+mieux qu'un `:latest` qui reverte silencieusement le cluster sur une image inconnue.
 
 ```bash
-kubectl apply -f k8s/app.yaml
-kubectl apply -f k8s/ingress.yaml
+sed "s|__IMAGE_TAG__|$(git rev-parse HEAD)|g" k8s/app.yaml \
+  | kubectl apply --server-side --force-conflicts -f -
 kubectl -n reelmark rollout status deployment/reelmark
 ```
 
+`--server-side` n'est pas cosmétique : voir la section 8 pour la raison (`spec.replicas` appartient
+au HPA). `k8s/ingress.yaml` n'est pas dans ce bloc — il est déployé par
+`.github/workflows/infra.yml`, l'edge ne doit pas bouger à chaque push de code.
+
 ## 8. CI/CD (GitHub Actions)
 
-`.github/workflows/deploy.yml` build l'image, la push sur ghcr.io et roll le déploiement à chaque push sur `main`.
+`.github/workflows/deploy.yml` build l'image, la push sur ghcr.io, puis **applique `k8s/app.yaml`**
+avec le SHA substitué à chaque push sur `main`. Le déploiement est déclaratif : toute modification
+des resources, probes, PDB ou HPA part en prod avec le commit qui la contient — inutile de
+réappliquer à la main.
+
+Corollaire : le Deployment ne déclare **pas** `spec.replicas`. Ce champ appartient au HPA ; le
+laisser dans le manifeste ramènerait le nombre de pods à sa valeur écrite à chaque déploiement,
+annulant l'autoscaling en pleine charge. L'apply se fait donc en **`--server-side`** : en
+client-side, l'absence du champ le remettrait à son défaut (1 pod) à chaque déploiement, alors
+qu'en server-side il reste la propriété du field manager `horizontal-pod-autoscaler`.
+`--force-conflicts` est nécessaire une fois, pour reprendre les champs encore détenus par
+l'ancien manager `kubectl-client-side-apply`.
+
+Deux workflows, deux rythmes :
+
+| Workflow                       | Déclencheur                          | Portée                                     |
+| ------------------------------ | ------------------------------------ | ------------------------------------------ |
+| `.github/workflows/deploy.yml` | tout push sur `main`                 | image + `k8s/app.yaml`                     |
+| `.github/workflows/infra.yml`  | changement des fichiers edge, manuel | chart `ingress-nginx` + `k8s/ingress.yaml` |
 
 **Secrets GitHub à définir** (Settings → Secrets → Actions) :
 
@@ -168,8 +215,20 @@ curl -I https://reelmark.silexio.be
 - **Build** : reste `next build --webpack` (Serwist ne supporte pas Turbopack). Le Dockerfile l'exécute via `pnpm build`. Le stage deps copie `pnpm-workspace.yaml` (il contient `overrides: postcss` + `allowBuilds`) — sinon `pnpm install --frozen-lockfile` échoue (`ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`).
 - **Images** : `next.config.ts` est passé en `images.unoptimized: true` → pods légers, pas de `sharp`. Le resize/format est délégué à **Cloudflare Polish**. Les posters TMDB sont déjà dimensionnés par URL (`w500`, etc.). Pour revenir à l'optim Next in-pod : retirer `unoptimized`, ajouter `sharp` au Dockerfile runner.
 - **NEXT_PUBLIC_*** : injectés au **build** (inlinés dans le bundle client) ET présents au runtime (SSR). Les secrets serveur sont runtime-only.
-- **Probes** : `/api/health` (route `app/api/health/route.ts`).
-- **Scaling** : HPA 2→5 pods sur CPU 70%.
+- **Probes** : `/api/health` (route `app/api/health/route.ts`). Un `startupProbe` couvre le
+  démarrage (60 s max) ; readiness et liveness ne s'activent qu'ensuite, donc un boot lent sur un
+  nœud chargé ne peut plus déclencher un CrashLoopBackOff.
+- **Scaling** : HPA 2→10 pods sur CPU 70 % de la request (350m). Le seuil se lit toujours en
+  pourcentage de `requests.cpu`, jamais de la limite — une request trop basse fait scaler le HPA
+  en permanence et entraîne le node pool dans le même va-et-vient.
+- **Dimensionnement (`a2-ram4-disk20-perf1`)** : ~1 500m CPU et ~2 600 Mi restent à l'app par nœud
+  une fois kubelet et DaemonSets déduits, soit **2 pods par nœud** (500m + 1Gi de requests).
+  `memory.limit == memory.request` place les pods en QoS Burstable protégée : ils ne sont pas
+  candidats à l'éviction avant les BestEffort sous MemoryPressure. `NODE_OPTIONS` borne le heap V8
+  à 768 Mo sous la limite de 1 Gi.
+- **Disponibilité** : PDB `maxUnavailable: 1` (correct quelle que soit la taille du ReplicaSet,
+  contrairement à `minAvailable`) + `topologySpreadConstraints` en `ScheduleAnyway` pour répartir
+  les pods sans jamais bloquer le scheduling quand le pool n'a qu'un nœud disponible.
 
 ## Sources
 
