@@ -51,20 +51,20 @@ export async function SpotlightPick({
 					<div className="absolute inset-0 bg-linear-to-t from-black/95 via-black/35 to-transparent" />
 					<div className="absolute inset-0 bg-linear-to-r from-black/70 via-transparent to-transparent" />
 
-					<div className="absolute inset-x-0 bottom-0 flex flex-col p-6 sm:p-8 lg:p-10">
-						<span className="mb-3 inline-flex items-center gap-1.5 self-start text-xs font-bold uppercase tracking-wide text-gold-bright">
+					<div className="absolute inset-x-0 bottom-0 flex flex-col p-5 sm:p-8 lg:p-10">
+						<span className="mb-2 inline-flex items-center gap-1.5 self-start text-xs font-bold uppercase tracking-wide text-gold-bright sm:mb-3">
 							<Sparkles className="h-3.5 w-3.5" />
 							{badgeLabel}
 						</span>
-						<h2 className="heading-display max-w-3xl leading-none text-4xl text-white drop-shadow-text sm:text-5xl lg:text-6xl">
+						<h2 className="heading-display line-clamp-2 max-w-3xl text-3xl leading-none text-white drop-shadow-text sm:text-5xl lg:text-6xl">
 							{item.title}
 						</h2>
 						{item.overview && (
-							<p className="mt-3 line-clamp-2 max-w-xl text-sm text-white/75 sm:text-base">
+							<p className="mt-3 hidden max-w-xl text-white/75 sm:line-clamp-2 sm:text-base">
 								{item.overview}
 							</p>
 						)}
-						<span className="mt-5 inline-flex items-center gap-2 self-start rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-black transition-transform duration-(--duration-fast) ease-apple group-hover:scale-105">
+						<span className="mt-4 inline-flex items-center gap-2 self-start rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-black transition-transform duration-(--duration-fast) ease-apple group-hover:scale-105 sm:mt-5">
 							{ctaLabel}
 							<ArrowRight className="h-4 w-4" />
 						</span>
