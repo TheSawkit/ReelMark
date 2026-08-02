@@ -59,6 +59,12 @@ test.describe('Résilience de rendu', () => {
 	}) => {
 		await page.goto('/en/movie/550', { waitUntil: 'domcontentloaded' });
 
+		// Les actions arrivent derrière Suspense : sans cette attente, le `isVisible()` de la
+		// boucle répond false au premier tour et le test sort sans avoir cliqué une seule fois.
+		await expect(
+			pageButton(page, /watch|vu|ajout|added|list/i)
+		).toBeVisible({ timeout: 15000 });
+
 		for (let i = 0; i < 3; i++) {
 			const button = pageButton(page, /watch|vu|ajout|added|list/i);
 			if (!(await button.isVisible().catch(() => false))) break;
@@ -66,8 +72,11 @@ test.describe('Résilience de rendu', () => {
 			await page.waitForTimeout(250);
 		}
 
+		// `domcontentloaded`, pas `networkidle` : le tableau de bord charge des affiches en
+		// continu et n'atteint le silence réseau qu'au-delà du budget du test. Les assertions
+		// qui suivent patientent déjà d'elles-mêmes.
 		const res = await page.goto('/en/dashboard', {
-			waitUntil: 'networkidle',
+			waitUntil: 'domcontentloaded',
 		});
 		expect(res?.status()).toBeLessThan(400);
 		await expect(errorBoundary(page)).toHaveCount(0);

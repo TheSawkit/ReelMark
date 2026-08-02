@@ -43,20 +43,24 @@ test.describe("Transition d'écran", () => {
 		page,
 	}) => {
 		await page.goto('/en/dashboard');
-		await page.waitForLoadState('domcontentloaded');
 
-		await page.evaluate(() => {
-			const el = document.querySelector('.screen-enter');
-			if (el) (el as HTMLElement).dataset.mark = 'before-nav';
+		const screen = page.locator('.screen-enter');
+		// Marquer via le locator, pas via `document.querySelector` : ce dernier rend `null` si
+		// le template n'est pas encore monté, et l'assertion d'après passerait pour de mauvaises
+		// raisons.
+		await expect(screen).toHaveCount(1);
+		await screen.evaluate((el) => {
+			(el as HTMLElement).dataset.mark = 'before-nav';
 		});
 
 		await page
 			.getByRole('link', { name: /explore/i })
 			.first()
 			.click();
-		await page.waitForURL('**/en/explorer');
+		// `commit` suffit : ce qui est testé est le remontage du template, pas le chargement
+		// complet de l'écran d'arrivée, dont les rangées TMDB peuvent traîner sous charge.
+		await page.waitForURL('**/en/explorer', { waitUntil: 'commit' });
 
-		const screen = page.locator('.screen-enter');
 		await expect(screen).toHaveCount(1);
 		await expect(screen).not.toHaveAttribute('data-mark', 'before-nav');
 		await expect(screen).toHaveCSS('opacity', '1');
