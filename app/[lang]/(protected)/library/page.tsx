@@ -132,7 +132,7 @@ export default async function LibraryPage({ params: paramsPromise }: Props) {
 	const t = await getTranslations(lang);
 
 	return (
-		<PageLayout className="screen-in">
+		<PageLayout>
 			<PageHeader
 				title={t.pages.library.title}
 				subtitle={

@@ -12,7 +12,7 @@ export function MediaGrid({
 		<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6 lg:gap-8">
 			{items.map((media, index) => (
 				<div key={getMediaKey(media)} className="media-grid-cell">
-					<StaggeredItem index={index} animation="fadeIn">
+					<StaggeredItem index={index}>
 						<MediaCard
 							media={media}
 							watchlistEntry={

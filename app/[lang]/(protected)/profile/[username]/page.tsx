@@ -215,7 +215,7 @@ async function ProfileContent({ params }: Props) {
 			: undefined;
 
 	return (
-		<PageLayout className="screen-in">
+		<PageLayout>
 			<ProfileHero
 				profile={profile}
 				avatarUrl={avatarUrl}

@@ -62,7 +62,6 @@ export function ForYouSection({ title, items }: ForYouSectionProps) {
 					index={index}
 					staggerMs={CARD_ANIMATION_DELAY_MS}
 					className="flex-none w-40 md:w-50 snap-start"
-					eager={index < 4}
 				>
 					<MediaCard
 						media={item}

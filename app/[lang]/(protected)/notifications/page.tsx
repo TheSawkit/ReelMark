@@ -24,7 +24,7 @@ export default async function NotificationsPage({ params }: Props) {
 	const notifications = await getNotifications(50);
 
 	return (
-		<PageLayout className="screen-in">
+		<PageLayout>
 			<PageHeader title={t.notifications.title} />
 			<NotificationsList initial={notifications} />
 		</PageLayout>

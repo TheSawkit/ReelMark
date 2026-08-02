@@ -52,7 +52,6 @@ export function ContinueWatchingSection({
 					index={index}
 					staggerMs={CARD_ANIMATION_DELAY_MS}
 					className="flex-none w-72 snap-start"
-					eager={index < 3}
 				>
 					<ContinueWatchingCard
 						item={item}
