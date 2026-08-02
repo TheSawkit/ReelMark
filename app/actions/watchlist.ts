@@ -6,9 +6,37 @@ import {
 	revalidateLocalizedAfterResponse,
 } from '@/app/actions/_helpers';
 import { VALID_STATUSES, VALID_MEDIA_TYPES } from '@/lib/validators';
-import type { WatchStatus, MediaType } from '@/types/tmdb';
+import type { WatchStatus, MediaType, WatchlistEntry } from '@/types/tmdb';
 import type { Database } from '@/types/database';
 import { getListMediaMetadata, type ListMediaMetadata } from '@/lib/tmdb';
+import { getWatchlistBucketWithProgress } from '@/lib/data/watchlist';
+import type { Language } from '@/lib/i18n/translations';
+
+export interface LibraryBucket {
+	entries: WatchlistEntry[];
+	tvProgress: Record<number, { watched: number; total: number }>;
+}
+
+/**
+ * Un compartiment de la bibliothèque, chargé à la demande.
+ * `/library` n'affiche qu'un couple type/statut à la fois : les envoyer tous dans le rendu
+ * initial revenait à sérialiser deux mille entrées pour en montrer trois cents.
+ */
+export async function fetchLibraryBucket(
+	mediaType: string,
+	status: string,
+	lang?: Language
+): Promise<LibraryBucket> {
+	if (!VALID_MEDIA_TYPES.has(mediaType) || !VALID_STATUSES.has(status)) {
+		return { entries: [], tvProgress: {} };
+	}
+
+	return getWatchlistBucketWithProgress(
+		mediaType as MediaType,
+		status as WatchStatus,
+		lang
+	);
+}
 
 function revalidateWatchlistPaths(mediaType: MediaType, mediaId: number) {
 	revalidateLocalizedAfterResponse([

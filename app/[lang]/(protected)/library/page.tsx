@@ -1,7 +1,9 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
-import { getAllTvShowsWatchProgress } from '@/lib/data/episodes';
-import { getCachedUserWatchlist } from '@/lib/data/watchlist';
+import {
+	getWatchlistBucketWithProgress,
+	getWatchlistCounts,
+} from '@/lib/data/watchlist';
 import { getMyReviewRatings } from '@/lib/data/reviews';
 import {
 	LibraryView,
@@ -13,7 +15,7 @@ import type { Language } from '@/lib/i18n/translations';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
 import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
-import { getTvShowsTotalEpisodes, getGenres } from '@/lib/tmdb';
+import { getGenres } from '@/lib/tmdb';
 import { BASE_URL, buildPageMetadata } from '@/lib/metadata';
 import type { MediaType } from '@/types/tmdb';
 
@@ -32,14 +34,14 @@ export async function generateMetadata({ params }: Props) {
 
 type Props = {
 	params: Promise<{ lang: Language }>;
+	searchParams: Promise<{ type?: string }>;
 };
 
 async function LibrarySubtitle({ t }: { t: Translations }) {
-	const fullWatchlist = await getCachedUserWatchlist();
+	const counts = await getWatchlistCounts();
 	const subtitle = (type: MediaType) => {
-		const count = fullWatchlist.filter(
-			(entry) => entry.media_type === type
-		).length;
+		const byStatus = counts[type];
+		const count = byStatus.to_watch + byStatus.watched + byStatus.abandoned;
 		const isPlural = count > 1;
 		const countText = isPlural
 			? type === 'tv'
@@ -56,60 +58,36 @@ async function LibrarySubtitle({ t }: { t: Translations }) {
 	);
 }
 
-async function LibraryContent({ lang }: { lang: Language }) {
-	const [fullWatchlist, genreNames, ratingByKey] = await Promise.all([
-		getCachedUserWatchlist(),
+/**
+ * Ne rend qu'un compartiment : le type demandé, statut « à voir », celui que l'écran ouvre.
+ * Les cinq autres arrivent après hydratation — les envoyer tous revenait à sérialiser deux
+ * mille entrées pour en afficher trois cents.
+ */
+async function LibraryContent({
+	lang,
+	type,
+}: {
+	lang: Language;
+	type: MediaType;
+}) {
+	const [initialBucket, counts, genreNames, ratingByKey] = await Promise.all([
+		getWatchlistBucketWithProgress(type, 'to_watch', lang),
+		getWatchlistCounts(),
 		getGenres(lang),
 		getMyReviewRatings(),
 	]);
-	const dataset = (type: MediaType) => {
-		const entries = fullWatchlist.filter(
-			(entry) => entry.media_type === type
-		);
-		return {
-			toWatch: entries.filter((entry) => entry.status === 'to_watch'),
-			watched: entries.filter((entry) => entry.status === 'watched'),
-			abandoned: entries.filter((entry) => entry.status === 'abandoned'),
-		};
-	};
-
-	const tvEntries = fullWatchlist.filter(
-		(entry) => entry.media_type === 'tv'
-	);
-	const tvIds = tvEntries.map((entry) => entry.media_id);
-	const stored: Record<number, number> = {};
-	const missing: number[] = [];
-	for (const entry of tvEntries) {
-		if (typeof entry.total_episodes === 'number') {
-			stored[entry.media_id] = entry.total_episodes;
-		} else {
-			missing.push(entry.media_id);
-		}
-	}
-	const [watchedCounts, fetched] = await Promise.all([
-		getAllTvShowsWatchProgress(tvIds),
-		missing.length > 0
-			? getTvShowsTotalEpisodes(missing, lang)
-			: Promise.resolve<Record<number, number>>({}),
-	]);
-	const tvProgressMap: Record<number, { watched: number; total: number }> =
-		{};
-	for (const tvId of tvIds) {
-		tvProgressMap[tvId] = {
-			watched: watchedCounts[tvId] ?? 0,
-			total: stored[tvId] ?? fetched[tvId] ?? 0,
-		};
-	}
 
 	return (
 		<>
 			<ListMetadataBackfill />
 			<LibraryView
-				movie={dataset('movie')}
-				tv={dataset('tv')}
-				tvProgress={tvProgressMap}
+				initialType={type}
+				initialStatus="to_watch"
+				initialBucket={initialBucket}
+				counts={counts}
 				genreNames={genreNames}
 				ratingByKey={ratingByKey}
+				lang={lang}
 			/>
 		</>
 	);
@@ -127,8 +105,13 @@ function LibraryGridSkeleton() {
 	);
 }
 
-export default async function LibraryPage({ params: paramsPromise }: Props) {
+export default async function LibraryPage({
+	params: paramsPromise,
+	searchParams: searchParamsPromise,
+}: Props) {
 	const { lang } = await paramsPromise;
+	const { type: typeParam } = await searchParamsPromise;
+	const type: MediaType = typeParam === 'tv' ? 'tv' : 'movie';
 	const t = await getTranslations(lang);
 
 	return (
@@ -151,7 +134,7 @@ export default async function LibraryPage({ params: paramsPromise }: Props) {
 			</Suspense>
 
 			<Suspense fallback={<LibraryGridSkeleton />}>
-				<LibraryContent lang={lang} />
+				<LibraryContent lang={lang} type={type} />
 			</Suspense>
 		</PageLayout>
 	);

@@ -6,6 +6,7 @@ import { MediaCard } from '@/components/media/card/MediaCard';
 import { AbandonShowMenu } from '@/components/media/tv/AbandonShowMenu';
 import { VirtualMediaGrid } from '@/components/media/card/VirtualMediaGrid';
 import { MediaListControls } from '@/components/media/list/MediaListControls';
+import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { BookMarked, Eye, Ban } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
 import type { GridColumns } from '@/hooks/useGridColumns';
@@ -19,16 +20,19 @@ const LIBRARY_COLUMNS: GridColumns = { base: 2, sm: 3, md: 4, lg: 5, xl: 6 };
 const LIBRARY_ROW_CLASS =
 	'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6 pb-3 sm:pb-4 md:pb-6';
 
+type Tab = 'to_watch' | 'watched' | 'abandoned';
+
 interface LibraryTabsProps {
 	toWatch: WatchlistEntry[];
 	watched: WatchlistEntry[];
 	abandoned?: WatchlistEntry[];
 	tvProgress?: Record<number, { watched: number; total: number }>;
+	/** Effectifs du serveur : les onglets existent et s'affichent avant leur compartiment. */
+	counts: Record<Tab, number>;
+	loadingStatuses: ReadonlySet<Tab>;
 	genreNames: Record<number, string>;
 	ratingByKey: Record<string, number>;
 }
-
-type Tab = 'to_watch' | 'watched' | 'abandoned';
 
 function toItems(
 	entries: WatchlistEntry[],
@@ -58,6 +62,8 @@ export function LibraryTabs({
 	watched,
 	abandoned = [],
 	tvProgress = {},
+	counts,
+	loadingStatuses,
 	genreNames,
 	ratingByKey,
 }: LibraryTabsProps) {
@@ -112,8 +118,10 @@ export function LibraryTabs({
 		},
 	};
 
+	// Décidé sur les effectifs, pas sur les données : l'onglet doit être là dès le premier
+	// rendu, avant que son compartiment n'arrive.
 	const tabOrder: Tab[] =
-		abandonedItems.length > 0
+		counts.abandoned > 0
 			? ['to_watch', 'watched', 'abandoned']
 			: ['to_watch', 'watched'];
 
@@ -175,14 +183,20 @@ export function LibraryTabs({
 										: 'bg-surface-3 text-muted'
 								)}
 							>
-								{tab.items.length}
+								{counts[id]}
 							</span>
 						</button>
 					);
 				})}
 			</div>
 
-			{current.items.length === 0 ? (
+			{loadingStatuses.has(visibleTab) ? (
+				// Le compartiment arrive : montrer la grille en attente plutôt que l'état vide,
+				// qui annoncerait à tort une bibliothèque sans titre.
+				<div role="tabpanel" id={`panel-${visibleTab}`}>
+					<PosterGridSkeleton count={12} />
+				</div>
+			) : current.items.length === 0 ? (
 				<div
 					role="tabpanel"
 					id={`panel-${visibleTab}`}
