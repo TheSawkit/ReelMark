@@ -15,26 +15,30 @@ import type { Language } from '@/lib/i18n/translations';
 export interface LibraryBucket {
 	entries: WatchlistEntry[];
 	tvProgress: Record<number, { watched: number; total: number }>;
+	hasMore: boolean;
 }
 
 /**
- * Un compartiment de la bibliothèque, chargé à la demande.
- * `/library` n'affiche qu'un couple type/statut à la fois : les envoyer tous dans le rendu
- * initial revenait à sérialiser deux mille entrées pour en montrer trois cents.
+ * Un lot d'un compartiment de la bibliothèque, chargé à la demande.
+ * `/library` n'affiche qu'un couple type/statut à la fois, et un compartiment de plusieurs
+ * milliers de titres mettait deux secondes à revenir d'un bloc : il arrive par lots, dont le
+ * premier s'affiche sans attendre les suivants.
  */
 export async function fetchLibraryBucket(
 	mediaType: string,
 	status: string,
-	lang?: Language
+	lang?: Language,
+	page = 0
 ): Promise<LibraryBucket> {
 	if (!VALID_MEDIA_TYPES.has(mediaType) || !VALID_STATUSES.has(status)) {
-		return { entries: [], tvProgress: {} };
+		return { entries: [], tvProgress: {}, hasMore: false };
 	}
 
 	return getWatchlistBucketWithProgress(
 		mediaType as MediaType,
 		status as WatchStatus,
-		lang
+		lang,
+		Math.max(0, Math.trunc(page))
 	);
 }
 

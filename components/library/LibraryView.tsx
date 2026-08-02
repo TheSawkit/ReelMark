@@ -8,7 +8,7 @@ import { fetchLibraryBucket } from '@/app/actions/watchlist';
 import {
 	libraryBucketStore,
 	useLibraryBucketsVersion,
-	type LibraryBucketData,
+	type LibraryBucketPage,
 } from '@/lib/library-bucket-store';
 import type { Language } from '@/lib/i18n/translations';
 import type { MediaType, WatchStatus } from '@/types/tmdb';
@@ -18,7 +18,7 @@ export type LibraryCounts = Record<MediaType, Record<WatchStatus, number>>;
 interface LibraryViewProps {
 	initialType: MediaType;
 	initialStatus: WatchStatus;
-	initialBucket: LibraryBucketData;
+	initialBucket: LibraryBucketPage;
 	counts: LibraryCounts;
 	genreNames: Record<number, string>;
 	ratingByKey: Record<string, number>;
@@ -26,7 +26,11 @@ interface LibraryViewProps {
 }
 
 const STATUSES: WatchStatus[] = ['to_watch', 'watched', 'abandoned'];
-const EMPTY_BUCKET: LibraryBucketData = { entries: [], tvProgress: {} };
+const EMPTY_BUCKET: LibraryBucketPage = {
+	entries: [],
+	tvProgress: {},
+	hasMore: false,
+};
 
 function useLibraryType(): MediaType {
 	const searchParams = useSearchParams();
@@ -58,8 +62,11 @@ export function LibraryView({
 	useEffect(() => {
 		for (const status of STATUSES) {
 			if (counts[type][status] === 0) continue;
-			void libraryBucketStore.ensure(type, status, (mediaType, target) =>
-				fetchLibraryBucket(mediaType, target, lang)
+			void libraryBucketStore.ensure(
+				type,
+				status,
+				(mediaType, target, page) =>
+					fetchLibraryBucket(mediaType, target, lang, page)
 			);
 		}
 	}, [counts, lang, type]);

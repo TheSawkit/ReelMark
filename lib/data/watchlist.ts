@@ -74,31 +74,41 @@ export const getWatchlistCounts = cache(async (): Promise<WatchlistCounts> => {
 });
 
 /**
- * Un seul compartiment de la bibliothèque, le plus récent d'abord.
- * `/library` n'en affiche qu'un à la fois : les envoyer tous revenait à sérialiser 2 077
- * entrées pour en montrer 316.
+ * Combien d'entrées un aller-retour ramène. Un compartiment de plusieurs milliers de titres
+ * mettait deux secondes à revenir d'un bloc — découpé, le premier lot s'affiche tout de suite
+ * et les suivants s'ajoutent sans bloquer.
+ */
+export const LIBRARY_PAGE_SIZE = 500;
+
+/**
+ * Un lot d'un compartiment, le plus récent d'abord.
+ * `/library` n'affiche qu'un compartiment à la fois : les envoyer tous, entiers, revenait à
+ * sérialiser 2 077 entrées pour en montrer 316.
  */
 export async function getWatchlistBucket(
 	mediaType: MediaType,
-	status: WatchStatus
+	status: WatchStatus,
+	page = 0
 ): Promise<WatchlistEntry[]> {
 	const { supabase, userId } = await getOptionalUser();
 
 	if (!userId) return [];
 
-	const entries = await fetchAllRows((from, to) =>
-		supabase
-			.from('watchlist')
-			.select(WATCHLIST_COLUMNS)
-			.eq('user_id', userId)
-			.eq('media_type', mediaType)
-			.eq('status', status)
-			.order('created_at', { ascending: false })
-			.order('id')
-			.range(from, to)
-	);
+	const from = page * LIBRARY_PAGE_SIZE;
 
-	return entries as WatchlistEntry[];
+	const { data, error } = await supabase
+		.from('watchlist')
+		.select(WATCHLIST_COLUMNS)
+		.eq('user_id', userId)
+		.eq('media_type', mediaType)
+		.eq('status', status)
+		.order('created_at', { ascending: false })
+		.order('id')
+		.range(from, from + LIBRARY_PAGE_SIZE - 1);
+
+	if (error) throw new Error(error.message);
+
+	return (data ?? []) as WatchlistEntry[];
 }
 
 /**
@@ -109,15 +119,18 @@ export async function getWatchlistBucket(
 export async function getWatchlistBucketWithProgress(
 	mediaType: MediaType,
 	status: WatchStatus,
-	lang?: Language
+	lang?: Language,
+	page = 0
 ): Promise<{
 	entries: WatchlistEntry[];
 	tvProgress: Record<number, { watched: number; total: number }>;
+	hasMore: boolean;
 }> {
-	const entries = await getWatchlistBucket(mediaType, status);
+	const entries = await getWatchlistBucket(mediaType, status, page);
+	const hasMore = entries.length === LIBRARY_PAGE_SIZE;
 
 	if (mediaType !== 'tv' || entries.length === 0) {
-		return { entries, tvProgress: {} };
+		return { entries, tvProgress: {}, hasMore };
 	}
 
 	const stored: Record<number, number> = {};
@@ -146,7 +159,7 @@ export async function getWatchlistBucketWithProgress(
 		};
 	}
 
-	return { entries, tvProgress };
+	return { entries, tvProgress, hasMore };
 }
 
 /** The authenticated user's watchlist row for one title, or null when absent. */
