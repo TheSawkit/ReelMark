@@ -6,7 +6,12 @@ import { test, expect } from '@playwright/test';
  * document au lieu du viewport et disparaît de l'écran. MediaActionsBar et BackToTopButton ont
  * été portés dans le body pour ça — ce test empêche qu'un nouveau `fixed` réintroduise le bug.
  */
-const SCREENS = ['/en/dashboard', '/en/explorer', '/en/library', '/en/movie/550'];
+const SCREENS = [
+	'/en/dashboard',
+	'/en/explorer',
+	'/en/library',
+	'/en/movie/550',
+];
 
 test.describe("Transition d'écran", () => {
 	for (const path of SCREENS) {
@@ -23,7 +28,10 @@ test.describe("Transition d'écran", () => {
 					.filter((el) => getComputedStyle(el).position === 'fixed')
 					.map(
 						(el) =>
-							`${el.tagName}.${String(el.className || '').split(' ').slice(0, 3).join('.')}`
+							`${el.tagName}.${String(el.className || '')
+								.split(' ')
+								.slice(0, 3)
+								.join('.')}`
 					);
 			});
 
@@ -31,7 +39,7 @@ test.describe("Transition d'écran", () => {
 		});
 	}
 
-	test("la transition se rejoue sur une navigation client et se termine opaque", async ({
+	test('la transition se rejoue sur une navigation client et se termine opaque', async ({
 		page,
 	}) => {
 		await page.goto('/en/dashboard');
@@ -42,7 +50,10 @@ test.describe("Transition d'écran", () => {
 			if (el) (el as HTMLElement).dataset.mark = 'before-nav';
 		});
 
-		await page.getByRole('link', { name: /explore/i }).first().click();
+		await page
+			.getByRole('link', { name: /explore/i })
+			.first()
+			.click();
 		await page.waitForURL('**/en/explorer');
 
 		const screen = page.locator('.screen-enter');
