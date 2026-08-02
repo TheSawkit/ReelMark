@@ -1,9 +1,18 @@
-export default function Title({ className }: { className?: string }) {
+interface TitleProps {
+	className?: string;
+	/** Dimensions explicites, pour les rendus hors DOM comme la carte Open Graph. */
+	width?: number;
+	height?: number;
+}
+
+export default function Title({ className, width, height }: TitleProps) {
 	return (
 		<svg
 			viewBox="0 0 8129 1792"
 			fill="currentColor"
 			className={className}
+			width={width}
+			height={height}
 			xmlns="http://www.w3.org/2000/svg"
 			role="img"
 			aria-label="ReelMark"
