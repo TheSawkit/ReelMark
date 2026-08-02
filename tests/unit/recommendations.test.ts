@@ -15,7 +15,6 @@ function entry(overrides: Partial<WatchlistEntry> = {}): WatchlistEntry {
 	const id = overrides.media_id ?? nextId++;
 	return {
 		id: `row-${id}`,
-		user_id: 'user',
 		media_id: id,
 		media_title: `Title ${id}`,
 		media_type: 'movie',

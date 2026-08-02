@@ -12,7 +12,6 @@ import type {
 
 const baseWatchlistEntry: WatchlistEntry = {
 	id: '1',
-	user_id: 'user-abc',
 	media_id: 550,
 	media_type: 'movie',
 	media_title: 'Fight Club',
