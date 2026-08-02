@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { LibraryTabs } from '@/components/library/LibraryTabs';
+import { BackToTopButton } from '@/components/shared/BackToTopButton';
 import type { MediaType, WatchlistEntry } from '@/types/tmdb';
 
 interface LibraryDataset {
@@ -38,15 +39,18 @@ export function LibraryView({
 	const data = type === 'tv' ? tv : movie;
 
 	return (
-		<LibraryTabs
-			key={type}
-			toWatch={data.toWatch}
-			watched={data.watched}
-			abandoned={data.abandoned}
-			tvProgress={type === 'tv' ? tvProgress : {}}
-			genreNames={genreNames}
-			ratingByKey={ratingByKey}
-		/>
+		<>
+			<LibraryTabs
+				key={type}
+				toWatch={data.toWatch}
+				watched={data.watched}
+				abandoned={data.abandoned}
+				tvProgress={type === 'tv' ? tvProgress : {}}
+				genreNames={genreNames}
+				ratingByKey={ratingByKey}
+			/>
+			<BackToTopButton />
+		</>
 	);
 }
 
