@@ -1,15 +1,29 @@
-# 🎬 ReelMark
+<p align="center">
+  <img src="./docs/assets/banner.png" alt="ReelMark" width="720">
+</p>
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.2-000000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.3-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![Supabase](https://img.shields.io/badge/Supabase-Auth_&_DB-3FCF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com/)
-[![CI](https://github.com/TheSawkit/ReelMark/actions/workflows/ci.yml/badge.svg)](https://github.com/TheSawkit/ReelMark/actions/workflows/ci.yml)
+<p align="center">
+  <a href="https://github.com/TheSawkit/ReelMark/actions/workflows/ci.yml"><img src="https://github.com/TheSawkit/ReelMark/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/PWA-installable-B9090B?style=flat&logo=pwa&logoColor=white" alt="PWA installable">
+  <img src="https://img.shields.io/badge/EN%20%C2%B7%20FR-bilingual-F5C518?style=flat" alt="Bilingual EN/FR">
+  <a href="https://www.themoviedb.org/"><img src="https://img.shields.io/badge/data-TMDB-01B4E4?style=flat&logo=themoviedatabase&logoColor=white" alt="Powered by TMDB"></a>
+  <img src="https://img.shields.io/badge/license-all%20rights%20reserved-6b7280?style=flat" alt="License">
+</p>
 
-> **Stop wasting hours deciding what to watch.** A cinema-themed personal watchlist tracker — a self-hostable alternative to TV Time.
+<h3 align="center">Never ask “which episode were we on?” again.</h3>
 
-**[🇬🇧 English](#-english) | [🇫🇷 Français](#-français)**
+<p align="center">
+  A cinema-themed tracker for the movies and shows you watch — episode by episode,<br>
+  with your ratings, your playlists and your friends. Installs like a native app.
+</p>
+
+<p align="center">
+  <strong><a href="https://reelmark.silexio.be">Open ReelMark →</a></strong>
+</p>
+
+<p align="center">
+  <strong><a href="#-english">🇬🇧 English</a> · <a href="#-français">🇫🇷 Français</a></strong>
+</p>
 
 ---
 
@@ -17,137 +31,42 @@
 
 ## 🇬🇧 English
 
-A bilingual (EN/FR), installable PWA to track movies and TV shows episode-by-episode, rate and review them, build playlists, and follow friends — powered by TMDB, with Supabase auth/DB and per-section privacy controls.
+<p align="center">
+  <img src="./public/screenshots/screenshot-mobile-1.png" alt="Personalised home screen" width="30%">
+  <img src="./public/screenshots/screenshot-mobile-2.png" alt="Your library" width="30%">
+  <img src="./public/screenshots/screenshot-mobile-3.png" alt="Where to watch, ratings and reviews" width="30%">
+</p>
 
-### ✨ Features
+### What you get
 
-|     | Feature                    | Description                                                                   |
-| --- | -------------------------- | ----------------------------------------------------------------------------- |
-| 🎞️  | **Personal tracking**      | Complete history of your movies, shows, and episodes across every season      |
-| 📺  | **Episode-level tracking** | Track every episode — never ask "did we watch this one?" again                |
-| 🔍  | **Smart exploration**      | Browse 700k+ titles from the TMDB catalog with intelligent regional filtering |
-| ⭐  | **Ratings & reviews**      | Rate on a 1–10 scale and write reviews visible on your public profile         |
-| 📁  | **Playlists**              | Create themed collections and share them publicly                             |
-| 👥  | **Friends & community**    | Send friend requests, follow friends' watchlists and reviews                  |
-| 🎭  | **Crew profiles**          | Full filmographies, biographies, and credits for every crew member            |
-| 📱  | **Installable PWA**        | Works on iPhone, Android, Mac, Windows, and Linux — no app store required     |
-| 🌍  | **Native bilingualism**    | Instant EN/FR switching with server-side language detection                   |
-| 🔒  | **Privacy controls**       | Per-section visibility: public, friends only, or private                      |
+|     |                                      |                                                                                                                                         |
+| --- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 📺  | **Episode-level tracking**           | Tick episodes one by one, season by season. Your progress follows you everywhere, and the next episode to watch is always one tap away. |
+| 🎬  | **A catalogue that knows what's on** | Browse what is actually in theatres near you, what is coming, and what is trending — filtered for your region, not someone else's.      |
+| ⭐  | **Your ratings, your words**         | Rate from 1 to 10 and write reviews. See what the community thought before you press play.                                              |
+| 📡  | **Where to watch it**                | See which of _your_ streaming services carries a title, plus rental and purchase prices, before you go looking.                         |
+| 📁  | **Playlists**                        | Group titles into themed collections and share them with a link.                                                                        |
+| 👥  | **Friends**                          | Follow what people you know are watching, reviewing and adding.                                                                         |
+| 🔒  | **Privacy you control**              | Every section — watchlist, watched, reviews, playlists, friends — is public, friends-only or private. Your call, per section.           |
+| 🌍  | **Bilingual**                        | Full English and French, switched instantly.                                                                                            |
 
-### 🛠️ Tech Stack
+### Install it
 
-| Layer           | Technology                                            |
-| :-------------- | :---------------------------------------------------- |
-| **Frontend**    | Next.js 16 (App Router) + React 19                    |
-| **Language**    | TypeScript 6 (strict)                                 |
-| **Styling**     | Tailwind CSS 4 (CSS-first, token-based design system) |
-| **Auth & DB**   | Supabase (PostgreSQL + Row-Level Security)            |
-| **Media data**  | TMDB API                                              |
-| **Streaming**   | Watchmode API                                         |
-| **PWA**         | Serwist (Service Worker + precaching)                 |
-| **Errors**      | Sentry SDK → self-hosted Bugsink                      |
-| **UI**          | Radix UI · shadcn/ui · lucide-react · sonner          |
-| **Tests**       | Vitest (unit) · Playwright (E2E)                      |
-| **Package mgr** | pnpm 11                                               |
+ReelMark is a PWA: no app store, no download, and it updates itself.
 
-### 📋 Prerequisites
+| Device                    | How                                                                                                    |
+| :------------------------ | :----------------------------------------------------------------------------------------------------- |
+| **iPhone / iPad**         | Open [reelmark.silexio.be](https://reelmark.silexio.be) in Safari → **Share** → **Add to Home Screen** |
+| **Android**               | Open in Chrome → menu **⋮** → **Install app**                                                          |
+| **Mac / Windows / Linux** | Open in Chrome or Edge → install icon in the address bar                                               |
 
-- **Node.js 22.13+** and **pnpm 11+**
-- A [TMDB Read Access Token](https://developer.themoviedb.org/docs/getting-started)
-- A [Supabase](https://supabase.com) project
-- A [Watchmode](https://api.watchmode.com) API key
+Once installed it runs full-screen, keeps working offline for pages you have already visited, and can send you notifications.
 
-### 🚀 Quick Start
+### Good to know
 
-```bash
-git clone https://github.com/TheSawkit/ReelMark.git
-cd ReelMark
-pnpm install
-cp .env.example .env.local   # then fill in the values (see Configuration)
-pnpm dev                     # http://localhost:3000
-```
-
-Database: the schema lives on the Supabase project (12 tables, RLS everywhere). To recreate it from scratch, follow [docs/DATA-MODEL.md](./docs/DATA-MODEL.md) in the Supabase SQL Editor.
-
-### ⚙️ Configuration
-
-All variables live in `.env.local` (see `.env.example`). `NEXT_PUBLIC_*` are exposed to the browser; the rest are server-only.
-
-| Variable                                 | Scope  | Description                                       |
-| :--------------------------------------- | :----- | :------------------------------------------------ |
-| `NEXT_PUBLIC_SUPABASE_URL`               | public | Supabase project URL                              |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`          | public | Supabase anon/publishable key                     |
-| `SUPABASE_SERVICE_ROLE_KEY`              | server | Supabase admin key —**never** exposed client      |
-| `TMDB_READ_ACCESS_TOKEN`                 | server | TMDB API v4 read access token                     |
-| `WATCHMODE_API_KEY`                      | server | Watchmode API key (streaming providers)           |
-| `NEXT_PUBLIC_BASE_URL`                   | public | Site base URL (e.g.`https://reelmark.silexio.be`) |
-| `NEXT_PUBLIC_SENTRY_DSN`                 | public | Bugsink DSN (browser) —**must be `https`**        |
-| `SENTRY_DSN`                             | server | Bugsink DSN (server)                              |
-| `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` | test   | Credentials for authenticated E2E tests           |
-
-### 📦 Available Scripts
-
-| Command            | Description                                                         |
-| :----------------- | :------------------------------------------------------------------ |
-| `pnpm dev`         | Start the dev server                                                |
-| `pnpm build`       | Production build (**`next build --webpack`** — required by Serwist) |
-| `pnpm start`       | Start the production server                                         |
-| `pnpm lint`        | Run ESLint                                                          |
-| `pnpm format`      | Format with Prettier                                                |
-| `pnpm test`        | Unit tests (Vitest)                                                 |
-| `pnpm test:watch`  | Unit tests in watch mode                                            |
-| `pnpm test:e2e`    | E2E tests (Playwright)                                              |
-| `pnpm test:e2e:ui` | E2E tests with the Playwright UI                                    |
-
-> **Build note:** the build **must** use webpack (`next build --webpack`). `@serwist/next` does not support Turbopack — a Turbopack build produces no `sw.js` and no service-worker registration.
-
-### 📁 Project Structure
-
-```
-ReelMark/
-├── app/                    # Next.js App Router (Server Components by default)
-│   ├── [lang]/             # Localized routes (fr/en): movie, tv, crew, explorer, dashboard, settings…
-│   ├── actions/            # Server Actions — all mutations (watchlist, reviews, friends…)
-│   ├── api/                # Route handlers (search, health)
-│   ├── auth/               # OAuth callback / email confirm
-│   ├── service-worker.ts   # Serwist service worker
-│   └── globals.css         # Design tokens (@theme inline)
-├── components/             # media/ · profile/ · settings/ · navigation/ · ui/ (shadcn) · effects/
-├── lib/                    # tmdb/ · supabase/ · i18n/ · search/ · validators.ts · metadata.ts …
-├── hooks/                  # Reusable client hooks
-├── types/                  # Shared TypeScript types (database.ts, tmdb.ts, profile.ts)
-├── k8s/                    # Kubernetes manifests (deployment, service, ingress, HPA)
-├── docs/                   # Developer documentation (architecture, setup, data model, debugging)
-├── Dockerfile              # Multi-stage production image (output: standalone)
-└── tests/                  # unit/ (Vitest) · e2e/ (Playwright)
-```
-
-### 🚢 Deployment
-
-Production runs on **Infomaniak Public Cloud (managed Kubernetes)** behind **Cloudflare** (TLS · CDN · WAF). The container image lives on **ghcr.io**; CI/CD is handled by GitHub Actions.
-
-**Full step-by-step runbook → [DEPLOYMENT.md](./DEPLOYMENT.md).**
-
-- `Dockerfile` — multi-stage, `output: standalone`. Build stays `next build --webpack`.
-- `k8s/` — `app.yaml` (deployment · service · HPA), `ingress.yaml`, `secret.example.yaml`.
-- `.github/workflows/deploy.yml` — push to `main` → build → push to ghcr.io → rollout.
-- ⚠️ **Cluster bootstrap:** Infomaniak provides only the control plane. You must install **Cilium (CNI) + OpenStack CCM** first ([DEPLOYMENT.md § 2](./DEPLOYMENT.md)), otherwise nodes stay `NotReady` and nothing schedules.
-
-### 📚 Documentation
-
-- **[docs/](./docs/README.md)** — developer documentation: [architecture](./docs/ARCHITECTURE.md) · [setup from scratch](./docs/SETUP.md) · [data model](./docs/DATA-MODEL.md) · [debugging](./docs/DEBUGGING.md)
-- **[DEPLOYMENT.md](./DEPLOYMENT.md)** — Infomaniak Kubernetes deployment runbook
-- **[SECURITY.md](./SECURITY.md)** — security policy · **[CONTRIBUTING.md](./CONTRIBUTING.md)** — contribution guide
-
-### 🤝 Contributing
-
-- Branch from `dev`; open PRs against `main`.
-- **Conventional Commits** (`feat`, `fix`, `chore`, `refactor`, `docs`).
-- Before a PR: `pnpm lint && pnpm test && pnpm test:e2e`.
-
-### 📄 License
-
-No open-source license — all rights reserved © SAWKIT. Contact the author for reuse.
+- Your watch history is yours. Nothing is sold, and nothing is shared beyond the visibility you set.
+- Film and TV data comes from [TMDB](https://www.themoviedb.org/); streaming availability from [Watchmode](https://api.watchmode.com).
+- Found a bug or want a feature? [Open an issue](https://github.com/TheSawkit/ReelMark/issues).
 
 ---
 
@@ -155,74 +74,62 @@ No open-source license — all rights reserved © SAWKIT. Contact the author for
 
 ## 🇫🇷 Français
 
-PWA installable et bilingue (FR/EN) pour suivre films et séries épisode par épisode, les noter et critiquer, créer des playlists et suivre ses amis — propulsée par TMDB, avec auth/BDD Supabase et contrôle de confidentialité par section. Une alternative auto-hébergeable à TV Time.
+### Ce que ça vous apporte
 
-### ✨ Fonctionnalités
+|     |                                        |                                                                                                                                                      |
+| --- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 📺  | **Suivi épisode par épisode**          | Cochez vos épisodes un à un, saison après saison. Votre progression vous suit partout, et le prochain épisode à voir est toujours à portée de pouce. |
+| 🎬  | **Un catalogue qui sait ce qui passe** | Ce qui est vraiment à l'affiche près de chez vous, ce qui arrive, ce qui monte — filtré pour votre région, pas celle d'un autre.                     |
+| ⭐  | **Vos notes, vos mots**                | Notez de 1 à 10 et écrivez vos critiques. Voyez ce qu'en a pensé la communauté avant de lancer.                                                      |
+| 📡  | **Où le regarder**                     | Sachez lesquels de _vos_ services de streaming l'ont, et à quel prix en location ou achat, avant de chercher.                                        |
+| 📁  | **Playlists**                          | Regroupez des titres en collections thématiques et partagez-les par lien.                                                                            |
+| 👥  | **Amis**                               | Suivez ce que vos proches regardent, notent et ajoutent.                                                                                             |
+| 🔒  | **Confidentialité maîtrisée**          | Chaque section — à voir, vu, critiques, playlists, amis — est publique, réservée aux amis ou privée. Vous décidez, section par section.              |
+| 🌍  | **Bilingue**                           | Français et anglais complets, bascule instantanée.                                                                                                   |
 
-|     | Fonctionnalité                  | Description                                                                |
-| --- | ------------------------------- | -------------------------------------------------------------------------- |
-| 🎞️  | **Suivi personnel**             | Historique complet de tes films, séries et épisodes, saison par saison     |
-| 📺  | **Suivi par épisode**           | Suis ta progression réelle — plus jamais "on en était où ?"                |
-| 🔍  | **Exploration intelligente**    | 700k+ titres du catalogue TMDB avec filtrage régional pertinent            |
-| ⭐  | **Notes et avis**               | Note de 1 à 10 et écris des critiques visibles sur ton profil public       |
-| 📁  | **Playlists**                   | Crée des collections thématiques et partage-les                            |
-| 👥  | **Amis & communauté**           | Envoie des demandes d'amis, suis les listes et critiques de tes amis       |
-| 🎭  | **Profils d'équipe**            | Filmographies complètes, biographies et crédits pour chaque intervenant    |
-| 📱  | **PWA installable**             | Fonctionne sur iPhone, Android, Mac, Windows et Linux — aucun store requis |
-| 🌍  | **Bilingue natif**              | Bascule EN/FR instantanée avec détection de langue côté serveur            |
-| 🔒  | **Contrôle de confidentialité** | Visibilité par section : public, amis uniquement, ou privé                 |
+### L'installer
 
-### 🛠️ Stack technique
+ReelMark est une PWA : pas de store, pas de téléchargement, et elle se met à jour toute seule.
 
-| Couche            | Technologie                                   |
-| :---------------- | :-------------------------------------------- |
-| **Frontend**      | Next.js 16 (App Router) + React 19            |
-| **Langage**       | TypeScript 6 (strict)                         |
-| **Styles**        | Tailwind CSS 4 (CSS-first, système de tokens) |
-| **Auth & BDD**    | Supabase (PostgreSQL + RLS)                   |
-| **Données média** | TMDB API                                      |
-| **Streaming**     | Watchmode API                                 |
-| **PWA**           | Serwist (Service Worker + précaching)         |
-| **Erreurs**       | SDK Sentry → Bugsink auto-hébergé             |
-| **Tests**         | Vitest (unitaires) · Playwright (E2E)         |
+| Appareil                  | Comment                                                                                                          |
+| :------------------------ | :--------------------------------------------------------------------------------------------------------------- |
+| **iPhone / iPad**         | Ouvrez [reelmark.silexio.be](https://reelmark.silexio.be) dans Safari → **Partager** → **Sur l'écran d'accueil** |
+| **Android**               | Ouvrez dans Chrome → menu **⋮** → **Installer l'application**                                                    |
+| **Mac / Windows / Linux** | Ouvrez dans Chrome ou Edge → icône d'installation dans la barre d'adresse                                        |
 
-### 📋 Prérequis
+Une fois installée, elle s'affiche en plein écran, reste consultable hors ligne sur les pages déjà visitées, et peut vous envoyer des notifications.
 
-- **Node.js 22.13+** et **pnpm 11+**
-- Un [token TMDB](https://developer.themoviedb.org/docs/getting-started), un projet [Supabase](https://supabase.com), une clé [Watchmode](https://api.watchmode.com)
+### Bon à savoir
 
-### 🚀 Installation rapide
-
-```bash
-git clone https://github.com/TheSawkit/ReelMark.git
-cd ReelMark
-pnpm install
-cp .env.example .env.local   # puis remplis les valeurs (voir Configuration en anglais)
-pnpm dev                     # http://localhost:3000
-```
-
-BDD : le schéma vit sur le projet Supabase (12 tables, RLS partout). Pour le recréer : [docs/DATA-MODEL.md](./docs/DATA-MODEL.md).
-
-### 📦 Scripts
-
-Voir le tableau **Available Scripts** dans la section anglaise. Note : le build **doit** utiliser webpack (`next build --webpack`) — Serwist ne supporte pas Turbopack.
-
-### 🚢 Déploiement
-
-Production sur **Infomaniak Public Cloud (Kubernetes managé)** derrière **Cloudflare** (TLS · CDN · WAF), image sur **ghcr.io**, CI/CD via GitHub Actions. Runbook complet → **[DEPLOYMENT.md](./DEPLOYMENT.md)**.
-
-> ⚠️ Infomaniak ne fournit que le control plane : il faut installer **Cilium (CNI) + CCM OpenStack** soi-même (voir `DEPLOYMENT.md` § 2), sinon les nodes restent `NotReady`.
-
-### 📚 Documentation & Contribution
-
-- Docs : [`docs/`](./docs/README.md) (architecture · setup · data model · debugging) · [`DEPLOYMENT.md`](./DEPLOYMENT.md) · [`SECURITY.md`](./SECURITY.md)
-- Contribution : branche depuis `dev`, PR vers `main`, commits conventionnels, `pnpm lint && pnpm test && pnpm test:e2e` avant toute PR.
-
-### 📄 Licence
-
-Aucune licence open-source — tous droits réservés © SAWKIT.
+- Votre historique vous appartient. Rien n'est vendu, rien n'est partagé au-delà de la visibilité que vous fixez.
+- Les données films et séries viennent de [TMDB](https://www.themoviedb.org/), la disponibilité en streaming de [Watchmode](https://api.watchmode.com).
+- Un bug, une idée ? [Ouvrez une issue](https://github.com/TheSawkit/ReelMark/issues).
 
 ---
+
+## For developers
+
+The technical README — stack, prerequisites, quick start, scripts, project structure,
+configuration and deployment — moved to **[docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md)**.
+
+|                                              |                                                            |
+| :------------------------------------------- | :--------------------------------------------------------- |
+| [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) | Setup, scripts, structure, configuration                   |
+| [docs/](./docs/README.md)                    | Architecture · setup from scratch · data model · debugging |
+| [DEPLOYMENT.md](./DEPLOYMENT.md)             | Kubernetes runbook (Infomaniak + Cloudflare)               |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)         | Branches, commit convention, PR process                    |
+| [SECURITY.md](./SECURITY.md)                 | Security policy and vulnerability reporting                |
+
+---
+
+<p align="center">
+  <sub>This product uses the TMDB API but is not endorsed or certified by TMDB.<br>
+  Posters, images and metadata belong to their respective rights holders.</sub>
+</p>
+
+<p align="center">
+  <sub>No open-source license — all rights reserved © SAWKIT. Contact the author for reuse.</sub>
+</p>
 
 <p align="center">
   Built with 🍿 by <a href="https://github.com/TheSawkit">SAWKIT</a>
