@@ -49,7 +49,7 @@ export default function NotFound() {
 					{/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
 					<a
 						href="/"
-						className="inline-block px-6 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold transition-all active:scale-95 cursor-pointer shadow-card-sm"
+						className="inline-block px-6 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold transition active:scale-95 cursor-pointer shadow-card-sm"
 					>
 						{t.errorBackHome}
 					</a>

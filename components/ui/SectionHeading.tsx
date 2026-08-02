@@ -39,7 +39,7 @@ export function SectionHeading({
 				>
 					{children}
 				</h2>
-				<ArrowRight className="w-5 h-5 shrink-0 text-gold opacity-0 -translate-x-3 transition-all duration-(--duration-medium) ease-apple group-hover/section:opacity-100 group-hover/section:translate-x-0" />
+				<ArrowRight className="w-5 h-5 shrink-0 text-gold opacity-0 -translate-x-3 transition duration-(--duration-medium) ease-apple group-hover/section:opacity-100 group-hover/section:translate-x-0" />
 			</Link>
 		);
 	}

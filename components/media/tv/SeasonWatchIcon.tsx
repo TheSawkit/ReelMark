@@ -57,7 +57,7 @@ export function SeasonWatchIcon({
 			}
 			className={cn(
 				'h-8 w-8 rounded-full border',
-				'flex items-center justify-center transition-all duration-(--duration-base) cursor-pointer',
+				'flex items-center justify-center transition-colors duration-(--duration-base) cursor-pointer',
 				allWatched
 					? 'bg-success/30 text-success border-success/30 hover:bg-red/30 hover:text-red hover:border-red/30'
 					: 'bg-surface/40 text-text border-border/10 hover:bg-red/30 hover:text-red hover:border-red/30'

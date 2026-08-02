@@ -144,7 +144,7 @@ export function MediaCard({
 						<div className="w-full h-1 bg-surface/10">
 							<div
 								className={cn(
-									'h-full transition-all duration-(--duration-slow)',
+									'h-full transition-[width] duration-(--duration-slow)',
 									liveProgress.watched >= liveProgress.total
 										? 'bg-success'
 										: 'bg-linear-to-r from-primary to-gold'
@@ -164,7 +164,7 @@ export function MediaCard({
 				{showRatingBadge && (
 					<div
 						className={cn(
-							'absolute top-3 left-3 z-10 transition-all duration-(--duration-base) pointer-events-none',
+							'absolute top-3 left-3 z-10 transition-transform duration-(--duration-base) pointer-events-none',
 							'translate-y-0 group-hover:-translate-y-1'
 						)}
 					>
@@ -181,7 +181,7 @@ export function MediaCard({
 				{!compact && (
 					<div
 						className={cn(
-							'absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 transition-all duration-(--duration-base) z-10',
+							'absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 transition duration-(--duration-base) z-10',
 							'translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100',
 							// Sans hover, l'overlay ne s'affiche jamais (Tailwind v4 borne `hover:` à
 							// @media (hover:hover)) : un tap au bas du poster tombait sur le WatchButton

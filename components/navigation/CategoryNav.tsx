@@ -59,7 +59,7 @@ export function CategoryNav() {
 					href={localizedHref(lang, `/explorer?type=${activeDomain}`)}
 					aria-current={path === '/explorer' ? 'page' : undefined}
 					className={cn(
-						'px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple',
+						'px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition duration-(--duration-fast) ease-apple',
 						path === '/explorer'
 							? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
 							: 'glass-surface text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
@@ -75,7 +75,7 @@ export function CategoryNav() {
 							path === category.href ? 'page' : undefined
 						}
 						className={cn(
-							'inline-flex items-center min-h-11 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-(--duration-fast) ease-apple',
+							'inline-flex items-center min-h-11 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition duration-(--duration-fast) ease-apple',
 							path === category.href
 								? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
 								: 'glass-surface text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'

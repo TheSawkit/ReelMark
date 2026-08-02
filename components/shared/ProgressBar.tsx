@@ -22,7 +22,7 @@ export function ProgressBar({
 		<div className={cn('overflow-hidden', className)}>
 			<div
 				className={cn(
-					'h-full bg-red transition-all duration-(--duration-slow) ease-out',
+					'h-full bg-red transition-[width] duration-(--duration-slow) ease-out',
 					innerClassName
 				)}
 				style={{ width: `${percentage}%` }}

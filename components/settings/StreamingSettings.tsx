@@ -93,7 +93,7 @@ export function StreamingSettings({
 									aria-label={provider.provider_name}
 									title={provider.provider_name}
 									className={cn(
-										'relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-(--duration-fast) ease-apple cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+										'relative aspect-square rounded-xl overflow-hidden border-2 transition duration-(--duration-fast) ease-apple cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 										isSelected
 											? 'border-primary shadow-control-lift'
 											: 'border-transparent opacity-60 hover:opacity-100'

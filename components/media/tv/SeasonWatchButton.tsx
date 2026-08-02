@@ -47,7 +47,7 @@ export function SeasonWatchButton({
 				className={cn(
 					'h-12 w-12 lg:h-auto lg:w-auto lg:min-h-11 lg:px-5 lg:py-2.5',
 					'flex items-center justify-center gap-2 rounded-full text-sm font-semibold shrink-0 border',
-					'transition-all duration-(--duration-base) focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer',
+					'transition duration-(--duration-base) focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer',
 					allWatched
 						? 'bg-primary/40 text-white border-border/10 border-t-border/20 shadow-card-sm'
 						: 'bg-surface/70 text-rating-gold border-border/10 border-t-border/20 hover:bg-surface/85 hover:text-text'
@@ -69,7 +69,7 @@ export function SeasonWatchButton({
 			onClick={() => toggle(!allWatched)}
 			disabled={loading}
 			className={cn(
-				'flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-(--duration-base) border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 w-full sm:w-auto shrink-0 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-card',
+				'flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition duration-(--duration-base) border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 w-full sm:w-auto shrink-0 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-card',
 				allWatched
 					? 'bg-primary/40 backdrop-blur-2xl text-white border-border/10 border-t-border/20 shadow-card-sm'
 					: 'bg-surface/70 backdrop-blur-2xl text-rating-gold border-border/10 border-t-border/20 hover:bg-surface/85 hover:border-border hover:shadow-glow-gold hover:text-text shadow-card'
