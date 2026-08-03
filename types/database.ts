@@ -486,6 +486,10 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
+			can_view_watch_activity: {
+				Args: { p_owner: string };
+				Returns: boolean;
+			};
 			episode_last_watches: {
 				Args: never;
 				Returns: {
@@ -495,6 +499,13 @@ export type Database = {
 			};
 			episode_watch_counts: {
 				Args: never;
+				Returns: {
+					tv_id: number;
+					watched_count: number;
+				}[];
+			};
+			episode_watch_counts_for: {
+				Args: { p_user_id: string };
 				Returns: {
 					tv_id: number;
 					watched_count: number;
