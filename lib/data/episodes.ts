@@ -1,7 +1,11 @@
 import 'server-only';
 
-import { getOptionalUser } from '@/lib/supabase/auth-helpers';
+import {
+	getAuthenticatedUser,
+	getOptionalUser,
+} from '@/lib/supabase/auth-helpers';
 import { fetchAllRows } from '@/lib/supabase/pagination';
+import { validateUUID } from '@/lib/validators';
 
 /**
  * Returns the set of watched episode numbers for a given season.
@@ -65,6 +69,37 @@ export async function getAllTvShowsWatchProgress(
 	if (!userId) return {};
 
 	const { data: counts } = await supabase.rpc('episode_watch_counts');
+
+	const wanted = new Set(tvIds);
+	const totals: Record<number, number> = {};
+	for (const row of counts ?? []) {
+		if (wanted.has(row.tv_id)) totals[row.tv_id] = row.watched_count;
+	}
+	return totals;
+}
+
+/**
+ * Watched episode count per show for a profile being visited, so its cards can show progress.
+ *
+ * Visibility lives in `episode_watch_counts_for`, which returns nothing unless the viewer may see
+ * the owner's watchlist or watched section — `episode_watches` itself is owner-only under RLS.
+ *
+ * @param profileUserId - Supabase user ID of the profile owner.
+ * @param tvIds - TMDB show IDs already filtered to what the viewer may see.
+ * @returns Watched episode count keyed by TMDB show ID; empty when not allowed.
+ */
+export async function getProfileTvWatchProgress(
+	profileUserId: string,
+	tvIds: number[]
+): Promise<Record<number, number>> {
+	if (tvIds.length === 0) return {};
+	if (validateUUID(profileUserId) === null)
+		throw new Error('Invalid user ID');
+
+	const { supabase } = await getAuthenticatedUser();
+	const { data: counts } = await supabase.rpc('episode_watch_counts_for', {
+		p_user_id: profileUserId,
+	});
 
 	const wanted = new Set(tvIds);
 	const totals: Record<number, number> = {};

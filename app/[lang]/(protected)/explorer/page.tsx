@@ -187,7 +187,7 @@ export default async function ExplorerPage({ params: paramsPromise }: Props) {
 	const t = await getTranslations(lang);
 
 	return (
-		<PageLayout className="screen-in">
+		<PageLayout>
 			<PageHeader
 				title={t.pages.explorer.title}
 				subtitle={t.pages.explorer.subtitle}

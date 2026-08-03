@@ -280,7 +280,7 @@ export function DataSettings() {
 												setPhase({ type: 'idle' });
 											}}
 											className={cn(
-												'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+												'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 												platform === p.id
 													? 'bg-primary/20 border-primary/50 text-text'
 													: 'bg-surface-2/30 border-border/30 text-muted hover:border-border hover:text-text'
@@ -326,7 +326,7 @@ export function DataSettings() {
 												setIsDragOver(false)
 											}
 											className={cn(
-												'w-full rounded-xl border-2 border-dashed p-8 flex flex-col items-center gap-3 transition-all cursor-pointer text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+												'w-full rounded-xl border-2 border-dashed p-8 flex flex-col items-center gap-3 transition cursor-pointer text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 												isDragOver
 													? 'border-primary/60 bg-primary/5 text-text'
 													: 'border-border/30 hover:border-border hover:bg-surface-2/20 text-muted'
@@ -386,7 +386,7 @@ export function DataSettings() {
 									</p>
 									<div className="h-2 w-full rounded-full bg-surface-3 overflow-hidden">
 										<div
-											className="h-full rounded-full bg-linear-to-r from-primary to-gold transition-all duration-(--duration-base)"
+											className="h-full rounded-full bg-linear-to-r from-primary to-gold transition-[width] duration-(--duration-base)"
 											style={{
 												width: `${Math.round((phase.done / phase.total) * 100)}%`,
 											}}

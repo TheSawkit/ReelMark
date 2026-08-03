@@ -176,6 +176,9 @@ export function SearchBar({
 						activeIndex >= 0 ? optionId(activeIndex) : undefined
 					}
 					className={cn(
+						// Seul `transition-all` convient ici : la bascule compact/étendu anime des
+						// propriétés de mise en page (padding, hauteur, taille de police, rayon) que
+						// la liste par défaut de `transition` n'inclut pas.
 						'transition-all duration-(--duration-base) ease-apple',
 						isCompact
 							? 'pl-10 pr-8 py-2 h-10 bg-surface-2/50 backdrop-blur border border-border/30 hover:border-border/50 focus-visible:border-primary/60 focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:ring-offset-1 focus-visible:ring-offset-background text-sm shadow-sm rounded-lg'
@@ -243,10 +246,10 @@ export function SearchBar({
 							)}
 						/>
 					) : isCompact ? (
-						<SearchIcon className="w-4 h-4 text-muted transition-all duration-(--duration-fast) ease-apple group-focus-within:scale-110" />
+						<SearchIcon className="w-4 h-4 text-muted transition-transform duration-(--duration-fast) ease-apple group-focus-within:scale-110" />
 					) : (
 						<div className="flex items-center gap-3">
-							<SearchIcon className="w-6 h-6 text-muted transition-all duration-(--duration-fast) ease-apple group-focus-within:scale-110" />
+							<SearchIcon className="w-6 h-6 text-muted transition-transform duration-(--duration-fast) ease-apple group-focus-within:scale-110" />
 							<div className="w-px h-7 bg-border/30" />
 						</div>
 					)}

@@ -21,7 +21,7 @@ export function SelectInput({
 	return (
 		<select
 			className={cn(
-				'h-9 w-full rounded-(--radius-cinema) border border-border bg-surface px-3 py-1 text-sm text-text shadow-card-xs transition-all duration-(--duration-fast) outline-none',
+				'h-9 w-full rounded-(--radius-cinema) border border-border bg-surface px-3 py-1 text-sm text-text shadow-card-xs transition duration-(--duration-fast) outline-none',
 				'focus-visible:border-red focus-visible:ring-[3px] focus-visible:ring-red/40',
 				className
 			)}

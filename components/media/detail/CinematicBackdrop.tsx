@@ -12,7 +12,7 @@ interface CinematicBackdropProps {
 /** Shared cinematic hero backdrop: image + aurora/spotlight ambiance + grain + fade gradients. */
 export function CinematicBackdrop({ src, alt }: CinematicBackdropProps) {
 	return (
-		<div className="absolute inset-x-0 inset-y-0 -z-10 overflow-hidden animate-in fade-in duration-700 motion-reduce:animate-none">
+		<div className="absolute inset-x-0 inset-y-0 -z-10 overflow-hidden animate-in fade-in duration-(--duration-slower) motion-reduce:animate-none">
 			<Image
 				src={src}
 				alt={alt}

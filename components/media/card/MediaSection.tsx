@@ -62,7 +62,6 @@ export function MediaSection({
 					index={index}
 					staggerMs={CARD_ANIMATION_DELAY_MS}
 					className="flex-none w-40 md:w-50 snap-start"
-					eager={index < 4}
 				>
 					<MediaCard
 						media={media}
@@ -119,7 +118,6 @@ export function LibraryMediaSection({
 					index={index}
 					staggerMs={CARD_ANIMATION_DELAY_MS}
 					className="flex-none w-40 md:w-50 snap-start"
-					eager={index < 4}
 				>
 					<MediaCard
 						media={mediaItems[index]}
@@ -140,7 +138,7 @@ function ViewAllCard({ href, label }: { href: string; label: string }) {
 	return (
 		<Link
 			href={href}
-			className="flex-none w-40 md:w-50 snap-start flex flex-col items-center justify-center gap-4 rounded-poster bg-surface hover:bg-surface-2 border-2 border-dashed border-border hover:border-primary/50 transition-all group/card cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+			className="flex-none w-40 md:w-50 snap-start flex flex-col items-center justify-center gap-4 rounded-poster bg-surface hover:bg-surface-2 border-2 border-dashed border-border hover:border-primary/50 transition group/card cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
 		>
 			<div className="rounded-full bg-surface-2 p-4 group-hover/card:bg-primary group-hover/card:text-white transition-colors">
 				<ArrowRight className="w-6 h-6" />

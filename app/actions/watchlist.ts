@@ -6,9 +6,41 @@ import {
 	revalidateLocalizedAfterResponse,
 } from '@/app/actions/_helpers';
 import { VALID_STATUSES, VALID_MEDIA_TYPES } from '@/lib/validators';
-import type { WatchStatus, MediaType } from '@/types/tmdb';
+import type { WatchStatus, MediaType, WatchlistEntry } from '@/types/tmdb';
 import type { Database } from '@/types/database';
 import { getListMediaMetadata, type ListMediaMetadata } from '@/lib/tmdb';
+import { getWatchlistBucketWithProgress } from '@/lib/data/watchlist';
+import type { Language } from '@/lib/i18n/translations';
+
+export interface LibraryBucket {
+	entries: WatchlistEntry[];
+	tvProgress: Record<number, { watched: number; total: number }>;
+	hasMore: boolean;
+}
+
+/**
+ * Un lot d'un compartiment de la bibliothèque, chargé à la demande.
+ * `/library` n'affiche qu'un couple type/statut à la fois, et un compartiment de plusieurs
+ * milliers de titres mettait deux secondes à revenir d'un bloc : il arrive par lots, dont le
+ * premier s'affiche sans attendre les suivants.
+ */
+export async function fetchLibraryBucket(
+	mediaType: string,
+	status: string,
+	lang?: Language,
+	page = 0
+): Promise<LibraryBucket> {
+	if (!VALID_MEDIA_TYPES.has(mediaType) || !VALID_STATUSES.has(status)) {
+		return { entries: [], tvProgress: {}, hasMore: false };
+	}
+
+	return getWatchlistBucketWithProgress(
+		mediaType as MediaType,
+		status as WatchStatus,
+		lang,
+		Math.max(0, Math.trunc(page))
+	);
+}
 
 function revalidateWatchlistPaths(mediaType: MediaType, mediaId: number) {
 	revalidateLocalizedAfterResponse([

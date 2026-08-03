@@ -53,7 +53,7 @@ export function matchMyProviders(
 }
 
 const WATCH_NOW_BASE =
-	'flex items-center justify-center gap-2 shrink-0 font-semibold text-sm text-white bg-primary hover:bg-primary-hover border border-transparent shadow-card-sm transition-all duration-(--duration-fast) ease-apple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+	'flex items-center justify-center gap-2 shrink-0 font-semibold text-sm text-white bg-primary hover:bg-primary-hover border border-transparent shadow-card-sm transition-colors duration-(--duration-fast) ease-apple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 
 const WATCH_NOW_SHAPE: Record<WatchNowVariant, string> = {
 	banner: 'w-full sm:w-auto min-h-11 px-4 py-2.5 rounded-lg',

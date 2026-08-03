@@ -296,6 +296,12 @@ export async function deleteAccount(prevState: unknown, formData: FormData) {
 
 	const adminClient = createAdminClient();
 
+	// `notifications.sender_id` est NOT NULL alors que sa FK est ON DELETE SET NULL :
+	// sans cette purge, `deleteUser` échoue en 23502 dès que le compte a émis une
+	// notification. Les lignes émises appartiennent à leurs destinataires, d'où l'admin client.
+	await adminClient.from('notifications').delete().eq('user_id', user.id);
+	await adminClient.from('notifications').delete().eq('sender_id', user.id);
+
 	const { data: avatarFiles } = await adminClient.storage
 		.from('avatars')
 		.list('', {

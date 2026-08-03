@@ -20,7 +20,9 @@ import {
 	getFriendshipStatus,
 	getPendingRequestsWithProfiles,
 } from '@/lib/data/friends';
-import { getGenres } from '@/lib/tmdb';
+import { getGenres, getTvShowsTotalEpisodes } from '@/lib/tmdb';
+import { getProfileTvWatchProgress } from '@/lib/data/episodes';
+import { buildTvProgressMap, missingTotalEpisodes } from '@/lib/tv-progress';
 import { ListMetadataBackfill } from '@/components/library/ListMetadataBackfill';
 import type { WatchlistEntry } from '@/types/tmdb';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
@@ -135,6 +137,25 @@ async function ProfileTabsSection({
 		? watchlist.filter((e) => e.status === 'watched')
 		: [];
 
+	const visibleTvEntries = [...toWatch, ...watched].filter(
+		(entry) => entry.media_type === 'tv'
+	);
+	const missingTotals = missingTotalEpisodes(visibleTvEntries);
+	const [watchedCounts, fetchedTotals] = await Promise.all([
+		getProfileTvWatchProgress(
+			profileUserId,
+			visibleTvEntries.map((entry) => entry.media_id)
+		),
+		missingTotals.length > 0
+			? getTvShowsTotalEpisodes(missingTotals, lang)
+			: Promise.resolve<Record<number, number>>({}),
+	]);
+	const tvProgress = buildTvProgressMap(
+		visibleTvEntries,
+		watchedCounts,
+		fetchedTotals
+	);
+
 	const filteredReviews = canView(privacy.reviews_visibility)
 		? reviewsPage.reviews
 		: [];
@@ -154,6 +175,7 @@ async function ProfileTabsSection({
 			<ProfileTabs
 				toWatch={toWatch}
 				watched={watched}
+				tvProgress={tvProgress}
 				reviews={filteredReviews}
 				reviewsCount={reviewsCount}
 				initialReviewsCursor={initialReviewsCursor}
@@ -215,7 +237,7 @@ async function ProfileContent({ params }: Props) {
 			: undefined;
 
 	return (
-		<PageLayout className="screen-in">
+		<PageLayout>
 			<ProfileHero
 				profile={profile}
 				avatarUrl={avatarUrl}

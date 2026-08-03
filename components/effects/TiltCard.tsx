@@ -98,7 +98,7 @@ export function TiltCard({
 				{glow && (
 					<div
 						aria-hidden="true"
-						className="pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-300"
+						className="pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-(--duration-base)"
 						style={{
 							borderRadius: radius,
 							opacity: 'var(--glow-opacity, 0)',

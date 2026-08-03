@@ -13,21 +13,22 @@ interface MediaActionsBarProps {
 /**
  * Sticky media actions. Desktop: fixed bar at the bottom. Below lg: portaled
  * into the navbar's trailing slot, crossfading with search/notifications.
+ * Both variants are portaled out of the page subtree: any transform on an
+ * ancestor would make it the containing block and tear the bar off the viewport.
  */
 export function MediaActionsBar({ children }: MediaActionsBarProps) {
 	const { scrolled } = useMediaHeader();
 	const isMobile = useIsMobile();
 
+	if (typeof document === 'undefined') return null;
+
 	if (isMobile) {
-		const slot =
-			typeof document !== 'undefined'
-				? document.getElementById('rm-nav-actions')
-				: null;
+		const slot = document.getElementById('rm-nav-actions');
 		if (!slot) return null;
 		return createPortal(
 			<div
 				className={cn(
-					'flex items-center gap-2 transition-all duration-(--duration-base) ease-apple',
+					'flex items-center gap-2 transition-[opacity,transform,visibility] duration-(--duration-base) ease-apple',
 					scrolled
 						? 'visible scale-100 opacity-100'
 						: 'invisible scale-95 opacity-0'
@@ -39,10 +40,10 @@ export function MediaActionsBar({ children }: MediaActionsBarProps) {
 		);
 	}
 
-	return (
+	return createPortal(
 		<div
 			className={cn(
-				'fixed inset-x-0 bottom-0 z-40 transition-all duration-(--duration-base) ease-in-out',
+				'fixed inset-x-0 bottom-0 z-40 transition duration-(--duration-base) ease-in-out',
 				scrolled
 					? 'opacity-100 translate-y-0'
 					: 'opacity-0 translate-y-full pointer-events-none'
@@ -53,6 +54,7 @@ export function MediaActionsBar({ children }: MediaActionsBarProps) {
 					{children}
 				</div>
 			</div>
-		</div>
+		</div>,
+		document.body
 	);
 }

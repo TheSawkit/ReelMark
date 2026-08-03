@@ -37,7 +37,7 @@ async function clickAndWaitForAction(
  */
 async function expectInWatchedTab(page: import('@playwright/test').Page) {
 	await expect(async () => {
-		await page.goto('/en/library');
+		await page.goto('/en/library', { waitUntil: 'domcontentloaded' });
 		await page.getByRole('tab', { name: /regardés|watched/i }).click();
 		await expect(page.getByText(MOVIE_TITLE).first()).toBeVisible({
 			timeout: 3000,
@@ -45,13 +45,30 @@ async function expectInWatchedTab(page: import('@playwright/test').Page) {
 	}).toPass({ timeout: 20000 });
 }
 
+const ANY_WATCH_BUTTON =
+	/ajouter à la liste|add to list|^ajouté$|^added$|^vu$|^watched$/i;
+
+/**
+ * Les actions de la fiche arrivent derrière Suspense, après le titre. Sans cette attente,
+ * les `isVisible()` qui suivent répondent tous `false` et l'appelant conclut à tort que la
+ * fiche est déjà dans l'état voulu.
+ */
+async function waitForWatchActions(page: import('@playwright/test').Page) {
+	await expect(pageButton(page, ANY_WATCH_BUTTON)).toBeVisible({
+		timeout: 15000,
+	});
+}
+
 /** Best-effort isolation: drive the movie back to "not in watchlist" before each test (re-navigates each pass to avoid stale handles). */
 async function ensureMovieRemoved(page: import('@playwright/test').Page) {
 	for (let pass = 0; pass < 3; pass++) {
-		await page.goto(`/en/movie/${MOVIE_ID}`);
+		await page.goto(`/en/movie/${MOVIE_ID}`, {
+			waitUntil: 'domcontentloaded',
+		});
 		await page
 			.getByRole('heading', { level: 1 })
 			.waitFor({ timeout: 10000 });
+		await waitForWatchActions(page);
 		const active = pageButton(page, /^vu$|^watched$|^ajouté$|^added$/i);
 		if (!(await active.isVisible().catch(() => false))) return;
 		await clickAndWaitForAction(page, active).catch(() => {});
@@ -64,11 +81,14 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Watchlist', () => {
 	test('add and remove a movie from watchlist', async ({ page }) => {
-		await page.goto(`/en/movie/${MOVIE_ID}`);
+		await page.goto(`/en/movie/${MOVIE_ID}`, {
+			waitUntil: 'domcontentloaded',
+		});
 		await expect(page.getByRole('heading', { level: 1 })).toContainText(
 			MOVIE_TITLE,
 			{ timeout: 10000 }
 		);
+		await waitForWatchActions(page);
 
 		// If movie is in "watched" state, clicking it falls back to "to_watch" (fallbackStatus="to_watch")
 		const watchedActiveBtn = pageButton(page, /^vu$|^watched$/i);
@@ -91,27 +111,32 @@ test.describe('Watchlist', () => {
 		const addBtn = pageButton(page, /ajouter à la liste|add to list/i);
 		await clickAndWaitForAction(page, addBtn);
 
-		await page.goto('/en/library');
+		await page.goto('/en/library', { waitUntil: 'domcontentloaded' });
 		await expect(page.getByText(MOVIE_TITLE)).toBeVisible({
 			timeout: 10000,
 		});
 
-		await page.goto(`/en/movie/${MOVIE_ID}`);
+		await page.goto(`/en/movie/${MOVIE_ID}`, {
+			waitUntil: 'domcontentloaded',
+		});
 		await clickAndWaitForAction(
 			page,
 			pageButton(page, /^ajouté$|^added$/i)
 		);
 
-		await page.goto('/en/library');
+		await page.goto('/en/library', { waitUntil: 'domcontentloaded' });
 		await expect(page.getByText(MOVIE_TITLE)).not.toBeVisible();
 	});
 
 	test('mark a movie as watched and unmark', async ({ page }) => {
-		await page.goto(`/en/movie/${MOVIE_ID}`);
+		await page.goto(`/en/movie/${MOVIE_ID}`, {
+			waitUntil: 'domcontentloaded',
+		});
 		await expect(page.getByRole('heading', { level: 1 })).toContainText(
 			MOVIE_TITLE,
 			{ timeout: 10000 }
 		);
+		await waitForWatchActions(page);
 
 		const watchedBtn = pageButton(page, /^vu$|^watched$/i);
 		if (await watchedBtn.isVisible()) {
@@ -127,7 +152,9 @@ test.describe('Watchlist', () => {
 		);
 
 		await expectInWatchedTab(page);
-		await page.goto(`/en/movie/${MOVIE_ID}`);
+		await page.goto(`/en/movie/${MOVIE_ID}`, {
+			waitUntil: 'domcontentloaded',
+		});
 		await expect(pageButton(page, /^vu$|^watched$/i)).toBeVisible({
 			timeout: 5000,
 		});

@@ -133,7 +133,7 @@ export function WatchButton({
 						'rounded-full lg:rounded-lg',
 						'flex items-center justify-center gap-2 shrink-0',
 						'border text-sm font-semibold',
-						'transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
+						'transition focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
 						isActive
 							? 'bg-primary/50 text-white border-transparent shadow-card-sm'
 							: 'bg-surface/70 text-text border-white/10 hover:bg-surface/85 hover:text-text shadow-card-sm'
@@ -158,7 +158,7 @@ export function WatchButton({
 				onClick={handleClick}
 				disabled={loading}
 				className={cn(
-					'flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11 w-full shrink-0',
+					'flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11 w-full shrink-0',
 					blur && 'backdrop-blur-2xl',
 					isActive
 						? 'bg-primary/50 text-white border-transparent shadow-card-sm'

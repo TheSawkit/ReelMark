@@ -3,7 +3,6 @@ export type WatchStatus = 'to_watch' | 'watched' | 'abandoned';
 
 export interface WatchlistEntry {
 	id: string;
-	user_id: string;
 	media_id: number;
 	media_title: string;
 	media_type: MediaType;

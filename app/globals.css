@@ -95,11 +95,11 @@
 	--ease-apple-out: cubic-bezier(0, 0, 0.58, 1);
 
 	--animate-fade-in: fadeIn var(--duration-medium) ease-out forwards;
-	--animate-slide-up: slideUp var(--duration-slower) ease-out forwards;
+	--animate-slide-up: slideUp var(--duration-slower) ease-out backwards;
 	--animate-slide-up-subtle: slideUpSubtle var(--duration-slower)
-		var(--ease-apple) both;
+		var(--ease-apple) backwards;
 	--animate-slide-down: slideDown var(--duration-base) ease-out;
-	--animate-scale-in: scaleIn var(--duration-slow) var(--ease-apple) both;
+	--animate-scale-in: scaleIn var(--duration-slow) var(--ease-apple) backwards;
 	--animate-shimmer: shimmer 2s linear infinite;
 }
 
@@ -424,10 +424,18 @@ a {
 	}
 }
 
-@keyframes screen-in {
+/* Transition d'écran, posée par app/[lang]/template.tsx sur chaque navigation. La translation
+   fait du conteneur le bloc englobant de ses descendants `position: fixed` le temps de
+   l'animation : c'est pour ça que MediaActionsBar et BackToTopButton sont portés dans le body,
+   et que tests/e2e/screen-transition.spec.ts interdit tout nouveau `fixed` sous #main-content. */
+.screen-enter {
+	animation: screenEnter var(--duration-base) var(--ease-apple) backwards;
+}
+
+@keyframes screenEnter {
 	from {
 		opacity: 0;
-		transform: translateY(10px);
+		transform: translateY(8px);
 	}
 
 	to {
@@ -436,8 +444,14 @@ a {
 	}
 }
 
-.screen-in {
-	animation: screen-in var(--duration-medium) var(--ease-apple) both;
+/* Cascade d'entrée des grilles et rangées. Translation seule, jamais d'opacité : un élément à
+   `opacity: 0` n'est pas peint, donc pas candidat au LCP — faire fondre une grille de posters
+   repousse la métrique d'autant que le délai de cascade. Durée et délai posés en style inline
+   par StaggeredItem. */
+.stagger-rise {
+	animation-name: slideUpSubtle;
+	animation-timing-function: var(--ease-apple);
+	animation-fill-mode: backwards;
 }
 
 .marquee-track {
@@ -579,6 +593,13 @@ a {
 
 	.detail-container {
 		@apply container mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-14 md:space-y-16;
+	}
+
+	/* Les sections d'une fiche sont streamées derrière autant de frontières Suspense : sans ça,
+	   chacune surgit sèchement à la résolution de sa promesse. Opacité seule, et sans risque pour
+	   le LCP — le banner, seul candidat plausible, est rendu hors de ce conteneur. */
+	.detail-container > * {
+		animation: fadeIn var(--duration-fast) var(--ease-apple) backwards;
 	}
 
 	.eyebrow {

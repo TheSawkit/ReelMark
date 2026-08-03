@@ -77,7 +77,7 @@ export function PendingInvitations({
 				onClick={() => setIsExpanded((v) => !v)}
 				aria-expanded={isExpanded}
 				aria-controls="pending-invitations-list"
-				className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-surface-2/50 active:scale-[0.99] transition-all duration-(--duration-fast) ease-apple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+				className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-surface-2/50 active:scale-[0.99] transition duration-(--duration-fast) ease-apple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 			>
 				<div className="flex items-center gap-2.5">
 					<Mail className="h-4 w-4 text-gold-bright shrink-0" />
@@ -102,7 +102,7 @@ export function PendingInvitations({
 			<div
 				id="pending-invitations-list"
 				className={cn(
-					'overflow-hidden transition-all duration-(--duration-base) ease-apple',
+					'overflow-hidden transition-[max-height,opacity] duration-(--duration-base) ease-apple',
 					isExpanded
 						? 'max-h-160 opacity-100'
 						: 'max-h-0 opacity-0 pointer-events-none'

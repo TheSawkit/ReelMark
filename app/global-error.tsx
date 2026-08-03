@@ -40,7 +40,7 @@ export default function GlobalError({
 			<body
 				className={`${sans.variable} ${display.variable} min-h-screen flex items-center justify-center bg-background text-text font-sans p-6 antialiased`}
 			>
-				<main className="max-w-md w-full text-center space-y-6 animate-in fade-in zoom-in duration-300">
+				<main className="max-w-md w-full text-center space-y-6 animate-in fade-in zoom-in duration-(--duration-base)">
 					<div className="space-y-2">
 						<h1 className="text-2xl md:text-3xl font-bold tracking-tight">
 							{t.errorTitle}
@@ -52,14 +52,14 @@ export default function GlobalError({
 					<div className="flex flex-col sm:flex-row items-center justify-center gap-4">
 						<button
 							onClick={() => reset()}
-							className="w-full sm:w-auto px-6 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold transition-all active:scale-95 cursor-pointer shadow-card-sm"
+							className="w-full sm:w-auto px-6 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold transition active:scale-95 cursor-pointer shadow-card-sm"
 						>
 							{t.errorRetry}
 						</button>
 						{/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
 						<a
 							href="/"
-							className="w-full sm:w-auto px-6 py-2.5 bg-surface-2 hover:bg-surface-3 text-text rounded-lg font-medium transition-all cursor-pointer border border-border/10"
+							className="w-full sm:w-auto px-6 py-2.5 bg-surface-2 hover:bg-surface-3 text-text rounded-lg font-medium transition cursor-pointer border border-border/10"
 						>
 							{t.errorBackHome}
 						</a>

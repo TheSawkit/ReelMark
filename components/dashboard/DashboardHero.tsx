@@ -13,7 +13,7 @@ import {
 	useEpisodeWatchVersion,
 } from '@/lib/episode-watch-store';
 import { pickResumableHero } from '@/lib/dashboard-hero';
-import { TiltCard } from '@/components/effects/TiltCard';
+import { HeroTilt } from '@/components/effects/HeroTilt';
 import { Grain } from '@/components/effects/Grain';
 import { GlowBorder } from '@/components/effects/GlowBorder';
 import { ProgressBar } from '@/components/shared/ProgressBar';
@@ -65,7 +65,7 @@ export function DashboardHero({
 
 	return (
 		<div className="mb-10">
-			<TiltCard max={5} radius="var(--radius-2xl)" glow={false}>
+			<HeroTilt>
 				<Link
 					href={localizedHref(lang, getMediaHref(item))}
 					className="relative block h-104 sm:h-112 overflow-hidden rounded-2xl border border-border shadow-card-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -144,7 +144,7 @@ export function DashboardHero({
 						</div>
 					</div>
 				</Link>
-			</TiltCard>
+			</HeroTilt>
 		</div>
 	);
 }

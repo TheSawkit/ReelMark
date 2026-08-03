@@ -385,10 +385,17 @@ export default async function RootLayout({
 						<Navbar />
 					</Suspense>
 					<PageTopGradient />
-					<main id="main-content" className="page-top-offset">
+					{/* Sans hauteur plancher, le pied de page est visible tant que le contenu n'est pas
+					    arrivé, puis chassé hors de l'écran quand il arrive : 0.0989 de CLS à lui seul
+					    sur /library en 1440x900. Le padding est compris dans la mesure (border-box),
+					    donc le pied de page démarre exactement sous la ligne de flottaison. */}
+					<main
+						id="main-content"
+						className="page-top-offset min-h-svh"
+					>
 						{children}
 					</main>
-					<footer className="border-t border-border-subtle mt-auto">
+					<footer className="border-t border-border-subtle">
 						<div className="container mx-auto px-6 lg:px-12 pt-8 page-bottom-clearance flex flex-col items-center gap-4 text-sm text-muted sm:flex-row sm:justify-between">
 							<p>© {COPYRIGHT_YEAR} ReelMark</p>
 							<nav

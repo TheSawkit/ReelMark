@@ -18,6 +18,11 @@ import {
 	getMergeRegions,
 	getImageLanguageFilter,
 } from './client';
+import {
+	THEATRICAL_RELEASE_TYPES,
+	inTheatersDates,
+	upcomingDates,
+} from './release-window';
 import { getWatchmodeProviders } from '@/lib/watchmode/providers';
 import { reportSwallowed } from '@/lib/report';
 import type { Language } from '@/lib/i18n/translations';
@@ -77,16 +82,15 @@ export async function getUpcomingMovies(
 	lang?: Language
 ): Promise<Movie[]> {
 	const region = await getUserRegion(lang);
-	const today = new Date().toISOString().split('T')[0];
 
 	const { results } = await fetchTMDB<{ results: Movie[] }>(
 		'/discover/movie',
 		{
 			page: clampPage(page).toString(),
 			region,
-			'release_date.gte': today,
+			...upcomingDates(new Date()),
 			sort_by: 'popularity.desc',
-			with_release_type: '2|3',
+			with_release_type: THEATRICAL_RELEASE_TYPES,
 		},
 		{ lang }
 	);
@@ -104,44 +108,30 @@ export async function getNowPlayingMovies(
 	lang?: Language
 ): Promise<Movie[]> {
 	const region = await getUserRegion(lang);
-	const mergeRegions = getMergeRegions(region);
+	const dates = inTheatersDates(new Date());
 
-	if (mergeRegions) {
-		const responses = await Promise.all(
-			mergeRegions.map((r) =>
-				fetchTMDB<{ results: Movie[] }>(
-					'/movie/now_playing',
-					{
-						page: clampPage(page).toString(),
-						region: r,
-					},
-					{ lang }
-				)
+	const responses = await Promise.all(
+		(getMergeRegions(region) ?? [region]).map((r) =>
+			fetchTMDB<{ results: Movie[] }>(
+				'/discover/movie',
+				{
+					page: clampPage(page).toString(),
+					region: r,
+					...dates,
+					sort_by: 'popularity.desc',
+					with_release_type: THEATRICAL_RELEASE_TYPES,
+				},
+				{ lang }
 			)
-		);
-
-		const movieMap = new Map<number, Movie>();
-		for (const response of responses) {
-			for (const movie of response.results) {
-				movieMap.set(movie.id, movie);
-			}
-		}
-
-		return Array.from(movieMap.values()).sort(
-			(a, b) => b.popularity - a.popularity
-		);
-	}
-
-	const { results } = await fetchTMDB<{ results: Movie[] }>(
-		'/movie/now_playing',
-		{
-			page: clampPage(page).toString(),
-			region,
-		},
-		{ lang }
+		)
 	);
 
-	return results;
+	const byId = new Map<number, Movie>();
+	for (const { results } of responses) {
+		for (const movie of results) byId.set(movie.id, movie);
+	}
+
+	return [...byId.values()].sort((a, b) => b.popularity - a.popularity);
 }
 
 /**

@@ -19,6 +19,7 @@ interface Props extends MediaCardProps {
 	watchlistEntry?: WatchlistEntry;
 	hideRating?: boolean;
 	tvProgress?: { watched: number; total: number };
+	liveProgress?: boolean;
 	priority?: boolean;
 	imageSize?: 'card' | 'grid';
 	compact?: boolean;
@@ -36,6 +37,7 @@ interface Props extends MediaCardProps {
  * @param props.watchlistEntry - Optional watchlist data for the media item
  * @param props.hideRating - If true, hides the rating badge on card
  * @param props.tvProgress - Optional TV show progress { watched episodes, total episodes }
+ * @param props.liveProgress - If false, the bar stays on the server value (progress of another user)
  * @param props.priority - If true, preloads the image (for above-the-fold cards)
  * @param props.imageSize - Layout context: "card" for horizontal scroll, "grid" for full grid
  * @returns Linked card component with media poster and overlay controls
@@ -46,6 +48,7 @@ export function MediaCard({
 	watchlistEntry,
 	hideRating,
 	tvProgress,
+	liveProgress = true,
 	priority,
 	imageSize = 'card',
 	compact = false,
@@ -54,9 +57,9 @@ export function MediaCard({
 	const { t, lang } = useTranslation();
 	const locale = getLocale(lang);
 	const watchedNow = useShowWatchedTotal(media.id, tvProgress?.watched ?? 0);
-	const liveProgress = tvProgress && {
+	const progress = tvProgress && {
 		...tvProgress,
-		watched: watchedNow,
+		watched: liveProgress ? watchedNow : tvProgress.watched,
 	};
 
 	// Une note absente (upcoming, titre obscur) affichait un « N/A » doré à étoile, qui
@@ -139,18 +142,18 @@ export function MediaCard({
 					</div>
 				)}
 
-				{liveProgress && liveProgress.total > 0 && (
+				{progress && progress.total > 0 && (
 					<div className="absolute bottom-0 inset-x-0 z-20">
 						<div className="w-full h-1 bg-surface/10">
 							<div
 								className={cn(
-									'h-full transition-all duration-(--duration-slow)',
-									liveProgress.watched >= liveProgress.total
+									'h-full transition-[width] duration-(--duration-slow)',
+									progress.watched >= progress.total
 										? 'bg-success'
 										: 'bg-linear-to-r from-primary to-gold'
 								)}
 								style={{
-									width: `${Math.min(100, Math.round((liveProgress.watched / liveProgress.total) * 100))}%`,
+									width: `${Math.min(100, Math.round((progress.watched / progress.total) * 100))}%`,
 								}}
 							/>
 						</div>
@@ -164,7 +167,7 @@ export function MediaCard({
 				{showRatingBadge && (
 					<div
 						className={cn(
-							'absolute top-3 left-3 z-10 transition-all duration-(--duration-base) pointer-events-none',
+							'absolute top-3 left-3 z-10 transition-transform duration-(--duration-base) pointer-events-none',
 							'translate-y-0 group-hover:-translate-y-1'
 						)}
 					>
@@ -181,7 +184,7 @@ export function MediaCard({
 				{!compact && (
 					<div
 						className={cn(
-							'absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 transition-all duration-(--duration-base) z-10',
+							'absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 transition duration-(--duration-base) z-10',
 							'translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100',
 							// Sans hover, l'overlay ne s'affiche jamais (Tailwind v4 borne `hover:` à
 							// @media (hover:hover)) : un tap au bas du poster tombait sur le WatchButton

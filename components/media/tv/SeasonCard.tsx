@@ -124,7 +124,7 @@ export function SeasonCard({
 
 			<div
 				className={cn(
-					'absolute top-2 right-2 z-10 transition-all duration-(--duration-base)',
+					'absolute top-2 right-2 z-10 transition-opacity duration-(--duration-base)',
 					watched > 0
 						? 'opacity-100'
 						: // Masqué sans hover : sans `pointer-events-none`, un tap sur ce coin

@@ -24,7 +24,7 @@ const HOVER_OVERLAY = cn(
 
 const HOVER_TITLE = cn(
 	'absolute inset-x-0 bottom-0 p-3 z-10',
-	'translate-y-3 opacity-0 transition-all duration-(--duration-base)',
+	'translate-y-3 opacity-0 transition duration-(--duration-base)',
 	'group-hover:translate-y-0 group-hover:opacity-100',
 	'pointer-events-none'
 );
@@ -112,7 +112,7 @@ export function PlaylistGrid({
 									'absolute top-2 right-2 z-20',
 									'w-6 h-6 rounded-full flex items-center justify-center',
 									'glass-overlay-button shadow-card-sm text-text',
-									'transition-all duration-(--duration-instant)',
+									'transition duration-(--duration-instant)',
 									'sm:opacity-0 sm:scale-75 sm:group-hover:opacity-100 sm:group-hover:scale-100',
 									isRemoving
 										? 'opacity-100 scale-100'

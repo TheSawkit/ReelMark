@@ -94,7 +94,7 @@ export function NavbarClient({
 							<div className="shrink-0 grid items-center">
 								<div
 									className={cn(
-										'col-start-1 row-start-1 justify-self-end flex items-center gap-1 transition-all duration-(--duration-base) ease-apple',
+										'col-start-1 row-start-1 justify-self-end flex items-center gap-1 transition-[opacity,transform,visibility] duration-(--duration-base) ease-apple',
 										isMediaBarActive
 											? 'invisible scale-95 opacity-0'
 											: 'visible scale-100 opacity-100'
@@ -173,7 +173,7 @@ export function NavbarClient({
 													aria-label={
 														t.navbar.userMenu
 													}
-													className="rounded-full overflow-hidden border-2 border-transparent data-[state=open]:border-primary transition-all duration-(--duration-fast) focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 min-w-12"
+													className="rounded-full overflow-hidden border-2 border-transparent data-[state=open]:border-primary transition-colors duration-(--duration-fast) focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 min-w-12"
 												>
 													<UserAvatar
 														picture={
@@ -297,7 +297,7 @@ export function NavbarClient({
 					{/* Desktop only: media sub-bar that expands on scroll */}
 					<div
 						className={cn(
-							'block max-lg:hidden overflow-hidden transition-all duration-(--duration-base) ease-in-out',
+							'block max-lg:hidden overflow-hidden transition-[max-height,opacity] duration-(--duration-base) ease-in-out',
 							isMediaBarActive
 								? 'max-h-12 opacity-100'
 								: 'max-h-0 opacity-0 pointer-events-none'

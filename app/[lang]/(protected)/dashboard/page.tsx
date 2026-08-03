@@ -305,7 +305,7 @@ export default async function DashboardPage({ params: paramsPromise }: Props) {
 	const t = await getTranslations(lang);
 
 	return (
-		<PageLayout className="screen-in">
+		<PageLayout>
 			<PageHeader
 				title={t.pages.dashboard.welcome}
 				subtitle={t.pages.dashboard.subtitle}

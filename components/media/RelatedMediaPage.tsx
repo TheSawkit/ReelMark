@@ -22,7 +22,7 @@ export async function RelatedMediaPage({
 	const merged = await mergeWithWatchlist(withPosters);
 
 	return (
-		<PageLayout className="screen-in">
+		<PageLayout>
 			<PageHeader title={title} subtitle={subtitle} />
 			{merged.length === 0 ? (
 				<EmptyState message={emptyLabel} />

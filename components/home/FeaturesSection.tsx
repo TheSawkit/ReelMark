@@ -58,9 +58,7 @@ export default async function FeaturesSection() {
 							key={index}
 							index={index}
 							staggerMs={100}
-							animation="fadeIn"
-							duration="var(--duration-slower)"
-							eager={index < 3}
+							duration="var(--duration-medium)"
 						>
 							<FeatureCard
 								icon={feature.icon}

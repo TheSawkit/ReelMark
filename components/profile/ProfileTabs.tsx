@@ -8,6 +8,7 @@ import { PlaylistsSection } from './PlaylistsSection';
 import { FriendsSection } from './FriendsSection';
 import { PendingInvitations } from './PendingInvitations';
 import type { WatchlistEntry } from '@/types/tmdb';
+import type { TvProgress } from '@/lib/tv-progress';
 import type {
 	PrivacySettings,
 	Review,
@@ -23,6 +24,7 @@ type ProfileTab = 'watchlist' | 'watched' | 'reviews' | 'playlists' | 'friends';
 interface ProfileTabsProps {
 	toWatch: WatchlistEntry[];
 	watched: WatchlistEntry[];
+	tvProgress: Record<number, TvProgress>;
 	reviews: Review[];
 	reviewsCount: number;
 	initialReviewsCursor: string | null;
@@ -40,6 +42,7 @@ interface ProfileTabsProps {
 export function ProfileTabs({
 	toWatch,
 	watched,
+	tvProgress,
 	reviews,
 	reviewsCount,
 	initialReviewsCursor,
@@ -136,6 +139,7 @@ export function ProfileTabs({
 						viewCtx
 					)}
 					isOwnProfile={isOwnProfile}
+					tvProgress={tvProgress}
 					sectionKey="profile-watchlist"
 					genreNames={genreNames}
 					ratingByKey={ratingByKey}
@@ -150,6 +154,7 @@ export function ProfileTabs({
 						viewCtx
 					)}
 					isOwnProfile={isOwnProfile}
+					tvProgress={tvProgress}
 					sectionKey="profile-watched"
 					genreNames={genreNames}
 					ratingByKey={ratingByKey}

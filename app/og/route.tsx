@@ -1,9 +1,14 @@
 import { ImageResponse } from 'next/og';
 import { cacheLife } from 'next/cache';
 import { reportSwallowed } from '@/lib/report';
+import Title from '@/components/layout/Title';
 
 const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
+
+// Le wordmark garde son rapport de 8129x1792.
+const WORDMARK_WIDTH = 760;
+const WORDMARK_HEIGHT = Math.round((WORDMARK_WIDTH * 1792) / 8129);
 
 /**
  * The rendered PNG bytes, or null if rendering failed. Caches the bytes rather than the
@@ -30,16 +35,10 @@ async function renderOgCard(): Promise<ArrayBuffer | null> {
 						'radial-gradient(circle at 50% 0%, rgba(185,9,11,0.35), rgba(0,0,0,0) 60%)',
 				}}
 			>
-				<div
-					style={{
-						display: 'flex',
-						fontSize: 148,
-						fontWeight: 700,
-						letterSpacing: -6,
-					}}
-				>
-					<span style={{ color: '#ffffff' }}>Reel</span>
-					<span style={{ color: '#b9090b' }}>Mark</span>
+				{/* Le wordmark de l'application, pas un titre redessiné : la carte partagée
+				    doit montrer la même marque que la barre de navigation. */}
+				<div style={{ display: 'flex', color: '#ffffff' }}>
+					<Title width={WORDMARK_WIDTH} height={WORDMARK_HEIGHT} />
 				</div>
 				<div
 					style={{
@@ -48,7 +47,7 @@ async function renderOgCard(): Promise<ArrayBuffer | null> {
 						height: 8,
 						backgroundColor: '#b9090b',
 						borderRadius: 9999,
-						marginTop: 8,
+						marginTop: 24,
 						marginBottom: 28,
 					}}
 				/>

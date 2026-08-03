@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { WatchlistEntry } from '@/types/tmdb';
 import type { PrivacyVisibility } from '@/types/profile';
+import type { TvProgress } from '@/lib/tv-progress';
 import { useTranslation } from '@/lib/i18n/context';
 import { watchlistEntryToMediaItem } from '@/lib/mappers';
 import { getMediaKey } from '@/lib/media';
@@ -27,6 +28,7 @@ interface WatchlistSectionProps {
 	visibility: PrivacyVisibility;
 	canView: boolean;
 	isOwnProfile: boolean;
+	tvProgress: Record<number, TvProgress>;
 	sectionKey: string;
 	genreNames: Record<number, string>;
 	ratingByKey: Record<string, number>;
@@ -37,6 +39,7 @@ export function WatchlistSection({
 	visibility,
 	canView,
 	isOwnProfile,
+	tvProgress,
 	sectionKey,
 	genreNames,
 	ratingByKey,
@@ -159,6 +162,12 @@ export function WatchlistSection({
 									media={item}
 									watchlistEntry={item.watchlistEntry}
 									hideRating
+									tvProgress={
+										item.media_type === 'tv'
+											? tvProgress[item.id]
+											: undefined
+									}
+									liveProgress={isOwnProfile}
 									imageSize="grid"
 									priority={index < 6}
 								/>
