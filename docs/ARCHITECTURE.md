@@ -31,7 +31,7 @@ Client Components ("use client")
 - Deux points d'entrée uniques dans `lib/supabase/auth-helpers.ts` :
     - `getAuthenticatedUser()` — jette si non connecté ; utilisé par toutes les mutations.
     - `getOptionalUser()` — `userId` nullable ; utilisé par les lectures publiques.
-- `createAdminClient()` (service role, bypass RLS) est réservé à trois cas : création du profil au signup, lecture des amis d'un autre utilisateur (avec contrôle de visibilité applicatif), et suppression de compte. Ne jamais l'utiliser pour résoudre des avatars — `user_profiles` est la source d'affichage.
+- `createAdminClient()` (service role, bypass RLS) sert uniquement aux lectures/écritures que la RLS interdit par construction : création du profil au signup, suppression de compte, et lecture des amis d'un autre utilisateur (`getFriendsWithProfiles`). Règle : toute fonction qui l'utilise porte elle-même son contrôle d'autorisation, jamais seulement celui de la page appelante. Quand la donnée s'y prête, préférer une fonction SQL `SECURITY DEFINER` qui porte la visibilité en base (`episode_watch_counts_for`) — le service role ne quitte alors jamais le serveur d'auth. Ne jamais l'utiliser pour résoudre des avatars — `user_profiles` est la source d'affichage.
 - Flux OAuth : `signInWithOAuth` (client) → Supabase → `/auth/callback` (échange du code, redirige vers `BASE_URL`). Les liens email passent par `/auth/confirm`.
 
 ## Données médias (TMDB / Watchmode)
