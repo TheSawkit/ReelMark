@@ -1,6 +1,7 @@
 'use server';
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 import {
 	SHARED_REVALIDATE_PATHS,
 	revalidateLocalizedAfterResponse,
@@ -25,7 +26,6 @@ export interface SeasonWatchResult extends EpisodeWatchResult {
 }
 
 const MAX_SEASON_EPISODES = 5000;
-const EPISODE_CONFLICT = 'user_id,tv_id,season_number,episode_number';
 
 async function syncTvShowWatchlistStatus(
 	supabase: SupabaseServerClient,
@@ -102,13 +102,84 @@ function assertEpisodeNumbers(episodeNumbers: number[]): void {
 	if (
 		!Array.isArray(episodeNumbers) ||
 		episodeNumbers.length > MAX_SEASON_EPISODES ||
-		episodeNumbers.some(
-			(n) => !Number.isInteger(n) || n <= 0 || n > MAX_SEASON_EPISODES
-		)
+		episodeNumbers.some((n) => !isEpisodeNumber(n))
 	) {
 		throw new Error('Invalid episode numbers');
 	}
 }
+
+function isEpisodeNumber(value: number): boolean {
+	return Number.isInteger(value) && value > 0 && value <= MAX_SEASON_EPISODES;
+}
+
+function assertEpisodeNumber(value: number, message: string): void {
+	if (!isEpisodeNumber(value)) throw new Error(message);
+}
+
+async function insertEpisodes(
+	supabase: SupabaseServerClient,
+	userId: string,
+	tvId: number,
+	seasonNumber: number,
+	episodeNumbers: number[]
+): Promise<void> {
+	if (episodeNumbers.length === 0) return;
+
+	const { error } = await supabase.from('episode_watches').upsert(
+		episodeNumbers.map((episode_number) => ({
+			user_id: userId,
+			tv_id: tvId,
+			season_number: seasonNumber,
+			episode_number,
+		})),
+		{ onConflict: ON_CONFLICT.episodeWatches, ignoreDuplicates: true }
+	);
+	if (error) throw new Error(error.message);
+}
+
+/** Deletes the given episodes of a season, or the whole season when `episodeNumbers` is omitted. */
+async function deleteEpisodes(
+	supabase: SupabaseServerClient,
+	userId: string,
+	tvId: number,
+	seasonNumber: number,
+	episodeNumbers?: number[]
+): Promise<void> {
+	if (episodeNumbers?.length === 0) return;
+
+	const query = supabase
+		.from('episode_watches')
+		.delete()
+		.eq('user_id', userId)
+		.eq('tv_id', tvId)
+		.eq('season_number', seasonNumber);
+
+	const { error } = await (episodeNumbers
+		? query.in('episode_number', episodeNumbers)
+		: query);
+	if (error) throw new Error(error.message);
+}
+
+/**
+ * Closes an episode write: re-syncs the show's watchlist status, defers revalidation, and
+ * reports whether this write is what put the show in the watchlist — the UI refreshes only then.
+ */
+async function settleEpisodeWrite(
+	supabase: SupabaseServerClient,
+	userId: string,
+	tvId: number,
+	previousStatus: TvWatchlistStatus
+): Promise<{ tvStatus: TvWatchlistStatus; addedToWatchlist: boolean }> {
+	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
+	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
+	return {
+		tvStatus,
+		addedToWatchlist: previousStatus === 'none' && tvStatus !== 'none',
+	};
+}
+
+const rangeUpTo = (last: number): number[] =>
+	Array.from({ length: last }, (_, index) => index + 1);
 
 async function readTvWatchlistStatus(
 	supabase: SupabaseServerClient,
@@ -146,33 +217,18 @@ export async function setEpisodeWatched(
 	const previousStatus = await readTvWatchlistStatus(supabase, userId, tvId);
 
 	if (watched) {
-		const { error } = await supabase.from('episode_watches').upsert(
-			{
-				user_id: userId,
-				tv_id: tvId,
-				season_number: seasonNumber,
-				episode_number: episodeNumber,
-			},
-			{ onConflict: EPISODE_CONFLICT, ignoreDuplicates: true }
-		);
-		if (error) throw new Error(error.message);
+		await insertEpisodes(supabase, userId, tvId, seasonNumber, [
+			episodeNumber,
+		]);
 	} else {
-		const { error } = await supabase
-			.from('episode_watches')
-			.delete()
-			.eq('user_id', userId)
-			.eq('tv_id', tvId)
-			.eq('season_number', seasonNumber)
-			.eq('episode_number', episodeNumber);
-		if (error) throw new Error(error.message);
+		await deleteEpisodes(supabase, userId, tvId, seasonNumber, [
+			episodeNumber,
+		]);
 	}
 
-	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
-	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
 	return {
 		watched,
-		tvStatus,
-		addedToWatchlist: previousStatus === 'none' && tvStatus !== 'none',
+		...(await settleEpisodeWrite(supabase, userId, tvId, previousStatus)),
 	};
 }
 
@@ -190,13 +246,7 @@ export async function setEpisodesWatchedUpTo(
 	seasonNumber: number,
 	upToEpisode: number
 ): Promise<SeasonWatchResult> {
-	if (
-		!Number.isInteger(upToEpisode) ||
-		upToEpisode <= 0 ||
-		upToEpisode > MAX_SEASON_EPISODES
-	) {
-		throw new Error('Invalid episode number');
-	}
+	assertEpisodeNumber(upToEpisode, 'Invalid episode number');
 
 	const { supabase, userId } = await getAuthenticatedUser();
 	const previousStatus = await readTvWatchlistStatus(supabase, userId, tvId);
@@ -207,24 +257,18 @@ export async function setEpisodesWatchedUpTo(
 		seasonNumber
 	);
 
-	const rows = Array.from({ length: upToEpisode }, (_, i) => ({
-		user_id: userId,
-		tv_id: tvId,
-		season_number: seasonNumber,
-		episode_number: i + 1,
-	}));
-	const { error } = await supabase
-		.from('episode_watches')
-		.upsert(rows, { onConflict: EPISODE_CONFLICT, ignoreDuplicates: true });
-	if (error) throw new Error(error.message);
+	await insertEpisodes(
+		supabase,
+		userId,
+		tvId,
+		seasonNumber,
+		rangeUpTo(upToEpisode)
+	);
 
-	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
-	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
 	return {
 		watched: true,
-		tvStatus,
 		previousEpisodes,
-		addedToWatchlist: previousStatus === 'none' && tvStatus !== 'none',
+		...(await settleEpisodeWrite(supabase, userId, tvId, previousStatus)),
 	};
 }
 
@@ -261,38 +305,13 @@ export async function setSeasonEpisodes(
 		(episodeNumber) => !previousEpisodes.includes(episodeNumber)
 	);
 
-	if (missing.length > 0) {
-		const rows = missing.map((episodeNumber) => ({
-			user_id: userId,
-			tv_id: tvId,
-			season_number: seasonNumber,
-			episode_number: episodeNumber,
-		}));
-		const { error } = await supabase.from('episode_watches').upsert(rows, {
-			onConflict: EPISODE_CONFLICT,
-			ignoreDuplicates: true,
-		});
-		if (error) throw new Error(error.message);
-	}
+	await insertEpisodes(supabase, userId, tvId, seasonNumber, missing);
+	await deleteEpisodes(supabase, userId, tvId, seasonNumber, surplus);
 
-	if (surplus.length > 0) {
-		const { error } = await supabase
-			.from('episode_watches')
-			.delete()
-			.eq('user_id', userId)
-			.eq('tv_id', tvId)
-			.eq('season_number', seasonNumber)
-			.in('episode_number', surplus);
-		if (error) throw new Error(error.message);
-	}
-
-	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
-	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
 	return {
 		watched: episodeNumbers.length > 0,
-		tvStatus,
 		previousEpisodes,
-		addedToWatchlist: previousStatus === 'none' && tvStatus !== 'none',
+		...(await settleEpisodeWrite(supabase, userId, tvId, previousStatus)),
 	};
 }
 
@@ -312,13 +331,7 @@ export async function setSeasonWatched(
 	totalEpisodes: number,
 	watched: boolean
 ): Promise<SeasonWatchResult> {
-	if (
-		!Number.isInteger(totalEpisodes) ||
-		totalEpisodes <= 0 ||
-		totalEpisodes > MAX_SEASON_EPISODES
-	) {
-		throw new Error('Invalid episode count');
-	}
+	assertEpisodeNumber(totalEpisodes, 'Invalid episode count');
 
 	const { supabase, userId } = await getAuthenticatedUser();
 	const previousStatus = await readTvWatchlistStatus(supabase, userId, tvId);
@@ -330,33 +343,20 @@ export async function setSeasonWatched(
 	);
 
 	if (watched) {
-		const rows = Array.from({ length: totalEpisodes }, (_, i) => ({
-			user_id: userId,
-			tv_id: tvId,
-			season_number: seasonNumber,
-			episode_number: i + 1,
-		}));
-		const { error } = await supabase.from('episode_watches').upsert(rows, {
-			onConflict: EPISODE_CONFLICT,
-			ignoreDuplicates: true,
-		});
-		if (error) throw new Error(error.message);
+		await insertEpisodes(
+			supabase,
+			userId,
+			tvId,
+			seasonNumber,
+			rangeUpTo(totalEpisodes)
+		);
 	} else {
-		const { error } = await supabase
-			.from('episode_watches')
-			.delete()
-			.eq('user_id', userId)
-			.eq('tv_id', tvId)
-			.eq('season_number', seasonNumber);
-		if (error) throw new Error(error.message);
+		await deleteEpisodes(supabase, userId, tvId, seasonNumber);
 	}
 
-	const tvStatus = await syncTvShowWatchlistStatus(supabase, userId, tvId);
-	revalidateLocalizedAfterResponse(SHARED_REVALIDATE_PATHS);
 	return {
 		watched,
-		tvStatus,
 		previousEpisodes,
-		addedToWatchlist: previousStatus === 'none' && tvStatus !== 'none',
+		...(await settleEpisodeWrite(supabase, userId, tvId, previousStatus)),
 	};
 }
