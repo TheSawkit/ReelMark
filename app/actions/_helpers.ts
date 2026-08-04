@@ -6,8 +6,7 @@ import type { createClient } from '@/lib/supabase/server';
 
 export const SHARED_REVALIDATE_PATHS = ['/library', '/dashboard'] as const;
 
-/** Revalidates a locale-agnostic app path across every supported language prefix (routes now live under /[lang]). */
-export function revalidateLocalized(path: string) {
+function revalidateLocalized(path: string) {
 	for (const lang of SUPPORTED_LANGUAGES) revalidatePath(`/${lang}${path}`);
 }
 
@@ -41,7 +40,11 @@ export function revalidatePlaylistMetaAfterResponse(playlistId: string) {
 	after(() => revalidateTag(`playlist-meta:${playlistId}`, 'hours'));
 }
 
-/** Deferred variant of revalidateProfile — same reason as revalidateLocalizedAfterResponse. */
+/**
+ * Revalidates the acting user's profile pages (and optionally another user's) after the
+ * response — same reason as revalidateLocalizedAfterResponse. Pass the user from
+ * getAuthenticatedUser so auth is not fetched twice.
+ */
 export function revalidateProfileAfterResponse(
 	supabase: Awaited<ReturnType<typeof createClient>>,
 	user: User,
@@ -50,8 +53,7 @@ export function revalidateProfileAfterResponse(
 	after(() => revalidateProfile(supabase, user, otherUserId));
 }
 
-/** Revalidates the acting user's profile pages (and optionally another user's) without re-fetching auth — pass the user from getAuthenticatedUser. */
-export async function revalidateProfile(
+async function revalidateProfile(
 	supabase: Awaited<ReturnType<typeof createClient>>,
 	user: User,
 	otherUserId?: string
