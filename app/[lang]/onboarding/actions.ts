@@ -6,6 +6,7 @@ import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { getServerLanguage, getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import { validateUsername, validateRegion } from '@/lib/validators';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 export async function completeOnboarding(
 	prevState: unknown,
@@ -46,7 +47,7 @@ export async function completeOnboarding(
 			onboarding_completed: true,
 			updated_at: new Date().toISOString(),
 		},
-		{ onConflict: 'user_id' }
+		{ onConflict: ON_CONFLICT.userProfiles }
 	);
 	if (profileError?.code === '23505')
 		return { error: t.settings.usernameTaken };

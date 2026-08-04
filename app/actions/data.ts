@@ -19,6 +19,7 @@ import type {
 	ImportedList,
 } from '@/lib/data-transfer/types';
 import type { WatchStatus } from '@/types/tmdb';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 const EXPORT_LIMIT = 5;
 const EXPORT_WINDOW_MS = 3_600_000;
@@ -38,6 +39,10 @@ type WatchlistRow = {
  *
  * @throws Error('RATE_LIMITED') once the hourly export budget is exhausted.
  */
+const MAX_BATCH_ITEMS = 50;
+const MAX_BATCH_EPISODES = 5000;
+const EPISODE_UPSERT_CHUNK = 1000;
+
 export async function exportUserData(): Promise<ExportData> {
 	const { supabase, userId } = await getAuthenticatedUser();
 
@@ -95,13 +100,16 @@ export async function importBatch(
 ): Promise<ImportBatchResult> {
 	if (!Array.isArray(items) || items.length === 0)
 		return { imported: 0, failed: [] };
-	if (items.length > 50) throw new Error('Batch size exceeds limit (50)');
+	if (items.length > MAX_BATCH_ITEMS)
+		throw new Error(`Batch size exceeds limit (${MAX_BATCH_ITEMS})`);
 	const totalEpisodes = items.reduce(
 		(sum, item) => sum + (item.watchedEpisodes?.length ?? 0),
 		0
 	);
-	if (totalEpisodes > 5000)
-		throw new Error('Episode batch size exceeds limit (5000)');
+	if (totalEpisodes > MAX_BATCH_EPISODES)
+		throw new Error(
+			`Episode batch size exceeds limit (${MAX_BATCH_EPISODES})`
+		);
 
 	const { supabase, userId } = await getAuthenticatedUser();
 
@@ -165,7 +173,7 @@ export async function importBatch(
 			? supabase
 					.from('watchlist')
 					.upsert(watchedRows, {
-						onConflict: 'user_id,media_id,media_type',
+						onConflict: ON_CONFLICT.watchlist,
 					})
 					.then((r) => r.error)
 			: Promise.resolve(null),
@@ -173,7 +181,7 @@ export async function importBatch(
 			? supabase
 					.from('watchlist')
 					.upsert(toWatchRows, {
-						onConflict: 'user_id,media_id,media_type',
+						onConflict: ON_CONFLICT.watchlist,
 						ignoreDuplicates: true,
 					})
 					.then((r) => r.error)
@@ -198,7 +206,7 @@ export async function importBatch(
 
 	if (reviewRows.length > 0) {
 		await supabase.from('reviews').upsert(reviewRows, {
-			onConflict: 'user_id,media_id,media_type',
+			onConflict: ON_CONFLICT.reviews,
 			ignoreDuplicates: true,
 		});
 	}
@@ -213,12 +221,11 @@ export async function importBatch(
 				episode_number: ep.episode,
 			}))
 		);
-	const EPISODE_UPSERT_CHUNK = 1000;
 	for (let i = 0; i < episodeRows.length; i += EPISODE_UPSERT_CHUNK) {
 		await supabase
 			.from('episode_watches')
 			.upsert(episodeRows.slice(i, i + EPISODE_UPSERT_CHUNK), {
-				onConflict: 'user_id,tv_id,season_number,episode_number',
+				onConflict: ON_CONFLICT.episodeWatches,
 				ignoreDuplicates: true,
 			});
 	}
@@ -314,7 +321,7 @@ export async function importLists(
 			const { error } = await supabase
 				.from('playlist_items')
 				.upsert(rows, {
-					onConflict: 'playlist_id,media_id,media_type',
+					onConflict: ON_CONFLICT.playlistItems,
 					ignoreDuplicates: true,
 				});
 			if (error) {

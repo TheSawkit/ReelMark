@@ -14,6 +14,7 @@ import {
 	validateAvatarFile,
 	formStr,
 } from '@/lib/validators';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 async function syncUserProfile(
 	supabase: Awaited<ReturnType<typeof createClient>>,
@@ -30,7 +31,7 @@ async function syncUserProfile(
 				...(fullName !== undefined && { full_name: fullName }),
 				updated_at: new Date().toISOString(),
 			},
-			{ onConflict: 'user_id' }
+			{ onConflict: ON_CONFLICT.userProfiles }
 		)
 		.select('username');
 
@@ -208,7 +209,7 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
 			avatar_url: finalAvatarUrl,
 			updated_at: new Date().toISOString(),
 		},
-		{ onConflict: 'user_id' }
+		{ onConflict: ON_CONFLICT.userProfiles }
 	);
 
 	if (error) {

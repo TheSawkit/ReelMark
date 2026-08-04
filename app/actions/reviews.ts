@@ -12,6 +12,7 @@ import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
 import { MAX_REVIEW_LENGTH } from '@/types/profile';
 import type { Review, ReviewMediaType, UserReviewsPage } from '@/types/profile';
 import { REVIEW_COLUMNS } from '@/lib/supabase/columns';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 /**
  * Cursor-paginated page of a user's reviews, for the profile list's "load more" button.
@@ -68,7 +69,7 @@ export async function upsertReview(
 				season_number: isEpisode ? seasonNumber : null,
 				updated_at: new Date().toISOString(),
 			},
-			{ onConflict: 'user_id,media_id,media_type' }
+			{ onConflict: ON_CONFLICT.reviews }
 		)
 		.select(REVIEW_COLUMNS)
 		.single();

@@ -4,6 +4,7 @@ import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { revalidateLocalizedAfterResponse } from '@/app/actions/_helpers';
 import { VALID_MEDIA_TYPES } from '@/lib/validators';
 import type { MediaType } from '@/types/tmdb';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 const MAX_GENRE_IDS = 10;
 const MAX_PROVIDER_IDS = 100;
@@ -35,7 +36,7 @@ export async function dismissRecommendation(
 			media_type: mediaType,
 			genre_ids: sanitizedGenres,
 		},
-		{ onConflict: 'user_id,media_id,media_type' }
+		{ onConflict: ON_CONFLICT.recommendationDismissals }
 	);
 	if (error) throw new Error(error.message);
 

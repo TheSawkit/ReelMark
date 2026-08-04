@@ -1,6 +1,7 @@
 'use server';
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 const MAX_ENDPOINT_LENGTH = 1000;
 const MAX_KEY_LENGTH = 255;
@@ -44,7 +45,7 @@ export async function savePushSubscription(
 			user_agent:
 				input.userAgent?.slice(0, MAX_USER_AGENT_LENGTH) ?? null,
 		},
-		{ onConflict: 'endpoint' }
+		{ onConflict: ON_CONFLICT.pushSubscriptions }
 	);
 
 	if (error) throw new Error(error.message);

@@ -11,6 +11,7 @@ import type { Database } from '@/types/database';
 import { getListMediaMetadata, type ListMediaMetadata } from '@/lib/tmdb';
 import { getWatchlistBucketWithProgress } from '@/lib/data/watchlist';
 import type { Language } from '@/lib/i18n/translations';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 export interface LibraryBucket {
 	entries: WatchlistEntry[];
@@ -77,7 +78,7 @@ export async function addToWatchlist(
 			release_date,
 			genre_ids,
 		},
-		{ onConflict: 'user_id,media_id,media_type' }
+		{ onConflict: ON_CONFLICT.watchlist }
 	);
 
 	if (error) throw new Error(error.message);
