@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
-import { episodeWatchStore, useSeasonWatch } from '@/lib/episode-watch-store';
+import { episodeWatchStore, useSeasonWatch } from '@/lib/stores/episode-watch';
 import { SeasonWatchIcon } from '@/components/media/tv/SeasonWatchIcon';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import type { Season } from '@/types/tmdb';

@@ -10,9 +10,9 @@ import { addToWatchlist, removeFromWatchlist } from '@/app/actions/watchlist';
 import { useTranslation } from '@/lib/i18n/context';
 import { useOptimisticAction } from '@/hooks/useOptimisticAction';
 import { useIsUnreleased } from '@/hooks/useIsUnreleased';
-import { mediaWatchStore, useMediaWatch } from '@/lib/media-watch-store';
-import { episodeWatchStore } from '@/lib/episode-watch-store';
-import { mediaRatingStore } from '@/lib/media-rating-store';
+import { mediaWatchStore, useMediaWatch } from '@/lib/stores/media-watch';
+import { episodeWatchStore } from '@/lib/stores/episode-watch';
+import { mediaRatingStore } from '@/lib/stores/media-rating';
 import { promptStore } from '@/lib/prompts/store';
 import type { WatchButtonProps } from '@/types/components';
 

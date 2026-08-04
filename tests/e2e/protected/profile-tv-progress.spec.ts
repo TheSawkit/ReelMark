@@ -44,7 +44,7 @@ test.describe('Profile watchlist — TV progress bar', () => {
 		const seriesCard = page.locator('a[href*="/tv/"]').first();
 		if ((await seriesCard.count()) === 0)
 			test.skip(true, 'No TV show in the test account watchlist');
-		await seriesCard.scrollIntoViewIfNeeded();
+		await expect(seriesCard).toBeVisible({ timeout: 10000 });
 
 		const fill = seriesCard.locator('div.h-1 > div').first();
 		await expect(fill).toBeAttached({ timeout: 10000 });

@@ -11,8 +11,8 @@ import {
 	episodeWatchStore,
 	useSeasonWatch,
 	useEpisodeWatched,
-} from '@/lib/episode-watch-store';
-import { mediaWatchStore } from '@/lib/media-watch-store';
+} from '@/lib/stores/episode-watch';
+import { mediaWatchStore } from '@/lib/stores/media-watch';
 import {
 	isSeasonSkip,
 	isCatchUpDismissed,

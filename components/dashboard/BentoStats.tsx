@@ -3,8 +3,8 @@
 import { Film, Tv, Bookmark, type LucideIcon } from 'lucide-react';
 import { Aurora } from '@/components/effects/Aurora';
 import { SectionHeading } from '@/components/ui/SectionHeading';
-import { useEpisodeWatchDelta } from '@/lib/episode-watch-store';
-import { useWatchStatusDelta } from '@/lib/media-watch-store';
+import { useEpisodeWatchDelta } from '@/lib/stores/episode-watch';
+import { useWatchStatusDelta } from '@/lib/stores/media-watch';
 
 interface BentoStatsProps {
 	title: string;

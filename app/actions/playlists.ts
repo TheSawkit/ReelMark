@@ -10,6 +10,7 @@ import { parseVisibility, isVisibility } from '@/lib/privacy';
 import { getListMediaMetadata } from '@/lib/tmdb';
 import type { MediaType } from '@/types/tmdb';
 import type { PrivacyVisibility } from '@/types/profile';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 /**
  * Creates a new playlist for the authenticated user.
@@ -187,7 +188,7 @@ export async function addToPlaylist(
 			release_date,
 			genre_ids,
 		},
-		{ onConflict: 'playlist_id,media_id,media_type' }
+		{ onConflict: ON_CONFLICT.playlistItems }
 	);
 
 	if (error) throw new Error(error.message);

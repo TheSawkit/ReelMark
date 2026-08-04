@@ -10,7 +10,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useAbandonShow } from '@/hooks/useAbandonShow';
 import { useTranslation } from '@/lib/i18n/context';
-import type { MediaWatchStatus } from '@/lib/media-watch-store';
+import type { MediaWatchStatus } from '@/lib/stores/media-watch';
 
 interface AbandonShowMenuProps {
 	tvId: number;

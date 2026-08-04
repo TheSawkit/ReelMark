@@ -2,7 +2,7 @@
 
 import { toast } from 'sonner';
 import { setWatchlistStatus } from '@/app/actions/watchlist';
-import { mediaWatchStore, useMediaWatch } from '@/lib/media-watch-store';
+import { mediaWatchStore, useMediaWatch } from '@/lib/stores/media-watch';
 import { useTranslation } from '@/lib/i18n/context';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 

@@ -10,7 +10,7 @@ import {
 	mediaWatchStore,
 	useMediaWatch,
 	type MediaWatchStatus,
-} from '@/lib/media-watch-store';
+} from '@/lib/stores/media-watch';
 
 interface MovieWatchActionsProps {
 	mediaId: number;

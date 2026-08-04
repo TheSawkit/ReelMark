@@ -3,7 +3,7 @@
 import { type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
-import { useMediaHeader } from '@/lib/media-header-store';
+import { useMediaHeader } from '@/lib/stores/media-header';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface MediaActionsBarProps {

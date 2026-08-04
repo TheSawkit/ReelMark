@@ -4,7 +4,7 @@ import { CommunityRating } from '@/components/media/detail/CommunityRating';
 import {
 	useMediaRating,
 	type CommunityRating as Rating,
-} from '@/lib/media-rating-store';
+} from '@/lib/stores/media-rating';
 import type { ReviewMediaType } from '@/types/profile';
 
 interface MediaCommunityRatingProps {

@@ -7,6 +7,7 @@ import {
 	type PromptKey,
 	type PromptState,
 } from '@/lib/prompts/keys';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 /** Records the user's answer to a call-to-action; deliberately never revalidates. */
 export async function resolvePrompt(
@@ -25,7 +26,7 @@ export async function resolvePrompt(
 			state,
 			updated_at: new Date().toISOString(),
 		},
-		{ onConflict: 'user_id,prompt_key' }
+		{ onConflict: ON_CONFLICT.userPrompts }
 	);
 	if (error) throw new Error(error.message);
 }

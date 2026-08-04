@@ -10,6 +10,7 @@ import type {
 	AppNotification,
 	NotificationPreferences,
 } from '@/types/notifications';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 /** Lazy-loaded notification list for the dropdown panel, which only opens on demand. */
 export async function getNotifications(limit = 30): Promise<AppNotification[]> {
@@ -61,7 +62,10 @@ export async function updateNotificationPreferences(
 	const { supabase, userId } = await getAuthenticatedUser();
 	const { error } = await supabase
 		.from('notification_preferences')
-		.upsert({ user_id: userId, ...prefs }, { onConflict: 'user_id' });
+		.upsert(
+			{ user_id: userId, ...prefs },
+			{ onConflict: ON_CONFLICT.notificationPreferences }
+		);
 	if (error) throw new Error(error.message);
 	revalidateLocalizedAfterResponse(['/settings']);
 }

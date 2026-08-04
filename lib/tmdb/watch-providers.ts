@@ -1,4 +1,5 @@
-import { fetchTMDB } from './client';
+import { fetchTMDB, REVALIDATE } from './client';
+import { getImageUrl } from './images';
 import { normalizeName, providerAlias } from '@/lib/provider-identity';
 import type { Language } from '@/lib/i18n/translations';
 import { reportSwallowed } from '@/lib/report';
@@ -20,7 +21,7 @@ async function fetchProviderList(
 		const data = await fetchTMDB<{ results: TmdbProviderItem[] }>(
 			`/watch/providers/${mediaType}`,
 			{ watch_region: region },
-			{ revalidate: 604800, lang }
+			{ revalidate: REVALIDATE.week, lang }
 		);
 		return data.results ?? [];
 	} catch (error) {
@@ -64,26 +65,24 @@ export function resolveProviderLogo(
 	fallbackLogoPath?: string
 ): string | null {
 	const key = normalizeName(providerName);
+	const logoUrl = (path: string) => getImageUrl(path, 'w92');
 
 	const exact = logoMap.get(key);
-	if (exact) return `https://image.tmdb.org/t/p/w92${exact}`;
+	if (exact) return logoUrl(exact);
 
 	const alias = providerAlias(key);
 	if (alias) {
 		const aliased = logoMap.get(alias);
-		if (aliased) return `https://image.tmdb.org/t/p/w92${aliased}`;
+		if (aliased) return logoUrl(aliased);
 	}
 
 	if (key.length >= 5) {
 		for (const [tmdbKey, path] of logoMap) {
-			if (tmdbKey.startsWith(key)) {
-				return `https://image.tmdb.org/t/p/w92${path}`;
-			}
+			if (tmdbKey.startsWith(key)) return logoUrl(path);
 		}
 	}
 
 	if (fallbackLogoUrl) return fallbackLogoUrl;
-	if (fallbackLogoPath)
-		return `https://image.tmdb.org/t/p/w92${fallbackLogoPath}`;
+	if (fallbackLogoPath) return logoUrl(fallbackLogoPath);
 	return null;
 }

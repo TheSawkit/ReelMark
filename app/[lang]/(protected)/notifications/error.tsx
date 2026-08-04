@@ -1,13 +1,10 @@
 'use client';
 
-import { ErrorCard } from '@/components/ui/ErrorCard';
+import { ErrorCard, type ErrorBoundaryProps } from '@/components/ui/ErrorCard';
 
 export default function NotificationsError({
 	error,
 	reset,
-}: {
-	error: Error & { digest?: string };
-	reset: () => void;
-}) {
+}: ErrorBoundaryProps) {
 	return <ErrorCard error={error} reset={reset} backHref="/dashboard" />;
 }

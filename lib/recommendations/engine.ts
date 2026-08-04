@@ -6,6 +6,7 @@ const RESULT_SIZE = 20;
 const MIN_LIKED_RATING = 4;
 const MIN_FAVORITE_RATING = 6;
 const MIN_PERSON_RATING = 8;
+const MAX_PERSON_SEEDS = 4;
 const FAVORITE_GENRES = 3;
 const GENRE_BONUS = 0.35;
 const GENRE_PENALTY = 0.5;
@@ -214,6 +215,35 @@ export function pickFavoritePerson(
 /** Rating threshold above which a title's people count toward the favourite person. */
 export function isPersonSeedRating(rating: number | undefined): boolean {
 	return rating !== undefined && rating >= MIN_PERSON_RATING;
+}
+
+/** Watched entries rated high enough for their credits to reveal a favourite director or actor. */
+export function pickPersonSeeds(
+	watched: WatchlistEntry[],
+	ratingByKey: Record<string, number>
+): WatchlistEntry[] {
+	const ratingOf = ratingLookup(ratingByKey);
+	return watched
+		.filter((entry) => isPersonSeedRating(ratingOf(entry)))
+		.slice(0, MAX_PERSON_SEEDS);
+}
+
+/** Keeps newly released titles the viewer has not consumed and whose genres match their favourites. */
+export function filterFreshItems(
+	items: MediaItem[],
+	excludedKeys: Set<string>,
+	affinity: GenreAffinity
+): MediaItem[] {
+	return items
+		.filter(
+			(item) =>
+				item.poster_path !== null &&
+				!excludedKeys.has(getMediaKey(item)) &&
+				(item.genre_ids ?? []).some((genreId) =>
+					affinity.favorites.has(genreId)
+				)
+		)
+		.slice(0, RESULT_SIZE);
 }
 
 function applyGenreCap(

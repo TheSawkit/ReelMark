@@ -1,4 +1,4 @@
-import { fetchTMDB } from '@/lib/tmdb/client';
+import { fetchTMDB, REVALIDATE } from '@/lib/tmdb/client';
 import { searchMulti } from '@/lib/tmdb/search';
 import { reportCritical, reportSwallowed } from '@/lib/report';
 import { VALID_MEDIA_TYPES } from '@/lib/validators';
@@ -47,7 +47,7 @@ async function fetchTmdbForType(
 			const data = await fetchTMDB<{
 				title: string;
 				poster_path: string | null;
-			}>(`/movie/${id}`, {}, { revalidate: 86400 });
+			}>(`/movie/${id}`, {}, { revalidate: REVALIDATE.day });
 			return {
 				type: 'movie',
 				title: data.title,
@@ -57,7 +57,7 @@ async function fetchTmdbForType(
 		const data = await fetchTMDB<{
 			name: string;
 			poster_path: string | null;
-		}>(`/tv/${id}`, {}, { revalidate: 86400 });
+		}>(`/tv/${id}`, {}, { revalidate: REVALIDATE.day });
 		return { type: 'tv', title: data.name, poster_path: data.poster_path };
 	} catch (error) {
 		if (error instanceof Error && error.message.includes('404'))
@@ -94,7 +94,7 @@ async function findByImdbId(
 		}>(
 			`/find/${imdbId}`,
 			{ external_source: 'imdb_id' },
-			{ revalidate: 86400 }
+			{ revalidate: REVALIDATE.day }
 		);
 
 		if (expectedType === 'movie') {
@@ -124,7 +124,7 @@ async function findByTvdbId(tvdbId: number): Promise<FindResult | null> {
 		}>(
 			`/find/${tvdbId}`,
 			{ external_source: 'tvdb_id' },
-			{ revalidate: 86400 }
+			{ revalidate: REVALIDATE.day }
 		);
 
 		const r = data.tv_results[0];

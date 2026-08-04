@@ -9,7 +9,7 @@ import {
 	libraryBucketStore,
 	useLibraryBucketsVersion,
 	type LibraryBucketPage,
-} from '@/lib/library-bucket-store';
+} from '@/lib/stores/library-bucket';
 import type { Language } from '@/lib/i18n/translations';
 import type { MediaType, WatchStatus } from '@/types/tmdb';
 

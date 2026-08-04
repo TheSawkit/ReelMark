@@ -14,8 +14,8 @@ import { NavbarGradient } from '@/components/navigation/NavbarGradient';
 import { CinematicBackdrop } from '@/components/media/detail/CinematicBackdrop';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { SeasonWatchButton } from '@/components/media/tv/SeasonWatchButton';
-import { mediaHeaderStore } from '@/lib/media-header-store';
-import { useSeasonWatch } from '@/lib/episode-watch-store';
+import { mediaHeaderStore } from '@/lib/stores/media-header';
+import { useSeasonWatch } from '@/lib/stores/episode-watch';
 
 interface SeasonBannerProps {
 	tvId: number;

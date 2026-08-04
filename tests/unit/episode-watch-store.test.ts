@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { episodeWatchStore } from '@/lib/episode-watch-store';
+import { episodeWatchStore } from '@/lib/stores/episode-watch';
 
 const TV_ID = 1399;
 const SEASON = 1;

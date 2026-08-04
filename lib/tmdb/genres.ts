@@ -1,12 +1,10 @@
 import { cache } from 'react';
-import { fetchTMDB } from './client';
+import { fetchTMDB, REVALIDATE } from './client';
 import type { Language } from '@/lib/i18n/translations';
 
 interface GenreListResponse {
 	genres: Array<{ id: number; name: string }>;
 }
-
-const GENRES_REVALIDATE = 604800;
 
 /**
  * Returns a merged TMDB genre id → localized name map covering movies and TV shows,
@@ -19,12 +17,12 @@ export const getGenres = cache(
 			fetchTMDB<GenreListResponse>(
 				'/genre/movie/list',
 				{},
-				{ revalidate: GENRES_REVALIDATE, lang }
+				{ revalidate: REVALIDATE.week, lang }
 			),
 			fetchTMDB<GenreListResponse>(
 				'/genre/tv/list',
 				{},
-				{ revalidate: GENRES_REVALIDATE, lang }
+				{ revalidate: REVALIDATE.week, lang }
 			),
 		]);
 

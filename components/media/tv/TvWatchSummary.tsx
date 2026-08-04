@@ -1,7 +1,7 @@
 'use client';
 
 import { ProgressBar } from '@/components/shared/ProgressBar';
-import { useTvWatchTotal } from '@/lib/episode-watch-store';
+import { useTvWatchTotal } from '@/lib/stores/episode-watch';
 import { useTranslation } from '@/lib/i18n/context';
 
 interface TvWatchSummaryProps {

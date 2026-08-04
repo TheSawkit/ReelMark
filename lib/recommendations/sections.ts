@@ -14,6 +14,7 @@ import {
 import { getUserRegion } from '@/lib/tmdb/client';
 import { getCrewMovieCredits, getCrewTvCredits } from '@/lib/tmdb/crew';
 import { movieCreditToMediaItem, tvCreditToMediaItem } from '@/lib/mappers';
+import { knownTvProgress } from '@/lib/tv-progress';
 import {
 	getCachedDismissals,
 	getCachedMyRatings,
@@ -24,9 +25,10 @@ import {
 import {
 	applyDismissals,
 	consumedKeys,
+	filterFreshItems,
 	genreAffinity,
-	isPersonSeedRating,
 	pickFavoritePerson,
+	pickPersonSeeds,
 	pickSeeds,
 	rankRecommendations,
 } from '@/lib/recommendations/engine';
@@ -161,6 +163,73 @@ async function buildPersonSection(
 	};
 }
 
+function buildSimilarSections(
+	type: MediaType,
+	seedEntries: WatchlistWithProgress['watchlist'],
+	similarResults: Array<Movie[] | TvShow[]>,
+	t: Translations
+): DashboardSection[] {
+	return seedEntries
+		.map((entry, index) => ({
+			title: t.pages.dashboard.similarTo.replace(
+				'${movie.movie_title}',
+				entry.media_title
+			),
+			categoryUrl: `/${type}/${entry.media_id}/similar`,
+			items: toMediaItems(similarResults[index], type === 'movie'),
+		}))
+		.filter((section) => section.items.length > 0);
+}
+
+async function assembleExtraSections({
+	type,
+	t,
+	onServicesItems,
+	personSection,
+	freshItems,
+	similarSections,
+}: {
+	type: MediaType;
+	t: Translations;
+	onServicesItems: MediaItem[];
+	personSection: DashboardSection | null;
+	freshItems: MediaItem[];
+	similarSections: DashboardSection[];
+}): Promise<DashboardSection[]> {
+	const isMovie = type === 'movie';
+
+	return [
+		...(onServicesItems.length > 0
+			? [
+					{
+						title: t.pages.dashboard.onYourServices,
+						items: onServicesItems,
+					},
+				]
+			: []),
+		...(personSection ? [personSection] : []),
+		...(freshItems.length > 0
+			? [
+					{
+						title: isMovie
+							? t.pages.dashboard.upcomingForYou
+							: t.pages.dashboard.onAirForYou,
+						categoryUrl: isMovie
+							? '/explorer/upcoming'
+							: '/explorer/tv-on-the-air',
+						items: freshItems,
+					},
+				]
+			: []),
+		...(await Promise.all(
+			similarSections.map(async (section) => ({
+				...section,
+				items: await mergeWithWatchlist(section.items),
+			}))
+		)),
+	];
+}
+
 /** Assembles every personalized dashboard row for one media type; pure data so the page only renders. */
 export async function buildLibrarySections(
 	type: MediaType,
@@ -174,18 +243,8 @@ export async function buildLibrarySections(
 		.filter((entry) => entry.status === 'to_watch')
 		.slice(0, 10);
 
-	const tvProgressMap: Record<number, { watched: number; total: number }> =
-		{};
-	if (type === 'tv') {
-		for (const entry of toWatch) {
-			if (entry.total_episodes) {
-				tvProgressMap[entry.media_id] = {
-					watched: tvProgress[entry.media_id] ?? 0,
-					total: entry.total_episodes,
-				};
-			}
-		}
-	}
+	const tvProgressMap =
+		type === 'tv' ? knownTvProgress(toWatch, tvProgress) : {};
 	const watched = typeEntries.filter((entry) => entry.status === 'watched');
 	const seedForSimilars = watched.slice(0, 3);
 
@@ -203,18 +262,7 @@ export async function buildLibrarySections(
 		getCachedStreamingProviders(),
 	]);
 	const seeds = pickSeeds(typeEntries, ratingByKey);
-	const personSeedEntries = watched
-		.filter((entry) =>
-			isPersonSeedRating(
-				ratingByKey[
-					getMediaKey({
-						media_type: entry.media_type,
-						id: entry.media_id,
-					})
-				]
-			)
-		)
-		.slice(0, 4);
+	const personSeedEntries = pickPersonSeeds(watched, ratingByKey);
 
 	const [recommendationsResults, similarResults, personCredits, freshRaw] =
 		await Promise.all([
@@ -297,64 +345,25 @@ export async function buildLibrarySections(
 		lang
 	);
 
-	const freshItems = (
-		isMovie
-			? (freshRaw as Movie[]).map(movieToMediaItem)
-			: (freshRaw as TvShow[]).map(tvShowToMediaItem)
-	)
-		.filter(
-			(item) =>
-				item.poster_path !== null &&
-				!excludedKeys.has(getMediaKey(item)) &&
-				(item.genre_ids ?? []).some((genreId) =>
-					affinity.favorites.has(genreId)
-				)
-		)
-		.slice(0, 20);
+	const freshItems = filterFreshItems(
+		toMediaItems(freshRaw, isMovie),
+		excludedKeys,
+		affinity
+	);
 
-	const similarSections = seedForSimilars
-		.map((entry, index) => ({
-			title: t.pages.dashboard.similarTo.replace(
-				'${movie.movie_title}',
-				entry.media_title
-			),
-			categoryUrl: `/${type}/${entry.media_id}/similar`,
-			items: isMovie
-				? (similarResults[index] as Movie[]).map(movieToMediaItem)
-				: (similarResults[index] as TvShow[]).map(tvShowToMediaItem),
-		}))
-		.filter((section) => section.items.length > 0);
-
-	const extraSections: DashboardSection[] = [
-		...(onServicesItems.length > 0
-			? [
-					{
-						title: t.pages.dashboard.onYourServices,
-						items: onServicesItems,
-					},
-				]
-			: []),
-		...(personSection ? [personSection] : []),
-		...(freshItems.length > 0
-			? [
-					{
-						title: isMovie
-							? t.pages.dashboard.upcomingForYou
-							: t.pages.dashboard.onAirForYou,
-						categoryUrl: isMovie
-							? '/explorer/upcoming'
-							: '/explorer/tv-on-the-air',
-						items: freshItems,
-					},
-				]
-			: []),
-		...(await Promise.all(
-			similarSections.map(async (section) => ({
-				...section,
-				items: await mergeWithWatchlist(section.items),
-			}))
-		)),
-	];
+	const extraSections = await assembleExtraSections({
+		type,
+		t,
+		onServicesItems,
+		personSection,
+		freshItems,
+		similarSections: buildSimilarSections(
+			type,
+			seedForSimilars,
+			similarResults,
+			t
+		),
+	});
 
 	return {
 		toWatch,

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mediaWatchStore } from '@/lib/media-watch-store';
+import { mediaWatchStore } from '@/lib/stores/media-watch';
 
 const MOVIE_ID = 603;
 

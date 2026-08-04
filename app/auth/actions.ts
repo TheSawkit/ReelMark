@@ -13,6 +13,7 @@ import {
 	validateRegion,
 	validateLanguage,
 } from '@/lib/validators';
+import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 type AuthTranslations = Awaited<ReturnType<typeof getTranslations>>;
 
@@ -105,7 +106,7 @@ export async function signup(prevState: unknown, formData: FormData) {
 					full_name: username,
 					updated_at: new Date().toISOString(),
 				},
-				{ onConflict: 'user_id' }
+				{ onConflict: ON_CONFLICT.userProfiles }
 			);
 
 		if (profileError?.code === '23505')

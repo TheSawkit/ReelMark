@@ -13,7 +13,7 @@ import { formatDate, formatRuntime } from '@/lib/format';
 import { useDominantColor } from '@/hooks/useDominantColor';
 import { NavbarGradient } from '@/components/navigation/NavbarGradient';
 import { CinematicBackdrop } from '@/components/media/detail/CinematicBackdrop';
-import { mediaHeaderStore } from '@/lib/media-header-store';
+import { mediaHeaderStore } from '@/lib/stores/media-header';
 /**
  * Large hero banner displaying media details with parallax backdrop.
  * Feeds title and scroll state into mediaHeaderStore for NavbarClient and MediaActionsBar.
