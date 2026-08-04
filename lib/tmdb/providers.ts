@@ -1,4 +1,4 @@
-import { fetchTMDB } from './client';
+import { fetchTMDB, REVALIDATE } from './client';
 import type {
 	MediaType,
 	WatchProvider,
@@ -30,12 +30,12 @@ export async function getAvailableProviders(
 			fetchTMDB<{ results: ProviderListEntry[] }>(
 				'/watch/providers/movie',
 				{ watch_region: region },
-				{ revalidate: 604800, lang }
+				{ revalidate: REVALIDATE.week, lang }
 			),
 			fetchTMDB<{ results: ProviderListEntry[] }>(
 				'/watch/providers/tv',
 				{ watch_region: region },
-				{ revalidate: 604800, lang }
+				{ revalidate: REVALIDATE.week, lang }
 			),
 		]);
 
@@ -77,7 +77,7 @@ export async function getFlatrateProviderIds(
 		const data = await fetchTMDB<WatchProvidersResponse>(
 			`/${mediaType}/${id}/watch/providers`,
 			{},
-			{ revalidate: 43200, lang }
+			{ revalidate: REVALIDATE.halfDay, lang }
 		);
 		return (data.results[region]?.flatrate ?? []).map(
 			(provider) => provider.provider_id

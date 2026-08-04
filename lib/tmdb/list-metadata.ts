@@ -1,5 +1,5 @@
 import type { MovieDetails, TvShowDetails, MediaType } from '@/types/tmdb';
-import { fetchTMDB } from './client';
+import { fetchTMDB, REVALIDATE } from './client';
 import type { Language } from '@/lib/i18n/translations';
 import { reportSwallowed } from '@/lib/report';
 
@@ -8,8 +8,6 @@ export interface ListMediaMetadata {
 	genre_ids: number[];
 	total_episodes: number | null;
 }
-
-const LIST_METADATA_REVALIDATE = 86400;
 
 /**
  * Fetches the lightweight metadata a media list needs for sorting and filtering
@@ -30,7 +28,7 @@ export async function getListMediaMetadata(
 			const details = await fetchTMDB<TvShowDetails>(
 				`/tv/${mediaId}`,
 				{},
-				{ revalidate: LIST_METADATA_REVALIDATE, lang }
+				{ revalidate: REVALIDATE.day, lang }
 			);
 			const total = (details.seasons ?? [])
 				.filter((s) => s.season_number > 0)
@@ -45,7 +43,7 @@ export async function getListMediaMetadata(
 		const details = await fetchTMDB<MovieDetails>(
 			`/movie/${mediaId}`,
 			{},
-			{ revalidate: LIST_METADATA_REVALIDATE, lang }
+			{ revalidate: REVALIDATE.day, lang }
 		);
 		return {
 			release_date: details.release_date || null,

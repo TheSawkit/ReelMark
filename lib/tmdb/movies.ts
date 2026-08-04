@@ -1,29 +1,34 @@
-import { isTMDBNotFound } from '@/lib/tmdb/errors';
 import type {
 	Movie,
 	MovieDetails,
 	CollectionDetails,
 	Credits,
 	Video,
-	VideoResponse,
 	ReleaseDatesResponse,
 	MediaImagesResponse,
 	WatchProvidersRegion,
-	WatchProvidersResponse,
 } from '@/types/tmdb';
 import {
 	fetchTMDB,
 	getUserRegion,
 	clampPage,
 	getMergeRegions,
-	getImageLanguageFilter,
+	REVALIDATE,
 } from './client';
+import {
+	fetchMediaCredits,
+	fetchMediaDetails,
+	fetchMediaImages,
+	fetchMediaPage,
+	fetchMediaVideos,
+	fetchRelatedMedia,
+	fetchWatchProviders,
+} from './media-endpoints';
 import {
 	THEATRICAL_RELEASE_TYPES,
 	inTheatersDates,
 	upcomingDates,
 } from './release-window';
-import { getWatchmodeProviders } from '@/lib/watchmode/providers';
 import { reportSwallowed } from '@/lib/report';
 import type { Language } from '@/lib/i18n/translations';
 import { findLocalCertification } from './certifications';
@@ -33,14 +38,7 @@ export async function getPopularMovies(
 	page: number = 1,
 	lang?: Language
 ): Promise<Movie[]> {
-	const { results } = await fetchTMDB<{ results: Movie[] }>(
-		'/movie/popular',
-		{
-			page: clampPage(page).toString(),
-		},
-		{ lang }
-	);
-	return results;
+	return fetchMediaPage<Movie>('/movie/popular', page, lang);
 }
 
 /** @returns Paginated list of top-rated movies. */
@@ -48,12 +46,7 @@ export async function getTopRatedMovies(
 	page: number = 1,
 	lang?: Language
 ): Promise<Movie[]> {
-	const { results } = await fetchTMDB<{ results: Movie[] }>(
-		'/movie/top_rated',
-		{ page: clampPage(page).toString() },
-		{ lang }
-	);
-	return results;
+	return fetchMediaPage<Movie>('/movie/top_rated', page, lang);
 }
 
 /**
@@ -65,12 +58,7 @@ export async function getTrendingMovies(
 	page: number = 1,
 	lang?: Language
 ): Promise<Movie[]> {
-	const { results } = await fetchTMDB<{ results: Movie[] }>(
-		`/trending/movie/${timeWindow}`,
-		{ page: clampPage(page).toString() },
-		{ lang }
-	);
-	return results;
+	return fetchMediaPage<Movie>(`/trending/movie/${timeWindow}`, page, lang);
 }
 
 /**
@@ -144,11 +132,7 @@ export async function getMovieDetails(
 	id: number,
 	lang?: Language
 ): Promise<MovieDetails> {
-	return fetchTMDB<MovieDetails>(
-		`/movie/${id}`,
-		{},
-		{ revalidate: 86400, lang }
-	);
+	return fetchMediaDetails<MovieDetails>('movie', id, lang);
 }
 
 /**
@@ -165,7 +149,7 @@ export async function getMovieCertification(
 			fetchTMDB<ReleaseDatesResponse>(
 				`/movie/${id}/release_dates`,
 				{},
-				{ revalidate: 86400, lang }
+				{ revalidate: REVALIDATE.day, lang }
 			),
 			getUserRegion(lang),
 		]);
@@ -181,11 +165,7 @@ export async function getMovieCredits(
 	id: number,
 	lang?: Language
 ): Promise<Credits> {
-	return fetchTMDB<Credits>(
-		`/movie/${id}/credits`,
-		{},
-		{ revalidate: 86400, lang }
-	);
+	return fetchMediaCredits('movie', id, lang);
 }
 
 /** @returns Official video trailers and clips for the given movie. */
@@ -193,12 +173,7 @@ export async function getMovieVideos(
 	id: number,
 	lang?: Language
 ): Promise<Video[]> {
-	const { results } = await fetchTMDB<VideoResponse>(
-		`/movie/${id}/videos`,
-		{},
-		{ revalidate: 86400, lang }
-	);
-	return results;
+	return fetchMediaVideos('movie', id, lang);
 }
 
 /**
@@ -210,18 +185,7 @@ export async function getMovieRecommendations(
 	lang?: Language,
 	page = 1
 ): Promise<Movie[]> {
-	try {
-		const { results } = await fetchTMDB<{ results: Movie[] }>(
-			`/movie/${id}/recommendations`,
-			{ page: String(page) },
-			{ revalidate: 86400, lang }
-		);
-		return results;
-	} catch (error) {
-		if (!isTMDBNotFound(error))
-			reportSwallowed('tmdb/movies:recommendations', error);
-		return [];
-	}
+	return fetchRelatedMedia<Movie>('movie', 'recommendations', id, lang, page);
 }
 
 /**
@@ -233,18 +197,7 @@ export async function getSimilarMovies(
 	lang?: Language,
 	page = 1
 ): Promise<Movie[]> {
-	try {
-		const { results } = await fetchTMDB<{ results: Movie[] }>(
-			`/movie/${id}/similar`,
-			{ page: String(page) },
-			{ revalidate: 86400, lang }
-		);
-		return results;
-	} catch (error) {
-		if (!isTMDBNotFound(error))
-			reportSwallowed('tmdb/movies:similar', error);
-		return [];
-	}
+	return fetchRelatedMedia<Movie>('movie', 'similar', id, lang, page);
 }
 
 /**
@@ -259,7 +212,7 @@ export async function getCollection(
 		return await fetchTMDB<CollectionDetails>(
 			`/collection/${id}`,
 			{},
-			{ revalidate: 604800, lang }
+			{ revalidate: REVALIDATE.week, lang }
 		);
 	} catch (error) {
 		reportSwallowed('tmdb/movies:collection', error);
@@ -272,14 +225,7 @@ export async function getMovieImages(
 	id: number,
 	lang?: Language
 ): Promise<MediaImagesResponse> {
-	const imageLanguage = await getImageLanguageFilter(lang);
-	return fetchTMDB<MediaImagesResponse>(
-		`/movie/${id}/images`,
-		{
-			include_image_language: imageLanguage,
-		},
-		{ revalidate: 86400, lang }
-	);
+	return fetchMediaImages('movie', id, lang);
 }
 
 /**
@@ -294,32 +240,5 @@ export async function getMovieWatchProviders(
 	id: number,
 	lang?: Language
 ): Promise<WatchProvidersRegion | null> {
-	try {
-		const [tmdbData, region] = await Promise.all([
-			fetchTMDB<WatchProvidersResponse>(
-				`/movie/${id}/watch/providers`,
-				{},
-				{ revalidate: 43200, lang }
-			),
-			getUserRegion(lang),
-		]);
-		const watchmode = await getWatchmodeProviders(id, 'movie', region);
-		const tmdb = tmdbData.results[region] ?? null;
-
-		if (watchmode) {
-			return {
-				link: tmdb?.link ?? '',
-				flatrate: watchmode.streaming.length
-					? watchmode.streaming
-					: tmdb?.flatrate,
-				rent: watchmode.rent.length ? watchmode.rent : tmdb?.rent,
-				buy: watchmode.buy.length ? watchmode.buy : tmdb?.buy,
-			};
-		}
-
-		return tmdb;
-	} catch (error) {
-		reportSwallowed('tmdb/movies:watch-providers', error);
-		return null;
-	}
+	return fetchWatchProviders('movie', id, lang);
 }

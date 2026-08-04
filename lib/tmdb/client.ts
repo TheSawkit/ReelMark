@@ -15,6 +15,14 @@ const TMDB_READ_ACCESS_TOKEN = process.env.TMDB_READ_ACCESS_TOKEN;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_MAX_PAGE = 500;
 
+/** Cache windows in seconds, so a TMDB call states how long it accepts stale data. */
+export const REVALIDATE = {
+	hour: 3600,
+	halfDay: 43200,
+	day: 86400,
+	week: 604800,
+} as const;
+
 const REGION_MERGE_CONFIG: Record<string, string[]> = {
 	BE: ['BE', 'FR'],
 };

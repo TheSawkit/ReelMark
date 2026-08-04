@@ -5,7 +5,7 @@ import type {
 	CrewMovieCrewCredit,
 	CrewTvCrewCredit,
 } from '@/types/tmdb';
-import { fetchTMDB } from './client';
+import { fetchTMDB, REVALIDATE } from './client';
 import type { Language } from '@/lib/i18n/translations';
 
 /**
@@ -19,7 +19,7 @@ export async function getCrewDetails(
 	return fetchTMDB<CrewDetails>(
 		`/person/${id}`,
 		{},
-		{ revalidate: 86400, lang }
+		{ revalidate: REVALIDATE.day, lang }
 	);
 }
 
@@ -36,7 +36,7 @@ export async function getCrewMovieCredits(
 	const { cast, crew } = await fetchTMDB<{
 		cast: CrewMovieCredit[];
 		crew: CrewMovieCrewCredit[];
-	}>(`/person/${id}/movie_credits`, {}, { revalidate: 86400, lang });
+	}>(`/person/${id}/movie_credits`, {}, { revalidate: REVALIDATE.day, lang });
 	return { cast, crew };
 }
 
@@ -53,6 +53,6 @@ export async function getCrewTvCredits(
 	const { cast, crew } = await fetchTMDB<{
 		cast: CrewTvCredit[];
 		crew: CrewTvCrewCredit[];
-	}>(`/person/${id}/tv_credits`, {}, { revalidate: 86400, lang });
+	}>(`/person/${id}/tv_credits`, {}, { revalidate: REVALIDATE.day, lang });
 	return { cast, crew };
 }
