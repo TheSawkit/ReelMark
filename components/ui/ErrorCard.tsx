@@ -8,8 +8,13 @@ import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n/context';
 import type { LucideIcon } from 'lucide-react';
 
-interface ErrorCardProps {
-	error?: Error & { digest?: string };
+/** Props Next.js hands to every `error.tsx` boundary. */
+export interface ErrorBoundaryProps {
+	error: Error & { digest?: string };
+	reset: () => void;
+}
+
+interface ErrorCardProps extends Partial<ErrorBoundaryProps> {
 	reset: () => void;
 	icon?: LucideIcon;
 	backHref?: '/explorer' | '/dashboard' | null;
