@@ -1,16 +1,14 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { createSubscription } from '@/lib/stores/factory';
 
 type State = { title: string | null; scrolled: boolean };
 
-let state: State = { title: null, scrolled: false };
-const listeners = new Set<() => void>();
-const SERVER_SNAPSHOT: State = { title: null, scrolled: false };
+const EMPTY: State = { title: null, scrolled: false };
+const { subscribe, notify } = createSubscription();
 
-const notify = () => listeners.forEach((l) => l());
-const getSnapshot = () => state;
-const getServerSnapshot = () => SERVER_SNAPSHOT;
+let state: State = EMPTY;
 
 export const mediaHeaderStore = {
 	setMedia: (title: string | null) => {
@@ -23,18 +21,15 @@ export const mediaHeaderStore = {
 		notify();
 	},
 	clear: () => {
-		state = { title: null, scrolled: false };
+		state = EMPTY;
 		notify();
 	},
 };
 
 export function useMediaHeader() {
 	return useSyncExternalStore(
-		(l) => {
-			listeners.add(l);
-			return () => listeners.delete(l);
-		},
-		getSnapshot,
-		getServerSnapshot
+		subscribe,
+		() => state,
+		() => EMPTY
 	);
 }

@@ -15,8 +15,8 @@ import {
 	setEpisodesWatchedUpTo,
 	setSeasonWatched,
 } from '@/app/actions/episodes';
-import { episodeWatchStore } from '@/lib/episode-watch-store';
-import { mediaWatchStore } from '@/lib/media-watch-store';
+import { episodeWatchStore } from '@/lib/stores/episode-watch';
+import { mediaWatchStore } from '@/lib/stores/media-watch';
 import { dismissCatchUp } from '@/lib/season-catch-up';
 import { useTranslation } from '@/lib/i18n/context';
 import { useSeasonUndoToast } from '@/hooks/useSeasonUndoToast';

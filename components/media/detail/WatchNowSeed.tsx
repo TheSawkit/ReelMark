@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { watchNowStore } from '@/lib/watch-now-store';
+import { watchNowStore } from '@/lib/stores/watch-now';
 import type { WatchNowOption } from '@/lib/watch-now';
 
 /** Hands the server-resolved play options to every `WatchNowSlot` of the page. */

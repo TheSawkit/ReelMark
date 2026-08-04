@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { StarRating } from '@/components/ui/StarRating';
 import { upsertReview } from '@/app/actions/reviews';
-import { useEpisodeWatched } from '@/lib/episode-watch-store';
+import { useEpisodeWatched } from '@/lib/stores/episode-watch';
 import { useTranslation } from '@/lib/i18n/context';
 import type { Review } from '@/types/profile';
 

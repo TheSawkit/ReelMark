@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { EpisodeCard } from '@/components/media/tv/EpisodeCard';
-import { episodeWatchStore } from '@/lib/episode-watch-store';
+import { episodeWatchStore } from '@/lib/stores/episode-watch';
 import { useProgressiveReveal } from '@/hooks/useProgressiveReveal';
 import { useTranslation } from '@/lib/i18n/context';
 import type { Episode } from '@/types/tmdb';

@@ -1,6 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { createSubscription } from '@/lib/stores/factory';
 import { pickPrompt } from '@/lib/prompts/engine';
 import {
 	readDeviceStates,
@@ -22,24 +23,13 @@ interface PromptSlot {
 
 const CLOSED: PromptSlot = { active: null, open: false };
 
-const listeners = new Set<() => void>();
+const { subscribe, notify } = createSubscription();
 
 let slot: PromptSlot = CLOSED;
 let states: PromptStates = {};
 let hydrated = false;
 let pushRequested = false;
 let shownThisSession = false;
-
-function notify() {
-	listeners.forEach((listener) => listener());
-}
-
-function subscribe(listener: () => void) {
-	listeners.add(listener);
-	return () => {
-		listeners.delete(listener);
-	};
-}
 
 /**
  * Owns which single call-to-action the current tab may show. State lives outside React

@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { createKeyedStore } from '@/lib/keyed-store';
+import { createKeyedStore } from '@/lib/stores/factory';
 import { reportSwallowed } from '@/lib/report';
 import type { MediaType, WatchStatus, WatchlistEntry } from '@/types/tmdb';
 

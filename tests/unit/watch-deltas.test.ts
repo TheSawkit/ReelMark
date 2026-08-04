@@ -3,8 +3,8 @@ import {
 	episodeWatchStore,
 	episodeWatchDelta,
 	showWatchedTotal,
-} from '@/lib/episode-watch-store';
-import { mediaWatchStore, watchStatusDelta } from '@/lib/media-watch-store';
+} from '@/lib/stores/episode-watch';
+import { mediaWatchStore, watchStatusDelta } from '@/lib/stores/media-watch';
 
 const SHOW = 1399;
 const OTHER_SHOW = 615;

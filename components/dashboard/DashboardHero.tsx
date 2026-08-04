@@ -11,7 +11,7 @@ import {
 	lastTouchedShowId,
 	showWatchedTotal,
 	useEpisodeWatchVersion,
-} from '@/lib/episode-watch-store';
+} from '@/lib/stores/episode-watch';
 import { pickResumableHero } from '@/lib/dashboard-hero';
 import { HeroTilt } from '@/components/effects/HeroTilt';
 import { Grain } from '@/components/effects/Grain';

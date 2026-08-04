@@ -14,7 +14,10 @@ import type { MediaItem, WatchlistEntry } from '@/types/tmdb';
 import { watchlistEntryToMediaItem } from '@/lib/mappers';
 import { getMediaKey } from '@/lib/media';
 import { useMediaListControls } from '@/hooks/useMediaListControls';
-import { mediaWatchStore, useMediaWatchVersion } from '@/lib/media-watch-store';
+import {
+	mediaWatchStore,
+	useMediaWatchVersion,
+} from '@/lib/stores/media-watch';
 
 const LIBRARY_COLUMNS: GridColumns = { base: 2, sm: 3, md: 4, lg: 5, xl: 6 };
 const LIBRARY_ROW_CLASS =

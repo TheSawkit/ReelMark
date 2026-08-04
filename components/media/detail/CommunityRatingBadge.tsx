@@ -6,12 +6,12 @@ import dynamic from 'next/dynamic';
 import { Star } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
 import { cn } from '@/lib/utils';
-import { useMediaWatch } from '@/lib/media-watch-store';
+import { useMediaWatch } from '@/lib/stores/media-watch';
 import {
 	mediaRatingStore,
 	useMediaRating,
 	useMyReview,
-} from '@/lib/media-rating-store';
+} from '@/lib/stores/media-rating';
 import type { Review, ReviewMediaType } from '@/types/profile';
 
 const ReviewDialog = dynamic(

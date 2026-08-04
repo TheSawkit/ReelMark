@@ -1,14 +1,13 @@
+'use client';
+
 import { useSyncExternalStore } from 'react';
+import { createSubscription } from '@/lib/stores/factory';
 import type { WatchNowOption } from '@/lib/watch-now';
 
 const EMPTY: WatchNowOption[] = [];
+const { subscribe, notify } = createSubscription();
 
 let current: WatchNowOption[] = EMPTY;
-const listeners = new Set<() => void>();
-
-function emit() {
-	for (const listener of listeners) listener();
-}
 
 /**
  * Play options of the detail page being viewed, resolved once by the banner and read by the
@@ -18,28 +17,19 @@ export const watchNowStore = {
 	seed(options: WatchNowOption[]) {
 		if (current === options) return;
 		current = options;
-		emit();
+		notify();
 	},
 	release(options: WatchNowOption[]) {
 		if (current !== options) return;
 		current = EMPTY;
-		emit();
+		notify();
 	},
 	get(): WatchNowOption[] {
 		return current;
 	},
-	subscribe(listener: () => void) {
-		listeners.add(listener);
-		return () => {
-			listeners.delete(listener);
-		};
-	},
+	subscribe,
 };
 
 export function useWatchNowOptions(): WatchNowOption[] {
-	return useSyncExternalStore(
-		watchNowStore.subscribe,
-		watchNowStore.get,
-		() => EMPTY
-	);
+	return useSyncExternalStore(subscribe, watchNowStore.get, () => EMPTY);
 }

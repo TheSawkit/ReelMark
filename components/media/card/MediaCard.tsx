@@ -7,7 +7,7 @@ import { getImageUrl } from '@/lib/tmdb/images';
 import { Star, Eye, Clock, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WatchButton } from '@/components/media/detail/WatchButton';
-import { useShowWatchedTotal } from '@/lib/episode-watch-store';
+import { useShowWatchedTotal } from '@/lib/stores/episode-watch';
 import { useTranslation } from '@/lib/i18n/context';
 import { getLocale, localizedHref } from '@/lib/i18n/utils';
 import { formatShortDate } from '@/lib/format';

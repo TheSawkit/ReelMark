@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { Play } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
-import { useWatchNowOptions } from '@/lib/watch-now-store';
+import { useWatchNowOptions } from '@/lib/stores/watch-now';
 import { watchNowClass, type WatchNowVariant } from '@/lib/watch-now';
 
 const WatchNowMenu = dynamic(() =>

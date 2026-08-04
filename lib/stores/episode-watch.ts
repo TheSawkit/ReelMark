@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { createKeyedStore } from '@/lib/keyed-store';
+import { createKeyedStore } from '@/lib/stores/factory';
 
 export interface SeasonWatchState {
 	count: number;

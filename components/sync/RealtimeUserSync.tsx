@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { mediaWatchStore } from '@/lib/media-watch-store';
-import { episodeWatchStore } from '@/lib/episode-watch-store';
+import { mediaWatchStore } from '@/lib/stores/media-watch';
+import { episodeWatchStore } from '@/lib/stores/episode-watch';
 import { VALID_MEDIA_TYPES, VALID_STATUSES } from '@/lib/validators';
 import type { Database } from '@/types/database';
 import type { MediaType, WatchStatus } from '@/types/tmdb';

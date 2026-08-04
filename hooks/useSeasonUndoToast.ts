@@ -3,8 +3,8 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { setSeasonEpisodes } from '@/app/actions/episodes';
-import { episodeWatchStore } from '@/lib/episode-watch-store';
-import { mediaWatchStore } from '@/lib/media-watch-store';
+import { episodeWatchStore } from '@/lib/stores/episode-watch';
+import { mediaWatchStore } from '@/lib/stores/media-watch';
 import { useTranslation } from '@/lib/i18n/context';
 
 /**

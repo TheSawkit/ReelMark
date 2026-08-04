@@ -3,7 +3,7 @@
 import { CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ActionStatusIcon } from '@/components/ui/ActionStatusIcon';
-import { useSeasonWatch } from '@/lib/episode-watch-store';
+import { useSeasonWatch } from '@/lib/stores/episode-watch';
 import { useTranslation } from '@/lib/i18n/context';
 import { useSeasonWatchToggle } from '@/hooks/useSeasonWatchToggle';
 

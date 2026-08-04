@@ -19,7 +19,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useMediaHeader } from '@/lib/media-header-store';
+import { useMediaHeader } from '@/lib/stores/media-header';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 import { NotificationsProvider } from '@/components/notifications/NotificationsProvider';

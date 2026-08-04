@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { nextCommunityRating } from '@/lib/media-rating-store';
+import { nextCommunityRating } from '@/lib/stores/media-rating';
 
 describe('nextCommunityRating', () => {
 	it('creates the first rating', () => {
