@@ -62,4 +62,26 @@ describe('recoverFromStaleBuild', () => {
 
 		expect(reload).toHaveBeenCalledOnce();
 	});
+
+	/** A tab open long enough to span a second deployment must still recover. */
+	it('reloads again once the guard window has elapsed', () => {
+		vi.useFakeTimers();
+		const reload = stubBrowserGlobals();
+
+		recoverFromStaleBuild();
+		vi.advanceTimersByTime(600_001);
+		recoverFromStaleBuild();
+
+		expect(reload).toHaveBeenCalledTimes(2);
+		vi.useRealTimers();
+	});
+
+	it('stays silent outside the browser', () => {
+		const reload = vi.fn();
+		vi.stubGlobal('window', undefined);
+
+		recoverFromStaleBuild();
+
+		expect(reload).not.toHaveBeenCalled();
+	});
 });

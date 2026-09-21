@@ -1,7 +1,16 @@
 const RELOAD_GUARD_KEY = 'reelmark:stale-build-reload-at';
-const RELOAD_GUARD_WINDOW_MS = 15_000;
 
-const STALE_BUILD_PATTERN =
+/**
+ * A reload that did not fix the error means the build is broken for a real reason, and the
+ * window is what stops that from becoming a reload loop. Ten minutes rather than seconds:
+ * one hard reload always lands on the current build, so an immediate repeat is never
+ * staleness. The cost is a tab that spans two deployments inside the same ten minutes — it
+ * falls back to the error boundary and the visitor refreshes by hand.
+ */
+const RELOAD_GUARD_WINDOW_MS = 600_000;
+
+/** Also fed to Sentry's `ignoreErrors`, so these never land in Bugsink as if they were bugs. */
+export const STALE_BUILD_PATTERN =
 	/ChunkLoadError|Loading (chunk|CSS chunk) \S+ failed|Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed/i;
 
 /**
