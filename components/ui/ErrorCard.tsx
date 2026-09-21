@@ -6,6 +6,7 @@ import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n/context';
+import { isStaleBuildError, recoverFromStaleBuild } from '@/lib/stale-build';
 import type { LucideIcon } from 'lucide-react';
 
 /** Props Next.js hands to every `error.tsx` boundary. */
@@ -34,7 +35,14 @@ export function ErrorCard({
 	const { t } = useTranslation();
 
 	useEffect(() => {
-		if (error && !error.digest) Sentry.captureException(error);
+		if (!error) return;
+		// A stale tab re-rendering the same crashed module fails identically every time —
+		// `reset()` cannot help. Reload instead of reporting: this is deployment skew, not a bug.
+		if (isStaleBuildError(error)) {
+			recoverFromStaleBuild();
+			return;
+		}
+		if (!error.digest) Sentry.captureException(error);
 	}, [error]);
 	const backLabel =
 		backHref === '/dashboard'
