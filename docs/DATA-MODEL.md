@@ -34,8 +34,11 @@ PostgreSQL (Supabase). **RLS activée sur les 12 tables.** Le schéma est appliq
 | -------------------------- | ------------------------------------------------------------------------------------- |
 | `notifications`            | Flux : `type`, expéditeur (`sender_id`, `sender_username`), média concerné, `read_at` |
 | `notification_preferences` | Opt-in par type : `friend_requests`, `friend_accepted`, `new_episodes`, `suggestions` |
-| `notification_dedup`       | Clé de déduplication (`dedup_key`) pour éviter les doublons                           |
 | `push_subscriptions`       | Abonnements Web Push (`endpoint`, `p256dh`, `auth`)                                   |
+
+Les notifications `new_episode` sont écrites par le CronJob quotidien (`/api/cron/new-episodes`) ;
+une ligne existante pour (utilisateur, série, saison, épisode) sert de déduplication. `sender_id`
+étant `NOT NULL`, il porte l'id du destinataire pour ces notifications système.
 
 ## Modèle de visibilité (important)
 

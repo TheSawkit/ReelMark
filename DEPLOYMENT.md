@@ -149,7 +149,9 @@ kubectl -n reelmark create secret generic reelmark-secrets \
   --from-env-file=.env.production
 ```
 
-`.env.production` contient les mêmes clés que `.env.local` (DSN Sentry en **https**).
+`.env.production` contient les mêmes clés que `.env.local` (DSN Sentry en **https**), plus
+`CRON_SECRET` (`openssl rand -hex 32`) : sans lui le CronJob des nouveaux épisodes ne démarre pas
+(`CreateContainerConfigError`) et la route refuse tout appel.
 
 ## 7. Déployer les manifests
 
@@ -164,13 +166,24 @@ kubectl -n reelmark rollout status deployment/reelmark
 ```
 
 `--server-side` n'est pas cosmétique : voir la section 8 pour la raison (`spec.replicas` appartient
-au HPA). `k8s/ingress.yaml` n'est pas dans ce bloc — il est déployé par
+au HPA). `k8s/app.yaml` contient aussi le CronJob `reelmark-new-episodes` (8 h, Europe/Brussels)
+qui appelle `POST /api/cron/new-episodes` sur le Service interne. Pour vérifier sans rien envoyer :
+
+```bash
+kubectl -n reelmark exec deploy/reelmark -- sh -c \
+  'wget -qO- --header "Authorization: Bearer $CRON_SECRET" --post-data "" \
+   "http://localhost:3000/api/cron/new-episodes?dryRun=1"'
+kubectl -n reelmark create job --from=cronjob/reelmark-new-episodes manual-run   # envoi réel
+```
+
+`k8s/ingress.yaml` n'est pas dans ce bloc — il est déployé par
 `.github/workflows/infra.yml`, l'edge ne doit pas bouger à chaque push de code.
 
 ## 7 bis. Cloisonnement réseau (optionnel, à poser à la main)
 
 `k8s/network-policy.yaml` passe le namespace en default-deny et n'ouvre que trois flux : entrée
 depuis `ingress-nginx` sur 3000, DNS vers `kube-system`, et HTTPS sortant **hors plages RFC1918**.
+Le CronJob (`app: reelmark-cron`) a sa propre policy : DNS et port 3000 de l'app, rien d'autre.
 Un pod compromis ne peut donc ni scanner le cluster, ni joindre l'API server.
 
 Volontairement hors CI : une erreur de périmètre coupe l'app sans message clair.

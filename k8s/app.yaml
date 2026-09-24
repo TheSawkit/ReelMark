@@ -181,3 +181,65 @@ spec:
                 - type: Percent
                   value: 50
                   periodSeconds: 60
+---
+# Notifications « nouvel épisode » : un appel quotidien à la route protégée, qui détecte les
+# épisodes sortis dans la fenêtre de rattrapage et prévient les abonnés. Label distinct de
+# `app: reelmark`, sinon le Service router du trafic vers ce pod éphémère.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+    name: reelmark-new-episodes
+    namespace: reelmark
+spec:
+    schedule: '0 8 * * *'
+    timeZone: 'Europe/Brussels'
+    concurrencyPolicy: Forbid
+    startingDeadlineSeconds: 3600
+    successfulJobsHistoryLimit: 1
+    failedJobsHistoryLimit: 3
+    jobTemplate:
+        spec:
+            backoffLimit: 2
+            activeDeadlineSeconds: 600
+            ttlSecondsAfterFinished: 86400
+            template:
+                metadata:
+                    labels:
+                        app: reelmark-cron
+                spec:
+                    restartPolicy: Never
+                    automountServiceAccountToken: false
+                    securityContext:
+                        runAsNonRoot: true
+                        runAsUser: 100
+                        runAsGroup: 101
+                        seccompProfile:
+                            type: RuntimeDefault
+                    containers:
+                        - name: trigger
+                          image: curlimages/curl:8.22.0
+                          env:
+                              - name: CRON_SECRET
+                                valueFrom:
+                                    secretKeyRef:
+                                        name: reelmark-secrets
+                                        key: CRON_SECRET
+                          command:
+                              - sh
+                              - -c
+                              - >-
+                                  curl --fail-with-body --silent --show-error --max-time 540
+                                  -X POST -H "Authorization: Bearer $CRON_SECRET"
+                                  http://reelmark.reelmark.svc.cluster.local/api/cron/new-episodes
+                          securityContext:
+                              allowPrivilegeEscalation: false
+                              readOnlyRootFilesystem: true
+                              capabilities:
+                                  drop: ['ALL']
+                          resources:
+                              requests:
+                                  cpu: '10m'
+                                  memory: '16Mi'
+                              limits:
+                                  cpu: '100m'
+                                  memory: '32Mi'
