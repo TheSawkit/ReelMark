@@ -81,6 +81,13 @@ export interface TvShowDetails extends TvShow {
 	seasons: Season[];
 	created_by: CreatedBy[];
 	episode_run_time: number[];
+	last_episode_to_air: AiredEpisode | null;
+}
+
+export interface AiredEpisode {
+	air_date: string | null;
+	season_number: number;
+	episode_number: number;
 }
 
 export interface Season {
