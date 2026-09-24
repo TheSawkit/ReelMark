@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import {
+	deleteNotification,
 	getUnreadCount,
 	markAllNotificationsRead,
 	markNotificationRead,
@@ -28,15 +29,17 @@ import type { AppNotification } from '@/types/notifications';
 interface NotificationsContextValue {
 	unreadCount: number;
 	refresh: () => Promise<void>;
-	markAllRead: () => Promise<void>;
-	decrement: () => void;
+	markRead: (notification: AppNotification) => void;
+	remove: (notification: AppNotification) => void;
+	markAllRead: () => void;
 }
 
 const NotificationsContext = createContext<NotificationsContextValue>({
 	unreadCount: 0,
 	refresh: async () => {},
-	markAllRead: async () => {},
-	decrement: () => {},
+	markRead: () => {},
+	remove: () => {},
+	markAllRead: () => {},
 });
 
 interface ProviderProps {
@@ -59,17 +62,67 @@ export function NotificationsProvider({
 	const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
 
 	const refresh = useCallback(async () => {
-		setUnreadCount(await getUnreadCount());
+		try {
+			setUnreadCount(await getUnreadCount());
+		} catch (error) {
+			reportSwallowed('notifications:refresh', error);
+		}
 	}, []);
 
-	const markAllRead = useCallback(async () => {
+	const settle = useCallback(
+		(label: string, action: Promise<void>) => {
+			void action.catch((error) => {
+				reportSwallowed(label, error);
+				void refresh();
+			});
+		},
+		[refresh]
+	);
+
+	const markRead = useCallback(
+		(notification: AppNotification) => {
+			if (notification.readAt) return;
+			setUnreadCount((c) => Math.max(0, c - 1));
+			settle(
+				'notifications:markRead',
+				markNotificationRead(notification.id)
+			);
+		},
+		[settle]
+	);
+
+	const remove = useCallback(
+		(notification: AppNotification) => {
+			if (!notification.readAt) setUnreadCount((c) => Math.max(0, c - 1));
+			settle('notifications:delete', deleteNotification(notification.id));
+		},
+		[settle]
+	);
+
+	const markAllRead = useCallback(() => {
 		setUnreadCount(0);
-		await markAllNotificationsRead();
-	}, []);
+		settle('notifications:markAllRead', markAllNotificationsRead());
+	}, [settle]);
 
-	const decrement = useCallback(() => {
-		setUnreadCount((c) => Math.max(0, c - 1));
-	}, []);
+	useEffect(() => {
+		if (!('setAppBadge' in navigator)) return;
+		const badge =
+			unreadCount > 0
+				? navigator.setAppBadge(unreadCount)
+				: navigator.clearAppBadge();
+		void badge.catch((error) =>
+			reportSwallowed('notifications:appBadge', error)
+		);
+	}, [unreadCount]);
+
+	useEffect(() => {
+		function resyncWhenVisible() {
+			if (document.visibilityState === 'visible') void refresh();
+		}
+		document.addEventListener('visibilitychange', resyncWhenVisible);
+		return () =>
+			document.removeEventListener('visibilitychange', resyncWhenVisible);
+	}, [refresh]);
 
 	useEffect(() => {
 		const supabase = createClient();
@@ -85,14 +138,6 @@ export function NotificationsProvider({
 						url
 							? () => {
 									toast.dismiss(id);
-									setUnreadCount((c) => Math.max(0, c - 1));
-									void markNotificationRead(n.id).catch(
-										(error) =>
-											reportSwallowed(
-												'notifications:markRead',
-												error
-											)
-									);
 									router.push(localizedHref(lang, url));
 								}
 							: undefined
@@ -166,7 +211,9 @@ export function NotificationsProvider({
 				},
 				() => void refresh()
 			)
-			.subscribe();
+			.subscribe((status) => {
+				if (status === 'SUBSCRIBED') void refresh();
+			});
 
 		return () => {
 			void supabase.removeChannel(channel);
@@ -182,7 +229,7 @@ export function NotificationsProvider({
 
 	return (
 		<NotificationsContext.Provider
-			value={{ unreadCount, refresh, markAllRead, decrement }}
+			value={{ unreadCount, refresh, markRead, remove, markAllRead }}
 		>
 			{children}
 		</NotificationsContext.Provider>
