@@ -1,5 +1,5 @@
 import type { WatchProvider } from '@/types/tmdb';
-import { fetchWatchmode } from './client';
+import { fetchWatchmode, isWatchmodeCoolingDown } from './client';
 import { reportSwallowed } from '@/lib/report';
 import type {
 	WatchmodeSearchResponse,
@@ -97,6 +97,8 @@ export async function getWatchmodeProviders(
 	mediaType: 'movie' | 'tv',
 	region: string
 ): Promise<WatchmodeProviderResult | null> {
+	if (isWatchmodeCoolingDown()) return null;
+
 	try {
 		const enabledRegions = await getPlanEnabledRegions();
 
