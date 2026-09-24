@@ -9,16 +9,23 @@ const admin = createClient(
 
 let userId = '';
 const sender = `e2e-bell-${Date.now()}`;
+let seeded = 0;
 
-async function seedUnread(suffix: string): Promise<void> {
-	const { error } = await admin.from('notifications').insert({
-		user_id: userId,
-		sender_id: userId,
-		type: 'friend_request',
-		sender_username: `${sender}-${suffix}`,
-		url: '/notifications',
-	});
+async function seedUnread(): Promise<{ id: string; label: string }> {
+	const label = `${sender}-${++seeded}`;
+	const { data, error } = await admin
+		.from('notifications')
+		.insert({
+			user_id: userId,
+			sender_id: userId,
+			type: 'friend_request',
+			sender_username: label,
+			url: '/notifications',
+		})
+		.select('id')
+		.single();
 	expect(error).toBeNull();
+	return { id: data!.id, label };
 }
 
 function bell(page: Page) {
@@ -31,15 +38,17 @@ async function badgeCount(page: Page): Promise<number> {
 	return Number(await badge.textContent());
 }
 
-function item(page: Page, suffix: string) {
-	return page
-		.getByRole('dialog')
-		.locator('.group', { hasText: `${sender}-${suffix}` });
+function item(page: Page, label: string) {
+	return page.getByRole('dialog').locator('.group', { hasText: label });
 }
 
-function serverActionDone(page: Page) {
+function actionOn(page: Page, notificationId: string) {
 	return page.waitForResponse(
-		(r) => r.request().method() === 'POST' && r.ok()
+		(r) =>
+			r.request().method() === 'POST' &&
+			r.request().headers()['next-action'] !== undefined &&
+			(r.request().postData() ?? '').includes(notificationId) &&
+			r.ok()
 	);
 }
 
@@ -66,13 +75,13 @@ test.describe('Cloche de notifications', () => {
 	test('une notification reste non lue jusqu’à « marquer comme vu »', async ({
 		page,
 	}) => {
-		await seedUnread('seen');
+		const seen = await seedUnread();
 		await page.goto('/en/dashboard', { waitUntil: 'networkidle' });
 		const before = await badgeCount(page);
 		expect(before).toBeGreaterThan(0);
 
 		await bell(page).click();
-		await item(page, 'seen').getByRole('link').click();
+		await item(page, seen.label).getByRole('link').click();
 		await page.waitForLoadState('networkidle');
 		expect(await badgeCount(page)).toBe(before);
 
@@ -81,8 +90,8 @@ test.describe('Cloche de notifications', () => {
 
 		await bell(page).click();
 		await Promise.all([
-			serverActionDone(page),
-			item(page, 'seen')
+			actionOn(page, seen.id),
+			item(page, seen.label)
 				.getByRole('button', { name: 'Mark as seen' })
 				.click(),
 		]);
@@ -95,18 +104,18 @@ test.describe('Cloche de notifications', () => {
 	test('supprimer une notification non lue met la cloche à jour', async ({
 		page,
 	}) => {
-		await seedUnread('deleted');
+		const deleted = await seedUnread();
 		await page.goto('/en/dashboard', { waitUntil: 'networkidle' });
 		const before = await badgeCount(page);
 
 		await bell(page).click();
 		await Promise.all([
-			serverActionDone(page),
-			item(page, 'deleted')
+			actionOn(page, deleted.id),
+			item(page, deleted.label)
 				.getByRole('button', { name: 'Delete' })
 				.click(),
 		]);
-		await expect(item(page, 'deleted')).toHaveCount(0);
+		await expect(item(page, deleted.label)).toHaveCount(0);
 		await expect.poll(() => badgeCount(page)).toBe(before - 1);
 
 		await page.reload({ waitUntil: 'networkidle' });
@@ -126,7 +135,7 @@ test.describe('Cloche de notifications', () => {
 				configurable: true,
 			});
 		});
-		await seedUnread('background');
+		await seedUnread();
 		await page.evaluate(() => {
 			Object.defineProperty(document, 'visibilityState', {
 				value: 'visible',

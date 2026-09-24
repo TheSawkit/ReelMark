@@ -27,7 +27,10 @@ async function toggleAndSettle(
 		page.waitForResponse(
 			(resp) =>
 				resp.request().method() === 'POST' &&
-				resp.request().headers()['next-action'] !== undefined,
+				resp.request().headers()['next-action'] !== undefined &&
+				(resp.request().postData() ?? '').includes(
+					`${TV_ID},${SEASON}`
+				),
 			{ timeout: 15000 }
 		),
 		button.click(),

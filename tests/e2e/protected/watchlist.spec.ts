@@ -18,10 +18,12 @@ async function clickAndWaitForAction(
 	page: import('@playwright/test').Page,
 	locator: import('@playwright/test').Locator
 ) {
+	await page.waitForLoadState('networkidle');
 	const responsePromise = page.waitForResponse(
 		(resp) =>
 			resp.request().method() === 'POST' &&
-			resp.request().headers()['next-action'] !== undefined,
+			resp.request().headers()['next-action'] !== undefined &&
+			(resp.request().postData() ?? '').includes(String(MOVIE_ID)),
 		{ timeout: 10000 }
 	);
 	await locator.click();
