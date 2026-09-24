@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { useMediaHeader } from '@/lib/stores/media-header';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsClient } from '@/hooks/useIsClient';
 
 interface MediaActionsBarProps {
 	children: ReactNode;
@@ -19,8 +20,9 @@ interface MediaActionsBarProps {
 export function MediaActionsBar({ children }: MediaActionsBarProps) {
 	const { scrolled } = useMediaHeader();
 	const isMobile = useIsMobile();
+	const isClient = useIsClient();
 
-	if (typeof document === 'undefined') return null;
+	if (!isClient) return null;
 
 	if (isMobile) {
 		const slot = document.getElementById('rm-nav-actions');
