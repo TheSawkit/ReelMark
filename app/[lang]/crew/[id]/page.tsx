@@ -21,8 +21,8 @@ import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { mergeWithWatchlist } from '@/lib/data/watchlist';
 import { getTranslations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
-import { localizedAlternates } from '@/lib/metadata';
-import { reportSwallowed } from '@/lib/report';
+import { FALLBACK_TITLE, localizedAlternates } from '@/lib/metadata';
+import { notFoundIfMissing } from '@/lib/tmdb/not-found';
 
 type CrewPageParams = Promise<{ lang: Language; id: string }>;
 interface CrewPageProps {
@@ -48,7 +48,7 @@ export async function generateMetadata({
 
 	if (isNaN(crewId)) {
 		return {
-			title: 'ReelMark',
+			title: FALLBACK_TITLE,
 			description: t.metadata.defaultCrewDescription,
 		};
 	}
@@ -85,7 +85,7 @@ export async function generateMetadata({
 		};
 	} catch {
 		return {
-			title: 'ReelMark',
+			title: FALLBACK_TITLE,
 			description: t.metadata.defaultCrewDescription,
 		};
 	}
@@ -153,13 +153,7 @@ export default async function CrewPage(props: CrewPageProps) {
 		notFound();
 	}
 
-	let crew;
-	try {
-		crew = await getCrewDetails(crewId, lang);
-	} catch (error) {
-		reportSwallowed('crew:details', error);
-		notFound();
-	}
+	const crew = await getCrewDetails(crewId, lang).catch(notFoundIfMissing);
 
 	return (
 		<div className="min-h-screen">

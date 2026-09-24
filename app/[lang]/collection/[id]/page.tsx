@@ -1,9 +1,14 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getCollection, movieToMediaItem } from '@/lib/tmdb';
+import { fetchCollection, getCollection, movieToMediaItem } from '@/lib/tmdb';
+import { notFoundIfMissing } from '@/lib/tmdb/not-found';
 import { RelatedMediaPage } from '@/components/media/RelatedMediaPage';
 import { getTranslations } from '@/lib/i18n/server';
-import { buildPageMetadata, localizedAlternates } from '@/lib/metadata';
+import {
+	buildPageMetadata,
+	FALLBACK_TITLE,
+	localizedAlternates,
+} from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';
 
 type CollectionPageParams = Promise<{ lang: Language; id: string }>;
@@ -24,13 +29,13 @@ export async function generateMetadata({
 }: CollectionPageProps): Promise<Metadata> {
 	const { lang, id } = await params;
 	const collectionId = parseInt(id);
-	if (isNaN(collectionId)) return { title: 'ReelMark' };
+	if (isNaN(collectionId)) return { title: FALLBACK_TITLE };
 
 	const [t, details] = await Promise.all([
 		getTranslations(lang),
 		getCollection(collectionId, lang),
 	]);
-	if (!details) return { title: 'ReelMark' };
+	if (!details) return { title: FALLBACK_TITLE };
 
 	return {
 		...buildPageMetadata(details.name, t.metadata.defaultMovieDescription),
@@ -45,9 +50,8 @@ export default async function CollectionPage(props: CollectionPageProps) {
 
 	const [t, details] = await Promise.all([
 		getTranslations(lang),
-		getCollection(collectionId, lang),
+		fetchCollection(collectionId, lang).catch(notFoundIfMissing),
 	]);
-	if (!details) notFound();
 
 	const items = [...details.parts]
 		.sort((a, b) =>

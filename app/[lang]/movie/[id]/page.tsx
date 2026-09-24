@@ -1,6 +1,8 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, redirect } from 'next/navigation';
 import { fetchTMDB } from '@/lib/tmdb/client';
+import { isTMDBNotFound } from '@/lib/tmdb/errors';
+import { FALLBACK_TITLE } from '@/lib/metadata';
 import { Suspense, cache } from 'react';
 import type { Metadata } from 'next';
 import {
@@ -148,7 +150,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
 	const { id, lang } = await params;
 	const movieId = parseInt(id);
-	if (isNaN(movieId)) return { title: 'ReelMark' };
+	if (isNaN(movieId)) return { title: FALLBACK_TITLE };
 	return buildMediaDetailMetadata('movie', movieId, lang);
 }
 
@@ -167,19 +169,14 @@ export default async function MoviePage(props: MoviePageProps) {
 			getMovieImages(movieId, lang),
 		]);
 	} catch (error) {
-		if (!(error instanceof Error && error.message.includes('404')))
-			throw error;
+		if (!isTMDBNotFound(error)) throw error;
 
 		let isTvShow = false;
 		try {
 			await fetchTMDB(`/tv/${movieId}`, {}, { revalidate: 86400 });
 			isTvShow = true;
 		} catch (probeError) {
-			if (!(
-				probeError instanceof Error &&
-				probeError.message.includes('404')
-			))
-				throw probeError;
+			if (!isTMDBNotFound(probeError)) throw probeError;
 		}
 		if (isTvShow) redirect(localizedHref(lang, `/tv/${movieId}`));
 		notFound();

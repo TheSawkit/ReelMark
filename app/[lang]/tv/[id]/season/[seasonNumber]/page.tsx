@@ -25,7 +25,7 @@ import { WatchNowSlot } from '@/components/media/detail/WatchNowSlot';
 import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { SeasonEpisodesList } from '@/components/media/tv/SeasonEpisodesList';
 import { localizedAlternates } from '@/lib/metadata';
-import { reportSwallowed } from '@/lib/report';
+import { notFoundIfMissing } from '@/lib/tmdb/not-found';
 
 type SeasonPageParams = Promise<{
 	lang: Language;
@@ -114,16 +114,10 @@ export default async function SeasonPage(props: SeasonPageProps) {
 
 	if (isNaN(tvId) || isNaN(seasonNumber)) notFound();
 
-	let tvDetails, seasonDetails;
-	try {
-		[tvDetails, seasonDetails] = await Promise.all([
-			getTvShowDetails(tvId, lang),
-			getSeasonDetails(tvId, seasonNumber, lang),
-		]);
-	} catch (error) {
-		reportSwallowed('season:details', error);
-		notFound();
-	}
+	const [tvDetails, seasonDetails] = await Promise.all([
+		getTvShowDetails(tvId, lang),
+		getSeasonDetails(tvId, seasonNumber, lang),
+	]).catch(notFoundIfMissing);
 
 	const episodeIds = seasonDetails.episodes.map((e) => e.id);
 	const [

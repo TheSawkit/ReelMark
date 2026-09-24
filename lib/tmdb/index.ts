@@ -11,6 +11,7 @@ export {
 	getMovieRecommendations,
 	getSimilarMovies,
 	getCollection,
+	fetchCollection,
 	getMovieImages,
 	getMovieWatchProviders,
 } from './movies';
