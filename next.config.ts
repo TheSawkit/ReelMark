@@ -69,6 +69,7 @@ const nextConfig: NextConfig = {
 	cacheComponents: true,
 	allowedDevOrigins: localNetworkOrigins(),
 	experimental: {
+		isrFlushToDisk: false,
 		optimizePackageImports: [
 			'lucide-react',
 			'simple-icons',

@@ -346,8 +346,9 @@ curl -I https://reelmark.silexio.be
   `runAsNonRoot` en uid/gid 1001 (l'utilisateur créé par le Dockerfile), `seccompProfile:
 RuntimeDefault`, `allowPrivilegeEscalation: false`, toutes les capabilities retirées,
   `readOnlyRootFilesystem: true` et `automountServiceAccountToken: false` (l'app ne parle jamais
-  à l'API Kubernetes). Deux `emptyDir` bornés couvrent les seuls chemins que le serveur
-  standalone écrit : `/app/.next/cache` et `/tmp`. Le `fsGroup: 1001` du pod est ce qui les rend
+  à l'API Kubernetes). Deux `emptyDir` bornés couvrent les chemins que le serveur
+  standalone écrit : `/app/.next/cache` et `/tmp`. Le cache ISR, qui écrirait dans
+  `.next/server/app`, reste en mémoire (`experimental.isrFlushToDisk: false`). Le `fsGroup: 1001` du pod est ce qui les rend
   inscriptibles — sans lui un `emptyDir` reste `root:root` en 0755 et le conteneur non-root
   échoue au premier write de cache.
 - **Arrêt** : Next termine les requêtes en vol **et les callbacks `after()`** avant de sortir sur
