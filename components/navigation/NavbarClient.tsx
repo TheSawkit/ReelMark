@@ -296,6 +296,7 @@ export function NavbarClient({
 
 					{/* Desktop only: media sub-bar that expands on scroll */}
 					<div
+						inert={!isMediaBarActive}
 						className={cn(
 							'block max-lg:hidden overflow-hidden transition-[max-height,opacity] duration-(--duration-base) ease-in-out',
 							isMediaBarActive
