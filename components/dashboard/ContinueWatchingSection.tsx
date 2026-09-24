@@ -150,7 +150,6 @@ function ContinueWatchingCard({
 							src={getImageUrl(episode.stillPath, 'w500')}
 							alt={episode.name}
 							fill
-							unoptimized
 							priority={priority}
 							className="object-cover"
 							sizes="288px"

@@ -121,7 +121,6 @@ export function ReviewsSection({
 											)}
 											alt={review.media_title}
 											fill
-											unoptimized
 											sizes="48px"
 											className="object-cover"
 										/>
@@ -140,7 +139,6 @@ export function ReviewsSection({
 										)}
 										alt={review.media_title}
 										fill
-										unoptimized
 										sizes="48px"
 										className="object-cover"
 									/>

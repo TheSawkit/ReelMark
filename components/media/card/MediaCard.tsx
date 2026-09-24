@@ -87,7 +87,6 @@ export function MediaCard({
 			src={getImageUrl(media.poster_path, 'w342')}
 			alt={media.title}
 			fill
-			unoptimized
 			loading={priority ? 'eager' : 'lazy'}
 			{...(priority ? { priority: true } : {})}
 			className="object-cover transition-transform duration-(--duration-base) ease-out group-hover:scale-105"
