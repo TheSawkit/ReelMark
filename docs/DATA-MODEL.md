@@ -37,7 +37,9 @@ PostgreSQL (Supabase). **RLS activée sur les 12 tables.** Le schéma est appliq
 | `push_subscriptions`       | Abonnements Web Push (`endpoint`, `p256dh`, `auth`)                                   |
 
 Les notifications `new_episode` sont écrites par le CronJob quotidien (`/api/cron/new-episodes`) ;
-une ligne existante pour (utilisateur, série, saison, épisode) sert de déduplication. `sender_id`
+une ligne existante pour (utilisateur, série, saison, épisode) sert de déduplication. Les
+`suggestion` viennent du CronJob hebdomadaire (`/api/cron/suggestions`) : un titre par utilisateur,
+classé par le moteur du dashboard (`pickSuggestion`), jamais un titre déjà suggéré ni déjà en liste. `sender_id`
 étant `NOT NULL`, il porte l'id du destinataire pour ces notifications système.
 
 ## Modèle de visibilité (important)
