@@ -4,7 +4,7 @@ Guide complet pour monter un environnement ReelMark fonctionnel (dev local ou no
 
 ## 1. Prérequis
 
-- **Node.js 22.13+** (LTS) et **pnpm 11+** (`corepack enable` suffit)
+- **Node.js 24+** (LTS) et **pnpm 11+** (`corepack enable` suffit)
 - Un compte [Supabase](https://supabase.com) (plan gratuit OK)
 - Un [TMDB Read Access Token](https://developer.themoviedb.org/docs/getting-started) (API v4, gratuit)
 - Une clé [Watchmode](https://api.watchmode.com) (plateformes de streaming — optionnelle en dev, la section providers sera vide sans)

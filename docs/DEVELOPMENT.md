@@ -52,7 +52,7 @@ A bilingual (EN/FR), installable PWA to track movies and TV shows episode-by-epi
 
 ### 📋 Prerequisites
 
-- **Node.js 22.13+** and **pnpm 11+**
+- **Node.js 24+** and **pnpm 11+**
 - A [TMDB Read Access Token](https://developer.themoviedb.org/docs/getting-started)
 - A [Supabase](https://supabase.com) project
 - A [Watchmode](https://api.watchmode.com) API key
@@ -188,7 +188,7 @@ PWA installable et bilingue (FR/EN) pour suivre films et séries épisode par é
 
 ### 📋 Prérequis
 
-- **Node.js 22.13+** et **pnpm 11+**
+- **Node.js 24+** et **pnpm 11+**
 - Un [token TMDB](https://developer.themoviedb.org/docs/getting-started), un projet [Supabase](https://supabase.com), une clé [Watchmode](https://api.watchmode.com)
 
 ### 🚀 Installation rapide
