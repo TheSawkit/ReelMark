@@ -8,7 +8,13 @@ import {
 import { reportSwallowed } from '@/lib/report';
 
 type PushStatus =
-	'loading' | 'unsupported' | 'ios-needs-install' | 'off' | 'on';
+	| 'loading'
+	| 'unsupported'
+	| 'ios-needs-install'
+	| 'blocked'
+	| 'failed'
+	| 'off'
+	| 'on';
 
 /**
  * Inlinée au build. Absente si le build n'a pas reçu le build-arg : le toggle doit alors
@@ -90,14 +96,22 @@ export function usePushSubscription() {
 					? 'ios-needs-install'
 					: 'unsupported';
 			}
+			if (Notification.permission === 'denied') return 'blocked';
+
 			try {
 				const registration = await activeServiceWorker();
 				if (!registration) return 'unsupported';
 
 				const subscription =
 					await registration.pushManager.getSubscription();
-				return subscription ? 'on' : 'off';
-			} catch {
+				if (!subscription) return 'off';
+
+				void savePushSubscription(
+					toSubscriptionInput(subscription)
+				).catch((error) => reportSwallowed('push:resync', error));
+				return 'on';
+			} catch (error) {
+				reportSwallowed('push:status', error);
 				return 'unsupported';
 			}
 		}
@@ -116,7 +130,11 @@ export function usePushSubscription() {
 
 		setIsPending(true);
 		try {
-			if ((await Notification.requestPermission()) !== 'granted') return;
+			const permission = await Notification.requestPermission();
+			if (permission !== 'granted') {
+				setStatus(permission === 'denied' ? 'blocked' : 'off');
+				return;
+			}
 
 			const registration = await activeServiceWorker();
 			if (!registration) {
@@ -132,6 +150,7 @@ export function usePushSubscription() {
 			await savePushSubscription(toSubscriptionInput(subscription));
 			setStatus('on');
 		} catch (error) {
+			setStatus('failed');
 			reportSwallowed('push:enable', error);
 		} finally {
 			setIsPending(false);
