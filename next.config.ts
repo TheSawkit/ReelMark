@@ -159,7 +159,7 @@ export default withSentryConfig(withPWA, {
 	authToken: process.env.SENTRY_AUTH_TOKEN,
 	tunnelRoute: '/monitoring',
 	widenClientFileUpload: true,
-	webpack: { treeshake: { removeDebugLogging: true } },
+	webpack: { treeshake: { removeDebugLogging: true, removeTracing: true } },
 	silent: !process.env.CI,
 	sourcemaps: { deleteSourcemapsAfterUpload: true },
 });
