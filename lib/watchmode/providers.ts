@@ -10,6 +10,11 @@ import type {
 
 const REGION_FALLBACKS: Record<string, string[]> = {};
 
+function reportUnlessQuota(label: string, error: unknown): void {
+	if (isWatchmodeCoolingDown()) return;
+	reportSwallowed(label, error);
+}
+
 export interface WatchmodeProviderResult {
 	streaming: WatchProvider[];
 	rent: WatchProvider[];
@@ -29,7 +34,7 @@ async function getPlanEnabledRegions(): Promise<string[]> {
 		);
 		return regions.filter((r) => r.plan_enabled).map((r) => r.country);
 	} catch (error) {
-		reportSwallowed('watchmode:regions', error);
+		reportUnlessQuota('watchmode:regions', error);
 		return [];
 	}
 }
@@ -44,7 +49,7 @@ async function getSourceListings(): Promise<
 		);
 		return new Map(listings.map((s) => [s.id, s]));
 	} catch (error) {
-		reportSwallowed('watchmode:sources', error);
+		reportUnlessQuota('watchmode:sources', error);
 		return new Map();
 	}
 }
@@ -62,7 +67,7 @@ async function resolveTmdbId(
 		);
 		return data.title_results[0]?.id ?? null;
 	} catch (error) {
-		reportSwallowed('watchmode:resolve-id', error);
+		reportUnlessQuota('watchmode:resolve-id', error);
 		return null;
 	}
 }
@@ -165,7 +170,7 @@ export async function getWatchmodeProviders(
 			result.buy.length > 0;
 		return hasData ? result : null;
 	} catch (error) {
-		reportSwallowed('watchmode:title-sources', error);
+		reportUnlessQuota('watchmode:title-sources', error);
 		return null;
 	}
 }
