@@ -9,10 +9,8 @@ export const STALE_BUILD_PATTERN =
 
 /** Whether an error comes from a chunk of a build the servers no longer carry (tab left open across a deployment). */
 export function isStaleBuildError(error: unknown): boolean {
-	if (!error) return false;
-	const name = error instanceof Error ? error.name : '';
 	const message = error instanceof Error ? error.message : String(error);
-	return name === 'ChunkLoadError' || STALE_BUILD_PATTERN.test(message);
+	return STALE_BUILD_PATTERN.test(message);
 }
 
 /** Hard-reloads onto the current build, at most once per window so a genuinely broken build fails visibly instead of looping. */

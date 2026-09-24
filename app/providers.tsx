@@ -2,7 +2,6 @@
 
 import { type ReactNode } from 'react';
 import { LanguageProvider } from '@/lib/i18n/context';
-import { StaleBuildRecovery } from '@/components/shared/StaleBuildRecovery';
 import type { Language } from '@/lib/i18n/translations';
 
 interface ProvidersProps {
@@ -13,7 +12,6 @@ interface ProvidersProps {
 export function Providers({ children, initialLang }: ProvidersProps) {
 	return (
 		<LanguageProvider initialLang={initialLang}>
-			<StaleBuildRecovery />
 			{children}
 		</LanguageProvider>
 	);
