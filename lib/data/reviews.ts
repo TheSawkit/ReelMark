@@ -2,6 +2,8 @@ import 'server-only';
 
 import { getOptionalUser } from '@/lib/supabase/auth-helpers';
 import { createClient } from '@/lib/supabase/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { reportSwallowed } from '@/lib/report';
 import { REVIEW_COLUMNS } from '@/lib/supabase/columns';
@@ -62,11 +64,13 @@ export async function getUserReviews(
  * should only request the rating map of the list owner viewing their own profile.
  *
  * @param userId - Owner of the reviews.
+ * @param client - Admin client for jobs that run without a session; defaults to the request's.
  */
 export async function getUserReviewRatings(
-	userId: string
+	userId: string,
+	client?: SupabaseClient<Database>
 ): Promise<Record<string, number>> {
-	const supabase = await createClient();
+	const supabase = client ?? (await createClient());
 
 	const data = await fetchAllRows((from, to) =>
 		supabase
