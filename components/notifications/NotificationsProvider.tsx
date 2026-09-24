@@ -162,6 +162,7 @@ export function NotificationsProvider({
 			return resolveAvatarUrl(data?.avatar_url, null);
 		}
 
+		let hasJoinedOnce = false;
 		const channel = supabase
 			.channel(`notifications:${userId}`)
 			.on(
@@ -212,7 +213,9 @@ export function NotificationsProvider({
 				() => void refresh()
 			)
 			.subscribe((status) => {
-				if (status === 'SUBSCRIBED') void refresh();
+				if (status !== 'SUBSCRIBED') return;
+				if (hasJoinedOnce) void refresh();
+				hasJoinedOnce = true;
 			});
 
 		return () => {
