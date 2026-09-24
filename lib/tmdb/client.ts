@@ -69,6 +69,7 @@ type TMDBResult<T> =
 const TRANSIENT_FAILURE_CACHE = { stale: 0, revalidate: 60, expire: 300 };
 const MISSING_ENTRY_CACHE = { stale: 0, revalidate: 3600, expire: 86400 };
 const TMDB_TIMEOUT_MS = 10_000;
+const MAX_RETRY_AFTER_MS = 5_000;
 
 function retryDelay(attempt: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
@@ -119,7 +120,10 @@ async function fetchTMDBUrl<T>(
 			const retryAfter = Number(response.headers.get('retry-after'));
 			if (retryAfter > 0) {
 				await new Promise((resolve) =>
-					setTimeout(resolve, retryAfter * 1000)
+					setTimeout(
+						resolve,
+						Math.min(retryAfter * 1000, MAX_RETRY_AFTER_MS)
+					)
 				);
 			} else {
 				await retryDelay(attempt);
