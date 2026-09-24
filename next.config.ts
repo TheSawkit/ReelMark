@@ -2,6 +2,7 @@ import { networkInterfaces } from 'node:os';
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import withSerwist from '@serwist/next';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from './lib/i18n/config';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -57,6 +58,12 @@ const securityHeaders = [
 		: []),
 ];
 
+/** File-like paths skip the proxy and reached `[lang]` as a language, where the root layout's `notFound()` answered 500; `afterFiles` keeps real files first. */
+const unmatchedFileRewrite = {
+	source: `/:path((?!(?:${SUPPORTED_LANGUAGES.join('|')}|_next)/).+\\.\\w+)`,
+	destination: `/${DEFAULT_LANGUAGE}/:path`,
+};
+
 const nextConfig: NextConfig = {
 	output: 'standalone',
 	cacheComponents: true,
@@ -78,6 +85,9 @@ const nextConfig: NextConfig = {
 	},
 	turbopack: {
 		root: __dirname,
+	},
+	async rewrites() {
+		return [unmatchedFileRewrite];
 	},
 	async headers() {
 		return [
