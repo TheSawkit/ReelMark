@@ -51,9 +51,11 @@ export const libraryBucketStore = {
 	/**
 	 * Dépose le lot rendu par le serveur. Appelé pendant le rendu et sans notification :
 	 * la valeur est lue dans la foulée, prévenir ici demanderait une mise à jour au milieu
-	 * d'un rendu.
+	 * d'un rendu. Jamais côté serveur : ce module y est partagé par toutes les requêtes, et
+	 * le premier lot déposé était rendu à tous les utilisateurs suivants.
 	 */
 	seed(mediaType: MediaType, status: WatchStatus, page: LibraryBucketPage) {
+		if (typeof window === 'undefined') return;
 		const id = key(mediaType, status);
 		if (store.entries.has(id)) return;
 		store.entries.set(id, { ...page, pagesLoaded: 1 });
