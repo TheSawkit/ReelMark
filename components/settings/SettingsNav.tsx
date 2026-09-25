@@ -1,5 +1,7 @@
 'use client';
 
+import { Bell, FolderOpen, Lock, Palette, ShieldCheck, Tv, User, type LucideIcon } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/context';
 
@@ -15,18 +17,18 @@ interface SettingsNavProps {
 export function SettingsNav({ onTabChange, activeTab }: SettingsNavProps) {
 	const { t } = useTranslation();
 
-	const TABS: Array<{ id: SettingsTab; label: string; icon: string }> = [
-		{ id: 'profile', label: t.settings.profile.title, icon: '👤' },
-		{ id: 'security', label: t.settings.password.title, icon: '🔒' },
+	const TABS: Array<{ id: SettingsTab; label: string; icon: LucideIcon }> = [
+		{ id: 'profile', label: t.settings.profile.title, icon: User },
+		{ id: 'security', label: t.settings.password.title, icon: Lock },
 		{
 			id: 'notifications',
 			label: t.settings.notifications.title,
-			icon: '🔔',
+			icon: Bell,
 		},
-		{ id: 'appearance', label: t.settings.theme.title, icon: '🎨' },
-		{ id: 'services', label: t.settings.streaming.title, icon: '📺' },
-		{ id: 'privacy', label: t.settings.privacy.title, icon: '🔐' },
-		{ id: 'data', label: t.settings.dangerZone.title, icon: '📁' },
+		{ id: 'appearance', label: t.settings.theme.title, icon: Palette },
+		{ id: 'services', label: t.settings.streaming.title, icon: Tv },
+		{ id: 'privacy', label: t.settings.privacy.title, icon: ShieldCheck },
+		{ id: 'data', label: t.settings.dangerZone.title, icon: FolderOpen },
 	];
 
 	return (
@@ -43,7 +45,9 @@ export function SettingsNav({ onTabChange, activeTab }: SettingsNavProps) {
 							: 'text-muted hover:bg-surface-2 active:bg-surface'
 					)}
 				>
-					<span className="text-lg">{tab.icon}</span>
+					<span className="flex h-7 items-center">
+						<tab.icon className="size-5 shrink-0" aria-hidden />
+					</span>
 					<span className="inline max-lg:hidden">{tab.label}</span>
 				</button>
 			))}
