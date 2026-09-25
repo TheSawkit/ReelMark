@@ -64,8 +64,12 @@ const unmatchedFileRewrite = {
 	destination: `/${DEFAULT_LANGUAGE}/:path`,
 };
 
+/** "use cache" keeps each entry as a buffered stream, several times its declared size: at the 50 Mo default the heap kept growing under bot crawls (327 Mo retained after 9 500 pages); 10 Mo plateaus near 135 Mo. */
+const CACHE_MAX_MEMORY_BYTES = 10 * 1024 * 1024;
+
 const nextConfig: NextConfig = {
 	output: 'standalone',
+	cacheMaxMemorySize: CACHE_MAX_MEMORY_BYTES,
 	cacheComponents: true,
 	allowedDevOrigins: localNetworkOrigins(),
 	experimental: {
