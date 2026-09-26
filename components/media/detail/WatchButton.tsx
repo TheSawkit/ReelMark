@@ -15,6 +15,8 @@ import { episodeWatchStore } from '@/lib/stores/episode-watch';
 import { mediaRatingStore } from '@/lib/stores/media-rating';
 import { promptStore } from '@/lib/prompts/store';
 import type { WatchButtonProps } from '@/types/components';
+import type { MediaType, WatchStatus } from '@/types/tmdb';
+import type { Translations } from '@/lib/i18n/translations';
 
 const ReviewDialog = dynamic(
 	() =>
@@ -23,6 +25,143 @@ const ReviewDialog = dynamic(
 		),
 	{ ssr: false }
 );
+
+type Variant = NonNullable<WatchButtonProps['variant']>;
+type TargetStatus = WatchStatus | 'none';
+
+interface MediaRef {
+	mediaId: number;
+	mediaTitle: string;
+	mediaType: MediaType;
+	posterPath: string | null;
+}
+
+const FOCUS_RING =
+	'transition focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none';
+const ACTIVE_SOLID =
+	'bg-primary/50 text-white border-transparent shadow-card-sm';
+const IDLE_SURFACE =
+	'bg-surface/70 text-text border-white/10 hover:bg-surface/85 hover:text-text shadow-card-sm';
+const IDLE_ON_DARK =
+	'bg-black/50 text-white/90 border-white/10 hover:bg-black/65 hover:text-white shadow-card-sm';
+
+const VARIANT_STYLE: Record<
+	Variant,
+	{
+		base: string;
+		iconClass?: string;
+		labelClass?: string;
+		iconOnlyBelowLg?: boolean;
+	}
+> = {
+	pill: {
+		base: 'flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold whitespace-nowrap sm:flex-none sm:px-5 active:scale-95',
+		iconClass: 'h-4 w-4 shrink-0',
+		labelClass: 'truncate',
+	},
+	responsive: {
+		base: 'h-12 w-12 lg:h-auto lg:w-auto lg:min-h-11 lg:px-4 lg:py-2.5 rounded-full lg:rounded-lg flex items-center justify-center gap-2 shrink-0 border text-sm font-semibold',
+		iconClass: 'h-4 w-4 shrink-0',
+		labelClass: 'inline max-lg:hidden',
+		iconOnlyBelowLg: true,
+	},
+	full: {
+		base: 'flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold border min-h-11 w-full shrink-0',
+	},
+};
+
+function stateClass(
+	variant: Variant,
+	isActive: boolean,
+	onDark: boolean
+): string {
+	if (variant === 'pill') {
+		return isActive
+			? 'border-gold/40 bg-gold/15 text-gold'
+			: 'glass-surface border-glass-border text-text hover:bg-glass-bg-hover';
+	}
+	if (isActive) return ACTIVE_SOLID;
+	return variant === 'full' && onDark ? IDLE_ON_DARK : IDLE_SURFACE;
+}
+
+function buttonClassName(
+	variant: Variant,
+	isActive: boolean,
+	onDark: boolean,
+	blur: boolean
+): string {
+	return cn(
+		VARIANT_STYLE[variant].base,
+		FOCUS_RING,
+		variant === 'full' && blur && 'backdrop-blur-2xl',
+		stateClass(variant, isActive, onDark)
+	);
+}
+
+function resolveIsActive(
+	storedStatus: TargetStatus | undefined,
+	status: WatchStatus,
+	initialIsActive: boolean
+): boolean {
+	return storedStatus === undefined
+		? initialIsActive
+		: storedStatus === status;
+}
+
+function isHiddenUntilRelease(
+	status: WatchStatus,
+	isUnreleased: boolean,
+	isActive: boolean
+): boolean {
+	return status === 'watched' && isUnreleased && !isActive;
+}
+
+function stateLabel(
+	t: Translations,
+	status: WatchStatus,
+	isActive: boolean,
+	hasError: boolean
+): string {
+	if (hasError) return t.common.actionError;
+	const isWatched = status === 'watched';
+	if (isActive) return isWatched ? t.movie.watched : t.movie.added;
+	return isWatched ? t.movie.markAsWatched : t.movie.addToList;
+}
+
+function ButtonLabel({
+	className,
+	children,
+}: {
+	className?: string;
+	children: string;
+}) {
+	return className ? <span className={className}>{children}</span> : children;
+}
+
+function idleIcon(status: WatchStatus, isActive: boolean) {
+	if (isActive) return Check;
+	return status === 'watched' ? Eye : Plus;
+}
+
+async function saveWatchStatus(media: MediaRef, target: TargetStatus) {
+	if (target === 'none') {
+		await removeFromWatchlist(media.mediaId, media.mediaType);
+		return;
+	}
+	await addToWatchlist(
+		media.mediaId,
+		media.mediaTitle,
+		media.posterPath,
+		target,
+		media.mediaType
+	);
+}
+
+function syncShowStores(media: MediaRef, target: TargetStatus) {
+	if (media.mediaType !== 'tv') return;
+	if (target === 'none') episodeWatchStore.clearShow(media.mediaId);
+	else promptStore.requestPush();
+}
 
 export function WatchButton({
 	mediaId,
@@ -43,29 +182,12 @@ export function WatchButton({
 	const router = useRouter();
 	const storedStatus = useMediaWatch(mediaType, mediaId);
 
-	const isActive =
-		storedStatus !== undefined ? storedStatus === status : initialIsActive;
+	const isActive = resolveIsActive(storedStatus, status, initialIsActive);
 	const isUnreleased = useIsUnreleased(releaseDate);
 
-	if (status === 'watched' && isUnreleased && !isActive) {
-		return null;
-	}
+	if (isHiddenUntilRelease(status, isUnreleased, isActive)) return null;
 
-	const reviewDialog = reviewOpen ? (
-		<ReviewDialog
-			open={reviewOpen}
-			onClose={() => setReviewOpen(false)}
-			mediaId={mediaId}
-			mediaType={mediaType}
-			mediaTitle={mediaTitle}
-			posterPath={posterPath}
-			onSave={(saved) => {
-				mediaRatingStore.setMyReview(mediaType, mediaId, saved);
-				mediaRatingStore.invalidateRating(mediaType, mediaId);
-				router.refresh();
-			}}
-		/>
-	) : null;
+	const media: MediaRef = { mediaId, mediaTitle, mediaType, posterPath };
 
 	async function handleClick(e: React.MouseEvent) {
 		e.preventDefault();
@@ -83,125 +205,51 @@ export function WatchButton({
 			rollback: () =>
 				mediaWatchStore.restore(mediaType, mediaId, previous),
 			action: async () => {
-				if (target === 'none') {
-					await removeFromWatchlist(mediaId, mediaType);
-				} else {
-					await addToWatchlist(
-						mediaId,
-						mediaTitle,
-						posterPath,
-						target,
-						mediaType
-					);
-				}
+				await saveWatchStatus(media, target);
 				return true;
 			},
 			onSuccess: () => {
-				if (mediaType === 'tv' && target === 'none') {
-					episodeWatchStore.clearShow(mediaId);
-				}
-				if (mediaType === 'tv' && target !== 'none') {
-					promptStore.requestPush();
-				}
+				syncShowStores(media, target);
 				if (changesMembership) router.refresh();
 				if (target === 'watched') setReviewOpen(true);
 			},
 		});
 	}
 
-	const idleIcon = isActive ? Check : status === 'watched' ? Eye : Plus;
-
-	const stateLabel = error
-		? t.common.actionError
-		: isActive
-			? status === 'watched'
-				? t.movie.watched
-				: t.movie.added
-			: status === 'watched'
-				? t.movie.markAsWatched
-				: t.movie.addToList;
-
-	if (variant === 'pill') {
-		return (
-			<>
-				<button
-					onClick={handleClick}
-					disabled={loading}
-					className={cn(
-						'flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold whitespace-nowrap sm:flex-none sm:px-5',
-						'transition active:scale-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
-						isActive
-							? 'border-gold/40 bg-gold/15 text-gold'
-							: 'glass-surface border-glass-border text-text hover:bg-glass-bg-hover'
-					)}
-				>
-					<ActionStatusIcon
-						loading={loading}
-						error={error}
-						icon={idleIcon}
-						className="h-4 w-4 shrink-0"
-					/>
-					<span className="truncate">{stateLabel}</span>
-				</button>
-				{reviewDialog}
-			</>
-		);
-	}
-
-	if (variant === 'responsive') {
-		return (
-			<>
-				<button
-					onClick={handleClick}
-					disabled={loading}
-					aria-label={stateLabel}
-					className={cn(
-						'h-12 w-12 lg:h-auto lg:w-auto lg:min-h-11 lg:px-4 lg:py-2.5',
-						'rounded-full lg:rounded-lg',
-						'flex items-center justify-center gap-2 shrink-0',
-						'border text-sm font-semibold',
-						'transition focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
-						isActive
-							? 'bg-primary/50 text-white border-transparent shadow-card-sm'
-							: 'bg-surface/70 text-text border-white/10 hover:bg-surface/85 hover:text-text shadow-card-sm'
-					)}
-				>
-					<ActionStatusIcon
-						loading={loading}
-						error={error}
-						icon={idleIcon}
-						className="h-4 w-4 shrink-0"
-					/>
-					<span className="inline max-lg:hidden">{stateLabel}</span>
-				</button>
-				{reviewDialog}
-			</>
-		);
-	}
+	const style = VARIANT_STYLE[variant];
+	const label = stateLabel(t, status, isActive, error);
 
 	return (
 		<>
 			<button
 				onClick={handleClick}
 				disabled={loading}
-				className={cn(
-					'flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11 w-full shrink-0',
-					blur && 'backdrop-blur-2xl',
-					isActive
-						? 'bg-primary/50 text-white border-transparent shadow-card-sm'
-						: onDark
-							? 'bg-black/50 text-white/90 border-white/10 hover:bg-black/65 hover:text-white shadow-card-sm'
-							: 'bg-surface/70 text-text border-white/10 hover:bg-surface/85 hover:text-text shadow-card-sm'
-				)}
+				aria-label={style.iconOnlyBelowLg ? label : undefined}
+				className={buttonClassName(variant, isActive, onDark, blur)}
 			>
 				<ActionStatusIcon
 					loading={loading}
 					error={error}
-					icon={idleIcon}
+					icon={idleIcon(status, isActive)}
+					className={style.iconClass}
 				/>
-				{stateLabel}
+				<ButtonLabel className={style.labelClass}>{label}</ButtonLabel>
 			</button>
-			{reviewDialog}
+			{reviewOpen && (
+				<ReviewDialog
+					open={reviewOpen}
+					onClose={() => setReviewOpen(false)}
+					mediaId={mediaId}
+					mediaType={mediaType}
+					mediaTitle={mediaTitle}
+					posterPath={posterPath}
+					onSave={(saved) => {
+						mediaRatingStore.setMyReview(mediaType, mediaId, saved);
+						mediaRatingStore.invalidateRating(mediaType, mediaId);
+						router.refresh();
+					}}
+				/>
+			)}
 		</>
 	);
 }
