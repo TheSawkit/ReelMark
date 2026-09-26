@@ -74,35 +74,29 @@ export function MovieWatchActions({
 	const watchedDate = isWatched ? (watchedAt ?? sessionWatchedAt) : null;
 
 	return (
-		<div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+		<div className="flex w-full items-center gap-2 sm:w-auto">
 			{!isWatched && (
-				<div className="w-full sm:w-auto">
-					<WatchButton
-						{...shared}
-						status="to_watch"
-						variant="full"
-						initialIsActive={status === 'to_watch'}
-					/>
-				</div>
-			)}
-			<div className="w-full sm:w-auto">
 				<WatchButton
 					{...shared}
-					status="watched"
-					variant="full"
-					initialIsActive={isWatched}
-					fallbackStatus="to_watch"
-					releaseDate={releaseDate}
+					status="to_watch"
+					variant="pill"
+					initialIsActive={status === 'to_watch'}
 				/>
-			</div>
+			)}
+			<WatchButton
+				{...shared}
+				status="watched"
+				variant="pill"
+				initialIsActive={isWatched}
+				fallbackStatus="to_watch"
+				releaseDate={releaseDate}
+			/>
 			{watchedDate && (
-				<div className="flex items-center gap-2 px-4 py-2 rounded-md glass-overlay text-muted animate-in fade-in slide-in-from-left-4 duration-(--duration-slow)">
-					<Eye className="h-4 w-4 shrink-0" />
-					<span className="text-sm font-medium">
-						{t.movie.watchedOn}{' '}
-						{formatDate(watchedDate, getLocale(lang))}
-					</span>
-				</div>
+				<span className="flex min-h-11 shrink-0 items-center gap-1.5 px-2 text-sm text-muted">
+					<Eye className="h-4 w-4 shrink-0" aria-hidden />
+					{t.movie.watchedOn}{' '}
+					{formatDate(watchedDate, getLocale(lang))}
+				</span>
 			)}
 		</div>
 	);

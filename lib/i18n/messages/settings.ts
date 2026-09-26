@@ -11,6 +11,10 @@ const fr = {
 			'Ton navigateur ne supporte pas les notifications push.',
 		iosHint:
 			'Sur iOS, installe d’abord l’app à l’écran d’accueil pour activer les notifications push.',
+		pushBlocked:
+			'Les notifications sont bloquées pour ce site : autorise-les dans les réglages du navigateur, puis réessaie.',
+		pushFailed:
+			'Ton navigateur a refusé l’abonnement. Sur Brave, active « Utiliser les services Google pour la messagerie push » dans les réglages de confidentialité, puis réessaie.',
 		types: 'Types de notifications',
 		friend_requests: 'Demandes d’ami',
 		friend_accepted: 'Demandes acceptées',
@@ -247,6 +251,10 @@ const en = {
 		pushUnsupported: 'Your browser does not support push notifications.',
 		iosHint:
 			'On iOS, install the app to your home screen first to enable push notifications.',
+		pushBlocked:
+			'Notifications are blocked for this site: allow them in your browser settings, then try again.',
+		pushFailed:
+			'Your browser refused the subscription. On Brave, turn on “Use Google services for push messaging” in privacy settings, then try again.',
 		types: 'Notification types',
 		friend_requests: 'Friend requests',
 		friend_accepted: 'Accepted requests',

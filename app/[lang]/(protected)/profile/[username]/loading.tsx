@@ -4,9 +4,11 @@ import { ProfileTabsSkeleton } from '@/components/profile/ProfileTabsSkeleton';
 
 export default function ProfileLoading() {
 	return (
-		<PageLayout>
+		<>
 			<ProfileHeroSkeleton />
-			<ProfileTabsSkeleton />
-		</PageLayout>
+			<PageLayout className="pt-6 lg:pt-8">
+				<ProfileTabsSkeleton />
+			</PageLayout>
+		</>
 	);
 }

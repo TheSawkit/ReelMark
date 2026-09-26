@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useCallback } from 'react';
+import * as m from 'motion/react-m';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/context';
@@ -31,11 +32,11 @@ export function HorizontalScroll({
 	);
 
 	return (
-		<div className={`group/section ${className}`}>
+		<div className={`reveal-on-scroll group/section ${className}`}>
 			{title && (
 				<div className="flex items-center justify-between mb-4 px-1">
 					{title}
-					<div className="flex max-md:hidden gap-2 opacity-0 group-hover/section:opacity-100 transition-opacity duration-(--duration-base)">
+					<div className="hidden gap-2 opacity-0 transition-opacity duration-(--duration-base) group-hover/section:opacity-100 group-focus-within/section:opacity-100 md:pointer-fine:flex">
 						<Button
 							variant="outline"
 							size="icon"
@@ -58,12 +59,13 @@ export function HorizontalScroll({
 				</div>
 			)}
 
-			<div
+			<m.div
 				ref={scrollContainerRef}
-				className={`flex gap-4 overflow-x-auto py-5 -my-5 px-4 -mx-4 scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${containerClassName}`}
+				layoutScroll
+				className={`flex gap-4 overflow-x-auto py-5 -my-5 px-4 -mx-4 scrollbar-hide ${containerClassName}`}
 			>
 				{children}
-			</div>
+			</m.div>
 		</div>
 	);
 }

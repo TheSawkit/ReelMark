@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import * as m from 'motion/react-m';
 import { cn } from '@/lib/utils';
+import { ActiveIndicator } from '@/components/motion/ActiveIndicator';
 import { WatchlistSection } from './WatchlistSection';
 import { ReviewsSection } from './ReviewsSection';
 import { PlaylistsSection } from './PlaylistsSection';
@@ -57,6 +59,7 @@ export function ProfileTabs({
 	ratingByKey,
 }: ProfileTabsProps) {
 	const { t } = useTranslation();
+	const indicatorId = useId();
 	const [activeTab, setActiveTab] = useState<ProfileTab>('watchlist');
 	const [pendingCount, setPendingCount] = useState(pendingRequests.length);
 
@@ -93,8 +96,9 @@ export function ProfileTabs({
 
 	return (
 		<div>
-			<nav
-				className="flex gap-1 border-b border-border-subtle mb-6 overflow-y-hidden overflow-x-auto [&::-webkit-scrollbar]:hidden scrollbar-none"
+			<m.nav
+				layoutScroll
+				className="flex gap-1 border-b border-border-subtle mb-6 overflow-y-hidden overflow-x-auto scrollbar-hide"
 				aria-label={t.profile.profileNav}
 			>
 				{TABS.map((tab) => (
@@ -102,12 +106,18 @@ export function ProfileTabs({
 						key={tab.id}
 						onClick={() => setActiveTab(tab.id)}
 						className={cn(
-							'flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors cursor-pointer active:scale-95 focus-visible:outline-none',
+							'relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 border-transparent -mb-px transition-colors cursor-pointer active:scale-95 focus-visible:outline-none',
 							activeTab === tab.id
-								? 'border-primary text-text'
-								: 'border-transparent text-muted hover:text-text'
+								? 'text-text'
+								: 'text-muted hover:text-text'
 						)}
 					>
+						{activeTab === tab.id && (
+							<ActiveIndicator
+								layoutId={`${indicatorId}-profile`}
+								className="inset-x-0 -bottom-0.5 h-0.5 bg-primary"
+							/>
+						)}
 						{tab.label}
 						{tab.count !== null && tab.count > 0 && (
 							<span className="text-xs bg-surface-2 text-muted px-1.5 py-0.5 rounded-full">
@@ -128,7 +138,7 @@ export function ProfileTabs({
 							)}
 					</button>
 				))}
-			</nav>
+			</m.nav>
 
 			{activeTab === 'watchlist' && (
 				<WatchlistSection

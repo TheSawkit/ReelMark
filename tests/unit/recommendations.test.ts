@@ -6,6 +6,7 @@ import {
 	applyDismissals,
 	pickFavoritePerson,
 	isPersonSeedRating,
+	pickSuggestion,
 } from '@/lib/recommendations';
 import type { MediaItem, WatchlistEntry, WatchStatus } from '@/types/tmdb';
 
@@ -292,5 +293,32 @@ describe('isPersonSeedRating', () => {
 		expect(isPersonSeedRating(10)).toBe(true);
 		expect(isPersonSeedRating(7)).toBe(false);
 		expect(isPersonSeedRating(undefined)).toBe(false);
+	});
+});
+
+describe('pickSuggestion', () => {
+	const seeds = [
+		{ weight: 1, items: [item(101), item(102), item(103), item(104)] },
+	];
+
+	it('returns the best-ranked title the user does not have yet', () => {
+		const entries = [entry({ media_id: 101, status: 'to_watch' })];
+		expect(pickSuggestion(entries, {}, [], seeds, new Set())?.id).toBe(102);
+	});
+
+	it('never repeats a past suggestion nor a dismissed title', () => {
+		const dismissed = [
+			{ media_id: 102, media_type: 'movie' as const, genre_ids: [] },
+		];
+		expect(
+			pickSuggestion([], {}, dismissed, seeds, new Set(['movie-101']))?.id
+		).toBe(103);
+	});
+
+	it('returns null when every candidate is excluded', () => {
+		const entries = [101, 102, 103, 104].map((id) =>
+			entry({ media_id: id })
+		);
+		expect(pickSuggestion(entries, {}, [], seeds, new Set())).toBeNull();
 	});
 });

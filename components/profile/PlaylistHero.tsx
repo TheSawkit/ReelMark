@@ -11,6 +11,7 @@ import { BASE_URL } from '@/lib/metadata';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 import { cn } from '@/lib/utils';
+import { riseStyle } from '@/lib/motion';
 import type { Playlist } from '@/types/profile';
 
 interface PlaylistHeroProps {
@@ -36,15 +37,18 @@ export function PlaylistHero({
 	};
 
 	return (
-		<section className="relative -mt-16 overflow-hidden min-h-[20vh] md:min-h-[50vh] flex flex-col justify-end">
+		<section className="relative isolate overflow-hidden banner-pull-top banner-safe-pad min-h-[20vh] md:min-h-[50vh] flex flex-col justify-end">
 			<BlurredPosterBackdrop
 				posterPath={backgroundPoster}
 				variant="banner"
 			/>
 
-			<div className="relative z-10 container mx-auto px-6 lg:px-12 pt-28 md:pt-32 pb-8 md:pb-14 flex flex-col lg:flex-row lg:items-end gap-6 lg:gap-12 animate-slide-up-subtle">
+			<div className="hero-scroll-fade relative z-10 container mx-auto px-6 lg:px-12 pt-8 pb-8 md:pb-14 flex flex-col lg:flex-row lg:items-end gap-6 lg:gap-12 text-center lg:text-left">
 				<div className="flex-1 min-w-0 space-y-4 md:space-y-5">
-					<div className="flex flex-wrap gap-2">
+					<div
+						className="hero-rise flex flex-wrap justify-center gap-2 lg:justify-start"
+						style={riseStyle(0)}
+					>
 						{ownerUsername && (
 							<Link
 								href={localizedHref(
@@ -73,17 +77,26 @@ export function PlaylistHero({
 						)}
 					</div>
 
-					<h1 className="heading-display leading-none text-3xl sm:text-4xl lg:text-6xl uppercase tracking-wide text-text">
+					<h1
+						className="hero-rise heading-display leading-none text-5xl sm:text-6xl lg:text-7xl text-text drop-shadow-text"
+						style={riseStyle(1)}
+					>
 						{playlist.name}
 					</h1>
 
 					{playlist.description && (
-						<p className="text-muted text-sm md:text-lg max-w-xl leading-relaxed line-clamp-3">
+						<p
+							className="hero-rise text-muted text-sm md:text-lg max-w-xl mx-auto lg:mx-0 leading-relaxed line-clamp-3"
+							style={riseStyle(2)}
+						>
 							{playlist.description}
 						</p>
 					)}
 
-					<div className="flex flex-wrap gap-2 md:gap-3 pt-2 md:pt-1">
+					<div
+						className="hero-rise flex flex-wrap justify-center gap-2 md:gap-3 pt-2 md:pt-1 lg:justify-start"
+						style={riseStyle(3)}
+					>
 						{ownerUsername && (
 							<Button
 								asChild

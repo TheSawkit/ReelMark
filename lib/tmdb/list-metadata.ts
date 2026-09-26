@@ -1,5 +1,6 @@
 import type { MovieDetails, TvShowDetails, MediaType } from '@/types/tmdb';
 import { fetchTMDB, REVALIDATE } from './client';
+import { isTMDBNotFound } from './errors';
 import type { Language } from '@/lib/i18n/translations';
 import { reportSwallowed } from '@/lib/report';
 
@@ -57,7 +58,7 @@ export async function getListMediaMetadata(
 		// total terminal pour les séries, sinon la ligne resterait à NULL et /library la
 		// refetcherait à chaque rendu. Toute autre panne est transitoire : on ne rend rien,
 		// l'appelant réessaiera plus tard.
-		const isGone = error instanceof Error && error.message.includes('404');
+		const isGone = isTMDBNotFound(error);
 		return {
 			release_date: null,
 			genre_ids: [],

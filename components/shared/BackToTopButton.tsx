@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { ChevronUp } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
 import { cn } from '@/lib/utils';
+import { useIsClient } from '@/hooks/useIsClient';
 
 const SCROLL_THRESHOLD = 300;
 
@@ -16,6 +17,7 @@ const SCROLL_THRESHOLD = 300;
 export function BackToTopButton() {
 	const { t } = useTranslation();
 	const [visible, setVisible] = useState(false);
+	const isClient = useIsClient();
 
 	useEffect(() => {
 		const onScroll = () => setVisible(window.scrollY > SCROLL_THRESHOLD);
@@ -31,7 +33,7 @@ export function BackToTopButton() {
 		window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
 	}
 
-	if (typeof document === 'undefined') return null;
+	if (!isClient) return null;
 
 	return createPortal(
 		<button

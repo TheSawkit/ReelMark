@@ -7,8 +7,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TvShowLoading() {
 	return (
-		<div className="min-h-screen">
-			<DetailBannerSkeleton />
+		<div data-skeleton="tv" className="min-h-screen">
+			<DetailBannerSkeleton variant="tv" />
 
 			<div className="detail-container">
 				<DescriptionSkeleton />

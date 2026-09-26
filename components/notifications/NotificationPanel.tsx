@@ -6,11 +6,8 @@ import { Bell, CheckCheck } from 'lucide-react';
 import { NotificationItem } from '@/components/notifications/NotificationItem';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useNotifications } from '@/components/notifications/NotificationsProvider';
-import {
-	getNotifications,
-	markNotificationRead,
-	deleteNotification,
-} from '@/app/actions/notifications';
+import { getNotifications } from '@/app/actions/notifications';
+import { reportSwallowed } from '@/lib/report';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 import type { AppNotification } from '@/types/notifications';
@@ -21,24 +18,44 @@ interface NotificationPanelProps {
 
 export function NotificationPanel({ onClose }: NotificationPanelProps) {
 	const { t, lang } = useTranslation();
-	const { markAllRead, decrement } = useNotifications();
+	const { markRead, remove, markAllRead } = useNotifications();
 	const [items, setItems] = useState<AppNotification[] | null>(null);
 
 	useEffect(() => {
-		void getNotifications(8).then(setItems);
+		getNotifications(8)
+			.then(setItems)
+			.catch((error) => {
+				reportSwallowed('notifications:panel', error);
+				setItems([]);
+			});
 	}, []);
 
-	const handleClick = (n: AppNotification) => {
-		if (!n.readAt) {
-			decrement();
-			void markNotificationRead(n.id);
-		}
-		onClose();
+	const handleMarkRead = (n: AppNotification) => {
+		markRead(n);
+		setItems(
+			(prev) =>
+				prev?.map((x) =>
+					x.id === n.id
+						? { ...x, readAt: new Date().toISOString() }
+						: x
+				) ?? null
+		);
 	};
 
-	const handleDelete = (id: string) => {
-		setItems((prev) => prev?.filter((n) => n.id !== id) ?? null);
-		void deleteNotification(id);
+	const handleDelete = (n: AppNotification) => {
+		remove(n);
+		setItems((prev) => prev?.filter((x) => x.id !== n.id) ?? null);
+	};
+
+	const handleMarkAllRead = () => {
+		markAllRead();
+		setItems(
+			(prev) =>
+				prev?.map((x) => ({
+					...x,
+					readAt: x.readAt ?? new Date().toISOString(),
+				})) ?? null
+		);
 	};
 
 	return (
@@ -48,7 +65,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
 					{t.notifications.title}
 				</span>
 				<button
-					onClick={() => void markAllRead()}
+					onClick={handleMarkAllRead}
 					className="flex cursor-pointer items-center gap-1 text-xs text-muted transition-colors hover:text-text"
 				>
 					<CheckCheck className="h-3.5 w-3.5" />
@@ -64,7 +81,8 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
 					<NotificationItem
 						key={n.id}
 						notification={n}
-						onClick={handleClick}
+						onClick={onClose}
+						onMarkRead={handleMarkRead}
 						onDelete={handleDelete}
 					/>
 				))}

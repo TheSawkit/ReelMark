@@ -1,12 +1,10 @@
-import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
+import { PageLayout, PageHeaderSkeleton } from '@/components/layout/PageLayout';
 import { NotificationsSkeleton } from '@/components/notifications/NotificationsSkeleton';
-import { getTranslations } from '@/lib/i18n/server';
 
-export default async function NotificationsLoading() {
-	const t = await getTranslations();
+export default function NotificationsLoading() {
 	return (
 		<PageLayout>
-			<PageHeader title={t.notifications.title} />
+			<PageHeaderSkeleton subtitle={false} />
 			<NotificationsSkeleton />
 		</PageLayout>
 	);

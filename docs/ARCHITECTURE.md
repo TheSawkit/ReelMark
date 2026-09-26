@@ -61,7 +61,7 @@ Client Components ("use client")
 | ------------------------- | ------------------------------------------------------------------------------ | ----------------------------------- |
 | TMDB / Watchmode          | `fetch` + `next.revalidate`                                                    | 1 h                                 |
 | `/api/search`             | `Cache-Control: s-maxage=3600, stale-while-revalidate=86400` (edge Cloudflare) | 1 h + SWR 24 h                      |
-| Router client             | `experimental.staleTimes`                                                      | 90 s (dynamique) / 180 s (statique) |
+| Router client             | Router Cache de Next (défauts, aucun réglage expérimental)                     | 0 s (dynamique) / 5 min (préchargé) |
 | Déduplication par requête | `React.cache()` (watchlist, auth, i18n, genres, région)                        | requête                             |
 | Mutations                 | `revalidatePath()` sur chaque Server Action d'écriture                         | immédiat                            |
 

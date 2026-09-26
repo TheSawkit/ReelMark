@@ -44,7 +44,15 @@ Voir [`DEPLOYMENT.md`](../DEPLOYMENT.md) pour le runbook complet. Les trois pann
 - **`EXTERNAL-IP <pending>` pour toujours** → CCM absent ou mal configuré (section `[LoadBalancer]` : `floating-network-id` = réseau `ext-floating1`, `subnet-id` = subnet du cluster).
 - **`kubectl` qui parle à `127.0.0.1`** → le contexte par défaut est `orbstack` (local). `export KUBECONFIG=~/.kube/pck-6doofpd-kubeconfig`.
 - **HPA `cpu: <unknown>`** → metrics-server non installé sur le cluster.
+- **Pods en CrashLoop, exit 139 toutes les ~15 min** → ce n'est pas un segfault : `kubectl logs --previous` montre `JavaScript heap out of memory` vers 750 Mo. Vécu en 2026-09 (3 270 restarts) : l'image tournait en Node 22 alors que `.nvmrc` et la CI sont en 24, et Node 22 fuit sous le crawl des bots (reproduit en local en 150 s). Toute montée de Node touche `.nvmrc`, `ci.yml` **et** `Dockerfile` ensemble ; reproduire une fuite avec la version Node de l'image, pas celle du Mac.
+- **`Failed to update prerender cache … ENOENT/EROFS` à chaque page** → le rootfs est en lecture seule et l'ISR écrit dans `.next/server/app`. `experimental.isrFlushToDisk: false` garde le cache en mémoire (LRU borné) — mesuré : même RSS, zéro erreur.
 - **Push ghcr refusé** → le nom d'image doit être en minuscules (`ghcr.io/thesawkit/reelmark`) et le token doit avoir `write:packages` (le PAT du pull secret est read-only ; la CI utilise `GITHUB_TOKEN`).
+
+### Notifications / push
+
+- **Aucun push reçu sur un appareil** → vérifier que l'appareil a une ligne dans `push_subscriptions` (endpoint `fcm.googleapis.com` = Chrome/Android, `web.push.apple.com` = iOS installé). Brave refuse l'abonnement (`AbortError: push service error`) tant que « Utiliser les services Google pour la messagerie push » est désactivé ; les réglages l'affichent désormais.
+- **Badge de la cloche faux** → le compteur vit dans `NotificationsProvider` et se resynchronise au retour visible de l'app et à chaque reconnexion realtime. Ne pas compter sur l'événement realtime `DELETE` : Supabase ne le filtre que si la table est en `replica identity full`.
+- **Une notification disparaît de la cloche** → seuls « Marquer comme vu » et la suppression la sortent des non-lues ; l'ouvrir ne la marque pas.
 
 ### Données
 

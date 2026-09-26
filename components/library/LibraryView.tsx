@@ -75,7 +75,11 @@ export function LibraryView({
 		void version;
 		const loading = new Set<WatchStatus>();
 		const at = (status: WatchStatus) => {
-			const bucket = libraryBucketStore.get(type, status);
+			const bucket =
+				libraryBucketStore.get(type, status) ??
+				(type === initialType && status === initialStatus
+					? initialBucket
+					: null);
 			if (!bucket && counts[type][status] > 0) loading.add(status);
 			return bucket ?? EMPTY_BUCKET;
 		};
@@ -87,7 +91,7 @@ export function LibraryView({
 			},
 			loadingStatuses: loading,
 		};
-	}, [counts, type, version]);
+	}, [counts, type, version, initialType, initialStatus, initialBucket]);
 
 	return (
 		<>

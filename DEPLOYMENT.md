@@ -149,7 +149,9 @@ kubectl -n reelmark create secret generic reelmark-secrets \
   --from-env-file=.env.production
 ```
 
-`.env.production` contient les mêmes clés que `.env.local` (DSN Sentry en **https**).
+`.env.production` contient les mêmes clés que `.env.local` (DSN Sentry en **https**), plus
+`CRON_SECRET` (`openssl rand -hex 32`) : sans lui le CronJob des nouveaux épisodes ne démarre pas
+(`CreateContainerConfigError`) et la route refuse tout appel.
 
 ## 7. Déployer les manifests
 
@@ -164,13 +166,26 @@ kubectl -n reelmark rollout status deployment/reelmark
 ```
 
 `--server-side` n'est pas cosmétique : voir la section 8 pour la raison (`spec.replicas` appartient
-au HPA). `k8s/ingress.yaml` n'est pas dans ce bloc — il est déployé par
+au HPA). `k8s/app.yaml` contient aussi deux CronJobs qui appellent le Service interne :
+`reelmark-new-episodes` (chaque jour à 8 h, `POST /api/cron/new-episodes`) et
+`reelmark-suggestions` (vendredi 18 h, `POST /api/cron/suggestions`), fuseau Europe/Brussels. Pour vérifier sans rien envoyer :
+
+```bash
+kubectl -n reelmark exec deploy/reelmark -- sh -c \
+  'wget -qO- --header "Authorization: Bearer $CRON_SECRET" --post-data "" \
+   "http://localhost:3000/api/cron/new-episodes?dryRun=1"'
+kubectl -n reelmark create job --from=cronjob/reelmark-new-episodes manual-run   # envoi réel
+# même principe pour /api/cron/suggestions et cronjob/reelmark-suggestions
+```
+
+`k8s/ingress.yaml` n'est pas dans ce bloc — il est déployé par
 `.github/workflows/infra.yml`, l'edge ne doit pas bouger à chaque push de code.
 
 ## 7 bis. Cloisonnement réseau (optionnel, à poser à la main)
 
 `k8s/network-policy.yaml` passe le namespace en default-deny et n'ouvre que trois flux : entrée
 depuis `ingress-nginx` sur 3000, DNS vers `kube-system`, et HTTPS sortant **hors plages RFC1918**.
+Le CronJob (`app: reelmark-cron`) a sa propre policy : DNS et port 3000 de l'app, rien d'autre.
 Un pod compromis ne peut donc ni scanner le cluster, ni joindre l'API server.
 
 Volontairement hors CI : une erreur de périmètre coupe l'app sans message clair.
@@ -346,8 +361,9 @@ curl -I https://reelmark.silexio.be
   `runAsNonRoot` en uid/gid 1001 (l'utilisateur créé par le Dockerfile), `seccompProfile:
 RuntimeDefault`, `allowPrivilegeEscalation: false`, toutes les capabilities retirées,
   `readOnlyRootFilesystem: true` et `automountServiceAccountToken: false` (l'app ne parle jamais
-  à l'API Kubernetes). Deux `emptyDir` bornés couvrent les seuls chemins que le serveur
-  standalone écrit : `/app/.next/cache` et `/tmp`. Le `fsGroup: 1001` du pod est ce qui les rend
+  à l'API Kubernetes). Deux `emptyDir` bornés couvrent les chemins que le serveur
+  standalone écrit : `/app/.next/cache` et `/tmp`. Le cache ISR, qui écrirait dans
+  `.next/server/app`, reste en mémoire (`experimental.isrFlushToDisk: false`). Le `fsGroup: 1001` du pod est ce qui les rend
   inscriptibles — sans lui un `emptyDir` reste `root:root` en 0755 et le conteneur non-root
   échoue au premier write de cache.
 - **Arrêt** : Next termine les requêtes en vol **et les callbacks `after()`** avant de sortir sur

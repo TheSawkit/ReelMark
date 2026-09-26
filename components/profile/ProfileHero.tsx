@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Aurora } from '@/components/effects/Aurora';
 import { Spotlight } from '@/components/effects/Spotlight';
 import { Grain } from '@/components/effects/Grain';
+import { PauseWhenOffscreen } from '@/components/effects/PauseWhenOffscreen';
+import { riseStyle } from '@/lib/motion';
 import type { UserProfile } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
@@ -127,90 +129,108 @@ export function ProfileHero({
 		label: string;
 	}>;
 
+	const avatarClass =
+		'h-28 w-28 shrink-0 rounded-full border-4 border-background shadow-card sm:h-32 sm:w-32';
+
 	return (
-		<div className="relative mb-10 overflow-hidden rounded-2xl border border-border bg-surface">
-			<div className="relative h-28 overflow-hidden sm:h-36">
-				<div className="absolute inset-0 bg-linear-to-br from-primary/25 via-surface-2 to-surface" />
-				<Aurora intensity={0.6} />
-				<Spotlight />
+		<section className="relative isolate overflow-hidden banner-pull-top banner-safe-pad pb-8 sm:pb-10">
+			<div className="absolute inset-0 -z-10">
+				<div className="absolute inset-0 bg-linear-to-br from-primary/25 via-surface-2 to-app-bg" />
+				<PauseWhenOffscreen className="absolute inset-0">
+					<Aurora intensity={0.6} />
+					<Spotlight />
+				</PauseWhenOffscreen>
 				<Grain opacity={0.06} />
-				<div className="absolute inset-0 bg-linear-to-t from-surface via-surface/20 to-transparent" />
+				<div className="absolute inset-0 bg-linear-to-t from-app-bg via-app-bg/30 to-transparent" />
 			</div>
 
-			<div className="relative px-5 pb-6 sm:px-7">
-				<div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end">
-					<div className="shrink-0">
-						{avatarUrl && !broken.isBroken ? (
-							<Image
-								src={avatarUrl}
-								onError={broken.onError}
-								alt={`${displayName} — ${t.common.userAvatar}`}
-								width={96}
-								height={96}
-								className="h-24 w-24 rounded-full border-4 border-surface object-cover shadow-card"
-								unoptimized
-								referrerPolicy="no-referrer"
-							/>
-						) : (
-							<div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-surface bg-surface-2 shadow-card">
-								<span className="text-2xl font-bold text-muted">
-									{initials}
-								</span>
-							</div>
-						)}
-					</div>
-
-					<div className="min-w-0 flex-1 sm:pb-1">
-						<div className="flex flex-wrap items-center gap-3">
-							<h1 className="truncate text-2xl font-bold text-text">
-								{displayName}
-							</h1>
-							{fullName && fullName !== profile.username && (
-								<span className="text-sm text-muted">
-									@{profile.username}
-								</span>
-							)}
-							{optionsMenu}
+			<div className="hero-scroll-fade container mx-auto flex flex-col items-center gap-4 px-6 pt-6 text-center sm:flex-row sm:items-end sm:gap-6 sm:text-left lg:px-12">
+				<div className="hero-rise" style={riseStyle(0)}>
+					{avatarUrl && !broken.isBroken ? (
+						<Image
+							src={avatarUrl}
+							onError={broken.onError}
+							alt={`${displayName} — ${t.common.userAvatar}`}
+							width={128}
+							height={128}
+							className={`${avatarClass} object-cover`}
+							unoptimized
+							referrerPolicy="no-referrer"
+						/>
+					) : (
+						<div
+							className={`${avatarClass} flex items-center justify-center bg-surface-2`}
+						>
+							<span className="heading-display text-4xl text-muted">
+								{initials}
+							</span>
 						</div>
-					</div>
-
-					<div className="flex flex-wrap gap-2 sm:pb-1">
-						{isOwnProfile ? (
-							<Button variant="outline" size="sm" asChild>
-								<Link href={localizedHref(lang, '/settings')}>
-									{t.profile.editProfile}
-								</Link>
-							</Button>
-						) : (
-							friendshipButton
-						)}
-					</div>
+					)}
 				</div>
 
-				{profile.bio && (
-					<p className="mt-4 max-w-lg text-sm leading-relaxed text-muted">
-						{profile.bio}
-					</p>
-				)}
-
-				{socialLinks.length > 0 && (
-					<div className="mt-3 flex flex-wrap gap-2">
-						{socialLinks.map((link) => (
-							<a
-								key={link.label}
-								href={link.href}
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label={link.label}
-								className="flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-2 px-2.5 py-1 text-xs text-muted transition-colors hover:bg-surface hover:text-text"
-							>
-								{link.icon}
-								<span>{link.label}</span>
-							</a>
-						))}
+				<div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:items-start">
+					<div
+						className="hero-rise flex max-w-full items-center gap-3"
+						style={riseStyle(1)}
+					>
+						<h1 className="heading-display truncate text-5xl leading-none text-text sm:text-6xl">
+							{displayName}
+						</h1>
+						{optionsMenu}
 					</div>
-				)}
+					{fullName && fullName !== profile.username && (
+						<span
+							className="hero-rise text-sm text-muted"
+							style={riseStyle(2)}
+						>
+							@{profile.username}
+						</span>
+					)}
+					{profile.bio && (
+						<p
+							className="hero-rise max-w-lg text-sm leading-relaxed text-muted"
+							style={riseStyle(3)}
+						>
+							{profile.bio}
+						</p>
+					)}
+					{socialLinks.length > 0 && (
+						<div
+							className="hero-rise flex flex-wrap justify-center gap-2 sm:justify-start"
+							style={riseStyle(3)}
+						>
+							{socialLinks.map((link) => (
+								<a
+									key={link.label}
+									href={link.href}
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label={link.label}
+									className="flex min-h-8 items-center gap-1.5 rounded-full glass-surface px-3 text-xs text-muted transition-colors hover:bg-glass-bg-hover hover:text-text"
+								>
+									{link.icon}
+									<span>{link.label}</span>
+								</a>
+							))}
+						</div>
+					)}
+				</div>
+
+				<div
+					className="hero-rise flex flex-wrap gap-2 sm:pb-1"
+					style={riseStyle(4)}
+				>
+					{isOwnProfile ? (
+						<Button variant="outline" size="sm" asChild>
+							<Link href={localizedHref(lang, '/settings')}>
+								{t.profile.editProfile}
+							</Link>
+						</Button>
+					) : (
+						friendshipButton
+					)}
+				</div>
 			</div>
-		</div>
+		</section>
 	);
 }

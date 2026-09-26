@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import type { Video, MediaType } from '@/types/tmdb';
 import type { Language } from '@/lib/i18n/translations';
 import { getMovieDetails, getTvShowDetails } from '@/lib/tmdb';
-import { buildMediaMetadata } from '@/lib/metadata';
+import { buildMediaMetadata, FALLBACK_TITLE } from '@/lib/metadata';
 import { getTranslations } from '@/lib/i18n/server';
 import { reportSwallowed } from '@/lib/report';
 
@@ -59,6 +59,6 @@ export async function buildMediaDetailMetadata(
 		}
 	} catch (error) {
 		reportSwallowed('media-detail:metadata', error);
-		return { title: 'ReelMark', description: defaultDesc };
+		return { title: FALLBACK_TITLE, description: defaultDesc };
 	}
 }

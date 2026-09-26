@@ -33,12 +33,17 @@ export function NotificationSettings({
 	const [prefs, setPrefs] =
 		useState<NotificationPreferences>(initialPreferences);
 
-	const pushHint =
-		push.status === 'unsupported'
-			? t.settings.notifications.pushUnsupported
-			: push.status === 'ios-needs-install'
-				? t.settings.notifications.iosHint
-				: null;
+	const pushHints: Partial<Record<typeof push.status, string>> = {
+		unsupported: t.settings.notifications.pushUnsupported,
+		'ios-needs-install': t.settings.notifications.iosHint,
+		blocked: t.settings.notifications.pushBlocked,
+		failed: t.settings.notifications.pushFailed,
+	};
+	const pushHint = pushHints[push.status] ?? null;
+	const canToggle =
+		!push.isPending &&
+		push.status !== 'loading' &&
+		(!pushHint || push.status === 'failed');
 
 	const toggle = (key: (typeof KEYS)[number]) => {
 		const next = { ...prefs, [key]: !prefs[key] };
@@ -66,7 +71,7 @@ export function NotificationSettings({
 					</div>
 					<Switch
 						checked={push.status === 'on'}
-						disabled={push.isPending || !!pushHint}
+						disabled={!canToggle}
 						onCheckedChange={(checked) =>
 							void (checked ? push.enable() : push.disable())
 						}

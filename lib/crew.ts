@@ -28,3 +28,19 @@ export function groupCrew(crew: Crew[]): GroupedCrew {
 		editors: dedupeById(crew.filter((p) => p.job === 'Editor')),
 	};
 }
+
+/**
+ * Backdrop of a person's most popular film, used as their hero art on wide screens (a portrait
+ * photo stretched to a landscape stage would only show a forehead). Null when none has one.
+ */
+export function pickKnownForBackdrop(
+	credits: { backdrop_path: string | null; popularity: number }[]
+): string | null {
+	let best: { backdrop_path: string | null; popularity: number } | null =
+		null;
+	for (const credit of credits) {
+		if (!credit.backdrop_path) continue;
+		if (!best || credit.popularity > best.popularity) best = credit;
+	}
+	return best?.backdrop_path ?? null;
+}

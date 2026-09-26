@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { useMediaHeader } from '@/lib/stores/media-header';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsClient } from '@/hooks/useIsClient';
+import { useNavActionsSlot } from '@/lib/stores/nav-actions-slot';
 
 interface MediaActionsBarProps {
 	children: ReactNode;
@@ -19,12 +21,13 @@ interface MediaActionsBarProps {
 export function MediaActionsBar({ children }: MediaActionsBarProps) {
 	const { scrolled } = useMediaHeader();
 	const isMobile = useIsMobile();
+	const isClient = useIsClient();
+	const navSlot = useNavActionsSlot();
 
-	if (typeof document === 'undefined') return null;
+	if (!isClient) return null;
 
 	if (isMobile) {
-		const slot = document.getElementById('rm-nav-actions');
-		if (!slot) return null;
+		if (!navSlot) return null;
 		return createPortal(
 			<div
 				className={cn(
@@ -36,7 +39,7 @@ export function MediaActionsBar({ children }: MediaActionsBarProps) {
 			>
 				{children}
 			</div>,
-			slot
+			navSlot
 		);
 	}
 

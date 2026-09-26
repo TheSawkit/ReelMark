@@ -18,6 +18,9 @@ import { HorizontalScroll } from '@/components/shared/HorizontalScroll';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { StaggeredItem } from '@/components/ui/StaggeredItem';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
+import { SPRING } from '@/lib/motion';
 import type { ContinueWatchingItem } from '@/lib/data/continue-watching';
 
 const CARD_ANIMATION_DELAY_MS = 50;
@@ -46,22 +49,34 @@ export function ContinueWatchingSection({
 				</SectionHeading>
 			}
 		>
-			{visible.map((item, index) => (
-				<StaggeredItem
-					key={item.tvId}
-					index={index}
-					staggerMs={CARD_ANIMATION_DELAY_MS}
-					className="flex-none w-72 snap-start"
-				>
-					<ContinueWatchingCard
-						item={item}
-						priority={index < 3}
-						onAbandoned={() =>
-							setAbandonedIds((ids) => [...ids, item.tvId])
-						}
-					/>
-				</StaggeredItem>
-			))}
+			<AnimatePresence initial={false} mode="popLayout">
+				{visible.map((item, index) => (
+					<m.div
+						key={item.tvId}
+						layout
+						exit={{ opacity: 0, scale: 0.9 }}
+						transition={SPRING.list}
+						className="flex-none w-72 snap-start"
+					>
+						<StaggeredItem
+							index={index}
+							staggerMs={CARD_ANIMATION_DELAY_MS}
+							className="h-full"
+						>
+							<ContinueWatchingCard
+								item={item}
+								priority={index < 3}
+								onAbandoned={() =>
+									setAbandonedIds((ids) => [
+										...ids,
+										item.tvId,
+									])
+								}
+							/>
+						</StaggeredItem>
+					</m.div>
+				))}
+			</AnimatePresence>
 		</HorizontalScroll>
 	);
 }
@@ -150,7 +165,6 @@ function ContinueWatchingCard({
 							src={getImageUrl(episode.stillPath, 'w500')}
 							alt={episode.name}
 							fill
-							unoptimized
 							priority={priority}
 							className="object-cover"
 							sizes="288px"

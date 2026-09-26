@@ -1,7 +1,8 @@
 const fr = {
 	title: 'Notifications',
 	empty: 'Aucune notification pour le moment',
-	markAllRead: 'Tout marquer comme lu',
+	markAllRead: 'Tout marquer comme vu',
+	markRead: 'Marquer comme vu',
 	seeAll: 'Voir tout',
 	new: 'Nouveau',
 	delete: 'Supprimer',
@@ -17,7 +18,8 @@ const fr = {
 const en = {
 	title: 'Notifications',
 	empty: 'No notifications yet',
-	markAllRead: 'Mark all as read',
+	markAllRead: 'Mark all as seen',
+	markRead: 'Mark as seen',
 	seeAll: 'See all',
 	new: 'New',
 	delete: 'Delete',

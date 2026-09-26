@@ -78,6 +78,7 @@
 	--duration-slow: 500ms;
 	--duration-slower: 600ms;
 	--duration-slowest: 800ms;
+	--duration-stagger: 70ms;
 
 	--font-sans: var(--font-sans);
 	--font-display: var(--font-display);
@@ -454,6 +455,87 @@ a {
 	animation-fill-mode: backwards;
 }
 
+/* Mouvement « cinéma » des héros et rangées : transform/opacity seulement (compositeur, zéro JS).
+   L'image du héros ne part jamais d'opacité 0 : elle reste candidate au LCP. Les animations liées
+   au défilement sont une amélioration progressive — sans `animation-timeline`, rien ne bouge et
+   tout reste visible. Le réglage global `prefers-reduced-motion` ne suffit pas ici : une timeline
+   de défilement ignore la durée, d'où l'enveloppe `no-preference`. */
+@media (prefers-reduced-motion: no-preference) {
+	.hero-settle {
+		animation: heroSettle var(--duration-slowest) var(--ease-apple-out) both;
+	}
+
+	.hero-rise {
+		animation: heroRise var(--duration-slower) var(--ease-apple-out) both;
+		animation-delay: calc(var(--duration-stagger) * var(--rise-index, 0));
+	}
+
+	@supports (animation-timeline: scroll()) {
+		.hero-parallax {
+			animation: heroParallax linear both;
+			animation-timeline: scroll(root);
+			animation-range: 0 100svh;
+		}
+
+		.hero-scroll-fade {
+			animation: heroScrollFade linear both;
+			animation-timeline: scroll(root);
+			animation-range: 0 60svh;
+		}
+
+		.reveal-on-scroll {
+			animation: revealRise linear both;
+			animation-timeline: view();
+			animation-range: entry 0% entry 70%;
+		}
+	}
+}
+
+@keyframes heroSettle {
+	from {
+		transform: scale(1.08);
+	}
+
+	to {
+		transform: scale(1);
+	}
+}
+
+@keyframes heroRise {
+	from {
+		opacity: 0;
+		transform: translateY(16px);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes heroParallax {
+	to {
+		transform: translateY(20%) scale(1.06);
+	}
+}
+
+@keyframes heroScrollFade {
+	to {
+		opacity: 0;
+		transform: translateY(-32px);
+	}
+}
+
+@keyframes revealRise {
+	from {
+		transform: translateY(32px) scale(0.97);
+	}
+
+	to {
+		transform: none;
+	}
+}
+
 .marquee-track {
 	animation: marquee var(--marquee-duration, 40s) linear infinite;
 }
@@ -563,6 +645,12 @@ a {
 		padding-top: calc(5rem + env(safe-area-inset-top));
 	}
 
+	/* Hauteur des héros plein cadre (Explorer, fiches) : assez haute pour l'affiche en portrait
+	   sur téléphone, bornée sur grand écran pour laisser voir le contenu sous la ligne de flottaison. */
+	.hero-stage {
+		min-height: clamp(32rem, 72svh, 52rem);
+	}
+
 	.page-top-offset {
 		padding-top: calc(4rem + env(safe-area-inset-top));
 	}
@@ -622,5 +710,15 @@ a {
 	.motion-paused,
 	.motion-paused * {
 		animation-play-state: paused;
+	}
+}
+
+/* Défilement horizontal sans barre visible (rangées, méta des héros) — la classe était déjà
+   posée sur les rangées sans être définie. */
+@utility scrollbar-hide {
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		display: none;
 	}
 }

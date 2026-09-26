@@ -200,6 +200,18 @@ export async function getSimilarMovies(
 	return fetchRelatedMedia<Movie>('movie', 'similar', id, lang, page);
 }
 
+/** Returns the collection (saga) with all its parts; throws, so the collection page can tell a missing saga from an outage. */
+export async function fetchCollection(
+	id: number,
+	lang?: Language
+): Promise<CollectionDetails> {
+	return fetchTMDB<CollectionDetails>(
+		`/collection/${id}`,
+		{},
+		{ revalidate: REVALIDATE.week, lang }
+	);
+}
+
 /**
  * Returns the collection (saga) a movie belongs to, with all its parts.
  * Returns null on failure.
@@ -209,11 +221,7 @@ export async function getCollection(
 	lang?: Language
 ): Promise<CollectionDetails | null> {
 	try {
-		return await fetchTMDB<CollectionDetails>(
-			`/collection/${id}`,
-			{},
-			{ revalidate: REVALIDATE.week, lang }
-		);
+		return await fetchCollection(id, lang);
 	} catch (error) {
 		reportSwallowed('tmdb/movies:collection', error);
 		return null;

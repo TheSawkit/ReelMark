@@ -69,10 +69,11 @@ export function SeasonWatchButton({
 			onClick={() => toggle(!allWatched)}
 			disabled={loading}
 			className={cn(
-				'flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition duration-(--duration-base) border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-12 w-full sm:w-auto shrink-0 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-card',
+				'flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold sm:w-auto',
+				'transition active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
 				allWatched
-					? 'bg-primary/40 backdrop-blur-2xl text-white border-border/10 border-t-border/20 shadow-card-sm'
-					: 'bg-surface/70 backdrop-blur-2xl text-rating-gold border-border/10 border-t-border/20 hover:bg-surface/85 hover:border-border hover:shadow-glow-gold hover:text-text shadow-card'
+					? 'border-gold/40 bg-gold/15 text-gold'
+					: 'glass-surface border-glass-border text-text hover:bg-glass-bg-hover'
 			)}
 		>
 			<ActionStatusIcon

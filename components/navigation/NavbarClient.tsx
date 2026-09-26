@@ -26,6 +26,12 @@ import { NotificationsProvider } from '@/components/notifications/NotificationsP
 import { RealtimeUserSync } from '@/components/sync/RealtimeUserSync';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import type { NavbarUser } from '@/types/components';
+import { navActionsSlot } from '@/lib/stores/nav-actions-slot';
+
+function registerNavActionsSlot(element: HTMLDivElement | null) {
+	navActionsSlot.register(element);
+	return () => navActionsSlot.register(null);
+}
 
 interface NavbarTranslations {
 	common: { goBack: string };
@@ -140,7 +146,7 @@ export function NavbarClient({
 									)}
 								</div>
 								<div
-									id="rm-nav-actions"
+									ref={registerNavActionsSlot}
 									className="col-start-1 row-start-1 justify-self-end lg:hidden"
 								/>
 							</div>
@@ -296,6 +302,7 @@ export function NavbarClient({
 
 					{/* Desktop only: media sub-bar that expands on scroll */}
 					<div
+						inert={!isMediaBarActive}
 						className={cn(
 							'block max-lg:hidden overflow-hidden transition-[max-height,opacity] duration-(--duration-base) ease-in-out',
 							isMediaBarActive

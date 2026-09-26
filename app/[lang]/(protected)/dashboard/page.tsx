@@ -16,7 +16,8 @@ import {
 	LibraryMediaSection,
 } from '@/components/media/card/MediaSection';
 import { MediaSectionsSkeleton } from '@/components/media/card/MediaSectionsSkeleton';
-import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
+import { MediaTypeSwitcherSkeleton } from '@/components/media/card/MediaTypeSwitcherSkeleton';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
 import { localizedHref } from '@/lib/i18n/utils';
@@ -132,11 +133,11 @@ async function HeroSection({ t, lang }: { t: Translations; lang: Language }) {
 			)
 		)
 	).filter((hero) => hero !== null);
-	if (heroes.length === 0) return null;
 
 	return (
 		<DashboardHero
 			items={heroes}
+			greeting={t.pages.dashboard.welcome}
 			resumeLabel={t.pages.dashboard.resume}
 			discoverLabel={t.pages.dashboard.discover}
 		/>
@@ -305,39 +306,39 @@ export default async function DashboardPage({ params: paramsPromise }: Props) {
 	const t = await getTranslations(lang);
 
 	return (
-		<PageLayout>
-			<PageHeader
-				title={t.pages.dashboard.welcome}
-				subtitle={t.pages.dashboard.subtitle}
-			/>
-
+		<>
 			<Suspense fallback={<DashboardHeroSkeleton />}>
 				<HeroSection t={t} lang={lang} />
 			</Suspense>
 
-			<Suspense fallback={<ContinueWatchingSkeleton />}>
-				<ContinueWatching />
-			</Suspense>
+			<PageLayout className="pt-6 lg:pt-8">
+				<Suspense fallback={<ContinueWatchingSkeleton />}>
+					<ContinueWatching />
+				</Suspense>
 
-			<Suspense fallback={<BentoStatsSkeleton />}>
-				<StatsSection t={t} />
-			</Suspense>
+				<Suspense fallback={<BentoStatsSkeleton />}>
+					<StatsSection t={t} />
+				</Suspense>
 
-			<Suspense fallback={<TrendingMarqueeSkeleton />}>
-				<TrendingSection t={t} lang={lang} />
-			</Suspense>
+				<Suspense fallback={<TrendingMarqueeSkeleton />}>
+					<TrendingSection t={t} lang={lang} />
+				</Suspense>
 
-			<Suspense fallback={<div className="h-11.5 mb-8" />}>
-				<MediaTypeSwitcher defaultType="movie" shallow />
-			</Suspense>
+				<Suspense fallback={<MediaTypeSwitcherSkeleton />}>
+					<MediaTypeSwitcher defaultType="movie" shallow />
+				</Suspense>
 
-			<Suspense
-				fallback={
-					<MediaSectionsSkeleton sections={3} cardsPerSection={8} />
-				}
-			>
-				<LibraryContentSection t={t} lang={lang} />
-			</Suspense>
-		</PageLayout>
+				<Suspense
+					fallback={
+						<MediaSectionsSkeleton
+							sections={3}
+							cardsPerSection={8}
+						/>
+					}
+				>
+					<LibraryContentSection t={t} lang={lang} />
+				</Suspense>
+			</PageLayout>
+		</>
 	);
 }

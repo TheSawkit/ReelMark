@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { groupCrew } from '@/lib/crew';
+import { groupCrew, pickKnownForBackdrop } from '@/lib/crew';
 import type { Crew } from '@/types/tmdb';
 
 function crewMember(
@@ -52,5 +52,33 @@ describe('groupCrew', () => {
 		expect(grouped.directors).toHaveLength(0);
 		expect(grouped.writers).toHaveLength(0);
 		expect(grouped.producers).toHaveLength(0);
+	});
+});
+
+describe('pickKnownForBackdrop', () => {
+	it('picks the backdrop of the most popular credit', () => {
+		expect(
+			pickKnownForBackdrop([
+				{ backdrop_path: '/a.jpg', popularity: 10 },
+				{ backdrop_path: '/b.jpg', popularity: 40 },
+				{ backdrop_path: '/c.jpg', popularity: 20 },
+			])
+		).toBe('/b.jpg');
+	});
+
+	it('skips credits without a backdrop', () => {
+		expect(
+			pickKnownForBackdrop([
+				{ backdrop_path: null, popularity: 99 },
+				{ backdrop_path: '/a.jpg', popularity: 1 },
+			])
+		).toBe('/a.jpg');
+	});
+
+	it('returns null when no credit has a backdrop', () => {
+		expect(
+			pickKnownForBackdrop([{ backdrop_path: null, popularity: 5 }])
+		).toBeNull();
+		expect(pickKnownForBackdrop([])).toBeNull();
 	});
 });

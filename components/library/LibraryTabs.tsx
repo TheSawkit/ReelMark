@@ -1,15 +1,17 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
+import { ActiveIndicator } from '@/components/motion/ActiveIndicator';
 import { cn } from '@/lib/utils';
 import { MediaCard } from '@/components/media/card/MediaCard';
 import { AbandonShowMenu } from '@/components/media/tv/AbandonShowMenu';
 import { VirtualMediaGrid } from '@/components/media/card/VirtualMediaGrid';
 import { MediaListControls } from '@/components/media/list/MediaListControls';
+import { MediaListControlsSkeleton } from '@/components/media/list/MediaListControlsSkeleton';
 import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { BookMarked, Eye, Ban } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
-import type { GridColumns } from '@/hooks/useGridColumns';
+import { LIBRARY_GRID } from '@/components/media/card/grid';
 import type { MediaItem, WatchlistEntry } from '@/types/tmdb';
 import { watchlistEntryToMediaItem } from '@/lib/mappers';
 import { getMediaKey } from '@/lib/media';
@@ -18,10 +20,6 @@ import {
 	mediaWatchStore,
 	useMediaWatchVersion,
 } from '@/lib/stores/media-watch';
-
-const LIBRARY_COLUMNS: GridColumns = { base: 2, sm: 3, md: 4, lg: 5, xl: 6 };
-const LIBRARY_ROW_CLASS =
-	'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6 pb-3 sm:pb-4 md:pb-6';
 
 type Tab = 'to_watch' | 'watched' | 'abandoned';
 
@@ -130,7 +128,7 @@ export function LibraryTabs({
 
 	const visibleTab = tabOrder.includes(activeTab) ? activeTab : 'to_watch';
 	const current = tabs[visibleTab];
-	const activeIndex = tabOrder.indexOf(visibleTab);
+	const indicatorId = useId();
 
 	const controls = useMediaListControls(
 		current.items,
@@ -151,14 +149,6 @@ export function LibraryTabs({
 				role="tablist"
 				aria-label={t.library.filtersLabel}
 			>
-				<div
-					aria-hidden="true"
-					className="absolute top-1 bottom-1 rounded-xl bg-surface border border-border shadow-card-sm transition-[left] duration-(--duration-base) ease-apple-spring"
-					style={{
-						left: `calc(${activeIndex} * (100% / ${tabOrder.length}) + 0.25rem)`,
-						width: `calc(100% / ${tabOrder.length} - 0.5rem)`,
-					}}
-				/>
 				{tabOrder.map((id) => {
 					const tab = tabs[id];
 					return (
@@ -169,13 +159,19 @@ export function LibraryTabs({
 							aria-controls={`panel-${id}`}
 							onClick={() => switchTab(id)}
 							className={cn(
-								'relative z-10 flex flex-1 min-w-0 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-medium rounded-xl min-h-11 transition-[color,scale] duration-(--duration-fast) cursor-pointer active:scale-95',
+								'relative isolate flex flex-1 min-w-0 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-medium rounded-lg min-h-11 transition-[color,scale] duration-(--duration-fast) cursor-pointer active:scale-95',
 								'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 								visibleTab === id
 									? 'text-text'
 									: 'text-muted hover:text-text'
 							)}
 						>
+							{visibleTab === id && (
+								<ActiveIndicator
+									layoutId={`${indicatorId}-status`}
+									className="inset-0 -z-10 rounded-lg border border-border bg-surface shadow-card-sm"
+								/>
+							)}
 							<tab.icon className="block max-sm:hidden h-4 w-4 shrink-0" />
 							<span className="truncate">{tab.label}</span>
 							<span
@@ -197,7 +193,8 @@ export function LibraryTabs({
 				// Le compartiment arrive : montrer la grille en attente plutôt que l'état vide,
 				// qui annoncerait à tort une bibliothèque sans titre.
 				<div role="tabpanel" id={`panel-${visibleTab}`}>
-					<PosterGridSkeleton count={12} />
+					<MediaListControlsSkeleton className="mb-6" />
+					<PosterGridSkeleton count={12} variant="library" />
 				</div>
 			) : current.items.length === 0 ? (
 				<div
@@ -228,8 +225,8 @@ export function LibraryTabs({
 							<VirtualMediaGrid
 								key={visibleTab}
 								items={processed}
-								columns={LIBRARY_COLUMNS}
-								rowClassName={LIBRARY_ROW_CLASS}
+								columns={LIBRARY_GRID.columns}
+								rowClassName={LIBRARY_GRID.rowClassName}
 								renderItem={(item, index) => {
 									const entry = item.watchlistEntry;
 									const progress =

@@ -1,6 +1,8 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, redirect } from 'next/navigation';
 import { fetchTMDB } from '@/lib/tmdb/client';
+import { isTMDBNotFound } from '@/lib/tmdb/errors';
+import { FALLBACK_TITLE } from '@/lib/metadata';
 import { Suspense, cache } from 'react';
 import type { Metadata } from 'next';
 import {
@@ -31,7 +33,8 @@ import { getAverageRating, getMediaReview } from '@/lib/data/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
 import { MediaCommunityRating } from '@/components/media/detail/MediaCommunityRating';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
-import { movieJsonLd, serializeJsonLd } from '@/lib/structured-data';
+import { movieJsonLd } from '@/lib/structured-data';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import { localizedHref } from '@/lib/i18n/utils';
@@ -148,7 +151,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
 	const { id, lang } = await params;
 	const movieId = parseInt(id);
-	if (isNaN(movieId)) return { title: 'ReelMark' };
+	if (isNaN(movieId)) return { title: FALLBACK_TITLE };
 	return buildMediaDetailMetadata('movie', movieId, lang);
 }
 
@@ -167,19 +170,14 @@ export default async function MoviePage(props: MoviePageProps) {
 			getMovieImages(movieId, lang),
 		]);
 	} catch (error) {
-		if (!(error instanceof Error && error.message.includes('404')))
-			throw error;
+		if (!isTMDBNotFound(error)) throw error;
 
 		let isTvShow = false;
 		try {
 			await fetchTMDB(`/tv/${movieId}`, {}, { revalidate: 86400 });
 			isTvShow = true;
 		} catch (probeError) {
-			if (!(
-				probeError instanceof Error &&
-				probeError.message.includes('404')
-			))
-				throw probeError;
+			if (!isTMDBNotFound(probeError)) throw probeError;
 		}
 		if (isTvShow) redirect(localizedHref(lang, `/tv/${movieId}`));
 		notFound();
@@ -243,14 +241,7 @@ export default async function MoviePage(props: MoviePageProps) {
 
 	return (
 		<>
-			<script
-				type="application/ld+json"
-				dangerouslySetInnerHTML={{
-					__html: serializeJsonLd(
-						movieJsonLd(movieDetails, credits, lang)
-					),
-				}}
-			/>
+			<JsonLd data={movieJsonLd(movieDetails, credits, lang)} />
 			<MediaDetailLayout
 				banner={banner}
 				actionsBar={actionsBar}

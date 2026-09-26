@@ -6,18 +6,22 @@ import { test, expect } from '@playwright/test';
  * plancher de <main> l'a ramené à 0.0026 — ce test empêche qu'un changement de mise en page
  * réintroduise un décalage du même ordre.
  *
- * /tv en mobile en est exclu : le badge de certification et le bouton de lecture y dépendent
- * tous deux de la session, arrivent après le premier rendu quand le cache est froid, et leur
- * résolution différée est un choix assumé (préserver le prérendu du shell). Le décalage y est
- * intermittent, donc intestable sans le rendre instable.
+ * /tv en mobile montait à 0.11 : le badge de certification faisait passer les métadonnées sur
+ * deux lignes et le bouton de lecture arrivait après coup. La ligne de métadonnées défile
+ * désormais sur une seule ligne et le bandeau réserve la place du bouton (« où regarder »
+ * tant que les offres ne sont pas résolues).
  */
 const BUDGET = 0.05;
 
+const DESKTOP = { width: 1440, height: 900 };
+const PHONE = { width: 390, height: 844 };
+
 const SCREENS = [
-	'/en/library',
-	'/en/explorer',
-	'/en/dashboard',
-	'/en/movie/550',
+	{ path: '/en/library', viewport: DESKTOP },
+	{ path: '/en/explorer', viewport: DESKTOP },
+	{ path: '/en/dashboard', viewport: DESKTOP },
+	{ path: '/en/movie/550', viewport: DESKTOP },
+	{ path: '/en/tv/1399', viewport: PHONE },
 ];
 
 async function measureCls(page: import('@playwright/test').Page, path: string) {
@@ -45,9 +49,11 @@ async function measureCls(page: import('@playwright/test').Page, path: string) {
 }
 
 test.describe('Stabilité de la mise en page', () => {
-	for (const path of SCREENS) {
-		test(`${path} reste sous ${BUDGET} de CLS`, async ({ page }) => {
-			await page.setViewportSize({ width: 1440, height: 900 });
+	for (const { path, viewport } of SCREENS) {
+		test(`${path} (${viewport.width}px) reste sous ${BUDGET} de CLS`, async ({
+			page,
+		}) => {
+			await page.setViewportSize(viewport);
 			expect(await measureCls(page, path)).toBeLessThan(BUDGET);
 		});
 	}

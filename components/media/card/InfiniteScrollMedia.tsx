@@ -3,12 +3,10 @@
 import { useEffect, useState, useRef, useCallback, useTransition } from 'react';
 import { useInView } from '@/hooks/useInView';
 import type { MediaItem } from '@/types/tmdb';
+import { cn } from '@/lib/utils';
 import { MediaCard } from '@/components/media/card/MediaCard';
-import {
-	VirtualMediaGrid,
-	MEDIA_GRID_COLUMNS,
-	MEDIA_GRID_ROW_CLASS,
-} from '@/components/media/card/VirtualMediaGrid';
+import { VirtualMediaGrid } from '@/components/media/card/VirtualMediaGrid';
+import { MEDIA_GRID } from '@/components/media/card/grid';
 import { MediaCardSkeleton } from '@/components/media/card/MediaCardSkeleton';
 import { BackToTopButton } from '@/components/shared/BackToTopButton';
 import { fetchMoreMedia } from '@/app/actions/media';
@@ -130,8 +128,8 @@ export function InfiniteScrollMedia({
 		<>
 			<VirtualMediaGrid
 				items={items}
-				columns={MEDIA_GRID_COLUMNS}
-				rowClassName={MEDIA_GRID_ROW_CLASS}
+				columns={MEDIA_GRID.columns}
+				rowClassName={MEDIA_GRID.rowClassName}
 				renderItem={(item, index) => (
 					<div key={getMediaKey(item)} className="media-grid-cell">
 						<MediaCard
@@ -153,7 +151,7 @@ export function InfiniteScrollMedia({
 
 			{isPending && (
 				<div
-					className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6 lg:gap-8 mt-4 md:mt-6 lg:mt-8"
+					className={cn(MEDIA_GRID.className, 'mt-4 md:mt-6 lg:mt-8')}
 					role="status"
 					aria-live="polite"
 					aria-label={t.common.loading}

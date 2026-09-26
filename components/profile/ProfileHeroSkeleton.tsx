@@ -1,20 +1,23 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
+/** ProfileHero placeholder: same full-bleed band, avatar and name on the same boxes. */
 export function ProfileHeroSkeleton() {
 	return (
-		<div className="mb-10 overflow-hidden rounded-2xl border border-border bg-surface">
-			<Skeleton className="h-28 w-full rounded-none sm:h-36" />
-			<div className="px-5 pb-6 sm:px-7">
-				<div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end">
-					<Skeleton className="h-24 w-24 shrink-0 rounded-full border-4 border-surface" />
-					<div className="flex-1 space-y-2 sm:pb-1">
-						<Skeleton className="h-7 w-40" />
-						<Skeleton className="h-4 w-24" />
+		<section className="relative isolate overflow-hidden banner-pull-top banner-safe-pad pb-8 sm:pb-10">
+			<Skeleton className="absolute inset-0 -z-10 rounded-none" />
+			<div className="container mx-auto flex flex-col items-center gap-4 px-6 pt-6 sm:flex-row sm:items-end sm:gap-6 lg:px-12">
+				<Skeleton className="h-28 w-28 shrink-0 rounded-full bg-surface-3 sm:h-32 sm:w-32" />
+				<div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:items-start">
+					<Skeleton className="h-12 w-48 bg-surface-3 sm:h-15" />
+					<Skeleton className="h-5 w-24 bg-surface-3" />
+					<Skeleton className="h-5.5 w-64 max-w-full bg-surface-3" />
+					<div className="flex gap-2">
+						<Skeleton className="h-8 w-24 rounded-full bg-surface-3" />
+						<Skeleton className="h-8 w-20 rounded-full bg-surface-3" />
 					</div>
-					<Skeleton className="h-8 w-28 rounded-md sm:pb-1" />
 				</div>
-				<Skeleton className="mt-4 h-4 w-64" />
+				<Skeleton className="h-8 w-28 rounded-md bg-surface-3 sm:mb-1" />
 			</div>
-		</div>
+		</section>
 	);
 }

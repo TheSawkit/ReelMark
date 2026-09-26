@@ -44,6 +44,11 @@ const QUOTA_STATUSES = new Set([401, 402, 429]);
 
 let quotaCooldownUntil = 0;
 
+/** Whether a recent quota response still forbids calls, so callers skip Watchmode instead of failing on every render. */
+export function isWatchmodeCoolingDown(): boolean {
+	return monotonicNowMs() < quotaCooldownUntil;
+}
+
 /**
  * Fetches data from the Watchmode API with Next.js cache.
  * API key is injected as a query param (server-side only).
@@ -59,7 +64,7 @@ export async function fetchWatchmode<T>(
 ): Promise<T> {
 	if (!WATCHMODE_API_KEY) throw new Error('WATCHMODE_API_KEY is not defined');
 
-	if (monotonicNowMs() < quotaCooldownUntil) {
+	if (isWatchmodeCoolingDown()) {
 		throw new Error('Watchmode API Error: quota cooldown active');
 	}
 

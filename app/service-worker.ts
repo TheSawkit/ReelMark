@@ -72,6 +72,7 @@ interface PushPayload {
 }
 
 const DEFAULT_PUSH_ICON = '/maskable_icon_x192.png';
+const PUSH_BADGE = '/notification-badge.png';
 
 self.addEventListener('push', (event) => {
 	const pushEvent = event as PushEvent;
@@ -89,7 +90,7 @@ self.addEventListener('push', (event) => {
 		self.registration.showNotification(payload.title, {
 			body: payload.body,
 			icon: payload.icon ?? DEFAULT_PUSH_ICON,
-			badge: DEFAULT_PUSH_ICON,
+			badge: PUSH_BADGE,
 			tag: payload.tag,
 			data: { url: payload.url },
 		})

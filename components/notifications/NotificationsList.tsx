@@ -5,39 +5,33 @@ import { Bell, CheckCheck } from 'lucide-react';
 import { NotificationItem } from '@/components/notifications/NotificationItem';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useNotifications } from '@/components/notifications/NotificationsProvider';
-import {
-	markNotificationRead,
-	deleteNotification,
-} from '@/app/actions/notifications';
 import { useTranslation } from '@/lib/i18n/context';
 import type { AppNotification } from '@/types/notifications';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
+import { SPRING } from '@/lib/motion';
 
 export function NotificationsList({ initial }: { initial: AppNotification[] }) {
 	const { t } = useTranslation();
-	const { markAllRead, decrement } = useNotifications();
+	const { markRead, remove, markAllRead } = useNotifications();
 	const [items, setItems] = useState(initial);
 
-	const onClick = (n: AppNotification) => {
-		if (!n.readAt) {
-			decrement();
-			void markNotificationRead(n.id);
-			setItems((prev) =>
-				prev.map((x) =>
-					x.id === n.id
-						? { ...x, readAt: new Date().toISOString() }
-						: x
-				)
-			);
-		}
+	const onMarkRead = (n: AppNotification) => {
+		markRead(n);
+		setItems((prev) =>
+			prev.map((x) =>
+				x.id === n.id ? { ...x, readAt: new Date().toISOString() } : x
+			)
+		);
 	};
 
-	const onDelete = (id: string) => {
-		setItems((prev) => prev.filter((x) => x.id !== id));
-		void deleteNotification(id);
+	const onDelete = (n: AppNotification) => {
+		remove(n);
+		setItems((prev) => prev.filter((x) => x.id !== n.id));
 	};
 
 	const onMarkAll = () => {
-		void markAllRead();
+		markAllRead();
 		setItems((prev) =>
 			prev.map((x) => ({
 				...x,
@@ -61,14 +55,22 @@ export function NotificationsList({ initial }: { initial: AppNotification[] }) {
 				</button>
 			</div>
 			<div className="space-y-0.5">
-				{items.map((n) => (
-					<NotificationItem
-						key={n.id}
-						notification={n}
-						onClick={onClick}
-						onDelete={onDelete}
-					/>
-				))}
+				<AnimatePresence initial={false} mode="popLayout">
+					{items.map((n) => (
+						<m.div
+							key={n.id}
+							layout
+							exit={{ opacity: 0, x: -24 }}
+							transition={SPRING.list}
+						>
+							<NotificationItem
+								notification={n}
+								onMarkRead={onMarkRead}
+								onDelete={onDelete}
+							/>
+						</m.div>
+					))}
+				</AnimatePresence>
 			</div>
 		</div>
 	);

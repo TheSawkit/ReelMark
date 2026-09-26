@@ -10,6 +10,7 @@ import {
 import { getAppStoreIconMap } from '@/lib/watchmode/app-store';
 import { webLinkOrNull } from '@/lib/safe-link';
 import { WatchNowPublisher } from '@/components/media/detail/WatchNowPublisher';
+import { WHERE_TO_WATCH_ID } from '@/lib/watch-now';
 import type { WatchProvidersRegion, WatchProvider } from '@/types/tmdb';
 
 interface WatchProvidersProps {
@@ -182,7 +183,7 @@ export async function WatchProviders({ providers }: WatchProvidersProps) {
 	const td = t.movie;
 
 	return (
-		<section className="space-y-5">
+		<section id={WHERE_TO_WATCH_ID} className="scroll-mt-24 space-y-5">
 			<WatchNowPublisher providers={providers} region={region} />
 			<SectionHeading>{td.whereToWatch}</SectionHeading>
 

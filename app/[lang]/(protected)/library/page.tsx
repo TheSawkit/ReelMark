@@ -1,4 +1,3 @@
-import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
 import {
 	getWatchlistBucketWithProgress,
@@ -14,7 +13,8 @@ import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import type { Language } from '@/lib/i18n/translations';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
-import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
+import { LibraryViewSkeleton } from '@/components/library/LibraryViewSkeleton';
+import { MediaTypeSwitcherSkeleton } from '@/components/media/card/MediaTypeSwitcherSkeleton';
 import { getGenres } from '@/lib/tmdb';
 import { BASE_URL, buildPageMetadata } from '@/lib/metadata';
 import type { MediaType } from '@/types/tmdb';
@@ -93,18 +93,6 @@ async function LibraryContent({
 	);
 }
 
-function LibraryGridSkeleton() {
-	return (
-		<>
-			<div className="flex gap-2 border-b border-border pb-0 mb-8">
-				<Skeleton className="h-10 w-24 rounded-t-lg" />
-				<Skeleton className="h-10 w-20 rounded-t-lg" />
-			</div>
-			<PosterGridSkeleton count={6} />
-		</>
-	);
-}
-
 export default async function LibraryPage({
 	params: paramsPromise,
 	searchParams: searchParamsPromise,
@@ -129,11 +117,11 @@ export default async function LibraryPage({
 				}
 			/>
 
-			<Suspense fallback={<div className="h-11.5 mb-8" />}>
+			<Suspense fallback={<MediaTypeSwitcherSkeleton />}>
 				<MediaTypeSwitcher defaultType="movie" shallow />
 			</Suspense>
 
-			<Suspense fallback={<LibraryGridSkeleton />}>
+			<Suspense fallback={<LibraryViewSkeleton />}>
 				<LibraryContent lang={lang} type={type} />
 			</Suspense>
 		</PageLayout>

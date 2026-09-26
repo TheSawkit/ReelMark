@@ -1,6 +1,8 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, redirect } from 'next/navigation';
 import { fetchTMDB } from '@/lib/tmdb/client';
+import { isTMDBNotFound } from '@/lib/tmdb/errors';
+import { FALLBACK_TITLE } from '@/lib/metadata';
 import { Suspense, cache } from 'react';
 import type { Metadata } from 'next';
 import {
@@ -35,7 +37,8 @@ import { getShowAverageRating, getMediaReview } from '@/lib/data/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
 import { MediaCommunityRating } from '@/components/media/detail/MediaCommunityRating';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
-import { tvSeriesJsonLd, serializeJsonLd } from '@/lib/structured-data';
+import { tvSeriesJsonLd } from '@/lib/structured-data';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import { getServerLocale, getTranslations } from '@/lib/i18n/server';
@@ -203,7 +206,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
 	const { id, lang } = await params;
 	const tvId = parseInt(id);
-	if (isNaN(tvId)) return { title: 'ReelMark' };
+	if (isNaN(tvId)) return { title: FALLBACK_TITLE };
 	return buildMediaDetailMetadata('tv', tvId, lang);
 }
 
@@ -222,19 +225,14 @@ export default async function TvShowPage(props: TvPageProps) {
 			getTvShowImages(tvId, lang),
 		]);
 	} catch (error) {
-		if (!(error instanceof Error && error.message.includes('404')))
-			throw error;
+		if (!isTMDBNotFound(error)) throw error;
 
 		let isMovie = false;
 		try {
 			await fetchTMDB(`/movie/${tvId}`, {}, { revalidate: 86400 });
 			isMovie = true;
 		} catch (probeError) {
-			if (!(
-				probeError instanceof Error &&
-				probeError.message.includes('404')
-			))
-				throw probeError;
+			if (!isTMDBNotFound(probeError)) throw probeError;
 		}
 		if (isMovie) redirect(localizedHref(lang, `/movie/${tvId}`));
 		notFound();
@@ -284,17 +282,13 @@ export default async function TvShowPage(props: TvPageProps) {
 				</Suspense>
 			}
 			actions={
-				<div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+				<>
 					<WatchNowSlot variant="banner" />
-					<div className="w-full sm:w-auto">
-						<Suspense
-							fallback={
-								<Skeleton className="h-11 w-full sm:w-40 rounded-lg" />
-							}
-						>
-							<TvUserActions show={tvDetails} variant="banner" />
-						</Suspense>
-					</div>
+					<Suspense
+						fallback={<WatchActionsSkeleton variant="banner" />}
+					>
+						<TvUserActions show={tvDetails} variant="banner" />
+					</Suspense>
 					<Suspense fallback={null}>
 						<TvProgressSummary
 							tvId={tvId}
@@ -302,7 +296,7 @@ export default async function TvShowPage(props: TvPageProps) {
 							seasons={standardSeasons}
 						/>
 					</Suspense>
-				</div>
+				</>
 			}
 		/>
 	);
@@ -340,14 +334,7 @@ export default async function TvShowPage(props: TvPageProps) {
 
 	return (
 		<>
-			<script
-				type="application/ld+json"
-				dangerouslySetInnerHTML={{
-					__html: serializeJsonLd(
-						tvSeriesJsonLd(tvDetails, credits, lang)
-					),
-				}}
-			/>
+			<JsonLd data={tvSeriesJsonLd(tvDetails, credits, lang)} />
 			<MediaDetailLayout
 				banner={banner}
 				actionsBar={actionsBar}

@@ -2,6 +2,7 @@ import { networkInterfaces } from 'node:os';
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import withSerwist from '@serwist/next';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from './lib/i18n/config';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -27,7 +28,7 @@ const cspDirectives = [
 	"worker-src 'self'",
 	`script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.youtube.com https://s.ytimg.com`,
 	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-	"img-src 'self' data: blob: https://image.tmdb.org https://i.ytimg.com https://lh3.googleusercontent.com https://api.dicebear.com https://*.supabase.co https://cdn.watchmode.com https://*.mzstatic.com",
+	"img-src 'self' data: blob: https://image.tmdb.org https://i.ytimg.com https://lh3.googleusercontent.com https://*.supabase.co https://cdn.watchmode.com https://*.mzstatic.com",
 	"font-src 'self' data: https://fonts.gstatic.com",
 	'frame-src https://www.youtube.com https://www.youtube-nocookie.com',
 	`connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://image.tmdb.org https://api.watchmode.com https://www.youtube.com https://sentry.silexio.be${isDev ? ' ws: wss:' : ' wss:'}`,
@@ -57,27 +58,28 @@ const securityHeaders = [
 		: []),
 ];
 
+/** File-like paths skip the proxy and reached `[lang]` as a language, where the root layout's `notFound()` answered 500; `afterFiles` keeps real files first. */
+const unmatchedFileRewrite = {
+	source: `/:path((?!(?:${SUPPORTED_LANGUAGES.join('|')}|_next)/).+\\.\\w+)`,
+	destination: `/${DEFAULT_LANGUAGE}/:path`,
+};
+
+/** "use cache" keeps each entry as a buffered stream, several times its declared size: at the 50 Mo default the heap kept growing under bot crawls (327 Mo retained after 9 500 pages); 10 Mo plateaus near 135 Mo. */
+const CACHE_MAX_MEMORY_BYTES = 10 * 1024 * 1024;
+
 const nextConfig: NextConfig = {
 	output: 'standalone',
+	cacheMaxMemorySize: CACHE_MAX_MEMORY_BYTES,
 	cacheComponents: true,
 	allowedDevOrigins: localNetworkOrigins(),
 	experimental: {
-		optimizePackageImports: [
-			'lucide-react',
-			'simple-icons',
-			'@radix-ui/react-dialog',
-			'@radix-ui/react-dropdown-menu',
-			'@radix-ui/react-label',
-			'@radix-ui/react-separator',
-			'@radix-ui/react-slot',
-		],
-		staleTimes: {
-			dynamic: 90,
-			static: 180,
-		},
+		isrFlushToDisk: false,
 	},
 	turbopack: {
 		root: __dirname,
+	},
+	async rewrites() {
+		return [unmatchedFileRewrite];
 	},
 	async headers() {
 		return [
@@ -88,16 +90,12 @@ const nextConfig: NextConfig = {
 		];
 	},
 	images: {
-		unoptimized: true,
+		loader: 'custom',
+		loaderFile: './lib/image-loader.ts',
 		remotePatterns: [
 			{
 				protocol: 'https',
 				hostname: 'lh3.googleusercontent.com',
-				pathname: '/**',
-			},
-			{
-				protocol: 'https',
-				hostname: 'api.dicebear.com',
 				pathname: '/**',
 			},
 			{
@@ -149,7 +147,7 @@ export default withSentryConfig(withPWA, {
 	authToken: process.env.SENTRY_AUTH_TOKEN,
 	tunnelRoute: '/monitoring',
 	widenClientFileUpload: true,
-	webpack: { treeshake: { removeDebugLogging: true } },
+	webpack: { treeshake: { removeDebugLogging: true, removeTracing: true } },
 	silent: !process.env.CI,
 	sourcemaps: { deleteSourcemapsAfterUpload: true },
 });

@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { searchMulti } from '@/lib/tmdb';
 import { mergeWithWatchlist } from '@/lib/data/watchlist';
 import { MediaGrid } from '@/components/media/card/MediaGrid';
-import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
-import { PageLayout } from '@/components/layout/PageLayout';
+import { SearchResultsSkeleton } from '@/components/search/SearchResultsSkeleton';
+import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { SearchBar } from '@/components/search/SearchBar';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
 import { Search as SearchIcon } from 'lucide-react';
@@ -16,15 +16,16 @@ interface SearchPageProps {
 }
 
 export async function generateMetadata({
+	params,
 	searchParams,
 }: SearchPageProps): Promise<Metadata> {
-	const params = await searchParams;
-	const query = params.q || params.query || '';
+	const [{ lang }, search] = await Promise.all([params, searchParams]);
+	const query = search.q || search.query || '';
+	const t = await getTranslations(lang);
 	return {
-		title: query ? `"${query}" — Search` : 'Search',
-		description: query
-			? `Search results for "${query}" on ReelMark — movies, TV shows, and crew.`
-			: 'Search movies, TV shows, and crew on ReelMark.',
+		title: query ? `${t.pages.search.title} “${query}”` : t.common.search,
+		description: t.metadata.explorerDescription,
+		robots: { index: false, follow: true },
 	};
 }
 
@@ -80,16 +81,12 @@ export default async function SearchResultsPage({
 
 	return (
 		<PageLayout>
-			<div className="mb-10 opacity-0 animate-slide-up">
-				<h1 className="text-3xl font-bold mb-2">
-					{t.pages.search.title} &quot;{query}&quot;
-				</h1>
-			</div>
+			<PageHeader title={`${t.pages.search.title} “${query}”`} />
 
 			<SearchBar />
 
 			<div className="mt-8">
-				<Suspense fallback={<PosterGridSkeleton />}>
+				<Suspense fallback={<SearchResultsSkeleton />}>
 					<SearchResults query={query} t={t} lang={lang} />
 				</Suspense>
 			</div>

@@ -8,7 +8,8 @@ import { sendPushToUser } from '@/lib/push/send';
 
 type FriendPushType = 'friend_request' | 'friend_accepted';
 
-async function recipientLanguage(userId: string): Promise<Language> {
+/** The recipient's UI language, so a push reads like the rest of their app. */
+export async function recipientLanguage(userId: string): Promise<Language> {
 	try {
 		const supabase = createAdminClient();
 		const { data } = await supabase.auth.admin.getUserById(userId);

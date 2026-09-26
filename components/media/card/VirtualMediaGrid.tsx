@@ -8,10 +8,6 @@ import type { MediaItem } from '@/types/tmdb';
 
 const SSR_ROWS = 4;
 
-export const MEDIA_GRID_COLUMNS: GridColumns = { base: 2, md: 3, lg: 4, xl: 6 };
-export const MEDIA_GRID_ROW_CLASS =
-	'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6 lg:gap-8 pb-4 md:pb-6 lg:pb-8';
-
 interface VirtualMediaGridProps {
 	items: MediaItem[];
 	columns: GridColumns;

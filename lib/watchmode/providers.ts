@@ -1,5 +1,5 @@
 import type { WatchProvider } from '@/types/tmdb';
-import { fetchWatchmode } from './client';
+import { fetchWatchmode, isWatchmodeCoolingDown } from './client';
 import { reportSwallowed } from '@/lib/report';
 import type {
 	WatchmodeSearchResponse,
@@ -9,6 +9,11 @@ import type {
 } from './client';
 
 const REGION_FALLBACKS: Record<string, string[]> = {};
+
+function reportUnlessQuota(label: string, error: unknown): void {
+	if (isWatchmodeCoolingDown()) return;
+	reportSwallowed(label, error);
+}
 
 export interface WatchmodeProviderResult {
 	streaming: WatchProvider[];
@@ -29,7 +34,7 @@ async function getPlanEnabledRegions(): Promise<string[]> {
 		);
 		return regions.filter((r) => r.plan_enabled).map((r) => r.country);
 	} catch (error) {
-		reportSwallowed('watchmode:regions', error);
+		reportUnlessQuota('watchmode:regions', error);
 		return [];
 	}
 }
@@ -44,7 +49,7 @@ async function getSourceListings(): Promise<
 		);
 		return new Map(listings.map((s) => [s.id, s]));
 	} catch (error) {
-		reportSwallowed('watchmode:sources', error);
+		reportUnlessQuota('watchmode:sources', error);
 		return new Map();
 	}
 }
@@ -62,7 +67,7 @@ async function resolveTmdbId(
 		);
 		return data.title_results[0]?.id ?? null;
 	} catch (error) {
-		reportSwallowed('watchmode:resolve-id', error);
+		reportUnlessQuota('watchmode:resolve-id', error);
 		return null;
 	}
 }
@@ -97,6 +102,8 @@ export async function getWatchmodeProviders(
 	mediaType: 'movie' | 'tv',
 	region: string
 ): Promise<WatchmodeProviderResult | null> {
+	if (isWatchmodeCoolingDown()) return null;
+
 	try {
 		const enabledRegions = await getPlanEnabledRegions();
 
@@ -163,7 +170,7 @@ export async function getWatchmodeProviders(
 			result.buy.length > 0;
 		return hasData ? result : null;
 	} catch (error) {
-		reportSwallowed('watchmode:title-sources', error);
+		reportUnlessQuota('watchmode:title-sources', error);
 		return null;
 	}
 }

@@ -42,7 +42,6 @@ export function MediaCast({ cast }: MediaCastProps) {
 										)}
 										alt={member.name}
 										fill
-										unoptimized
 										className="object-cover"
 										sizes="(max-width: 768px) 112px, 128px"
 									/>

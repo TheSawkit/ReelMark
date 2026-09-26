@@ -7,9 +7,13 @@ import {
 } from '@/lib/tmdb';
 import { RelatedMediaPage } from '@/components/media/RelatedMediaPage';
 import { getTranslations } from '@/lib/i18n/server';
-import { buildPageMetadata, localizedAlternates } from '@/lib/metadata';
+import {
+	buildPageMetadata,
+	FALLBACK_TITLE,
+	localizedAlternates,
+} from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';
-import { reportSwallowed } from '@/lib/report';
+import { notFoundIfMissing } from '@/lib/tmdb/not-found';
 
 type SimilarPageParams = Promise<{ lang: Language; id: string }>;
 interface SimilarPageProps {
@@ -29,7 +33,7 @@ export async function generateMetadata({
 }: SimilarPageProps): Promise<Metadata> {
 	const { lang, id } = await params;
 	const tvId = parseInt(id);
-	if (isNaN(tvId)) return { title: 'ReelMark' };
+	if (isNaN(tvId)) return { title: FALLBACK_TITLE };
 
 	const t = await getTranslations(lang);
 	try {
@@ -51,15 +55,11 @@ export default async function SimilarTvShowsPage(props: SimilarPageProps) {
 	const tvId = parseInt(id);
 	if (isNaN(tvId)) notFound();
 
-	let details;
-	try {
-		details = await getTvShowDetails(tvId, lang);
-	} catch (error) {
-		reportSwallowed('tv/similar:details', error);
-		notFound();
-	}
-	const t = await getTranslations(lang);
-	const similar = await getSimilarTvShows(tvId, lang);
+	const [details, t, similar] = await Promise.all([
+		getTvShowDetails(tvId, lang).catch(notFoundIfMissing),
+		getTranslations(lang),
+		getSimilarTvShows(tvId, lang),
+	]);
 
 	return (
 		<RelatedMediaPage

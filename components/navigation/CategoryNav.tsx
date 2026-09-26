@@ -51,37 +51,32 @@ export function CategoryNav() {
 					},
 				];
 
+	const pills = [
+		{
+			name: t.explorer.overview,
+			href: `/explorer?type=${activeDomain}`,
+			path: '/explorer',
+		},
+		...categories.map((category) => ({ ...category, path: category.href })),
+	];
+
 	return (
 		<div className="relative mb-8">
-			<div className="absolute right-0 top-0 bottom-2 w-12 bg-linear-to-l from-background to-transparent pointer-events-none z-10 md:hidden" />
-			<div className="flex overflow-x-scroll overflow-y-visible pb-2 gap-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-				<Link
-					href={localizedHref(lang, `/explorer?type=${activeDomain}`)}
-					aria-current={path === '/explorer' ? 'page' : undefined}
-					className={cn(
-						'px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition duration-(--duration-fast) ease-apple',
-						path === '/explorer'
-							? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
-							: 'glass-surface text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
-					)}
-				>
-					{t.explorer.overview}
-				</Link>
-				{categories.map((category) => (
+			<div className="absolute -right-6 inset-y-0 w-12 bg-linear-to-l from-background to-transparent pointer-events-none z-10 md:hidden" />
+			<div className="scrollbar-hide flex gap-3 overflow-x-auto -mx-6 px-6 -my-4 py-4 lg:-mx-12 lg:px-12">
+				{pills.map((item) => (
 					<Link
-						key={category.href}
-						href={localizedHref(lang, category.href)}
-						aria-current={
-							path === category.href ? 'page' : undefined
-						}
+						key={item.path}
+						href={localizedHref(lang, item.href)}
+						aria-current={path === item.path ? 'page' : undefined}
 						className={cn(
 							'inline-flex items-center min-h-11 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition duration-(--duration-fast) ease-apple',
-							path === category.href
+							path === item.path
 								? 'bg-primary text-white shadow-cinema ring-2 ring-primary/40'
 								: 'glass-surface text-muted hover:text-text hover:bg-glass-bg-hover shadow-card-xs'
 						)}
 					>
-						{category.name}
+						{item.name}
 					</Link>
 				))}
 			</div>

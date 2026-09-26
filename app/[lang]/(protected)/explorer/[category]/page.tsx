@@ -9,6 +9,7 @@ import { getTranslations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
 import { SearchBar } from '@/components/search/SearchBar';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
+import { FALLBACK_TITLE, localizedAlternates } from '@/lib/metadata';
 type CategoryPageParams = Promise<{ lang: Language; category: string }>;
 interface CategoryPageProps {
 	params: CategoryPageParams;
@@ -88,14 +89,17 @@ export async function generateMetadata({
 	const { lang, category } = await params;
 	const t = await getTranslations(lang);
 	const categoryMap = buildCategoryMap(t);
-	const categoryData = categoryMap[category] ?? {
-		title: 'ReelMark',
-		description: t.metadata.explorerDescription,
-	};
+	if (!Object.hasOwn(categoryMap, category))
+		return {
+			title: FALLBACK_TITLE,
+			description: t.metadata.explorerDescription,
+		};
+	const categoryData = categoryMap[category];
 
 	return {
 		title: categoryData.title,
 		description: categoryData.description,
+		alternates: localizedAlternates(lang, `/explorer/${category}`),
 		openGraph: {
 			title: categoryData.title,
 			description: categoryData.description,
@@ -114,7 +118,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 	const t = await getTranslations(lang);
 	const categoryMap = buildCategoryMap(t);
 
-	if (!(category in categoryMap)) {
+	if (!Object.hasOwn(categoryMap, category)) {
 		notFound();
 	}
 

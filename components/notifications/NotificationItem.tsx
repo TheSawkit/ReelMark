@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/shared/UserAvatar';
 import { DeleteIconButton } from '@/components/ui/DeleteIconButton';
 import { useTranslation } from '@/lib/i18n/context';
@@ -13,12 +15,14 @@ import type { AppNotification } from '@/types/notifications';
 interface NotificationItemProps {
 	notification: AppNotification;
 	onClick?: (n: AppNotification) => void;
-	onDelete?: (id: string) => void;
+	onMarkRead: (n: AppNotification) => void;
+	onDelete: (n: AppNotification) => void;
 }
 
 export function NotificationItem({
 	notification,
 	onClick,
+	onMarkRead,
 	onDelete,
 }: NotificationItemProps) {
 	const { t, lang } = useTranslation();
@@ -69,7 +73,8 @@ export function NotificationItem({
 	);
 
 	const itemClassName = cn(
-		'flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors',
+		'flex items-start gap-3 rounded-lg py-2.5 pl-3 transition-colors',
+		unread ? 'pr-18' : 'pr-10',
 		'hover:bg-surface-2 active:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
 	);
 
@@ -87,17 +92,23 @@ export function NotificationItem({
 			) : (
 				<div className={itemClassName}>{inner}</div>
 			)}
-			{onDelete && (
-				// Visible d'emblée au doigt : `hover:` est borné à @media (hover:hover), donc au
-				// tactile le bouton restait invisible tout en captant le tap — viser la
-				// notification pour l'ouvrir la supprimait.
-				<div className="absolute right-1 top-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
-					<DeleteIconButton
-						onClick={() => onDelete(notification.id)}
-						ariaLabel={t.notifications.delete}
-					/>
-				</div>
-			)}
+			<div className="absolute right-1 top-1 flex gap-0.5 transition-opacity pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:group-focus-within:opacity-100">
+				{unread && (
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() => onMarkRead(notification)}
+						className="h-8 w-8 shrink-0 p-0 text-muted hover:text-text"
+						aria-label={t.notifications.markRead}
+					>
+						<Check className="h-4 w-4" />
+					</Button>
+				)}
+				<DeleteIconButton
+					onClick={() => onDelete(notification)}
+					ariaLabel={t.notifications.delete}
+				/>
+			</div>
 		</div>
 	);
 }

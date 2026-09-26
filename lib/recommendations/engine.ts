@@ -317,3 +317,25 @@ export function rankRecommendations(
 		[...scored.values()].sort((a, b) => b.score - a.score)
 	);
 }
+
+/**
+ * The single title to suggest this week: best-ranked by the same scoring as the dashboard,
+ * never one already in the user's list, dismissed, or suggested before.
+ */
+export function pickSuggestion(
+	entries: WatchlistEntry[],
+	ratingByKey: Record<string, number>,
+	dismissals: DismissedRecommendation[],
+	seedCandidates: SeedCandidates[],
+	alreadySuggested: Set<string>
+): MediaItem | null {
+	const excluded = new Set([
+		...alreadySuggested,
+		...entries.map((entry) =>
+			getMediaKey({ media_type: entry.media_type, id: entry.media_id })
+		),
+	]);
+	const affinity = genreAffinity(entries, ratingByKey);
+	applyDismissals(excluded, affinity, dismissals);
+	return rankRecommendations(seedCandidates, excluded, affinity)[0] ?? null;
+}

@@ -9,6 +9,9 @@ export const BASE_URL = (() => {
 	return 'https://reelmark.silexio.be';
 })();
 
+/** Brand-only title for a page whose own title is unavailable; `absolute` skips the `%s | ReelMark` template, which would print the brand twice. */
+export const FALLBACK_TITLE = { absolute: 'ReelMark' };
+
 export const DEFAULT_OG_IMAGE = {
 	url: `${BASE_URL}/og`,
 	width: 1200,

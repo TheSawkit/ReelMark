@@ -8,12 +8,12 @@ interface InfoBadgeProps {
 	className?: string;
 }
 
-/** Glass pill with an optional leading icon — shared hero/meta badge. */
+/** Compact glass pill with an optional leading icon — one item of a hero's single-line meta row. */
 export function InfoBadge({ icon, children, className }: InfoBadgeProps) {
 	return (
 		<div
 			className={cn(
-				'flex items-center gap-2 glass-surface px-4 py-2 rounded-full shadow-card-sm',
+				'flex h-8 shrink-0 items-center gap-1.5 glass-surface px-3 rounded-full text-sm shadow-card-xs',
 				className
 			)}
 		>
@@ -35,7 +35,7 @@ export function RatingBadge({
 		<InfoBadge
 			className={className}
 			icon={
-				<Star className="h-5 w-5 fill-rating-gold text-rating-gold" />
+				<Star className="h-4 w-4 fill-rating-gold text-rating-gold" />
 			}
 		>
 			<span className="font-semibold text-text tabular-nums">
