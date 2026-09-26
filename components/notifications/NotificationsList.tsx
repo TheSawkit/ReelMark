@@ -7,6 +7,9 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { useNotifications } from '@/components/notifications/NotificationsProvider';
 import { useTranslation } from '@/lib/i18n/context';
 import type { AppNotification } from '@/types/notifications';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
+import { SPRING } from '@/lib/motion';
 
 export function NotificationsList({ initial }: { initial: AppNotification[] }) {
 	const { t } = useTranslation();
@@ -52,14 +55,22 @@ export function NotificationsList({ initial }: { initial: AppNotification[] }) {
 				</button>
 			</div>
 			<div className="space-y-0.5">
-				{items.map((n) => (
-					<NotificationItem
-						key={n.id}
-						notification={n}
-						onMarkRead={onMarkRead}
-						onDelete={onDelete}
-					/>
-				))}
+				<AnimatePresence initial={false} mode="popLayout">
+					{items.map((n) => (
+						<m.div
+							key={n.id}
+							layout
+							exit={{ opacity: 0, x: -24 }}
+							transition={SPRING.list}
+						>
+							<NotificationItem
+								notification={n}
+								onMarkRead={onMarkRead}
+								onDelete={onDelete}
+							/>
+						</m.div>
+					))}
+				</AnimatePresence>
 			</div>
 		</div>
 	);

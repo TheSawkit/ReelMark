@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useCallback } from 'react';
+import * as m from 'motion/react-m';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/context';
@@ -58,12 +59,13 @@ export function HorizontalScroll({
 				</div>
 			)}
 
-			<div
+			<m.div
 				ref={scrollContainerRef}
-				className={`flex gap-4 overflow-x-auto py-5 -my-5 px-4 -mx-4 scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${containerClassName}`}
+				layoutScroll
+				className={`flex gap-4 overflow-x-auto py-5 -my-5 px-4 -mx-4 scrollbar-hide ${containerClassName}`}
 			>
 				{children}
-			</div>
+			</m.div>
 		</div>
 	);
 }
