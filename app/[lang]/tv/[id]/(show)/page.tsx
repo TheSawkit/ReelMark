@@ -281,17 +281,11 @@ export default async function TvShowPage(props: TvPageProps) {
 				</Suspense>
 			}
 			actions={
-				<div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+				<>
 					<WatchNowSlot variant="banner" />
-					<div className="w-full sm:w-auto">
-						<Suspense
-							fallback={
-								<Skeleton className="h-11 w-full sm:w-40 rounded-lg" />
-							}
-						>
-							<TvUserActions show={tvDetails} variant="banner" />
-						</Suspense>
-					</div>
+					<Suspense fallback={<WatchActionsSkeleton variant="banner" />}>
+						<TvUserActions show={tvDetails} variant="banner" />
+					</Suspense>
 					<Suspense fallback={null}>
 						<TvProgressSummary
 							tvId={tvId}
@@ -299,7 +293,7 @@ export default async function TvShowPage(props: TvPageProps) {
 							seasons={standardSeasons}
 						/>
 					</Suspense>
-				</div>
+				</>
 			}
 		/>
 	);

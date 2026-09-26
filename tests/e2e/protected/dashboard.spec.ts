@@ -35,16 +35,13 @@ test.describe('Explorer', () => {
 		});
 	});
 
-	test('search bar is present', async ({ page }) => {
+	test('search is one tap away', async ({ page }) => {
 		await page.goto('/en/explorer');
 		await expect(
 			page
-				.getByRole('searchbox')
-				.or(
-					page
-						.locator('input[type=search], input[placeholder]')
-						.first()
-				)
+				.getByRole('button', { name: /^search$/i })
+				.filter({ visible: true })
+				.first()
 		).toBeVisible({ timeout: 10000 });
 	});
 });

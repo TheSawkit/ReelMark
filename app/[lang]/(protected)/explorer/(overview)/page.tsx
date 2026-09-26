@@ -1,4 +1,3 @@
-import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import {
@@ -17,12 +16,14 @@ import { mergeWithWatchlist } from '@/lib/data/watchlist';
 import { MediaSection } from '@/components/media/card/MediaSection';
 import { MediaSectionsSkeleton } from '@/components/media/card/MediaSectionsSkeleton';
 import { SpotlightPick } from '@/components/explorer/SpotlightPick';
+import { SpotlightPickSkeleton } from '@/components/explorer/SpotlightPickSkeleton';
 import { CategoryNav } from '@/components/navigation/CategoryNav';
-import { SearchBar } from '@/components/search/SearchBar';
-import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
 import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
+import { MediaTypeSwitcherSkeleton } from '@/components/media/card/MediaTypeSwitcherSkeleton';
+import { CategoryNavSkeleton } from '@/components/navigation/CategoryNavSkeleton';
 import { TypeSwitched } from '@/components/media/card/TypeSwitched';
 import { buildPageMetadata } from '@/lib/metadata';
 import type { Movie, TvShow, MediaType } from '@/types/tmdb';
@@ -52,36 +53,37 @@ async function fetchSectionItems(
 	);
 }
 
-async function TrendingSpotlightSection({
-	t,
-	lang,
-}: {
-	t: Translations;
-	lang: Language;
-}) {
-	const section = async (type: MediaType) => {
-		const items = await fetchSectionItems(
+async function TrendingHero({ t, lang }: { t: Translations; lang: Language }) {
+	const hero = async (type: MediaType) => {
+		const [featured] = await fetchSectionItems(
 			type,
 			() => getTrendingMovies('week', 1, lang),
 			() => getTrendingTvShows('week', 1, lang)
 		);
-		return (
-			<>
-				{items.length > 0 && (
-					<SpotlightPick
-						item={items[0]}
-						badgeLabel={t.pages.explorer.featured}
-						ctaLabel={t.pages.dashboard.discover}
-					/>
-				)}
-				<MediaSection
-					title={t.pages.explorer.top10}
-					items={items}
-					categoryUrl={`/explorer/${type === 'movie' ? 'trending' : 'tv-trending'}`}
-				/>
-			</>
-		);
+		return featured ? (
+			<SpotlightPick
+				item={featured}
+				badgeLabel={t.pages.explorer.featured}
+				ctaLabel={t.pages.dashboard.discover}
+			/>
+		) : null;
 	};
+	const [movie, tv] = await Promise.all([hero('movie'), hero('tv')]);
+	return <TypeSwitched movie={movie} tv={tv} />;
+}
+
+async function TopTenSection({ t, lang }: { t: Translations; lang: Language }) {
+	const section = async (type: MediaType) => (
+		<MediaSection
+			title={t.pages.explorer.top10}
+			items={await fetchSectionItems(
+				type,
+				() => getTrendingMovies('week', 1, lang),
+				() => getTrendingTvShows('week', 1, lang)
+			)}
+			categoryUrl={`/explorer/${type === 'movie' ? 'trending' : 'tv-trending'}`}
+		/>
+	);
 	const [movie, tv] = await Promise.all([section('movie'), section('tv')]);
 	return <TypeSwitched movie={movie} tv={tv} />;
 }
@@ -173,67 +175,52 @@ async function UpcomingSection({
 	return <TypeSwitched movie={movie} tv={tv} />;
 }
 
-function SpotlightTrendingSkeleton() {
-	return (
-		<>
-			<Skeleton className="mb-10 h-52 w-full rounded-(--radius-banner) sm:h-56" />
-			<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
-		</>
-	);
-}
+const SECTIONS = [
+	{ key: 'top10', Section: TopTenSection },
+	{ key: 'popular', Section: PopularSection },
+	{ key: 'topRated', Section: TopRatedSection },
+	{ key: 'upcoming', Section: UpcomingSection },
+] as const;
 
 export default async function ExplorerPage({ params: paramsPromise }: Props) {
 	const { lang } = await paramsPromise;
 	const t = await getTranslations(lang);
 
 	return (
-		<PageLayout>
-			<PageHeader
-				title={t.pages.explorer.title}
-				subtitle={t.pages.explorer.subtitle}
-			/>
-
-			<SearchBar />
-
-			<div className="mb-8 min-h-14 flex justify-center">
-				<Suspense fallback={null}>
-					<MediaTypeSwitcher defaultType="movie" shallow />
+		<>
+			<h1 className="sr-only">{t.pages.explorer.title}</h1>
+			<section
+				aria-label={t.pages.explorer.featured}
+				className="hero-stage relative isolate flex flex-col justify-end overflow-hidden banner-pull-top banner-safe-pad pb-8 sm:pb-12"
+			>
+				<Suspense fallback={<SpotlightPickSkeleton />}>
+					<TrendingHero t={t} lang={lang} />
 				</Suspense>
-			</div>
+				<div className="absolute inset-x-0 top-0 z-20 banner-safe-pad">
+					<Suspense fallback={<MediaTypeSwitcherSkeleton />}>
+						<MediaTypeSwitcher defaultType="movie" shallow />
+					</Suspense>
+				</div>
+			</section>
 
-			<div className="mb-8 min-h-11">
-				<Suspense fallback={null}>
-					<CategoryNav />
-				</Suspense>
-			</div>
+			<PageLayout className="pt-6 lg:pt-8">
+				<div className="mb-8 min-h-11">
+					<Suspense fallback={<CategoryNavSkeleton />}>
+						<CategoryNav />
+					</Suspense>
+				</div>
 
-			<Suspense fallback={<SpotlightTrendingSkeleton />}>
-				<TrendingSpotlightSection t={t} lang={lang} />
-			</Suspense>
-
-			<Suspense
-				fallback={
-					<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
-				}
-			>
-				<PopularSection t={t} lang={lang} />
-			</Suspense>
-
-			<Suspense
-				fallback={
-					<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
-				}
-			>
-				<TopRatedSection t={t} lang={lang} />
-			</Suspense>
-
-			<Suspense
-				fallback={
-					<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
-				}
-			>
-				<UpcomingSection t={t} lang={lang} />
-			</Suspense>
-		</PageLayout>
+				{SECTIONS.map(({ key, Section }) => (
+					<Suspense
+						key={key}
+						fallback={
+							<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
+						}
+					>
+						<Section t={t} lang={lang} />
+					</Suspense>
+				))}
+			</PageLayout>
+		</>
 	);
 }

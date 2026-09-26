@@ -6,8 +6,8 @@ import {
 
 export default function MovieLoading() {
 	return (
-		<div className="min-h-screen">
-			<DetailBannerSkeleton />
+		<div data-skeleton="movie" className="min-h-screen">
+			<DetailBannerSkeleton variant="movie" />
 
 			<div className="detail-container">
 				<DescriptionSkeleton />
