@@ -16,13 +16,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-	Sheet,
-	SheetContent,
-	SheetHeader,
-	SheetTitle,
-	SheetTrigger,
-} from '@/components/ui/sheet';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import type { SeasonOption } from '@/lib/seasons';
 
 interface SeasonSwitcherProps {
@@ -82,20 +76,14 @@ export function SeasonSwitcher({
 
 	if (isMobile) {
 		return (
-			<Sheet open={open} onOpenChange={setOpen}>
-				<SheetTrigger asChild>{trigger}</SheetTrigger>
-				<SheetContent
-					side="bottom"
-					className="glass-popover max-h-3/4 rounded-t-2xl border-border/10 pb-[env(safe-area-inset-bottom)]"
-				>
-					<SheetHeader className="px-5 pt-5 pb-0">
-						<SheetTitle className="text-left text-text">
-							{t.movie.chooseSeason}
-						</SheetTitle>
-					</SheetHeader>
-					<div className="overflow-y-auto px-3 pb-4">{list}</div>
-				</SheetContent>
-			</Sheet>
+			<BottomSheet
+				open={open}
+				onOpenChange={setOpen}
+				trigger={trigger}
+				title={t.movie.chooseSeason}
+			>
+				{list}
+			</BottomSheet>
 		);
 	}
 
