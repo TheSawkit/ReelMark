@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
+import { ActiveIndicator } from '@/components/motion/ActiveIndicator';
 import { cn } from '@/lib/utils';
 import { MediaCard } from '@/components/media/card/MediaCard';
 import { AbandonShowMenu } from '@/components/media/tv/AbandonShowMenu';
@@ -128,7 +129,7 @@ export function LibraryTabs({
 
 	const visibleTab = tabOrder.includes(activeTab) ? activeTab : 'to_watch';
 	const current = tabs[visibleTab];
-	const activeIndex = tabOrder.indexOf(visibleTab);
+	const indicatorId = useId();
 
 	const controls = useMediaListControls(
 		current.items,
@@ -149,14 +150,6 @@ export function LibraryTabs({
 				role="tablist"
 				aria-label={t.library.filtersLabel}
 			>
-				<div
-					aria-hidden="true"
-					className="absolute top-1 bottom-1 rounded-lg bg-surface border border-border shadow-card-sm transition-[left] duration-(--duration-base) ease-apple-spring"
-					style={{
-						left: `calc(${activeIndex} * (100% / ${tabOrder.length}) + 0.25rem)`,
-						width: `calc(100% / ${tabOrder.length} - 0.5rem)`,
-					}}
-				/>
 				{tabOrder.map((id) => {
 					const tab = tabs[id];
 					return (
@@ -167,13 +160,19 @@ export function LibraryTabs({
 							aria-controls={`panel-${id}`}
 							onClick={() => switchTab(id)}
 							className={cn(
-								'relative z-10 flex flex-1 min-w-0 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-medium rounded-lg min-h-11 transition-[color,scale] duration-(--duration-fast) cursor-pointer active:scale-95',
+								'relative isolate flex flex-1 min-w-0 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-medium rounded-lg min-h-11 transition-[color,scale] duration-(--duration-fast) cursor-pointer active:scale-95',
 								'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
 								visibleTab === id
 									? 'text-text'
 									: 'text-muted hover:text-text'
 							)}
 						>
+							{visibleTab === id && (
+								<ActiveIndicator
+									layoutId={`${indicatorId}-status`}
+									className="inset-0 -z-10 rounded-lg border border-border bg-surface shadow-card-sm"
+								/>
+							)}
 							<tab.icon className="block max-sm:hidden h-4 w-4 shrink-0" />
 							<span className="truncate">{tab.label}</span>
 							<span

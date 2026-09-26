@@ -4,7 +4,8 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Film, Tv, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/context';
 import { cn } from '@/lib/utils';
-import { useState, useTransition } from 'react';
+import { useId, useState, useTransition } from 'react';
+import { ActiveIndicator } from '@/components/motion/ActiveIndicator';
 
 type MediaType = 'movie' | 'tv';
 
@@ -23,6 +24,7 @@ export function MediaTypeSwitcher({
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 	const [isPending, startTransition] = useTransition();
+	const indicatorId = useId();
 	const [requestedType, setRequestedType] = useState<MediaType | null>(null);
 
 	const currentType = searchParams.get('type') || defaultType;
@@ -52,16 +54,8 @@ export function MediaTypeSwitcher({
 		<div className="flex justify-center mb-8">
 			<div
 				aria-busy={isPending}
-				className="relative inline-flex items-center p-1 glass-surface rounded-xl shadow-card-xs isolate"
+				className="relative inline-flex items-center p-1 glass-surface rounded-xl shadow-card-xs"
 			>
-				<div
-					className={cn(
-						'absolute top-1 bottom-1 w-[calc(50%-4px)] bg-primary rounded-lg transition-transform duration-(--duration-base) ease-in-out -z-10',
-						activeType === 'movie'
-							? 'translate-x-0'
-							: 'translate-x-full'
-					)}
-				/>
 				{(
 					[
 						{ type: 'movie', icon: Film, label: t.movie.films },
@@ -73,12 +67,18 @@ export function MediaTypeSwitcher({
 						onClick={() => setType(type)}
 						disabled={isPending}
 						className={cn(
-							'flex flex-1 justify-center items-center gap-2 min-h-11 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-(--duration-base) disabled:cursor-not-allowed',
+							'relative isolate flex flex-1 justify-center items-center gap-2 min-h-11 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-(--duration-base) disabled:cursor-not-allowed',
 							activeType === type
-								? 'text-white shadow-cinema'
+								? 'text-white'
 								: 'text-muted hover:text-text'
 						)}
 					>
+						{activeType === type && (
+							<ActiveIndicator
+								layoutId={`${indicatorId}-type`}
+								className="inset-0 -z-10 rounded-lg bg-primary shadow-cinema"
+							/>
+						)}
 						{pendingType === type ? (
 							<Loader2
 								className="w-4 h-4 animate-spin"
