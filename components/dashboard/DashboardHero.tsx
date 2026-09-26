@@ -83,22 +83,15 @@ export function DashboardHero({
 				>
 					{greeting}
 				</h1>
-				<span
-					className="hero-rise inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-gold"
-					style={riseStyle(1)}
-				>
-					<Play className="h-3.5 w-3.5 fill-current" aria-hidden />
-					{cta}
-				</span>
 				<h2
 					className="hero-rise heading-display line-clamp-2 max-w-3xl text-5xl leading-none text-text drop-shadow-text sm:text-6xl lg:text-7xl"
-					style={riseStyle(2)}
+					style={riseStyle(1)}
 				>
 					{item.title}
 				</h2>
 				<p
 					className="hero-rise flex flex-wrap items-center justify-center gap-x-2 text-sm text-muted md:justify-start"
-					style={riseStyle(3)}
+					style={riseStyle(2)}
 				>
 					{item.voteAverage > 0 && (
 						<span className="inline-flex items-center gap-1 font-semibold text-gold">
@@ -125,7 +118,7 @@ export function DashboardHero({
 				<Link
 					href={localizedHref(lang, getMediaHref(item))}
 					className="hero-rise mt-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-text px-6 font-bold text-background transition-transform duration-(--duration-fast) ease-apple active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:w-auto"
-					style={riseStyle(4)}
+					style={riseStyle(3)}
 				>
 					<Play className="h-5 w-5 fill-current" aria-hidden />
 					{cta}

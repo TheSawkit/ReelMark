@@ -8,7 +8,6 @@ export function DashboardHeroSkeleton() {
 			<Skeleton className="absolute inset-0 -z-10 rounded-none" />
 			<div className="relative z-10 container mx-auto flex flex-col items-center gap-3 px-6 md:items-start lg:px-12">
 				<Skeleton className="h-5 w-56 bg-surface-3" />
-				<Skeleton className="h-4 w-24 bg-surface-3" />
 				<Skeleton className="h-12 w-2/3 bg-surface-3 sm:h-15 lg:h-18" />
 				<Skeleton className="h-5 w-40 bg-surface-3" />
 				<Skeleton className="h-1.5 w-full max-w-xs bg-surface-3" />
