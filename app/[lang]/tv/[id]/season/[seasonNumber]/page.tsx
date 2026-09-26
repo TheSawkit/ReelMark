@@ -9,7 +9,12 @@ import {
 } from '@/lib/tmdb';
 import { getServerLocale, getTranslations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
-import { getSeasonEpisodeWatches } from '@/lib/data/episodes';
+import {
+	getSeasonEpisodeWatches,
+	getTvShowWatchProgress,
+} from '@/lib/data/episodes';
+import { buildSeasonOptions, nextSeasonOption } from '@/lib/seasons';
+import { localizedHref } from '@/lib/i18n/utils';
 import {
 	getSeasonAverageRating,
 	getPublicEpisodeReviews,
@@ -24,6 +29,7 @@ import { WatchProviders } from '@/components/media/detail/WatchProviders';
 import { WatchNowSlot } from '@/components/media/detail/WatchNowSlot';
 import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { SeasonEpisodesList } from '@/components/media/tv/SeasonEpisodesList';
+import { NextSeasonCard } from '@/components/media/tv/NextSeasonCard';
 import { localizedAlternates } from '@/lib/metadata';
 import { notFoundIfMissing } from '@/lib/tmdb/not-found';
 
@@ -124,6 +130,7 @@ export default async function SeasonPage(props: SeasonPageProps) {
 		t,
 		locale,
 		watchedEpisodes,
+		showProgress,
 		seasonRating,
 		episodeReviews,
 		myEpisodeReviews,
@@ -131,6 +138,7 @@ export default async function SeasonPage(props: SeasonPageProps) {
 		getTranslations(lang),
 		getServerLocale(lang),
 		getSeasonEpisodeWatches(tvId, seasonNumber),
+		getTvShowWatchProgress(tvId),
 		getSeasonAverageRating(tvId, seasonNumber),
 		getPublicEpisodeReviews(episodeIds),
 		getMyEpisodeReviews(episodeIds),
@@ -146,6 +154,8 @@ export default async function SeasonPage(props: SeasonPageProps) {
 	}
 
 	const totalEpisodes = seasonDetails.episodes.length;
+	const seasonOptions = buildSeasonOptions(tvDetails.seasons, showProgress);
+	const nextSeason = nextSeasonOption(seasonOptions, seasonNumber);
 	const backdropUrl = getImageUrl(
 		tvDetails.backdrop_path ??
 			seasonDetails.poster_path ??
@@ -169,6 +179,7 @@ export default async function SeasonPage(props: SeasonPageProps) {
 				genres={tvDetails.genres}
 				rating={seasonRating}
 				watchNowButton={<WatchNowSlot variant="banner" />}
+				seasons={seasonOptions}
 			/>
 
 			<MediaActionsBar>
@@ -227,6 +238,17 @@ export default async function SeasonPage(props: SeasonPageProps) {
 							noDescription: t.movie.noDescription,
 						}}
 					/>
+					{nextSeason && (
+						<NextSeasonCard
+							href={localizedHref(
+								lang,
+								`/tv/${tvId}/season/${nextSeason.seasonNumber}`
+							)}
+							season={nextSeason}
+							label={t.movie.nextSeason}
+							episodesLabel={t.movie.episodes}
+						/>
+					)}
 				</section>
 			</div>
 		</div>
