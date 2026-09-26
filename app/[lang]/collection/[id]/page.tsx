@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { fetchCollection, getCollection, movieToMediaItem } from '@/lib/tmdb';
 import { notFoundIfMissing } from '@/lib/tmdb/not-found';
 import { RelatedMediaPage } from '@/components/media/RelatedMediaPage';
+import { CollectionHero } from '@/components/media/CollectionHero';
 import { getTranslations } from '@/lib/i18n/server';
 import {
 	buildPageMetadata,
@@ -62,6 +63,16 @@ export default async function CollectionPage(props: CollectionPageProps) {
 	return (
 		<RelatedMediaPage
 			title={details.name}
+			hero={
+				<CollectionHero
+					collection={details}
+					countLabel={
+						details.parts.length > 1
+							? t.library.filmsCountPlural
+							: t.library.filmsCount
+					}
+				/>
+			}
 			items={items}
 			emptyLabel={t.pages.search.noResultsMessage}
 		/>

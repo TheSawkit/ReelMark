@@ -197,10 +197,12 @@ export default function ProfilePage({ params }: Props) {
 	return (
 		<Suspense
 			fallback={
-				<PageLayout>
+				<>
 					<ProfileHeroSkeleton />
-					<ProfileTabsSkeleton />
-				</PageLayout>
+					<PageLayout className="pt-6 lg:pt-8">
+						<ProfileTabsSkeleton />
+					</PageLayout>
+				</>
 			}
 		>
 			<ProfileContent params={params} />
@@ -237,7 +239,7 @@ async function ProfileContent({ params }: Props) {
 			: undefined;
 
 	return (
-		<PageLayout>
+		<>
 			<ProfileHero
 				profile={profile}
 				avatarUrl={avatarUrl}
@@ -271,14 +273,16 @@ async function ProfileContent({ params }: Props) {
 					) : undefined
 				}
 			/>
-			<Suspense fallback={<ProfileTabsSkeleton />}>
-				<ProfileTabsSection
-					profileUserId={profile.user_id}
-					isOwnProfile={isOwnProfile}
-					friendship={friendship}
-					lang={lang}
-				/>
-			</Suspense>
-		</PageLayout>
+			<PageLayout className="pt-6 lg:pt-8">
+				<Suspense fallback={<ProfileTabsSkeleton />}>
+					<ProfileTabsSection
+						profileUserId={profile.user_id}
+						isOwnProfile={isOwnProfile}
+						friendship={friendship}
+						lang={lang}
+					/>
+				</Suspense>
+			</PageLayout>
+		</>
 	);
 }

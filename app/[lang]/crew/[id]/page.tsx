@@ -17,6 +17,7 @@ import {
 	tvCrewCreditToMediaItem,
 } from '@/lib/mappers';
 import { buildFilmographyDepartments } from '@/lib/filmography';
+import { pickKnownForBackdrop } from '@/lib/crew';
 import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { mergeWithWatchlist } from '@/lib/data/watchlist';
 import { getTranslations } from '@/lib/i18n/server';
@@ -153,11 +154,18 @@ export default async function CrewPage(props: CrewPageProps) {
 		notFound();
 	}
 
-	const crew = await getCrewDetails(crewId, lang).catch(notFoundIfMissing);
+	const [crew, movieCredits] = await Promise.all([
+		getCrewDetails(crewId, lang).catch(notFoundIfMissing),
+		getCrewMovieCredits(crewId, lang),
+	]);
+	const knownForBackdrop = pickKnownForBackdrop([
+		...movieCredits.cast,
+		...movieCredits.crew,
+	]);
 
 	return (
 		<div className="min-h-screen">
-			<CrewBanner crew={crew} />
+			<CrewBanner crew={crew} backdropPath={knownForBackdrop} />
 
 			<div className="detail-container">
 				<CrewBio biography={crew.biography} />

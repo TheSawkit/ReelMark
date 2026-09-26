@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { MediaGrid } from '@/components/media/card/MediaGrid';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -6,14 +7,16 @@ import type { MediaItem } from '@/types/tmdb';
 
 interface RelatedMediaPageProps {
 	title: string;
+	hero?: ReactNode;
 	subtitle?: string;
 	items: MediaItem[];
 	emptyLabel: string;
 }
 
-/** Full-page grid for saga and similar-titles listings, with watchlist badges. */
+/** Full-page grid for saga and similar-titles listings, with watchlist badges; a `hero` replaces the large title. */
 export async function RelatedMediaPage({
 	title,
+	hero,
 	subtitle,
 	items,
 	emptyLabel,
@@ -22,13 +25,16 @@ export async function RelatedMediaPage({
 	const merged = await mergeWithWatchlist(withPosters);
 
 	return (
-		<PageLayout>
-			<PageHeader title={title} subtitle={subtitle} />
+		<>
+			{hero}
+			<PageLayout>
+				{!hero && <PageHeader title={title} subtitle={subtitle} />}
 			{merged.length === 0 ? (
 				<EmptyState message={emptyLabel} />
 			) : (
 				<MediaGrid items={merged} />
 			)}
-		</PageLayout>
+			</PageLayout>
+		</>
 	);
 }
