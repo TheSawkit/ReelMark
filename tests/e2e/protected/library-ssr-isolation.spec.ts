@@ -39,7 +39,7 @@ test('le HTML de /library reflète la requête en cours, pas une précédente', 
 
 	try {
 		const html = await (await page.request.get('/en/library')).text();
-		const renderedMarkup = html.replace(/<script[\s\S]*?<\/script>/g, '');
+		const renderedMarkup = html.replace(/<script[\s\S]*?<\/script>/gi, '');
 		expect(renderedMarkup).toContain(title);
 	} finally {
 		await admin
