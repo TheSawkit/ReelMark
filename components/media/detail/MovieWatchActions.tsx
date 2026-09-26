@@ -94,7 +94,8 @@ export function MovieWatchActions({
 			{watchedDate && (
 				<span className="flex min-h-11 shrink-0 items-center gap-1.5 px-2 text-sm text-muted">
 					<Eye className="h-4 w-4 shrink-0" aria-hidden />
-					{t.movie.watchedOn} {formatDate(watchedDate, getLocale(lang))}
+					{t.movie.watchedOn}{' '}
+					{formatDate(watchedDate, getLocale(lang))}
 				</span>
 			)}
 		</div>

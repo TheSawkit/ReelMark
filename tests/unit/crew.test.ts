@@ -76,7 +76,9 @@ describe('pickKnownForBackdrop', () => {
 	});
 
 	it('returns null when no credit has a backdrop', () => {
-		expect(pickKnownForBackdrop([{ backdrop_path: null, popularity: 5 }])).toBeNull();
+		expect(
+			pickKnownForBackdrop([{ backdrop_path: null, popularity: 5 }])
+		).toBeNull();
 		expect(pickKnownForBackdrop([])).toBeNull();
 	});
 });

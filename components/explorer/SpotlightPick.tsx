@@ -30,7 +30,10 @@ export async function SpotlightPick({
 	return (
 		<>
 			<CinematicBackdrop
-				src={getImageUrl(item.backdrop_path ?? item.poster_path, 'w1280')}
+				src={getImageUrl(
+					item.backdrop_path ?? item.poster_path,
+					'w1280'
+				)}
 				posterPath={item.poster_path}
 				alt={item.title}
 			/>
@@ -73,7 +76,9 @@ export async function SpotlightPick({
 						mediaTitle={item.title}
 						mediaType={item.media_type}
 						posterPath={item.poster_path}
-						status={entry?.status === 'watched' ? 'watched' : 'to_watch'}
+						status={
+							entry?.status === 'watched' ? 'watched' : 'to_watch'
+						}
 						initialIsActive={entry !== undefined}
 						variant="pill"
 					/>

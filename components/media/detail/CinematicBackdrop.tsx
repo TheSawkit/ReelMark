@@ -11,7 +11,11 @@ interface CinematicBackdropProps {
 }
 
 /** Full-bleed hero backdrop: art-directed image drifting with the scroll, ambiance, grain and legibility scrims. */
-export function CinematicBackdrop({ src, posterPath, alt }: CinematicBackdropProps) {
+export function CinematicBackdrop({
+	src,
+	posterPath,
+	alt,
+}: CinematicBackdropProps) {
 	return (
 		<div className="absolute inset-0 -z-10 overflow-hidden">
 			<div className="hero-parallax absolute inset-0">

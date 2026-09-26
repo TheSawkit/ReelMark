@@ -67,7 +67,10 @@ export function ContinueWatchingSection({
 								item={item}
 								priority={index < 3}
 								onAbandoned={() =>
-									setAbandonedIds((ids) => [...ids, item.tvId])
+									setAbandonedIds((ids) => [
+										...ids,
+										item.tvId,
+									])
 								}
 							/>
 						</StaggeredItem>

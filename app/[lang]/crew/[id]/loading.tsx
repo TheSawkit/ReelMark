@@ -16,17 +16,19 @@ export default function CrewLoading() {
 				<div className="space-y-4">
 					<SectionHeadingSkeleton />
 					<div className="max-w-prose">
-						{Array.from({ length: BIO_LINES_MOBILE }).map((_, i) => (
-							<div
-								key={i}
-								className={cn(
-									'flex h-7.25 items-center',
-									i >= BIO_LINES_DESKTOP && 'md:hidden'
-								)}
-							>
-								<Skeleton className="h-4 w-full rounded" />
-							</div>
-						))}
+						{Array.from({ length: BIO_LINES_MOBILE }).map(
+							(_, i) => (
+								<div
+									key={i}
+									className={cn(
+										'flex h-7.25 items-center',
+										i >= BIO_LINES_DESKTOP && 'md:hidden'
+									)}
+								>
+									<Skeleton className="h-4 w-full rounded" />
+								</div>
+							)
+						)}
 					</div>
 					<Skeleton className="h-10 w-28 rounded-md" />
 				</div>

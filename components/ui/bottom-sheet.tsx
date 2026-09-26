@@ -51,7 +51,11 @@ export function BottomSheet({
 								transition={SPRING.surface}
 							/>
 						</Dialog.Overlay>
-						<Dialog.Content asChild forceMount aria-describedby={undefined}>
+						<Dialog.Content
+							asChild
+							forceMount
+							aria-describedby={undefined}
+						>
 							<m.div
 								className="glass-popover fixed inset-x-0 bottom-0 z-50 flex max-h-3/4 flex-col rounded-t-2xl pb-[env(safe-area-inset-bottom)] outline-none"
 								initial={{ y: '100%' }}
@@ -67,7 +71,9 @@ export function BottomSheet({
 							>
 								<div
 									className="shrink-0 cursor-grab touch-none px-5 pt-2 pb-2 active:cursor-grabbing"
-									onPointerDown={(event) => dragControls.start(event)}
+									onPointerDown={(event) =>
+										dragControls.start(event)
+									}
 								>
 									<div
 										className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-border"

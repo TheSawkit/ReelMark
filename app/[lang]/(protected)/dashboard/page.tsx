@@ -312,30 +312,32 @@ export default async function DashboardPage({ params: paramsPromise }: Props) {
 			</Suspense>
 
 			<PageLayout className="pt-6 lg:pt-8">
+				<Suspense fallback={<ContinueWatchingSkeleton />}>
+					<ContinueWatching />
+				</Suspense>
 
-			<Suspense fallback={<ContinueWatchingSkeleton />}>
-				<ContinueWatching />
-			</Suspense>
+				<Suspense fallback={<BentoStatsSkeleton />}>
+					<StatsSection t={t} />
+				</Suspense>
 
-			<Suspense fallback={<BentoStatsSkeleton />}>
-				<StatsSection t={t} />
-			</Suspense>
+				<Suspense fallback={<TrendingMarqueeSkeleton />}>
+					<TrendingSection t={t} lang={lang} />
+				</Suspense>
 
-			<Suspense fallback={<TrendingMarqueeSkeleton />}>
-				<TrendingSection t={t} lang={lang} />
-			</Suspense>
+				<Suspense fallback={<MediaTypeSwitcherSkeleton />}>
+					<MediaTypeSwitcher defaultType="movie" shallow />
+				</Suspense>
 
-			<Suspense fallback={<MediaTypeSwitcherSkeleton />}>
-				<MediaTypeSwitcher defaultType="movie" shallow />
-			</Suspense>
-
-			<Suspense
-				fallback={
-					<MediaSectionsSkeleton sections={3} cardsPerSection={8} />
-				}
-			>
-				<LibraryContentSection t={t} lang={lang} />
-			</Suspense>
+				<Suspense
+					fallback={
+						<MediaSectionsSkeleton
+							sections={3}
+							cardsPerSection={8}
+						/>
+					}
+				>
+					<LibraryContentSection t={t} lang={lang} />
+				</Suspense>
 			</PageLayout>
 		</>
 	);

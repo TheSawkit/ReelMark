@@ -10,7 +10,10 @@ interface CollectionHeroProps {
 }
 
 /** Saga hero: the collection's own art and overview, with how many films it gathers. */
-export function CollectionHero({ collection, countLabel }: CollectionHeroProps) {
+export function CollectionHero({
+	collection,
+	countLabel,
+}: CollectionHeroProps) {
 	return (
 		<DetailHero
 			title={collection.name}

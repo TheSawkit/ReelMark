@@ -217,7 +217,10 @@ export default async function ExplorerPage({ params: paramsPromise }: Props) {
 					<Suspense
 						key={key}
 						fallback={
-							<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
+							<MediaSectionsSkeleton
+								sections={1}
+								cardsPerSection={8}
+							/>
 						}
 					>
 						<Section t={t} lang={lang} />

@@ -30,7 +30,9 @@ export function DetailBannerSkeleton({
 					<div className="aspect-2/3 w-48 lg:w-56 shrink-0 rounded-lg bg-surface-3 max-md:hidden" />
 
 					<div className="flex w-full min-w-0 max-w-4xl flex-col items-center gap-3 md:items-start">
-						{eyebrow && <div className="h-5 w-32 rounded bg-surface-3" />}
+						{eyebrow && (
+							<div className="h-5 w-32 rounded bg-surface-3" />
+						)}
 						<div className="h-12 sm:h-15 lg:h-18 w-3/4 rounded-lg bg-surface-3" />
 						{tagline && (
 							<div className="h-6 sm:h-7 w-1/2 rounded bg-surface-3" />
@@ -100,17 +102,19 @@ export function DescriptionSkeleton() {
 		<section className="space-y-6">
 			<SectionHeadingSkeleton />
 			<div className="max-w-prose">
-				{Array.from({ length: DESCRIPTION_LINES_MOBILE }).map((_, i) => (
-					<div
-						key={i}
-						className={cn(
-							'flex h-7.25 items-center',
-							i >= DESCRIPTION_LINES_DESKTOP && 'md:hidden'
-						)}
-					>
-						<Skeleton className="h-4 w-full rounded" />
-					</div>
-				))}
+				{Array.from({ length: DESCRIPTION_LINES_MOBILE }).map(
+					(_, i) => (
+						<div
+							key={i}
+							className={cn(
+								'flex h-7.25 items-center',
+								i >= DESCRIPTION_LINES_DESKTOP && 'md:hidden'
+							)}
+						>
+							<Skeleton className="h-4 w-full rounded" />
+						</div>
+					)
+				)}
 			</div>
 		</section>
 	);

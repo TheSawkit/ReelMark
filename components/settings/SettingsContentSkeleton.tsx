@@ -28,7 +28,10 @@ export function SettingsContentSkeleton() {
 						</CardHeader>
 						<CardContent className="flex flex-col gap-7">
 							{PROFILE_BLOCK_HEIGHTS.map((height, i) => (
-								<Skeleton key={i} className={`${height} w-full`} />
+								<Skeleton
+									key={i}
+									className={`${height} w-full`}
+								/>
 							))}
 							<Skeleton className="h-10 w-34 -mt-1" />
 						</CardContent>

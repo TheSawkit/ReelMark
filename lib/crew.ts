@@ -36,7 +36,8 @@ export function groupCrew(crew: Crew[]): GroupedCrew {
 export function pickKnownForBackdrop(
 	credits: { backdrop_path: string | null; popularity: number }[]
 ): string | null {
-	let best: { backdrop_path: string | null; popularity: number } | null = null;
+	let best: { backdrop_path: string | null; popularity: number } | null =
+		null;
 	for (const credit of credits) {
 		if (!credit.backdrop_path) continue;
 		if (!best || credit.popularity > best.popularity) best = credit;

@@ -284,7 +284,9 @@ export default async function TvShowPage(props: TvPageProps) {
 			actions={
 				<>
 					<WatchNowSlot variant="banner" />
-					<Suspense fallback={<WatchActionsSkeleton variant="banner" />}>
+					<Suspense
+						fallback={<WatchActionsSkeleton variant="banner" />}
+					>
 						<TvUserActions show={tvDetails} variant="banner" />
 					</Suspense>
 					<Suspense fallback={null}>

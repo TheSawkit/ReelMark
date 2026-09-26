@@ -21,7 +21,6 @@ import {
 	useMediaWatchVersion,
 } from '@/lib/stores/media-watch';
 
-
 type Tab = 'to_watch' | 'watched' | 'abandoned';
 
 interface LibraryTabsProps {

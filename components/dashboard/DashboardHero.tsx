@@ -102,7 +102,10 @@ export function DashboardHero({
 				>
 					{item.voteAverage > 0 && (
 						<span className="inline-flex items-center gap-1 font-semibold text-gold">
-							<Star className="h-4 w-4 fill-current" aria-hidden />
+							<Star
+								className="h-4 w-4 fill-current"
+								aria-hidden
+							/>
 							{item.voteAverage.toFixed(1)}
 						</span>
 					)}

@@ -37,7 +37,8 @@ export function nextSeasonOption(
 	if (current === 0) return null;
 	return (
 		options.find(
-			(option) => option.seasonNumber > current && option.seasonNumber !== 0
+			(option) =>
+				option.seasonNumber > current && option.seasonNumber !== 0
 		) ?? null
 	);
 }

@@ -32,7 +32,11 @@ export function HeroArt({ backdropUrl, posterPath, alt }: HeroArtProps) {
 	return (
 		<picture>
 			<source media={WIDE_SCREEN} srcSet={wideSrcSet} />
-			<img {...portrait} alt={alt} className="hero-settle object-cover object-top" />
+			<img
+				{...portrait}
+				alt={alt}
+				className="hero-settle object-cover object-top"
+			/>
 		</picture>
 	);
 }

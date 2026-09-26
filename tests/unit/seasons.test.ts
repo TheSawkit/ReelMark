@@ -22,7 +22,10 @@ describe('buildSeasonOptions', () => {
 	});
 
 	it('drops announced seasons without episodes', () => {
-		const options = buildSeasonOptions([season(1), season(2, 0)], new Map());
+		const options = buildSeasonOptions(
+			[season(1), season(2, 0)],
+			new Map()
+		);
 		expect(options.map((o) => o.seasonNumber)).toEqual([1]);
 	});
 

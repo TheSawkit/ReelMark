@@ -19,7 +19,10 @@ export function ProfileTabsSkeleton() {
 			</div>
 			<div className="flex gap-1.5 mb-5 flex-wrap">
 				{FILTER_WIDTHS.map((width) => (
-					<Skeleton key={width} className={`h-8 ${width} rounded-full`} />
+					<Skeleton
+						key={width}
+						className={`h-8 ${width} rounded-full`}
+					/>
 				))}
 			</div>
 			<MediaListControlsSkeleton className="mb-5" />

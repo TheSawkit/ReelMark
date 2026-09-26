@@ -93,6 +93,8 @@ describe('movieSeriesJsonLd', () => {
 
 describe('serializeJsonLd', () => {
 	it('escapes < so a title cannot close the script tag', () => {
-		expect(serializeJsonLd({ name: '</script>' })).not.toContain('</script>');
+		expect(serializeJsonLd({ name: '</script>' })).not.toContain(
+			'</script>'
+		);
 	});
 });

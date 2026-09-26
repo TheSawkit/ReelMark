@@ -1,6 +1,15 @@
 'use client';
 
-import { Bell, FolderOpen, Lock, Palette, ShieldCheck, Tv, User, type LucideIcon } from 'lucide-react';
+import {
+	Bell,
+	FolderOpen,
+	Lock,
+	Palette,
+	ShieldCheck,
+	Tv,
+	User,
+	type LucideIcon,
+} from 'lucide-react';
 
 import { useId } from 'react';
 import { cn } from '@/lib/utils';

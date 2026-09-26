@@ -29,11 +29,11 @@ export async function RelatedMediaPage({
 			{hero}
 			<PageLayout>
 				{!hero && <PageHeader title={title} subtitle={subtitle} />}
-			{merged.length === 0 ? (
-				<EmptyState message={emptyLabel} />
-			) : (
-				<MediaGrid items={merged} />
-			)}
+				{merged.length === 0 ? (
+					<EmptyState message={emptyLabel} />
+				) : (
+					<MediaGrid items={merged} />
+				)}
 			</PageLayout>
 		</>
 	);

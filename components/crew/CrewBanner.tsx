@@ -88,7 +88,9 @@ export function CrewBanner({ crew, backdropPath }: CrewBannerProps) {
 						</InfoBadge>
 					)}
 					{crew.place_of_birth && (
-						<InfoBadge icon={<MapPin className="h-4 w-4 text-muted" />}>
+						<InfoBadge
+							icon={<MapPin className="h-4 w-4 text-muted" />}
+						>
 							{crew.place_of_birth}
 						</InfoBadge>
 					)}

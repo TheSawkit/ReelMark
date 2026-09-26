@@ -124,7 +124,10 @@ export function tvSeasonJsonLd(
 }
 
 /** Builds schema.org Person structured data for a cast or crew member page. */
-export function personJsonLd(crew: CrewDetails, lang: Language): StructuredData {
+export function personJsonLd(
+	crew: CrewDetails,
+	lang: Language
+): StructuredData {
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'Person',
