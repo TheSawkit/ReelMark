@@ -16,15 +16,16 @@ interface SearchPageProps {
 }
 
 export async function generateMetadata({
+	params,
 	searchParams,
 }: SearchPageProps): Promise<Metadata> {
-	const params = await searchParams;
-	const query = params.q || params.query || '';
+	const [{ lang }, search] = await Promise.all([params, searchParams]);
+	const query = search.q || search.query || '';
+	const t = await getTranslations(lang);
 	return {
-		title: query ? `"${query}" — Search` : 'Search',
-		description: query
-			? `Search results for "${query}" on ReelMark — movies, TV shows, and crew.`
-			: 'Search movies, TV shows, and crew on ReelMark.',
+		title: query ? `${t.pages.search.title} “${query}”` : t.common.search,
+		description: t.metadata.explorerDescription,
+		robots: { index: false, follow: true },
 	};
 }
 

@@ -3,7 +3,7 @@ import { Database, Film, Globe, Server } from 'lucide-react';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { DonateButton } from '@/components/support/DonateButton';
 import { getTranslations } from '@/lib/i18n/server';
-import { buildPageMetadata } from '@/lib/metadata';
+import { buildPageMetadata, localizedAlternates } from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';
 
 interface SupportPageProps {
@@ -15,7 +15,10 @@ export async function generateMetadata({
 }: SupportPageProps): Promise<Metadata> {
 	const { lang } = await params;
 	const t = await getTranslations(lang);
-	return buildPageMetadata(t.support.title, t.support.subtitle);
+	return {
+		...buildPageMetadata(t.support.title, t.support.subtitle),
+		alternates: localizedAlternates(lang, '/support'),
+	};
 }
 
 export default async function SupportPage({ params }: SupportPageProps) {

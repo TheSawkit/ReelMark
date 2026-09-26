@@ -9,7 +9,7 @@ import { getTranslations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
 import { SearchBar } from '@/components/search/SearchBar';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
-import { FALLBACK_TITLE } from '@/lib/metadata';
+import { FALLBACK_TITLE, localizedAlternates } from '@/lib/metadata';
 type CategoryPageParams = Promise<{ lang: Language; category: string }>;
 interface CategoryPageProps {
 	params: CategoryPageParams;
@@ -99,6 +99,7 @@ export async function generateMetadata({
 	return {
 		title: categoryData.title,
 		description: categoryData.description,
+		alternates: localizedAlternates(lang, `/explorer/${category}`),
 		openGraph: {
 			title: categoryData.title,
 			description: categoryData.description,

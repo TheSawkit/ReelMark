@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { LegalArticle } from '@/components/legal/LegalArticle';
 import { getTranslations } from '@/lib/i18n/server';
-import { buildPageMetadata } from '@/lib/metadata';
+import { buildPageMetadata, localizedAlternates } from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';
 
 interface PrivacyPageProps {
@@ -13,10 +13,13 @@ export async function generateMetadata({
 }: PrivacyPageProps): Promise<Metadata> {
 	const { lang } = await params;
 	const t = await getTranslations(lang);
-	return buildPageMetadata(
-		t.pages.legal.privacy.title,
-		t.pages.legal.privacy.intro
-	);
+	return {
+		...buildPageMetadata(
+			t.pages.legal.privacy.title,
+			t.pages.legal.privacy.intro
+		),
+		alternates: localizedAlternates(lang, '/privacy'),
+	};
 }
 
 export default async function PrivacyPage({ params }: PrivacyPageProps) {

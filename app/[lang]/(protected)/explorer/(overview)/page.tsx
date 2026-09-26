@@ -25,16 +25,19 @@ import { MediaTypeSwitcher } from '@/components/media/card/MediaTypeSwitcher';
 import { MediaTypeSwitcherSkeleton } from '@/components/media/card/MediaTypeSwitcherSkeleton';
 import { CategoryNavSkeleton } from '@/components/navigation/CategoryNavSkeleton';
 import { TypeSwitched } from '@/components/media/card/TypeSwitched';
-import { buildPageMetadata } from '@/lib/metadata';
+import { buildPageMetadata, localizedAlternates } from '@/lib/metadata';
 import type { Movie, TvShow, MediaType } from '@/types/tmdb';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { lang } = await params;
 	const t = await getTranslations(lang);
-	return buildPageMetadata(
-		t.metadata.explorerTitle,
-		t.metadata.explorerDescription
-	);
+	return {
+		...buildPageMetadata(
+			t.metadata.explorerTitle,
+			t.metadata.explorerDescription
+		),
+		alternates: localizedAlternates(lang, '/explorer'),
+	};
 }
 
 type Props = {
