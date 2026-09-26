@@ -1,14 +1,23 @@
+const CONTACT_EMAIL = 'contact@silexio.be';
+const PUBLISHER_FR =
+	'ReelMark est édité par Silexio, studio d’ingénierie indépendant dirigé par Nicolas Wieckiewicz, établi à Chapelle-lez-Herlaimont (7160, Belgique).';
+const PUBLISHER_EN =
+	'ReelMark is published by Silexio, an independent engineering studio run by Nicolas Wieckiewicz, based in Chapelle-lez-Herlaimont (7160, Belgium).';
+const LEGAL_UPDATED_FR = 'Dernière mise à jour : 26 septembre 2026';
+const LEGAL_UPDATED_EN = 'Last updated: September 26, 2026';
+
 const fr = {
 	legal: {
 		privacy: {
 			title: 'Politique de confidentialité',
-			updated: 'Dernière mise à jour : 12 juillet 2026',
+			updated: LEGAL_UPDATED_FR,
 			intro: 'ReelMark respecte votre vie privée. Cette déclaration explique quelles données personnelles nous traitons, pourquoi, et quels sont vos droits, conformément au Règlement général sur la protection des données (RGPD, UE 2016/679) et à la loi belge du 30 juillet 2018.',
 			sections: [
 				{
 					title: '1. Responsable du traitement',
 					body: [
-						"ReelMark est édité par Silexio (Belgique). Pour toute question relative à vos données personnelles, contactez-nous à l'adresse : contact@silexio.be.",
+						`${PUBLISHER_FR} Le responsable du traitement est Nicolas Wieckiewicz.`,
+						`Pour toute question relative à vos données personnelles, contactez-nous à l'adresse : ${CONTACT_EMAIL}.`,
 					],
 				},
 				{
@@ -46,7 +55,7 @@ const fr = {
 					title: '6. Vos droits',
 					body: [
 						"Vous disposez des droits d'accès, de rectification, d'effacement, de portabilité, de limitation et d'opposition, ainsi que du droit de retirer votre consentement à tout moment.",
-						"Vous pouvez exporter vos données à tout moment (Réglages → Données), modifier votre profil ou supprimer votre compte directement dans l'application, ou nous écrire à contact@silexio.be.",
+						`Vous pouvez exporter vos données à tout moment (Réglages → Données), modifier votre profil ou supprimer votre compte directement dans l'application, ou nous écrire à ${CONTACT_EMAIL}.`,
 						"Vous pouvez introduire une réclamation auprès de l'Autorité de protection des données belge (APD) : www.autoriteprotectiondonnees.be.",
 					],
 				},
@@ -78,7 +87,7 @@ const fr = {
 		},
 		terms: {
 			title: "Conditions d'utilisation",
-			updated: 'Dernière mise à jour : 12 juillet 2026',
+			updated: LEGAL_UPDATED_FR,
 			intro: "Les présentes conditions régissent l'utilisation de ReelMark, une plateforme personnelle de suivi de films et de séries. En créant un compte ou en utilisant le service, vous les acceptez.",
 			sections: [
 				{
@@ -136,9 +145,10 @@ const fr = {
 					],
 				},
 				{
-					title: '10. Contact',
+					title: '10. Éditeur et contact',
 					body: [
-						'Pour toute question relative à ces conditions : contact@silexio.be.',
+						PUBLISHER_FR,
+						`Pour toute question relative à ces conditions : ${CONTACT_EMAIL}.`,
 					],
 				},
 			],
@@ -216,13 +226,14 @@ const en = {
 	legal: {
 		privacy: {
 			title: 'Privacy Policy',
-			updated: 'Last updated: July 12, 2026',
+			updated: LEGAL_UPDATED_EN,
 			intro: 'ReelMark respects your privacy. This statement explains what personal data we process, why, and what your rights are, in accordance with the General Data Protection Regulation (GDPR, EU 2016/679) and the Belgian law of July 30, 2018.',
 			sections: [
 				{
 					title: '1. Data controller',
 					body: [
-						'ReelMark is published by Silexio (Belgium). For any question about your personal data, contact us at: contact@silexio.be.',
+						`${PUBLISHER_EN} The data controller is Nicolas Wieckiewicz.`,
+						`For any question about your personal data, contact us at: ${CONTACT_EMAIL}.`,
 					],
 				},
 				{
@@ -260,7 +271,7 @@ const en = {
 					title: '6. Your rights',
 					body: [
 						'You have the rights of access, rectification, erasure, portability, restriction and objection, as well as the right to withdraw your consent at any time.',
-						'You can export your data at any time (Settings → Data), edit your profile or delete your account directly in the app, or write to us at contact@silexio.be.',
+						`You can export your data at any time (Settings → Data), edit your profile or delete your account directly in the app, or write to us at ${CONTACT_EMAIL}.`,
 						'You may lodge a complaint with the Belgian Data Protection Authority (APD/GBA): www.dataprotectionauthority.be.',
 					],
 				},
@@ -292,7 +303,7 @@ const en = {
 		},
 		terms: {
 			title: 'Terms of Service',
-			updated: 'Last updated: July 12, 2026',
+			updated: LEGAL_UPDATED_EN,
 			intro: 'These terms govern the use of ReelMark, a personal movie and TV show tracking platform. By creating an account or using the service, you accept them.',
 			sections: [
 				{
@@ -350,9 +361,10 @@ const en = {
 					],
 				},
 				{
-					title: '10. Contact',
+					title: '10. Publisher and contact',
 					body: [
-						'For any question about these terms: contact@silexio.be.',
+						PUBLISHER_EN,
+						`For any question about these terms: ${CONTACT_EMAIL}.`,
 					],
 				},
 			],
