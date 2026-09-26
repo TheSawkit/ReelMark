@@ -102,6 +102,7 @@
 	--animate-slide-down: slideDown var(--duration-base) ease-out;
 	--animate-scale-in: scaleIn var(--duration-slow) var(--ease-apple) backwards;
 	--animate-shimmer: shimmer 2s linear infinite;
+	--animate-swap-in: fadeIn var(--duration-base) var(--ease-apple) backwards;
 }
 
 :root {

@@ -4,6 +4,7 @@ import { useId, useState } from 'react';
 import * as m from 'motion/react-m';
 import { cn } from '@/lib/utils';
 import { ActiveIndicator } from '@/components/motion/ActiveIndicator';
+import { SwapIn } from '@/components/motion/SwapIn';
 import { WatchlistSection } from './WatchlistSection';
 import { ReviewsSection } from './ReviewsSection';
 import { PlaylistsSection } from './PlaylistsSection';
@@ -140,74 +141,76 @@ export function ProfileTabs({
 				))}
 			</m.nav>
 
-			{activeTab === 'watchlist' && (
-				<WatchlistSection
-					entries={toWatch}
-					visibility={privacy.watchlist_visibility}
-					canView={canViewWithVisibility(
-						privacy.watchlist_visibility,
-						viewCtx
-					)}
-					isOwnProfile={isOwnProfile}
-					tvProgress={tvProgress}
-					sectionKey="profile-watchlist"
-					genreNames={genreNames}
-					ratingByKey={ratingByKey}
-				/>
-			)}
-			{activeTab === 'watched' && (
-				<WatchlistSection
-					entries={watched}
-					visibility={privacy.watched_visibility}
-					canView={canViewWithVisibility(
-						privacy.watched_visibility,
-						viewCtx
-					)}
-					isOwnProfile={isOwnProfile}
-					tvProgress={tvProgress}
-					sectionKey="profile-watched"
-					genreNames={genreNames}
-					ratingByKey={ratingByKey}
-				/>
-			)}
-			{activeTab === 'reviews' && (
-				<ReviewsSection
-					reviews={reviews}
-					initialNextCursor={initialReviewsCursor}
-					profileUserId={profileUserId}
-					visibility={privacy.reviews_visibility}
-					canView={canViewWithVisibility(
-						privacy.reviews_visibility,
-						viewCtx
-					)}
-					isOwnProfile={isOwnProfile}
-				/>
-			)}
-			{activeTab === 'playlists' && (
-				<PlaylistsSection
-					playlists={playlists}
-					defaultVisibility={privacy.playlists_visibility}
-					isOwnProfile={isOwnProfile}
-				/>
-			)}
-			{activeTab === 'friends' && (
-				<div className="space-y-6">
-					{isOwnProfile && pendingCount > 0 && (
-						<PendingInvitations
-							requests={pendingRequests}
-							onCountChange={setPendingCount}
-						/>
-					)}
-					<FriendsSection
-						friends={friends}
-						visibility={privacy.friends_visibility}
+			<SwapIn swapKey={activeTab}>
+				{activeTab === 'watchlist' && (
+					<WatchlistSection
+						entries={toWatch}
+						visibility={privacy.watchlist_visibility}
 						canView={canViewWithVisibility(
-							privacy.friends_visibility,
+							privacy.watchlist_visibility,
 							viewCtx
 						)}
+						isOwnProfile={isOwnProfile}
+						tvProgress={tvProgress}
+						sectionKey="profile-watchlist"
+						genreNames={genreNames}
+						ratingByKey={ratingByKey}
 					/>
-				</div>
-			)}
+				)}
+				{activeTab === 'watched' && (
+					<WatchlistSection
+						entries={watched}
+						visibility={privacy.watched_visibility}
+						canView={canViewWithVisibility(
+							privacy.watched_visibility,
+							viewCtx
+						)}
+						isOwnProfile={isOwnProfile}
+						tvProgress={tvProgress}
+						sectionKey="profile-watched"
+						genreNames={genreNames}
+						ratingByKey={ratingByKey}
+					/>
+				)}
+				{activeTab === 'reviews' && (
+					<ReviewsSection
+						reviews={reviews}
+						initialNextCursor={initialReviewsCursor}
+						profileUserId={profileUserId}
+						visibility={privacy.reviews_visibility}
+						canView={canViewWithVisibility(
+							privacy.reviews_visibility,
+							viewCtx
+						)}
+						isOwnProfile={isOwnProfile}
+					/>
+				)}
+				{activeTab === 'playlists' && (
+					<PlaylistsSection
+						playlists={playlists}
+						defaultVisibility={privacy.playlists_visibility}
+						isOwnProfile={isOwnProfile}
+					/>
+				)}
+				{activeTab === 'friends' && (
+					<div className="space-y-6">
+						{isOwnProfile && pendingCount > 0 && (
+							<PendingInvitations
+								requests={pendingRequests}
+								onCountChange={setPendingCount}
+							/>
+						)}
+						<FriendsSection
+							friends={friends}
+							visibility={privacy.friends_visibility}
+							canView={canViewWithVisibility(
+								privacy.friends_visibility,
+								viewCtx
+							)}
+						/>
+					</div>
+				)}
+			</SwapIn>
 		</div>
 	);
 }
