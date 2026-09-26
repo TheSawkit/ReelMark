@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pickResumableHero } from '@/lib/dashboard-hero';
+import { pickResumableHero, resumableSlides } from '@/lib/dashboard-hero';
 
 const show = (id: number, watched: number, total: number) => ({
 	id,
@@ -62,5 +62,48 @@ describe('pickResumableHero', () => {
 		const items = [show(1, 3, 20), show(2, 5, 30)];
 
 		expect(pickResumableHero(items, serverCounts, 99)?.id).toBe(1);
+	});
+});
+
+describe('resumableSlides', () => {
+	it('leads with the featured show, then the other resumable ones in order', () => {
+		const slides = resumableSlides(
+			[show(1, 10, 10), show(2, 3, 20), show(3, 0, 8), show(4, 1, 5)],
+			serverCounts,
+			null,
+			5
+		);
+		expect(slides.map((slide) => slide.id)).toEqual([2, 3, 4]);
+	});
+
+	it('puts the show just watched first', () => {
+		const slides = resumableSlides(
+			[show(1, 2, 10), show(2, 3, 20), show(3, 0, 8)],
+			serverCounts,
+			3,
+			5
+		);
+		expect(slides.map((slide) => slide.id)).toEqual([3, 1, 2]);
+	});
+
+	it('drops a show finished during the session', () => {
+		const watchedOf = (id: number, serverWatched: number) =>
+			id === 2 ? 20 : serverWatched;
+		const slides = resumableSlides(
+			[show(1, 2, 10), show(2, 3, 20), show(3, 0, 8)],
+			watchedOf,
+			null,
+			5
+		);
+		expect(slides.map((slide) => slide.id)).toEqual([1, 3]);
+	});
+
+	it('caps the number of slides', () => {
+		const shows = Array.from({ length: 8 }, (_, i) => show(i + 1, 0, 10));
+		expect(resumableSlides(shows, serverCounts, null, 5)).toHaveLength(5);
+	});
+
+	it('is empty without candidates', () => {
+		expect(resumableSlides([], serverCounts, null, 5)).toEqual([]);
 	});
 });

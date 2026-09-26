@@ -11,11 +11,12 @@ import {
 	showWatchedTotal,
 	useEpisodeWatchVersion,
 } from '@/lib/stores/episode-watch';
-import { pickResumableHero } from '@/lib/dashboard-hero';
+import { resumableSlides } from '@/lib/dashboard-hero';
 import { riseStyle } from '@/lib/motion';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { PageHeader } from '@/components/layout/PageLayout';
 import { CinematicBackdrop } from '@/components/media/detail/CinematicBackdrop';
+import { HeroSlideshow } from '@/components/shared/HeroSlideshow';
 
 export interface FeaturedHero {
 	id: number;
@@ -36,53 +37,38 @@ interface DashboardHeroProps {
 	discoverLabel: string;
 }
 
-/**
- * Full-bleed "resume / discover" hero opening the dashboard, greeting included (it is the page's
- * title). Receives the next few resumable shows so that finishing one from the row below swaps
- * the hero to the following one instantly, instead of waiting for the next server render.
- */
-export function DashboardHero({
-	items,
-	greeting,
-	resumeLabel,
-	discoverLabel,
-}: DashboardHeroProps) {
-	const { lang } = useTranslation();
-	useEpisodeWatchVersion();
+const MAX_SLIDES = 5;
 
-	const item = pickResumableHero(
-		items,
-		showWatchedTotal,
-		lastTouchedShowId()
-	);
-	if (!item) {
-		return (
-			<div className="container mx-auto px-6 pt-section md:pt-section-md lg:px-12">
-				<PageHeader title={greeting} />
-			</div>
-		);
-	}
+interface HeroSlideProps {
+	item: FeaturedHero;
+	isFirst: boolean;
+	greeting: string;
+	cta: string;
+	href: string;
+}
 
+function HeroSlide({ item, isFirst, greeting, cta, href }: HeroSlideProps) {
+	const Greeting = isFirst ? 'h1' : 'p';
 	const watched = item.progress
 		? showWatchedTotal(item.id, item.progress.watched)
 		: 0;
-	const cta = item.resume ? resumeLabel : discoverLabel;
 
 	return (
-		<section className="hero-stage relative isolate flex flex-col justify-end overflow-hidden banner-pull-top banner-safe-pad pb-8 sm:pb-12">
+		<>
 			<CinematicBackdrop
 				src={getImageUrl(item.backdropPath ?? item.posterPath, 'w1280')}
 				posterPath={item.posterPath}
 				alt={item.title}
+				priority={isFirst}
 			/>
 
 			<div className="hero-scroll-fade relative z-10 container mx-auto flex flex-col items-center gap-3 px-6 text-center md:items-start md:text-left lg:px-12">
-				<h1
+				<Greeting
 					className="hero-rise text-sm font-semibold text-muted"
 					style={riseStyle(0)}
 				>
 					{greeting}
-				</h1>
+				</Greeting>
 				<h2
 					className="hero-rise heading-display line-clamp-2 max-w-3xl text-5xl leading-none text-text drop-shadow-text sm:text-6xl lg:text-7xl"
 					style={riseStyle(1)}
@@ -116,7 +102,7 @@ export function DashboardHero({
 					/>
 				)}
 				<Link
-					href={localizedHref(lang, getMediaHref(item))}
+					href={href}
 					className="hero-rise mt-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-text px-6 font-bold text-background transition-transform duration-(--duration-fast) ease-apple active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:w-auto"
 					style={riseStyle(3)}
 				>
@@ -124,6 +110,53 @@ export function DashboardHero({
 					{cta}
 				</Link>
 			</div>
+		</>
+	);
+}
+
+/**
+ * Full-bleed "resume" hero opening the dashboard, greeting included (it is the page's title):
+ * a slideshow of the shows left to resume. Ticking an episode below re-orders it instantly —
+ * the show just watched comes first, a finished one drops out — without a server render.
+ */
+export function DashboardHero({
+	items,
+	greeting,
+	resumeLabel,
+	discoverLabel,
+}: DashboardHeroProps) {
+	const { lang } = useTranslation();
+	useEpisodeWatchVersion();
+
+	const slides = resumableSlides(
+		items,
+		showWatchedTotal,
+		lastTouchedShowId(),
+		MAX_SLIDES
+	);
+	if (slides.length === 0) {
+		return (
+			<div className="container mx-auto px-6 pt-section md:pt-section-md lg:px-12">
+				<PageHeader title={greeting} />
+			</div>
+		);
+	}
+
+	return (
+		<section className="hero-stage relative isolate flex flex-col justify-end overflow-hidden banner-pull-top banner-safe-pad pb-8 sm:pb-12">
+			<HeroSlideshow
+				label={greeting}
+				slides={slides.map((item, index) => (
+					<HeroSlide
+						key={item.id}
+						item={item}
+						isFirst={index === 0}
+						greeting={greeting}
+						cta={item.resume ? resumeLabel : discoverLabel}
+						href={localizedHref(lang, getMediaHref(item))}
+					/>
+				))}
+			/>
 		</section>
 	);
 }

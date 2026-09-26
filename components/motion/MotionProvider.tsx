@@ -2,24 +2,10 @@
 
 import type { ReactNode } from 'react';
 import { LazyMotion, MotionConfig } from 'motion/react';
-
-const afterLoad = () =>
-	new Promise<void>((resolve) =>
-		document.readyState === 'complete'
-			? resolve()
-			: window.addEventListener('load', () => resolve(), { once: true })
-	);
-
-const whenIdle = () =>
-	new Promise<void>((resolve) =>
-		'requestIdleCallback' in window
-			? window.requestIdleCallback(() => resolve())
-			: setTimeout(resolve)
-	);
+import { afterLoadAndIdle } from '@/lib/idle';
 
 const loadFeatures = () =>
-	afterLoad()
-		.then(whenIdle)
+	afterLoadAndIdle()
 		.then(() => import('@/components/motion/features'))
 		.then((module) => module.default);
 

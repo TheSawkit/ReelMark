@@ -3,6 +3,16 @@ export interface HeroCandidate {
 	progress: { watched: number; total: number } | null;
 }
 
+type WatchedOf = (id: number, serverWatched: number) => number;
+
+function isResumable(candidate: HeroCandidate, watchedOf: WatchedOf): boolean {
+	return (
+		!candidate.progress ||
+		watchedOf(candidate.id, candidate.progress.watched) <
+			candidate.progress.total
+	);
+}
+
 /**
  * Picks the show the hero should feature: the one the user just watched an episode of, else
  * the first candidate with episodes left. Both cases resolve client-side, so ticking an
@@ -14,13 +24,10 @@ export interface HeroCandidate {
  */
 export function pickResumableHero<T extends HeroCandidate>(
 	candidates: readonly T[],
-	watchedOf: (id: number, serverWatched: number) => number,
+	watchedOf: WatchedOf,
 	justWatchedId?: number | null
 ): T | undefined {
-	const stillResumable = (candidate: T) =>
-		!candidate.progress ||
-		watchedOf(candidate.id, candidate.progress.watched) <
-			candidate.progress.total;
+	const stillResumable = (candidate: T) => isResumable(candidate, watchedOf);
 
 	const justWatched =
 		justWatchedId == null
@@ -32,4 +39,19 @@ export function pickResumableHero<T extends HeroCandidate>(
 				);
 
 	return justWatched ?? candidates.find(stillResumable) ?? candidates[0];
+}
+
+/** Slides of the dashboard hero: the featured show first, then the other shows still resumable, capped at `limit`. */
+export function resumableSlides<T extends HeroCandidate>(
+	candidates: readonly T[],
+	watchedOf: WatchedOf,
+	justWatchedId: number | null,
+	limit: number
+): T[] {
+	const lead = pickResumableHero(candidates, watchedOf, justWatchedId);
+	if (!lead) return [];
+	const others = candidates.filter(
+		(candidate) => candidate !== lead && isResumable(candidate, watchedOf)
+	);
+	return [lead, ...others].slice(0, limit);
 }
