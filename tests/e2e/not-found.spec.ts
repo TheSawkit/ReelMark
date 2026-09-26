@@ -21,6 +21,21 @@ test.describe('404 page', () => {
 		}
 	});
 
+	/**
+	 * Une frontière Suspense au-dessus du fourre-tout `[...not-found]` faisait répondre 200 (soft
+	 * 404, mauvais pour le référencement) et lever l'erreur React #419 au chargement.
+	 */
+	test('an unknown localized URL answers a real 404 without client errors', async ({
+		page,
+	}) => {
+		const errors: string[] = [];
+		page.on('pageerror', (error) => errors.push(error.message));
+		const res = await page.goto('/en/not-a-page');
+		expect(res?.status()).toBe(404);
+		await expect(page.locator('h1')).toHaveText(/not found/i);
+		expect(errors).toEqual([]);
+	});
+
 	test('favicon.ico is served', async ({ request }) => {
 		const res = await request.get('/favicon.ico');
 		expect(res.status()).toBe(200);
