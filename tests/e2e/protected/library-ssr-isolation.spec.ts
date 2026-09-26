@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Browser } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
 import { hasValidAuth } from '../../helpers/auth';
 
@@ -7,6 +7,22 @@ const admin = createClient(
 	process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
 );
 const FIXTURE_MEDIA_ID = 99_999_999;
+
+async function markupWithoutScripts(
+	browser: Browser,
+	html: string
+): Promise<string> {
+	const context = await browser.newContext({ javaScriptEnabled: false });
+	const parsed = await context.newPage();
+	await parsed.setContent(html, { waitUntil: 'domcontentloaded' });
+	const markup = await parsed.evaluate(() => {
+		for (const script of document.querySelectorAll('script'))
+			script.remove();
+		return document.documentElement.outerHTML;
+	});
+	await context.close();
+	return markup;
+}
 
 test.beforeEach(() => {
 	test.skip(!hasValidAuth() || !process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -19,6 +35,7 @@ test.beforeEach(() => {
  */
 test('le HTML de /library reflète la requête en cours, pas une précédente', async ({
 	page,
+	browser,
 }) => {
 	const { data } = await admin.auth.admin.listUsers({ perPage: 1000 });
 	const userId =
@@ -39,7 +56,7 @@ test('le HTML de /library reflète la requête en cours, pas une précédente', 
 
 	try {
 		const html = await (await page.request.get('/en/library')).text();
-		const renderedMarkup = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+		const renderedMarkup = await markupWithoutScripts(browser, html);
 		expect(renderedMarkup).toContain(title);
 	} finally {
 		await admin
