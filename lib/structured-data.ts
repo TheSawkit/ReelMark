@@ -1,4 +1,11 @@
-import type { MovieDetails, TvShowDetails, Credits } from '@/types/tmdb';
+import type {
+	CollectionDetails,
+	Credits,
+	CrewDetails,
+	MovieDetails,
+	SeasonDetails,
+	TvShowDetails,
+} from '@/types/tmdb';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { BASE_URL } from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';
@@ -6,6 +13,7 @@ import type { Language } from '@/lib/i18n/translations';
 type StructuredData = Record<string, unknown>;
 
 const MAX_ACTORS = 10;
+const MAX_DESCRIPTION = 300;
 
 function person(name: string): StructuredData {
 	return { '@type': 'Person', name };
@@ -83,6 +91,82 @@ export function tvSeriesJsonLd(
 			actor: credits.cast.slice(0, MAX_ACTORS).map((c) => person(c.name)),
 		}),
 		...(rating && { aggregateRating: rating }),
+	};
+}
+
+/** Builds schema.org TVSeason structured data for a season page, linked to its series. */
+export function tvSeasonJsonLd(
+	tv: TvShowDetails,
+	season: SeasonDetails,
+	lang: Language
+): StructuredData {
+	const seriesUrl = `${BASE_URL}/${lang}/tv/${tv.id}`;
+	const posterPath = season.poster_path ?? tv.poster_path;
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'TVSeason',
+		name: season.name,
+		url: `${seriesUrl}/season/${season.season_number}`,
+		seasonNumber: season.season_number,
+		numberOfEpisodes: season.episodes.length,
+		...(season.overview && { description: season.overview }),
+		...(posterPath && { image: getImageUrl(posterPath, 'w500') }),
+		...(season.air_date && { datePublished: season.air_date }),
+		partOfSeries: { '@type': 'TVSeries', name: tv.name, url: seriesUrl },
+		episode: season.episodes.map((episode) => ({
+			'@type': 'TVEpisode',
+			name: episode.name,
+			episodeNumber: episode.episode_number,
+			...(episode.air_date && { datePublished: episode.air_date }),
+		})),
+	};
+}
+
+/** Builds schema.org Person structured data for a cast or crew member page. */
+export function personJsonLd(crew: CrewDetails, lang: Language): StructuredData {
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'Person',
+		name: crew.name,
+		url: `${BASE_URL}/${lang}/crew/${crew.id}`,
+		...(crew.biography && {
+			description: crew.biography.slice(0, MAX_DESCRIPTION),
+		}),
+		...(crew.profile_path && {
+			image: getImageUrl(crew.profile_path, 'w500'),
+		}),
+		...(crew.birthday && { birthDate: crew.birthday }),
+		...(crew.deathday && { deathDate: crew.deathday }),
+		...(crew.place_of_birth && {
+			birthPlace: { '@type': 'Place', name: crew.place_of_birth },
+		}),
+		...(crew.also_known_as.length > 0 && {
+			alternateName: crew.also_known_as,
+		}),
+	};
+}
+
+/** Builds schema.org MovieSeries structured data for a saga, listing its films in order. */
+export function movieSeriesJsonLd(
+	collection: CollectionDetails,
+	lang: Language
+): StructuredData {
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'MovieSeries',
+		name: collection.name,
+		url: `${BASE_URL}/${lang}/collection/${collection.id}`,
+		...(collection.overview && { description: collection.overview }),
+		...(collection.poster_path && {
+			image: getImageUrl(collection.poster_path, 'w500'),
+		}),
+		hasPart: collection.parts.map((movie) => ({
+			'@type': 'Movie',
+			name: movie.title,
+			url: `${BASE_URL}/${lang}/movie/${movie.id}`,
+			...(movie.release_date && { datePublished: movie.release_date }),
+		})),
 	};
 }
 

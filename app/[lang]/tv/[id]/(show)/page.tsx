@@ -37,7 +37,8 @@ import { getShowAverageRating, getMediaReview } from '@/lib/data/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
 import { MediaCommunityRating } from '@/components/media/detail/MediaCommunityRating';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
-import { tvSeriesJsonLd, serializeJsonLd } from '@/lib/structured-data';
+import { tvSeriesJsonLd } from '@/lib/structured-data';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import { getServerLocale, getTranslations } from '@/lib/i18n/server';
@@ -331,14 +332,7 @@ export default async function TvShowPage(props: TvPageProps) {
 
 	return (
 		<>
-			<script
-				type="application/ld+json"
-				dangerouslySetInnerHTML={{
-					__html: serializeJsonLd(
-						tvSeriesJsonLd(tvDetails, credits, lang)
-					),
-				}}
-			/>
+			<JsonLd data={tvSeriesJsonLd(tvDetails, credits, lang)} />
 			<MediaDetailLayout
 				banner={banner}
 				actionsBar={actionsBar}

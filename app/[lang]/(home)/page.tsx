@@ -16,11 +16,8 @@ import {
 } from '@/lib/tmdb';
 import type { Movie, TvShow } from '@/types/tmdb';
 import { DEFAULT_OG_IMAGE } from '@/lib/metadata';
-import {
-	webSiteJsonLd,
-	organizationJsonLd,
-	serializeJsonLd,
-} from '@/lib/structured-data';
+import { webSiteJsonLd, organizationJsonLd } from '@/lib/structured-data';
+import { JsonLd } from '@/components/seo/JsonLd';
 
 export async function generateMetadata({
 	params,
@@ -71,18 +68,8 @@ export default async function Home({
 
 	return (
 		<div className="min-h-screen">
-			<script
-				type="application/ld+json"
-				dangerouslySetInnerHTML={{
-					__html: serializeJsonLd(webSiteJsonLd(lang)),
-				}}
-			/>
-			<script
-				type="application/ld+json"
-				dangerouslySetInnerHTML={{
-					__html: serializeJsonLd(organizationJsonLd()),
-				}}
-			/>
+			<JsonLd data={webSiteJsonLd(lang)} />
+			<JsonLd data={organizationJsonLd()} />
 			<HeroSection posters={[...movieItems, ...showItems]} lang={lang} />
 			<PreviewSection movies={movieItems} shows={showItems} />
 			<FeaturesSection />

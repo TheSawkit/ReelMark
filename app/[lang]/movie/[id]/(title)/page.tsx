@@ -33,7 +33,8 @@ import { getAverageRating, getMediaReview } from '@/lib/data/reviews';
 import { CommunityRatingBadge } from '@/components/media/detail/CommunityRatingBadge';
 import { MediaCommunityRating } from '@/components/media/detail/MediaCommunityRating';
 import { filterTrailers, buildMediaDetailMetadata } from '@/lib/media-detail';
-import { movieJsonLd, serializeJsonLd } from '@/lib/structured-data';
+import { movieJsonLd } from '@/lib/structured-data';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import { localizedHref } from '@/lib/i18n/utils';
@@ -240,14 +241,7 @@ export default async function MoviePage(props: MoviePageProps) {
 
 	return (
 		<>
-			<script
-				type="application/ld+json"
-				dangerouslySetInnerHTML={{
-					__html: serializeJsonLd(
-						movieJsonLd(movieDetails, credits, lang)
-					),
-				}}
-			/>
+			<JsonLd data={movieJsonLd(movieDetails, credits, lang)} />
 			<MediaDetailLayout
 				banner={banner}
 				actionsBar={actionsBar}

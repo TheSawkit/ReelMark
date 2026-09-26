@@ -30,6 +30,8 @@ import { WatchNowSlot } from '@/components/media/detail/WatchNowSlot';
 import { DetailSectionSkeleton } from '@/components/media/detail/MediaDetailSkeleton';
 import { SeasonEpisodesList } from '@/components/media/tv/SeasonEpisodesList';
 import { NextSeasonCard } from '@/components/media/tv/NextSeasonCard';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { tvSeasonJsonLd } from '@/lib/structured-data';
 import { localizedAlternates } from '@/lib/metadata';
 import { notFoundIfMissing } from '@/lib/tmdb/not-found';
 
@@ -165,6 +167,7 @@ export default async function SeasonPage(props: SeasonPageProps) {
 
 	return (
 		<div className="min-h-screen">
+			<JsonLd data={tvSeasonJsonLd(tvDetails, seasonDetails, lang)} />
 			<SeasonBanner
 				tvId={tvId}
 				tvName={tvDetails.name}

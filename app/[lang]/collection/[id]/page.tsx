@@ -4,6 +4,8 @@ import { fetchCollection, getCollection, movieToMediaItem } from '@/lib/tmdb';
 import { notFoundIfMissing } from '@/lib/tmdb/not-found';
 import { RelatedMediaPage } from '@/components/media/RelatedMediaPage';
 import { CollectionHero } from '@/components/media/CollectionHero';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { movieSeriesJsonLd } from '@/lib/structured-data';
 import { getTranslations } from '@/lib/i18n/server';
 import {
 	buildPageMetadata,
@@ -61,20 +63,23 @@ export default async function CollectionPage(props: CollectionPageProps) {
 		.map(movieToMediaItem);
 
 	return (
-		<RelatedMediaPage
-			title={details.name}
-			hero={
-				<CollectionHero
-					collection={details}
-					countLabel={
-						details.parts.length > 1
-							? t.library.filmsCountPlural
-							: t.library.filmsCount
-					}
-				/>
-			}
-			items={items}
-			emptyLabel={t.pages.search.noResultsMessage}
-		/>
+		<>
+			<JsonLd data={movieSeriesJsonLd(details, lang)} />
+			<RelatedMediaPage
+				title={details.name}
+				hero={
+					<CollectionHero
+						collection={details}
+						countLabel={
+							details.parts.length > 1
+								? t.library.filmsCountPlural
+								: t.library.filmsCount
+						}
+					/>
+				}
+				items={items}
+				emptyLabel={t.pages.search.noResultsMessage}
+			/>
+		</>
 	);
 }

@@ -18,6 +18,8 @@ import {
 } from '@/lib/mappers';
 import { buildFilmographyDepartments } from '@/lib/filmography';
 import { pickKnownForBackdrop } from '@/lib/crew';
+import { personJsonLd } from '@/lib/structured-data';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { PosterGridSkeleton } from '@/components/media/card/PosterGridSkeleton';
 import { mergeWithWatchlist } from '@/lib/data/watchlist';
 import { getTranslations } from '@/lib/i18n/server';
@@ -165,6 +167,7 @@ export default async function CrewPage(props: CrewPageProps) {
 
 	return (
 		<div className="min-h-screen">
+			<JsonLd data={personJsonLd(crew, lang)} />
 			<CrewBanner crew={crew} backdropPath={knownForBackdrop} />
 
 			<div className="detail-container">
