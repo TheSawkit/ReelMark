@@ -11,6 +11,9 @@ export interface WatchNowOption {
 
 export type WatchNowVariant = 'banner' | 'bar';
 
+/** Anchor of the "where to watch" section, target of the banner's stand-in play control. */
+export const WHERE_TO_WATCH_ID = 'where-to-watch';
+
 /**
  * The user's own streaming services that carry this title, with the deepest link available.
  * Subscription offers only: renting a title is not "watching it on your platform".
@@ -53,14 +56,25 @@ export function matchMyProviders(
 }
 
 const WATCH_NOW_BASE =
-	'flex items-center justify-center gap-2 shrink-0 font-semibold text-sm text-white bg-primary hover:bg-primary-hover border border-transparent shadow-card-sm transition-colors duration-(--duration-fast) ease-apple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+	'flex items-center justify-center gap-2 shrink-0 font-semibold text-sm border shadow-card-sm transition-colors duration-(--duration-fast) ease-apple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+
+const WATCH_NOW_TONE = {
+	primary: 'text-white bg-primary hover:bg-primary-hover border-transparent',
+	quiet: 'text-text glass-surface hover:bg-glass-bg-hover border-glass-border',
+} as const;
 
 const WATCH_NOW_SHAPE: Record<WatchNowVariant, string> = {
-	banner: 'w-full sm:w-auto min-h-11 px-4 py-2.5 rounded-lg',
+	banner: 'w-full sm:w-auto min-h-12 px-6 rounded-xl sm:text-base',
 	bar: 'h-12 w-12 lg:h-auto lg:w-auto lg:min-h-11 lg:px-4 lg:py-2.5 rounded-full lg:rounded-lg',
 };
 
-/** Shared skin of the play control, so the plain link and the menu trigger stay identical. */
-export function watchNowClass(variant: WatchNowVariant): string {
-	return `${WATCH_NOW_BASE} ${WATCH_NOW_SHAPE[variant]}`;
+/**
+ * Shared skin of the play control, so the plain link, the menu trigger and the banner's
+ * "where to watch" stand-in keep one footprint.
+ */
+export function watchNowClass(
+	variant: WatchNowVariant,
+	tone: keyof typeof WATCH_NOW_TONE = 'primary'
+): string {
+	return `${WATCH_NOW_BASE} ${WATCH_NOW_TONE[tone]} ${WATCH_NOW_SHAPE[variant]}`;
 }

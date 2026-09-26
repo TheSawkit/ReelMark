@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { WatchButton } from '@/components/media/detail/WatchButton';
+import { cn } from '@/lib/utils';
 import { AbandonShowMenu } from '@/components/media/tv/AbandonShowMenu';
 import {
 	mediaWatchStore,
@@ -33,9 +34,16 @@ export function TvWatchActions({
 	const status = useMediaWatch('tv', mediaId) ?? initialStatus;
 
 	return (
-		<div className="flex items-center gap-2">
+		<div
+			className={cn(
+				'flex items-center gap-2',
+				variant === 'banner' && 'w-full sm:w-auto'
+			)}
+		>
 			<div
-				className={variant === 'banner' ? 'flex-1 min-w-0' : undefined}
+				className={
+					variant === 'banner' ? 'flex min-w-0 flex-1' : undefined
+				}
 			>
 				<WatchButton
 					mediaId={mediaId}
@@ -43,7 +51,7 @@ export function TvWatchActions({
 					mediaType="tv"
 					posterPath={posterPath}
 					status={status === 'watched' ? 'watched' : 'to_watch'}
-					variant={variant === 'bar' ? 'responsive' : 'full'}
+					variant={variant === 'bar' ? 'responsive' : 'pill'}
 					initialIsActive={status !== 'none'}
 					releaseDate={releaseDate}
 				/>

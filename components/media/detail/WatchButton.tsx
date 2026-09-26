@@ -121,6 +121,33 @@ export function WatchButton({
 				? t.movie.markAsWatched
 				: t.movie.addToList;
 
+	if (variant === 'pill') {
+		return (
+			<>
+				<button
+					onClick={handleClick}
+					disabled={loading}
+					className={cn(
+						'flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold whitespace-nowrap sm:flex-none sm:px-5',
+						'transition active:scale-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
+						isActive
+							? 'border-gold/40 bg-gold/15 text-gold'
+							: 'glass-surface border-glass-border text-text hover:bg-glass-bg-hover'
+					)}
+				>
+					<ActionStatusIcon
+						loading={loading}
+						error={error}
+						icon={idleIcon}
+						className="h-4 w-4 shrink-0"
+					/>
+					<span className="truncate">{stateLabel}</span>
+				</button>
+				{reviewDialog}
+			</>
+		);
+	}
+
 	if (variant === 'responsive') {
 		return (
 			<>

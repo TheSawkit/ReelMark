@@ -33,7 +33,7 @@ interface CommunityRatingBadgeProps {
 }
 
 const BADGE_CLASSES =
-	'flex items-center gap-2 glass-surface px-4 py-2 rounded-full shadow-card-sm';
+	'flex h-8 shrink-0 items-center gap-1.5 glass-surface px-3 rounded-full text-sm shadow-card-xs';
 
 export function CommunityRatingBadge({
 	rating,
@@ -64,7 +64,7 @@ export function CommunityRatingBadge({
 
 	const content = (
 		<>
-			<Star className="h-5 w-5 fill-primary text-primary" />
+			<Star className="h-4 w-4 fill-primary text-primary" />
 			<span className="font-semibold text-text tabular-nums">
 				{score}
 				{liveRating && liveRating.count > 0 && (
@@ -88,7 +88,8 @@ export function CommunityRatingBadge({
 				aria-label={ariaLabel}
 				className={cn(
 					BADGE_CLASSES,
-					'min-h-11 cursor-pointer select-none transition duration-(--duration-fast) hover:bg-glass-bg-hover/80 active:scale-[0.97] active:bg-glass-bg-hover/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg'
+					"relative after:absolute after:-inset-y-1.5 after:inset-x-0 after:content-['']",
+					'cursor-pointer select-none transition duration-(--duration-fast) hover:bg-glass-bg-hover/80 active:scale-[0.97] active:bg-glass-bg-hover/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg'
 				)}
 			>
 				{content}

@@ -77,7 +77,7 @@ export interface WatchButtonProps {
 	status: WatchStatus;
 	initialIsActive?: boolean;
 	fallbackStatus?: WatchStatus;
-	variant?: 'full' | 'responsive';
+	variant?: 'full' | 'responsive' | 'pill';
 	onDark?: boolean;
 	blur?: boolean;
 	releaseDate?: string;
@@ -110,6 +110,7 @@ export interface HorizontalScrollProps {
 
 export interface CrewBannerProps {
 	crew: CrewDetails;
+	backdropPath: string | null;
 }
 
 export interface CrewBioProps {
