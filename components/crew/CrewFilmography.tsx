@@ -13,11 +13,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MediaCard } from '@/components/media/card/MediaCard';
-import {
-	MEDIA_GRID_COLUMNS,
-	MEDIA_GRID_ROW_CLASS,
-	VirtualMediaGrid,
-} from '@/components/media/card/VirtualMediaGrid';
+import { VirtualMediaGrid } from '@/components/media/card/VirtualMediaGrid';
+import { MEDIA_GRID } from '@/components/media/card/grid';
 import { BackToTopButton } from '@/components/shared/BackToTopButton';
 import { getMediaKey } from '@/lib/media';
 import { SectionHeading } from '@/components/ui/SectionHeading';
@@ -81,8 +78,8 @@ export function CrewFilmography({ departments }: CrewFilmographyProps) {
 			<VirtualMediaGrid
 				key={current.key}
 				items={current.items}
-				columns={MEDIA_GRID_COLUMNS}
-				rowClassName={MEDIA_GRID_ROW_CLASS}
+				columns={MEDIA_GRID.columns}
+				rowClassName={MEDIA_GRID.rowClassName}
 				renderItem={(item, index) => (
 					<div key={getMediaKey(item)} className="media-grid-cell">
 						<MediaCard

@@ -11,11 +11,8 @@ import { getMediaKey } from '@/lib/media';
 import { SORT_KEYS } from '@/lib/media-list/controls';
 import { useMediaListControls } from '@/hooks/useMediaListControls';
 import { MediaCard } from '@/components/media/card/MediaCard';
-import {
-	MEDIA_GRID_COLUMNS,
-	MEDIA_GRID_ROW_CLASS,
-	VirtualMediaGrid,
-} from '@/components/media/card/VirtualMediaGrid';
+import { VirtualMediaGrid } from '@/components/media/card/VirtualMediaGrid';
+import { MEDIA_GRID } from '@/components/media/card/grid';
 import { BackToTopButton } from '@/components/shared/BackToTopButton';
 import { MediaListControls } from '@/components/media/list/MediaListControls';
 import { PrivacyBlock } from '@/components/profile/PrivacyBlock';
@@ -151,8 +148,8 @@ export function WatchlistSection({
 				<>
 					<VirtualMediaGrid
 						items={processed}
-						columns={MEDIA_GRID_COLUMNS}
-						rowClassName={MEDIA_GRID_ROW_CLASS}
+						columns={MEDIA_GRID.columns}
+						rowClassName={MEDIA_GRID.rowClassName}
 						renderItem={(item, index) => (
 							<div
 								key={getMediaKey(item)}
