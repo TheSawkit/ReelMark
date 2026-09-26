@@ -150,6 +150,8 @@
 	--bottom-nav-clearance: calc(4rem + 0.75rem + env(safe-area-inset-bottom));
 	--floating-control-bottom: calc(var(--bottom-nav-clearance) + 1rem);
 	--floating-control-right: calc(1rem + env(safe-area-inset-right));
+	--floating-control-left: calc(1rem + env(safe-area-inset-left));
+	--floating-stack-bottom: calc(var(--floating-control-bottom) + 3.5rem);
 }
 
 @media (min-width: 768px) {

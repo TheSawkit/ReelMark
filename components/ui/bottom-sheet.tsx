@@ -57,7 +57,7 @@ export function BottomSheet({
 							aria-describedby={undefined}
 						>
 							<m.div
-								className="glass-popover fixed inset-x-0 bottom-0 z-50 flex max-h-3/4 flex-col rounded-t-2xl pb-[env(safe-area-inset-bottom)] outline-none"
+								className="glass-popover fixed inset-x-0 bottom-0 z-50 flex max-h-3/4 flex-col rounded-t-2xl pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] outline-none"
 								initial={{ y: '100%' }}
 								animate={{ y: 0 }}
 								exit={{ y: '100%' }}
