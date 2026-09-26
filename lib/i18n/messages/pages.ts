@@ -147,8 +147,6 @@ const fr = {
 	dashboard: {
 		title: 'Tableau de bord',
 		welcome: 'Bonjour, content de te revoir !',
-		subtitle:
-			'Voici quelques recommandations pour ta prochaine soirée ciné.',
 		nextWatchings: 'Tes prochains visionnages',
 		emptyLibrary:
 			'Ta bibliothèque est vide. Commence à explorer pour obtenir des recommandations !',
@@ -363,7 +361,6 @@ const en = {
 	dashboard: {
 		title: 'Dashboard',
 		welcome: 'Hello, glad to see you again!',
-		subtitle: 'Here are some recommendations for your next movie night.',
 		nextWatchings: 'Your next watchings',
 		emptyLibrary:
 			'Your library is empty. Start exploring to get recommendations!',

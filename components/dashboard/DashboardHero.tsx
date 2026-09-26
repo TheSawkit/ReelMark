@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Play, Star } from 'lucide-react';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { getMediaHref } from '@/lib/media';
@@ -13,11 +12,10 @@ import {
 	useEpisodeWatchVersion,
 } from '@/lib/stores/episode-watch';
 import { pickResumableHero } from '@/lib/dashboard-hero';
-import { HeroTilt } from '@/components/effects/HeroTilt';
-import { Grain } from '@/components/effects/Grain';
-import { GlowBorder } from '@/components/effects/GlowBorder';
+import { riseStyle } from '@/lib/motion';
 import { ProgressBar } from '@/components/shared/ProgressBar';
-import { BlurredPosterBackdrop } from '@/components/shared/BlurredPosterBackdrop';
+import { PageHeader } from '@/components/layout/PageLayout';
+import { CinematicBackdrop } from '@/components/media/detail/CinematicBackdrop';
 
 export interface FeaturedHero {
 	id: number;
@@ -33,18 +31,19 @@ export interface FeaturedHero {
 
 interface DashboardHeroProps {
 	items: FeaturedHero[];
+	greeting: string;
 	resumeLabel: string;
 	discoverLabel: string;
 }
 
 /**
- * Cinematic "resume / discover" hero featuring the show the user can pick up right now.
- *
- * Receives the next few resumable shows so that finishing one from the row below swaps the
- * hero to the following one instantly, instead of waiting for the next server render.
+ * Full-bleed "resume / discover" hero opening the dashboard, greeting included (it is the page's
+ * title). Receives the next few resumable shows so that finishing one from the row below swaps
+ * the hero to the following one instantly, instead of waiting for the next server render.
  */
 export function DashboardHero({
 	items,
+	greeting,
 	resumeLabel,
 	discoverLabel,
 }: DashboardHeroProps) {
@@ -56,7 +55,13 @@ export function DashboardHero({
 		showWatchedTotal,
 		lastTouchedShowId()
 	);
-	if (!item) return null;
+	if (!item) {
+		return (
+			<div className="container mx-auto px-6 pt-section md:pt-section-md lg:px-12">
+				<PageHeader title={greeting} />
+			</div>
+		);
+	}
 
 	const watched = item.progress
 		? showWatchedTotal(item.id, item.progress.watched)
@@ -64,87 +69,65 @@ export function DashboardHero({
 	const cta = item.resume ? resumeLabel : discoverLabel;
 
 	return (
-		<div className="mb-10">
-			<HeroTilt>
+		<section className="hero-stage relative isolate flex flex-col justify-end overflow-hidden banner-pull-top banner-safe-pad pb-8 sm:pb-12">
+			<CinematicBackdrop
+				src={getImageUrl(item.backdropPath ?? item.posterPath, 'w1280')}
+				posterPath={item.posterPath}
+				alt={item.title}
+			/>
+
+			<div className="hero-scroll-fade relative z-10 container mx-auto flex flex-col items-center gap-3 px-6 text-center md:items-start md:text-left lg:px-12">
+				<h1
+					className="hero-rise text-sm font-semibold text-muted"
+					style={riseStyle(0)}
+				>
+					{greeting}
+				</h1>
+				<span
+					className="hero-rise inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-gold"
+					style={riseStyle(1)}
+				>
+					<Play className="h-3.5 w-3.5 fill-current" aria-hidden />
+					{cta}
+				</span>
+				<h2
+					className="hero-rise heading-display line-clamp-2 max-w-3xl text-5xl leading-none text-text drop-shadow-text sm:text-6xl lg:text-7xl"
+					style={riseStyle(2)}
+				>
+					{item.title}
+				</h2>
+				<p
+					className="hero-rise flex flex-wrap items-center justify-center gap-x-2 text-sm text-muted md:justify-start"
+					style={riseStyle(3)}
+				>
+					{item.voteAverage > 0 && (
+						<span className="inline-flex items-center gap-1 font-semibold text-gold">
+							<Star className="h-4 w-4 fill-current" aria-hidden />
+							{item.voteAverage.toFixed(1)}
+						</span>
+					)}
+					{item.genres
+						.slice(0, 3)
+						.map((genre) => genre.name)
+						.join(' · ')}
+				</p>
+				{item.progress && item.progress.total > 0 && (
+					<ProgressBar
+						watched={watched}
+						total={item.progress.total}
+						className="hero-rise h-1.5 w-full max-w-xs rounded-full bg-surface-3"
+						innerClassName="rounded-full bg-linear-to-r from-primary to-gold"
+					/>
+				)}
 				<Link
 					href={localizedHref(lang, getMediaHref(item))}
-					className="relative block h-104 sm:h-112 overflow-hidden rounded-2xl border border-border shadow-card-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+					className="hero-rise mt-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-text px-6 font-bold text-background transition-transform duration-(--duration-fast) ease-apple active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:w-auto"
+					style={riseStyle(4)}
 				>
-					{item.backdropPath ? (
-						<Image
-							src={getImageUrl(item.backdropPath, 'w1280')}
-							alt={item.title}
-							fill
-							priority
-							className="object-cover object-top"
-							sizes="(max-width: 1024px) 100vw, 900px"
-						/>
-					) : (
-						<BlurredPosterBackdrop
-							posterPath={item.posterPath}
-							variant="banner"
-						/>
-					)}
-
-					<Grain />
-					<div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/45 to-transparent" />
-
-					<div className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1.5 backdrop-blur-md">
-						<Play className="h-3.5 w-3.5 fill-primary text-primary" />
-						<span className="text-xs font-bold uppercase tracking-wide text-white">
-							{cta}
-						</span>
-					</div>
-
-					<div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
-						{item.genres.length > 0 && (
-							<div className="mb-3 flex flex-wrap gap-2">
-								{item.genres.slice(0, 3).map((g) => (
-									<span
-										key={g.id}
-										className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-white/80 backdrop-blur-md"
-									>
-										{g.name}
-									</span>
-								))}
-							</div>
-						)}
-
-						<h2 className="heading-display leading-none text-4xl text-white drop-shadow-text sm:text-5xl">
-							{item.title}
-						</h2>
-
-						{item.voteAverage > 0 && (
-							<div className="mt-3 flex items-center gap-3 text-sm">
-								<span className="inline-flex items-center gap-1 font-semibold text-gold-bright">
-									<Star className="h-4 w-4 fill-current" />
-									{item.voteAverage.toFixed(1)}
-								</span>
-							</div>
-						)}
-
-						{item.progress && item.progress.total > 0 && (
-							<div className="mt-4 max-w-md">
-								<ProgressBar
-									watched={watched}
-									total={item.progress.total}
-									className="h-1.5 rounded-full bg-white/25"
-									innerClassName="rounded-full bg-linear-to-r from-primary to-gold"
-								/>
-							</div>
-						)}
-
-						<div className="mt-5 inline-flex">
-							<GlowBorder>
-								<span className="flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 font-bold text-black">
-									<Play className="h-5 w-5 fill-current" />
-									{cta}
-								</span>
-							</GlowBorder>
-						</div>
-					</div>
+					<Play className="h-5 w-5 fill-current" aria-hidden />
+					{cta}
 				</Link>
-			</HeroTilt>
-		</div>
+			</div>
+		</section>
 	);
 }
