@@ -74,10 +74,6 @@ const nextConfig: NextConfig = {
 	allowedDevOrigins: localNetworkOrigins(),
 	experimental: {
 		isrFlushToDisk: false,
-		staleTimes: {
-			dynamic: 90,
-			static: 180,
-		},
 	},
 	turbopack: {
 		root: __dirname,
