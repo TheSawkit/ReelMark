@@ -31,7 +31,7 @@ export function HorizontalScroll({
 	);
 
 	return (
-		<div className={`group/section ${className}`}>
+		<div className={`reveal-on-scroll group/section ${className}`}>
 			{title && (
 				<div className="flex items-center justify-between mb-4 px-1">
 					{title}

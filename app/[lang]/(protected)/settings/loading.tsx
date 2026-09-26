@@ -1,14 +1,11 @@
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLayout, PageHeaderSkeleton } from '@/components/layout/PageLayout';
 import { SettingsContentSkeleton } from '@/components/settings/SettingsContentSkeleton';
 
 export default function SettingsLoading() {
 	return (
-		<div className="container mx-auto py-section md:py-section-md lg:py-section-lg px-6 lg:px-12">
-			<div className="mb-12 md:mb-16">
-				<Skeleton className="h-10 w-32 mb-3" />
-				<Skeleton className="h-5 w-48" />
-			</div>
+		<PageLayout>
+			<PageHeaderSkeleton />
 			<SettingsContentSkeleton />
-		</div>
+		</PageLayout>
 	);
 }
