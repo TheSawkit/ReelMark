@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Login page', () => {
 	test('renders login form', async ({ page }) => {
 		await page.goto('/en/login');
-		await expect(page.locator('[data-slot="card-title"]')).toBeVisible();
+		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 		await expect(
 			page.getByRole('textbox', { name: /email/i })
 		).toBeVisible();

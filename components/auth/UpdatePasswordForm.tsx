@@ -7,7 +7,6 @@ import {
 	CardContent,
 	CardDescription,
 	CardHeader,
-	CardTitle,
 } from '@/components/ui/card';
 import {
 	Field,
@@ -40,9 +39,9 @@ export function UpdatePasswordForm({
 		>
 			<Card>
 				<CardHeader className="text-center">
-					<CardTitle className="text-xl">
+					<h1 className="text-xl leading-none font-semibold">
 						{t.auth.updatePassword.title}
-					</CardTitle>
+					</h1>
 					<CardDescription>
 						{t.auth.updatePassword.description}
 					</CardDescription>
