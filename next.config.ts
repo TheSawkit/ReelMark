@@ -74,15 +74,6 @@ const nextConfig: NextConfig = {
 	allowedDevOrigins: localNetworkOrigins(),
 	experimental: {
 		isrFlushToDisk: false,
-		optimizePackageImports: [
-			'lucide-react',
-			'simple-icons',
-			'@radix-ui/react-dialog',
-			'@radix-ui/react-dropdown-menu',
-			'@radix-ui/react-label',
-			'@radix-ui/react-separator',
-			'@radix-ui/react-slot',
-		],
 		staleTimes: {
 			dynamic: 90,
 			static: 180,
