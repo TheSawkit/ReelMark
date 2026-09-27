@@ -35,7 +35,12 @@ const fr = {
 	clearSearch: 'Effacer la recherche',
 	close: 'Fermer',
 	skipToMainContent: 'Aller au contenu principal',
-	footerNav: 'Liens de pied de page',
+	footer: {
+		nav: 'Liens de pied de page',
+		tagline: 'Suis, note et découvre tes films et séries.',
+		addToAi: 'Ajouter à l’IA',
+		dataFrom: 'Données films et séries :',
+	},
 	notFoundTitle: 'Page introuvable',
 	notFoundDescription:
 		"La page que tu cherches n'existe pas ou a été déplacée.",
@@ -78,7 +83,12 @@ const en = {
 	clearSearch: 'Clear search',
 	close: 'Close',
 	skipToMainContent: 'Skip to main content',
-	footerNav: 'Footer links',
+	footer: {
+		nav: 'Footer links',
+		tagline: 'Track, rate and discover movies and shows.',
+		addToAi: 'Add to AI',
+		dataFrom: 'Movie and show data:',
+	},
 	notFoundTitle: 'Page not found',
 	notFoundDescription:
 		'The page you are looking for does not exist or has been moved.',
