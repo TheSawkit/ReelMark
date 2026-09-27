@@ -10,6 +10,7 @@ import { upsertReview } from '@/app/actions/reviews';
 import { useEpisodeWatched } from '@/lib/stores/episode-watch';
 import { useTranslation } from '@/lib/i18n/context';
 import type { Review } from '@/types/profile';
+import { isRedirectSignal } from '@/lib/action-errors';
 
 const ReviewDialog = dynamic(
 	() =>
@@ -80,9 +81,9 @@ export function EpisodeRating({
 				setReview(saved);
 				toast.success(t.movie.ratingSaved);
 				router.refresh();
-			} catch {
+			} catch (err) {
 				setRating(previous);
-				toast.error(t.common.actionError);
+				if (!isRedirectSignal(err)) toast.error(t.common.actionError);
 			}
 		});
 	}

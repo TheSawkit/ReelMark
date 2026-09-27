@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { revalidateLayoutAfterResponse } from '@/app/actions/_helpers';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
-import { isOAuthOnly } from '@/lib/supabase/auth-helpers';
+import { getAuthenticatedUser, isOAuthOnly } from '@/lib/supabase/auth-helpers';
 import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import {
@@ -41,16 +41,8 @@ async function syncUserProfile(
 }
 
 export async function updatePassword(prevState: unknown, formData: FormData) {
-	const supabase = await createClient();
+	const { supabase } = await getAuthenticatedUser();
 	const t = await getTranslations();
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
-
-	if (!user) {
-		return { error: t.auth.notAuthenticated, success: false };
-	}
 
 	const newPassword = validatePassword(formData.get('password'));
 	const confirmPassword = formData.get('confirm-password');
@@ -79,16 +71,8 @@ export async function updatePassword(prevState: unknown, formData: FormData) {
 }
 
 export async function updateProfile(prevState: unknown, formData: FormData) {
-	const supabase = await createClient();
+	const { supabase, user } = await getAuthenticatedUser();
 	const t = await getTranslations();
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
-
-	if (!user) {
-		return { error: t.auth.notAuthenticated, success: false };
-	}
 
 	const fullName = validateUsername(formData.get('fullName'));
 	const username = validateUsername(formData.get('username'));
@@ -130,16 +114,8 @@ export async function updateProfile(prevState: unknown, formData: FormData) {
 }
 
 export async function updateAvatar(prevState: unknown, formData: FormData) {
-	const supabase = await createClient();
+	const { supabase, user } = await getAuthenticatedUser();
 	const t = await getTranslations();
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
-
-	if (!user) {
-		return { error: t.auth.notAuthenticated, success: false };
-	}
 
 	const avatarUrl = formStr(formData, 'avatarUrl');
 	const avatarFile = formData.get('avatarFile') as File | null;
@@ -225,16 +201,8 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
 }
 
 export async function deleteAccount(prevState: unknown, formData: FormData) {
-	const supabase = await createClient();
+	const { supabase, user } = await getAuthenticatedUser();
 	const t = await getTranslations();
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
-
-	if (!user) {
-		return { error: t.auth.notAuthenticated, success: false };
-	}
 
 	const confirmation = formData.get('confirmation');
 	const password = formData.get('password');

@@ -88,7 +88,6 @@ const fr = {
 	terms: 'En continuant, tu acceptes nos',
 	termsLink: "Conditions d'utilisation",
 	privacyLink: 'Politique de confidentialité',
-	notAuthenticated: 'Non authentifié',
 	logout: 'Déconnexion',
 	loggingOut: 'Déconnexion...',
 };
@@ -181,7 +180,6 @@ const en = {
 	terms: 'By continuing, you agree to our',
 	termsLink: 'Terms of Service',
 	privacyLink: 'Privacy Policy',
-	notAuthenticated: 'Unauthenticated',
 	logout: 'Logout',
 	loggingOut: 'Logging out...',
 } satisfies typeof fr;

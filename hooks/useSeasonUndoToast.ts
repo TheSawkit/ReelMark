@@ -6,6 +6,7 @@ import { setSeasonEpisodes } from '@/app/actions/episodes';
 import { episodeWatchStore } from '@/lib/stores/episode-watch';
 import { mediaWatchStore } from '@/lib/stores/media-watch';
 import { useTranslation } from '@/lib/i18n/context';
+import { isRedirectSignal } from '@/lib/action-errors';
 
 /**
  * Returns a success toast carrying an undo action that restores a season to the exact
@@ -36,13 +37,14 @@ export function useSeasonUndoToast(tvId: number, seasonNumber: number) {
 								previousEpisodes
 							);
 							mediaWatchStore.set('tv', tvId, result.tvStatus);
-						} catch {
+						} catch (err) {
 							episodeWatchStore.restore(
 								tvId,
 								seasonNumber,
 								snapshot
 							);
-							toast.error(t.common.actionError);
+							if (!isRedirectSignal(err))
+								toast.error(t.common.actionError);
 						}
 					},
 				},

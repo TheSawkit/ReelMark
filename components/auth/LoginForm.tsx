@@ -30,10 +30,15 @@ import { localizedHref } from '@/lib/i18n/utils';
 
 const initialState = { error: '' };
 
+/**
+ * @param props.next - Sanitized page to return to once signed in (`?next=` of the login URL),
+ * carried through every sign-in method: password, passkey, magic link and OAuth.
+ */
 export function LoginForm({
 	className,
+	next = '/dashboard',
 	...props
-}: React.ComponentProps<'div'>) {
+}: React.ComponentProps<'div'> & { next?: string }) {
 	const [state, formAction, isPending] = useActionState(login, initialState);
 	const [oauthPending, setOAuthPending] = useState(false);
 	const [oauthError, setOAuthError] = useState('');
@@ -57,7 +62,7 @@ export function LoginForm({
 					setPasskeyError(error.message);
 				return;
 			}
-			router.replace(localizedHref(lang, '/dashboard'));
+			router.replace(localizedHref(lang, next));
 			router.refresh();
 		});
 	};
@@ -70,7 +75,7 @@ export function LoginForm({
 			return;
 		}
 		startMagicLink(async () => {
-			const result = await requestMagicLink(email);
+			const result = await requestMagicLink(email, next);
 			if (result.error) setMagicError(result.error);
 			else setMagicSent(true);
 		});
@@ -82,7 +87,9 @@ export function LoginForm({
 		await new Promise<void>((r) => requestAnimationFrame(() => r()));
 		const { error } = await supabase.auth.signInWithOAuth({
 			provider,
-			options: { redirectTo: `${location.origin}/auth/callback` },
+			options: {
+				redirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+			},
 		});
 		if (error) {
 			setOAuthPending(false);
@@ -106,6 +113,7 @@ export function LoginForm({
 				</CardHeader>
 				<CardContent>
 					<form action={formAction}>
+						<input type="hidden" name="next" value={next} />
 						<FieldGroup>
 							<Field>
 								<Button

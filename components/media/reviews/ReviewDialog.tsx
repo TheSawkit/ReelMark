@@ -17,6 +17,7 @@ import { upsertReview, deleteReview } from '@/app/actions/reviews';
 import { MAX_REVIEW_LENGTH } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
 import type { Review, ReviewMediaType } from '@/types/profile';
+import { isRedirectSignal } from '@/lib/action-errors';
 
 interface ReviewDialogProps {
 	open: boolean;
@@ -73,6 +74,7 @@ export function ReviewDialog({
 				onSave?.(saved);
 				onClose();
 			} catch (err) {
+				if (isRedirectSignal(err)) return;
 				toast.error(
 					err instanceof Error ? err.message : t.common.actionError
 				);
@@ -88,8 +90,8 @@ export function ReviewDialog({
 				toast.success(t.movie.reviewDeleted);
 				onDelete?.();
 				onClose();
-			} catch {
-				toast.error(t.common.actionError);
+			} catch (err) {
+				if (!isRedirectSignal(err)) toast.error(t.common.actionError);
 			}
 		});
 	}
