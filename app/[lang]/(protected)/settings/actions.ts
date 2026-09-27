@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { revalidateLayoutAfterResponse } from '@/app/actions/_helpers';
+import { revalidateLayoutAfterResponse } from '@/lib/revalidate';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { getAuthenticatedUser, isOAuthOnly } from '@/lib/supabase/auth-helpers';
 import { getTranslations, getServerLanguage } from '@/lib/i18n/server';

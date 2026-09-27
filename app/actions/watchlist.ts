@@ -1,7 +1,7 @@
 'use server';
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
-import { revalidateWatchlistPaths } from '@/app/actions/_helpers';
+import { revalidateWatchlistPaths } from '@/lib/revalidate';
 import {
 	deleteWatchlistEntry,
 	upsertWatchlistEntry,

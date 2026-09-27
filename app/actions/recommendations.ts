@@ -1,7 +1,7 @@
 'use server';
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
-import { revalidateLocalizedAfterResponse } from '@/app/actions/_helpers';
+import { revalidateLocalizedAfterResponse } from '@/lib/revalidate';
 import { VALID_MEDIA_TYPES } from '@/lib/validators';
 import type { MediaType } from '@/types/tmdb';
 import { ON_CONFLICT } from '@/lib/supabase/conflicts';

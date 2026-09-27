@@ -8,7 +8,7 @@ import {
 	validateReviewContent,
 	validateUUID,
 } from '@/lib/validators';
-import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
+import { revalidateProfileAfterResponse } from '@/lib/revalidate';
 import { MAX_REVIEW_LENGTH } from '@/types/profile';
 import type { Review, ReviewMediaType, UserReviewsPage } from '@/types/profile';
 import { REVIEW_COLUMNS } from '@/lib/supabase/columns';

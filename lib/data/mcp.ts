@@ -6,8 +6,7 @@ import { hashMcpKey, isMcpKeyFormat } from '@/lib/mcp/keys';
 import { cachedUserContext } from '@/lib/mcp/user-cache';
 import { reportSwallowed } from '@/lib/report';
 import { DEFAULT_LANGUAGE, isLanguage } from '@/lib/i18n/config';
-import type { Language } from '@/lib/i18n/translations';
-import type { McpLinkStatus } from '@/types/mcp';
+import type { McpLinkStatus, McpUserContext } from '@/types/mcp';
 
 /** The signed-in user's AI link, without its secret — only whether it exists and when it was used. */
 export async function getMcpLinkStatus(): Promise<McpLinkStatus | null> {
@@ -58,11 +57,6 @@ export async function touchMcpKey({
 		.update({ last_used_at: new Date(now).toISOString() })
 		.eq('user_id', userId);
 	if (error) reportSwallowed('mcp:touch', error);
-}
-
-export interface McpUserContext {
-	lang: Language;
-	region?: string;
 }
 
 /**

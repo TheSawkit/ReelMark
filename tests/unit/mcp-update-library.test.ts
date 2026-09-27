@@ -17,7 +17,7 @@ vi.mock('@/lib/data/watchlist-writes', () => ({
 	upsertWatchlistEntry: writes.upsert,
 	deleteWatchlistEntry: writes.remove,
 }));
-vi.mock('@/app/actions/_helpers', () => ({
+vi.mock('@/lib/revalidate', () => ({
 	revalidateWatchlistPaths: writes.revalidate,
 }));
 vi.mock('@/lib/tmdb', () => ({
