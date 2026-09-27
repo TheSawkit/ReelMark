@@ -3,6 +3,7 @@ import 'server-only';
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { createAdminClient } from '@/lib/supabase/server';
 import { hashMcpKey, isMcpKeyFormat } from '@/lib/mcp/keys';
+import { cachedUserContext } from '@/lib/mcp/user-cache';
 import { reportSwallowed } from '@/lib/report';
 import { DEFAULT_LANGUAGE, isLanguage } from '@/lib/i18n/config';
 import type { Language } from '@/lib/i18n/translations';
@@ -60,27 +61,30 @@ export async function touchMcpKey({
 }
 
 export interface McpUserContext {
-	userId: string;
 	lang: Language;
 	region?: string;
 }
 
-/** Language and region an assistant request answers in — read from the account, since the request carries no cookie. */
-export async function getMcpUserContext(
-	userId: string
-): Promise<McpUserContext> {
-	const { data, error } =
-		await createAdminClient().auth.admin.getUserById(userId);
-	if (error) reportSwallowed('mcp:user-context', error);
-	const metadata = data.user?.user_metadata ?? {};
-	return {
-		userId,
-		lang: isLanguage(metadata.language)
-			? metadata.language
-			: DEFAULT_LANGUAGE,
-		region:
-			typeof metadata.region === 'string' && metadata.region
-				? metadata.region.toUpperCase()
-				: undefined,
-	};
+/**
+ * Language and region an assistant request answers in — read from the account, since the request
+ * carries no cookie. Cached per user, and only the tools that format an answer ask for it.
+ *
+ * @throws The Auth error, so a failed read is never cached in place of the real settings.
+ */
+export function getMcpUserContext(userId: string): Promise<McpUserContext> {
+	return cachedUserContext(userId, async () => {
+		const { data, error } =
+			await createAdminClient().auth.admin.getUserById(userId);
+		if (error) throw error;
+		const metadata = data.user.user_metadata;
+		return {
+			lang: isLanguage(metadata.language)
+				? metadata.language
+				: DEFAULT_LANGUAGE,
+			region:
+				typeof metadata.region === 'string' && metadata.region
+					? metadata.region.toUpperCase()
+					: undefined,
+		};
+	});
 }

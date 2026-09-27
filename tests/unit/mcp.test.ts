@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { generateMcpKey, hashMcpKey, isMcpKeyFormat } from '@/lib/mcp/keys';
-import { cachedUserTaste } from '@/lib/mcp/taste-cache';
+import { cachedUserContext, cachedUserTaste } from '@/lib/mcp/user-cache';
+import { chargeMcpRequest, countToolCalls } from '@/lib/mcp/budget';
 import type { UserTaste } from '@/lib/data/taste';
 import {
 	toAssistantDetails,
@@ -233,5 +234,69 @@ describe('cachedUserTaste', () => {
 		}
 		await cachedUserTaste('capped-0', first);
 		expect(first).toHaveBeenCalledTimes(2);
+	});
+});
+
+describe('cachedUserContext', () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('reads language and region once per ten minutes', async () => {
+		vi.useFakeTimers();
+		const load = vi.fn(async () => ({ lang: 'fr' as const, region: 'BE' }));
+
+		await cachedUserContext('context-user', load);
+		vi.advanceTimersByTime(599_000);
+		await cachedUserContext('context-user', load);
+		expect(load).toHaveBeenCalledTimes(1);
+
+		vi.advanceTimersByTime(2_000);
+		await cachedUserContext('context-user', load);
+		expect(load).toHaveBeenCalledTimes(2);
+	});
+});
+
+const rpc = (body: unknown) =>
+	new Request('https://reelmark.test/api/mcp/key', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: typeof body === 'string' ? body : JSON.stringify(body),
+	});
+
+const toolCall = { jsonrpc: '2.0', id: 1, method: 'tools/call' };
+const toolsList = { jsonrpc: '2.0', id: 1, method: 'tools/list' };
+
+describe('countToolCalls', () => {
+	it('counts tool calls in single messages and batches, nothing else', async () => {
+		expect(await countToolCalls(rpc(toolCall))).toBe(1);
+		expect(await countToolCalls(rpc(toolsList))).toBe(0);
+		expect(await countToolCalls(rpc([toolCall, toolsList, toolCall]))).toBe(
+			2
+		);
+		expect(await countToolCalls(rpc('not json'))).toBe(0);
+	});
+
+	it('leaves the body readable for the SDK', async () => {
+		const request = rpc(toolCall);
+		await countToolCalls(request);
+		expect(await request.json()).toEqual(toolCall);
+	});
+});
+
+describe('chargeMcpRequest', () => {
+	it('lets protocol requests through once the tool budget is spent', async () => {
+		for (let i = 0; i < 30; i++) {
+			expect(
+				await chargeMcpRequest('budget-user', rpc(toolCall))
+			).toBeNull();
+		}
+		const rejected = await chargeMcpRequest('budget-user', rpc(toolCall));
+		expect(rejected?.status).toBe(429);
+		expect(Number(rejected?.headers.get('Retry-After'))).toBeGreaterThan(0);
+
+		expect(
+			await chargeMcpRequest('budget-user', rpc(toolsList))
+		).toBeNull();
 	});
 });

@@ -1,29 +1,18 @@
 import { after } from 'next/server';
 import { createMcpHandler } from '@modelcontextprotocol/server';
-import {
-	getMcpUserContext,
-	resolveMcpKey,
-	touchMcpKey,
-	type McpUserContext,
-} from '@/lib/data/mcp';
+import { resolveMcpKey, touchMcpKey } from '@/lib/data/mcp';
 import { createReelMarkMcpServer } from '@/lib/mcp/server';
-import { checkRateLimit } from '@/lib/rate-limiter';
+import { chargeMcpRequest } from '@/lib/mcp/budget';
 import { reportSwallowed } from '@/lib/report';
-
-const BUDGETS = [
-	{ scope: 'mcp-minute', limit: 30, windowMs: 60_000 },
-	{ scope: 'mcp-day', limit: 100, windowMs: 86_400_000 },
-] as const;
 
 type Context = { params: Promise<{ key: string }> };
 
 /**
  * One handler for every link: each request still gets a fresh server from the factory, built for
- * the user the route resolved — handed over through `authInfo`, the SDK's per-principal channel.
+ * the user the route resolved — handed over as `authInfo.clientId`, the SDK's per-principal channel.
  */
 const handler = createMcpHandler(
-	({ authInfo }) =>
-		createReelMarkMcpServer(authInfo?.extra?.context as McpUserContext),
+	({ authInfo }) => createReelMarkMcpServer(authInfo!.clientId),
 	{ onerror: (error) => reportSwallowed('mcp:handler', error) }
 );
 
@@ -33,33 +22,12 @@ async function handle(request: Request, { params }: Context) {
 	const owner = await resolveMcpKey(key);
 	if (!owner) return new Response(null, { status: 404 });
 
-	for (const { scope, limit, windowMs } of BUDGETS) {
-		const { allowed, resetAt } = checkRateLimit(
-			`${scope}:${owner.userId}`,
-			limit,
-			windowMs
-		);
-		if (!allowed) {
-			return new Response(null, {
-				status: 429,
-				headers: {
-					'Retry-After': String(
-						Math.ceil((resetAt - Date.now()) / 1000)
-					),
-				},
-			});
-		}
-	}
+	const rejected = await chargeMcpRequest(owner.userId, request);
+	if (rejected) return rejected;
 
-	const context = await getMcpUserContext(owner.userId);
 	after(() => touchMcpKey(owner));
 	return handler.fetch(request, {
-		authInfo: {
-			token: '',
-			clientId: owner.userId,
-			scopes: [],
-			extra: { context },
-		},
+		authInfo: { token: '', clientId: owner.userId, scopes: [] },
 	});
 }
 
