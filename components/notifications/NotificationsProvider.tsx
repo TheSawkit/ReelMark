@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { createClient } from '@/lib/supabase/client';
+import { withBrowserClient } from '@/lib/supabase/lazy-client';
 import {
 	deleteNotification,
 	getUnreadCount,
@@ -124,111 +124,121 @@ export function NotificationsProvider({
 			document.removeEventListener('visibilitychange', resyncWhenVisible);
 	}, [refresh]);
 
-	useEffect(() => {
-		const supabase = createClient();
-
-		function showToast(n: AppNotification) {
-			const url = n.url;
-			toast.custom((id) => (
-				<NotificationToast
-					notification={n}
-					message={notificationMessage(n, t.notifications.templates)}
-					openLabel={t.notifications.open}
-					onOpen={
-						url
-							? () => {
-									toast.dismiss(id);
-									router.push(localizedHref(lang, url));
-								}
-							: undefined
-					}
-				/>
-			));
-		}
-
-		/**
-		 * The realtime payload carries `sender_id`, never the picture, so the avatar costs one
-		 * extra read — spent only on the notifications that actually show a face.
-		 */
-		async function resolveSenderAvatar(
-			row: NotificationRow
-		): Promise<string | null> {
-			if (!row.type.startsWith('friend') || !row.sender_id) return null;
-			const { data } = await supabase
-				.from('user_profiles')
-				.select('avatar_url')
-				.eq('user_id', row.sender_id)
-				.maybeSingle();
-			return resolveAvatarUrl(data?.avatar_url, null);
-		}
-
-		let hasJoinedOnce = false;
-		const channel = supabase
-			.channel(`notifications:${userId}`)
-			.on(
-				'postgres_changes',
-				{
-					event: 'INSERT',
-					schema: 'public',
-					table: 'notifications',
-					filter: `user_id=eq.${userId}`,
-				},
-				(payload) => {
-					setUnreadCount((c) => c + 1);
-					const row = payload.new as NotificationRow;
-					if (row.type === 'friend_request')
-						promptStore.requestPush();
-
-					void resolveSenderAvatar(row)
-						.catch((error) => {
-							reportSwallowed(
-								'notifications:senderAvatar',
-								error
-							);
-							return null;
-						})
-						.then((avatarUrl) =>
-							showToast(rowToAppNotification(row, avatarUrl))
-						);
+	useEffect(
+		() =>
+			withBrowserClient((supabase) => {
+				function showToast(n: AppNotification) {
+					const url = n.url;
+					toast.custom((id) => (
+						<NotificationToast
+							notification={n}
+							message={notificationMessage(
+								n,
+								t.notifications.templates
+							)}
+							openLabel={t.notifications.open}
+							onOpen={
+								url
+									? () => {
+											toast.dismiss(id);
+											router.push(
+												localizedHref(lang, url)
+											);
+										}
+									: undefined
+							}
+						/>
+					));
 				}
-			)
-			.on(
-				'postgres_changes',
-				{
-					event: 'UPDATE',
-					schema: 'public',
-					table: 'notifications',
-					filter: `user_id=eq.${userId}`,
-				},
-				() => void refresh()
-			)
-			.on(
-				'postgres_changes',
-				{
-					event: 'DELETE',
-					schema: 'public',
-					table: 'notifications',
-					filter: `user_id=eq.${userId}`,
-				},
-				() => void refresh()
-			)
-			.subscribe((status) => {
-				if (status !== 'SUBSCRIBED') return;
-				if (hasJoinedOnce) void refresh();
-				hasJoinedOnce = true;
-			});
 
-		return () => {
-			void supabase.removeChannel(channel);
-		};
-	}, [
-		userId,
-		refresh,
-		router,
-		lang,
-		t.notifications.templates,
-		t.notifications.open,
-	]);
+				/**
+				 * The realtime payload carries `sender_id`, never the picture, so the avatar costs one
+				 * extra read — spent only on the notifications that actually show a face.
+				 */
+				async function resolveSenderAvatar(
+					row: NotificationRow
+				): Promise<string | null> {
+					if (!row.type.startsWith('friend') || !row.sender_id)
+						return null;
+					const { data } = await supabase
+						.from('user_profiles')
+						.select('avatar_url')
+						.eq('user_id', row.sender_id)
+						.maybeSingle();
+					return resolveAvatarUrl(data?.avatar_url, null);
+				}
+
+				let hasJoinedOnce = false;
+				const channel = supabase
+					.channel(`notifications:${userId}`)
+					.on(
+						'postgres_changes',
+						{
+							event: 'INSERT',
+							schema: 'public',
+							table: 'notifications',
+							filter: `user_id=eq.${userId}`,
+						},
+						(payload) => {
+							setUnreadCount((c) => c + 1);
+							const row = payload.new as NotificationRow;
+							if (row.type === 'friend_request')
+								promptStore.requestPush();
+
+							void resolveSenderAvatar(row)
+								.catch((error) => {
+									reportSwallowed(
+										'notifications:senderAvatar',
+										error
+									);
+									return null;
+								})
+								.then((avatarUrl) =>
+									showToast(
+										rowToAppNotification(row, avatarUrl)
+									)
+								);
+						}
+					)
+					.on(
+						'postgres_changes',
+						{
+							event: 'UPDATE',
+							schema: 'public',
+							table: 'notifications',
+							filter: `user_id=eq.${userId}`,
+						},
+						() => void refresh()
+					)
+					.on(
+						'postgres_changes',
+						{
+							event: 'DELETE',
+							schema: 'public',
+							table: 'notifications',
+							filter: `user_id=eq.${userId}`,
+						},
+						() => void refresh()
+					)
+					.subscribe((status) => {
+						if (status !== 'SUBSCRIBED') return;
+						if (hasJoinedOnce) void refresh();
+						hasJoinedOnce = true;
+					});
+
+				return () => {
+					void supabase.removeChannel(channel);
+				};
+			}),
+		[
+			userId,
+			refresh,
+			router,
+			lang,
+			t.notifications.templates,
+			t.notifications.open,
+		]
+	);
 
 	return (
 		<NotificationsContext.Provider
