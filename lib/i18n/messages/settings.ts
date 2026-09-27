@@ -111,7 +111,7 @@ const fr = {
 	aiAssistant: {
 		title: 'Assistant IA',
 		description:
-			'Connecte ton assistant (Claude, ChatGPT…) à ReelMark : il connaîtra tes goûts pour te conseiller films et séries. Il peut seulement lire, jamais modifier.',
+			'Connecte ton assistant (Claude, ChatGPT…) à ReelMark : il connaîtra tes goûts pour te conseiller films et séries, et pourra, si tu le lui demandes, marquer un titre comme vu, à voir ou abandonné. Il ne touche à rien d’autre.',
 		generate: 'Générer mon lien',
 		regenerate: 'Régénérer le lien',
 		regenerateHint:
@@ -122,15 +122,17 @@ const fr = {
 		copy: 'Copier',
 		copied: 'Lien copié',
 		showOnce:
-			'Copie-le maintenant : il ne sera plus affiché. Garde-le secret comme un mot de passe, toute personne qui l’a peut lire ta bibliothèque.',
+			'Copie-le maintenant : il ne sera plus affiché. Garde-le secret comme un mot de passe, toute personne qui l’a peut lire et modifier ta bibliothèque.',
 		activeSince: 'Lien actif depuis le',
 		lastUsed: 'dernière utilisation le',
 		neverUsed: 'jamais utilisé',
 		rateLimited: 'Trop de liens générés, réessaie dans un moment',
-		howTo: 'Comment le brancher',
-		steps: [
+		howTo: 'Où le brancher — au choix',
+		clients: [
 			'Claude : Paramètres → Connecteurs → Ajouter un connecteur personnalisé, puis colle le lien.',
-			'ChatGPT (offre payante) : Paramètres → Applications et connecteurs → active le mode développeur, puis crée un connecteur avec ce lien, sans authentification.',
+			'ChatGPT : Paramètres → Applications → active le mode développeur, puis crée une application avec ce lien, sans authentification.',
+			'Perplexity : Paramètres → Connecteurs → Connecteur personnalisé → Distant, colle le lien et choisis « Aucune » authentification.',
+			'Gemini (sur le web, pour l’instant aux États-Unis) : Paramètres → Applications connectées → Ajouter une application personnalisée, puis colle le lien.',
 		],
 	},
 	dangerZone: {
@@ -375,7 +377,7 @@ const en = {
 	aiAssistant: {
 		title: 'AI assistant',
 		description:
-			'Connect your assistant (Claude, ChatGPT…) to ReelMark: it will know your tastes and suggest movies and shows. It can only read, never change anything.',
+			'Connect your assistant (Claude, ChatGPT…) to ReelMark: it will know your tastes to suggest movies and shows, and can mark a title as watched, to watch or abandoned when you ask it to. It touches nothing else.',
 		generate: 'Generate my link',
 		regenerate: 'Regenerate link',
 		regenerateHint:
@@ -386,15 +388,17 @@ const en = {
 		copy: 'Copy',
 		copied: 'Link copied',
 		showOnce:
-			'Copy it now: it will not be shown again. Keep it secret like a password — anyone who has it can read your library.',
+			'Copy it now: it will not be shown again. Keep it secret like a password — anyone who has it can read and change your library.',
 		activeSince: 'Link active since',
 		lastUsed: 'last used on',
 		neverUsed: 'never used',
 		rateLimited: 'Too many links generated, try again in a moment',
-		howTo: 'How to connect it',
-		steps: [
+		howTo: 'Where to plug it in — pick one',
+		clients: [
 			'Claude: Settings → Connectors → Add custom connector, then paste the link.',
-			'ChatGPT (paid plan): Settings → Apps & Connectors → enable developer mode, then create a connector with this link, no authentication.',
+			'ChatGPT: Settings → Apps → enable developer mode, then create an app with this link, no authentication.',
+			'Perplexity: Settings → Connectors → Custom connector → Remote, paste the link and pick “None” for authentication.',
+			'Gemini (on the web, US only for now): Settings → Connected apps → Add a custom app, then paste the link.',
 		],
 	},
 	dangerZone: {

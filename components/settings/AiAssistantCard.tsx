@@ -23,7 +23,7 @@ import { createMcpLink, revokeMcpLink } from '@/app/actions/mcp';
 import { AI_ASSISTANT_ANCHOR } from './tabs';
 import type { McpLinkStatus } from '@/types/mcp';
 
-/** Lets the user plug their own AI assistant into ReelMark through a secret, read-only, revocable MCP link. */
+/** Lets the user plug their own AI assistant into ReelMark through a secret, revocable MCP link: it reads their tastes and updates their library on request. */
 export function AiAssistantCard({
 	initialLink,
 }: {
@@ -162,11 +162,11 @@ export function AiAssistantCard({
 
 				<div>
 					<p className="text-sm font-medium text-text">{ta.howTo}</p>
-					<ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted">
-						{ta.steps.map((step) => (
-							<li key={step}>{step}</li>
+					<ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
+						{ta.clients.map((client) => (
+							<li key={client}>{client}</li>
 						))}
-					</ol>
+					</ul>
 				</div>
 			</CardContent>
 		</Card>
