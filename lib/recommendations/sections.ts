@@ -279,7 +279,7 @@ export async function buildLibrarySections(
 		getCachedDismissals(),
 		getCachedStreamingProviders(),
 	]);
-	const seeds = pickSeeds(typeEntries, ratingByKey);
+	const seeds = pickSeeds(typeEntries, ratingByKey, tvProgress);
 	const personSeedEntries = pickPersonSeeds(watched, ratingByKey);
 
 	const [recommendationsResults, similarResults, personCredits, freshRaw] =

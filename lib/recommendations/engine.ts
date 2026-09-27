@@ -2,6 +2,9 @@ import type { MediaItem, WatchlistEntry } from '@/types/tmdb';
 import { getMediaKey } from '@/lib/media';
 
 const MAX_SEEDS = 6;
+const MAX_IN_PROGRESS_SEEDS = 2;
+const MAX_TOP_RATED_SEEDS = 3;
+const IN_PROGRESS_WEIGHT = 1.4;
 const RESULT_SIZE = 20;
 const MIN_LIKED_RATING = 4;
 const MIN_FAVORITE_RATING = 6;
@@ -54,28 +57,69 @@ function isDisliked(
 	return rating !== undefined && rating < MIN_LIKED_RATING;
 }
 
+function isLiked(rating: number | undefined): boolean {
+	return rating === undefined || rating >= MIN_FAVORITE_RATING;
+}
+
+function newestFirst(entries: readonly WatchlistEntry[]): WatchlistEntry[] {
+	return [...entries].sort((a, b) =>
+		(b.created_at ?? '').localeCompare(a.created_at ?? '')
+	);
+}
+
+function isInProgress(
+	entry: WatchlistEntry,
+	episodesWatched: Readonly<Record<number, number>>
+): boolean {
+	return (
+		entry.media_type === 'tv' &&
+		entry.status === 'to_watch' &&
+		(episodesWatched[entry.media_id] ?? 0) > 0 &&
+		!isConsumed(entry, episodesWatched)
+	);
+}
+
 /**
- * Picks the strongest recommendation seeds for a user. Rated titles need at least
- * 2 stars (4/10); an unrated watched title counts as liked; abandoned shows and
- * poorly rated titles never seed.
+ * Picks the recommendation seeds for a user, mixing what they watch now with what they
+ * love most: shows in progress first, then the best-rated titles, then the latest liked
+ * ones, so the row follows current tastes instead of freezing on all-time favourites.
+ * Abandoned shows and titles rated under 2 stars (4/10) never seed.
  */
 export function pickSeeds(
 	entries: WatchlistEntry[],
-	ratingByKey: Record<string, number>
+	ratingByKey: Record<string, number>,
+	episodesWatched: Readonly<Record<number, number>> = {}
 ): RecommendationSeed[] {
 	const rating = ratingLookup(ratingByKey);
-	const usable = entries.filter((entry) => !isDisliked(entry, rating(entry)));
+	const usable = newestFirst(entries).filter(
+		(entry) => !isDisliked(entry, rating(entry))
+	);
 
 	const watched = usable.filter((entry) => entry.status === 'watched');
-	const rated = watched
+	const inProgress = usable
+		.filter((entry) => isInProgress(entry, episodesWatched))
+		.slice(0, MAX_IN_PROGRESS_SEEDS);
+	const topRated = watched
 		.filter((entry) => rating(entry) !== undefined)
-		.sort((a, b) => (rating(b) ?? 0) - (rating(a) ?? 0));
-	const unrated = watched.filter((entry) => rating(entry) === undefined);
+		.sort((a, b) => (rating(b) ?? 0) - (rating(a) ?? 0))
+		.slice(0, MAX_TOP_RATED_SEEDS);
+	const recentLiked = watched.filter((entry) => isLiked(rating(entry)));
 	const toWatch = usable.filter((entry) => entry.status === 'to_watch');
 
-	return [...rated, ...unrated, ...toWatch]
-		.slice(0, MAX_SEEDS)
-		.map((entry) => ({ entry, weight: seedWeight(rating(entry)) }));
+	const ordered = new Set([
+		...inProgress,
+		...topRated,
+		...recentLiked,
+		...watched,
+		...toWatch,
+	]);
+
+	return [...ordered].slice(0, MAX_SEEDS).map((entry) => ({
+		entry,
+		weight: inProgress.includes(entry)
+			? Math.max(IN_PROGRESS_WEIGHT, seedWeight(rating(entry)))
+			: seedWeight(rating(entry)),
+	}));
 }
 
 /**

@@ -104,6 +104,40 @@ describe('pickSeeds', () => {
 			true
 		);
 	});
+
+	it('keeps room for a recently watched title behind all-time favourites', () => {
+		const favourites = [1, 2, 3, 4, 5, 6].map((id) =>
+			entry({ media_id: id, created_at: '2020-01-01T00:00:00Z' })
+		);
+		const recent = entry({
+			media_id: 100,
+			created_at: '2026-09-01T00:00:00Z',
+		});
+		const ratings = Object.fromEntries([
+			['movie-100', 9],
+			...favourites.map((f) => [`movie-${f.media_id}`, 10]),
+		]);
+
+		const seeds = pickSeeds([...favourites, recent], ratings);
+		expect(seeds.map((s) => s.entry.media_id)).toContain(100);
+		expect(seeds).toHaveLength(6);
+	});
+
+	it('seeds first from a show the user is watching right now', () => {
+		const done = [1, 2, 3, 4, 5, 6].map((id) =>
+			entry({ media_id: id, media_type: 'tv' })
+		);
+		const binge = entry({
+			media_id: 77,
+			media_type: 'tv',
+			status: 'to_watch',
+			total_episodes: 20,
+		});
+
+		const seeds = pickSeeds([...done, binge], {}, { 77: 5 });
+		expect(seeds[0].entry.media_id).toBe(77);
+		expect(seeds[0].weight).toBeGreaterThan(seeds[1].weight);
+	});
 });
 
 describe('genreAffinity', () => {
