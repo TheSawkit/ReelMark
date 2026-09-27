@@ -10,7 +10,7 @@ import { upsertReview } from '@/app/actions/reviews';
 import { useEpisodeWatched } from '@/lib/stores/episode-watch';
 import { useTranslation } from '@/lib/i18n/context';
 import type { Review } from '@/types/profile';
-import { isRedirectSignal } from '@/lib/action-errors';
+import { toastActionError } from '@/lib/action-toast';
 
 const ReviewDialog = dynamic(
 	() =>
@@ -83,7 +83,7 @@ export function EpisodeRating({
 				router.refresh();
 			} catch (err) {
 				setRating(previous);
-				if (!isRedirectSignal(err)) toast.error(t.common.actionError);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	}

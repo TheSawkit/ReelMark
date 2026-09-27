@@ -13,7 +13,8 @@ import { Button } from '@/components/ui/button';
 import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { useTranslation } from '@/lib/i18n/context';
 import { exportUserData } from '@/app/actions/data';
-import { RATE_LIMITED, isRedirectSignal } from '@/lib/action-errors';
+import { RATE_LIMITED } from '@/lib/action-errors';
+import { toastActionError } from '@/lib/action-toast';
 
 function downloadJson(data: unknown, filename: string) {
 	const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -42,9 +43,9 @@ export function ExportDataCard() {
 				downloadJson(data, `reelmark-export-${day}.json`);
 				toast.success(td.exportSuccess);
 			} catch (err) {
-				if (isRedirectSignal(err)) return;
 				const message = err instanceof Error ? err.message : '';
-				toast.error(
+				toastActionError(
+					err,
 					message === RATE_LIMITED
 						? td.exportRateLimited
 						: t.common.actionError

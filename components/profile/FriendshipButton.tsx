@@ -12,10 +12,11 @@ import {
 	cancelFriendRequest,
 } from '@/app/actions/friends';
 import { createClient } from '@/lib/supabase/client';
-import { RATE_LIMITED, isRedirectSignal } from '@/lib/action-errors';
+import { RATE_LIMITED } from '@/lib/action-errors';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Friendship } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
+import { toastActionError } from '@/lib/action-toast';
 
 interface FriendshipButtonProps {
 	targetUserId: string;
@@ -98,15 +99,14 @@ export function FriendshipButton({
 				});
 				toast.success(t.profile.requestSentToast);
 			} catch (err) {
-				if (isRedirectSignal(err)) return;
 				const msg = err instanceof Error ? err.message : '';
 				if (msg === 'SELF_REQUEST')
-					toast.error(t.profile.errors.selfRequest);
+					toastActionError(err, t.profile.errors.selfRequest);
 				else if (msg === 'DUPLICATE_REQUEST')
-					toast.error(t.profile.errors.duplicateRequest);
+					toastActionError(err, t.profile.errors.duplicateRequest);
 				else if (msg === RATE_LIMITED)
-					toast.error(t.profile.errors.rateLimited);
-				else toast.error(t.common.actionError);
+					toastActionError(err, t.profile.errors.rateLimited);
+				else toastActionError(err, t.common.actionError);
 			}
 		});
 	};
@@ -123,9 +123,8 @@ export function FriendshipButton({
 				setLocalFriendship({ ...localFriendship, status: 'accepted' });
 				toast.success(t.profile.requestAcceptedToast);
 			} catch (err) {
-				if (isRedirectSignal(err)) return;
 				setLocalFriendship(snapshot);
-				toast.error(t.common.actionError);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	};
@@ -139,9 +138,8 @@ export function FriendshipButton({
 				setLocalFriendship(null);
 				toast.success(t.profile.requestCancelledToast);
 			} catch (err) {
-				if (isRedirectSignal(err)) return;
 				setLocalFriendship(snapshot);
-				toast.error(t.common.actionError);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	};
@@ -158,9 +156,8 @@ export function FriendshipButton({
 				setLocalFriendship(null);
 				toast.success(t.profile.requestRejectedToast);
 			} catch (err) {
-				if (isRedirectSignal(err)) return;
 				setLocalFriendship(snapshot);
-				toast.error(t.common.actionError);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	};

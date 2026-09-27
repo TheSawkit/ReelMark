@@ -1,5 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { checkRateLimit, clientIpFrom } from '@/lib/rate-limiter';
+import {
+	checkRateLimit,
+	clientIpFrom,
+	retryAfterSeconds,
+} from '@/lib/rate-limiter';
 
 const SEARCH_LIMIT = 30;
 const SEARCH_WINDOW_MS = 60_000;
@@ -20,9 +24,7 @@ export function handleSearchRateLimit(
 		{
 			status: 429,
 			headers: {
-				'Retry-After': String(
-					Math.ceil((rate.resetAt - Date.now()) / 1000)
-				),
+				'Retry-After': retryAfterSeconds(rate.resetAt),
 				'X-RateLimit-Limit': String(SEARCH_LIMIT),
 				'X-RateLimit-Remaining': '0',
 			},

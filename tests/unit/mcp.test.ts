@@ -201,15 +201,15 @@ describe('cachedUserTaste', () => {
 		const load = vi.fn(async () => taste);
 
 		await Promise.all([
-			cachedUserTaste('burst-user', load),
-			cachedUserTaste('burst-user', load),
+			cachedUserTaste.get('burst-user', load),
+			cachedUserTaste.get('burst-user', load),
 		]);
 		vi.advanceTimersByTime(119_000);
-		await cachedUserTaste('burst-user', load);
+		await cachedUserTaste.get('burst-user', load);
 		expect(load).toHaveBeenCalledTimes(1);
 
 		vi.advanceTimersByTime(2_000);
-		await cachedUserTaste('burst-user', load);
+		await cachedUserTaste.get('burst-user', load);
 		expect(load).toHaveBeenCalledTimes(2);
 	});
 
@@ -218,21 +218,21 @@ describe('cachedUserTaste', () => {
 			throw new Error('supabase down');
 		});
 		await expect(
-			cachedUserTaste('failing-user', failing)
+			cachedUserTaste.get('failing-user', failing)
 		).rejects.toThrow();
 
 		const load = vi.fn(async () => taste);
-		await cachedUserTaste('failing-user', load);
+		await cachedUserTaste.get('failing-user', load);
 		expect(load).toHaveBeenCalledTimes(1);
 	});
 
 	it('keeps at most ten libraries in memory, evicting the oldest', async () => {
 		const first = vi.fn(async () => taste);
-		await cachedUserTaste('capped-0', first);
+		await cachedUserTaste.get('capped-0', first);
 		for (let i = 1; i <= 10; i++) {
-			await cachedUserTaste(`capped-${i}`, async () => taste);
+			await cachedUserTaste.get(`capped-${i}`, async () => taste);
 		}
-		await cachedUserTaste('capped-0', first);
+		await cachedUserTaste.get('capped-0', first);
 		expect(first).toHaveBeenCalledTimes(2);
 	});
 });
@@ -246,13 +246,13 @@ describe('cachedUserContext', () => {
 		vi.useFakeTimers();
 		const load = vi.fn(async () => ({ lang: 'fr' as const, region: 'BE' }));
 
-		await cachedUserContext('context-user', load);
+		await cachedUserContext.get('context-user', load);
 		vi.advanceTimersByTime(599_000);
-		await cachedUserContext('context-user', load);
+		await cachedUserContext.get('context-user', load);
 		expect(load).toHaveBeenCalledTimes(1);
 
 		vi.advanceTimersByTime(2_000);
-		await cachedUserContext('context-user', load);
+		await cachedUserContext.get('context-user', load);
 		expect(load).toHaveBeenCalledTimes(2);
 	});
 });

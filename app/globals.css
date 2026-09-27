@@ -81,8 +81,8 @@
 	--duration-stagger: 70ms;
 	--duration-slideshow: 5000ms;
 
-	--font-sans: var(--font-sans);
-	--font-display: var(--font-display);
+	--font-sans: var(--font-sans), system-ui, sans-serif;
+	--font-display: var(--font-display), Impact, 'Arial Narrow', sans-serif;
 
 	--spacing-page-x: 1.5rem;
 	--spacing-page-x-lg: 3rem;

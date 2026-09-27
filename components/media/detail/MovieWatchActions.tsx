@@ -80,6 +80,7 @@ export function MovieWatchActions({
 					{...shared}
 					status="to_watch"
 					variant="pill"
+					compact
 					initialIsActive={status === 'to_watch'}
 				/>
 			)}
@@ -87,6 +88,7 @@ export function MovieWatchActions({
 				{...shared}
 				status="watched"
 				variant="pill"
+				compact={!isWatched}
 				initialIsActive={isWatched}
 				fallbackStatus="to_watch"
 				releaseDate={releaseDate}

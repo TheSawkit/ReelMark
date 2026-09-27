@@ -4,8 +4,7 @@ import { redirect } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { getServerLanguage } from '@/lib/i18n/server';
-import { localizedHref } from '@/lib/i18n/utils';
-import { sanitizeRedirectPath } from '@/lib/validators';
+import { loginHref } from '@/lib/login-href';
 
 /**
  * Resolves the Supabase client and authenticated user once per request.
@@ -31,9 +30,7 @@ export async function redirectToLogin(): Promise<never> {
 		getServerLanguage(),
 		headers(),
 	]);
-	const next = sanitizeRedirectPath(headerList.get('x-url'), '');
-	const query = next ? `?next=${encodeURIComponent(next)}` : '';
-	redirect(`${localizedHref(lang, '/login')}${query}`);
+	redirect(loginHref(lang, headerList.get('x-url')));
 }
 
 /**

@@ -3,11 +3,13 @@ import 'server-only';
 import { z } from 'zod';
 import { loadUserMarks } from '@/lib/data/taste';
 import { searchMulti } from '@/lib/tmdb';
-import { fetchWatchProviders } from '@/lib/tmdb/media-endpoints';
+import {
+	fetchMediaDetails,
+	fetchWatchProviders,
+} from '@/lib/tmdb/media-endpoints';
 import { getMediaKey } from '@/lib/media';
 import { toAssistantDetails, toAssistantTitle } from '@/lib/mcp/format';
 import {
-	fetchTitleDetails,
 	json,
 	mediaTypeSchema,
 	orTitleNotFound,
@@ -15,6 +17,7 @@ import {
 	tmdbIdSchema,
 	type RegisterTools,
 } from '@/lib/mcp/tools/shared';
+import type { MovieDetails, TvShowDetails } from '@/types/tmdb';
 
 const MAX_SEARCH_RESULTS = 10;
 
@@ -59,7 +62,11 @@ export const registerCatalogueTools: RegisterTools = (server, scope) => {
 			const { lang, region } = await scope.context();
 			return orTitleNotFound(async () => {
 				const [details, providers, marks, format] = await Promise.all([
-					fetchTitleDetails(type, id, lang),
+					fetchMediaDetails<MovieDetails | TvShowDetails>(
+						type,
+						id,
+						lang
+					),
 					fetchWatchProviders(type, id, lang, region),
 					loadUserMarks(scope.admin, scope.userId, [
 						{ id, media_type: type },

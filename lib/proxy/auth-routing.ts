@@ -4,6 +4,7 @@ import type { User } from '@supabase/supabase-js';
 import { needsOnboarding } from '@/lib/onboarding';
 import { sanitizeRedirectPath } from '@/lib/validators';
 import { localizedHref } from '@/lib/i18n/utils';
+import { loginHref } from '@/lib/login-href';
 import type { Language } from '@/lib/i18n/translations';
 
 const PROTECTED_SEGMENTS = [
@@ -105,28 +106,18 @@ function createProxySupabase(request: NextRequest, requestHeaders: Headers) {
 
 /**
  * Refreshes an expiring session on pages that do not need the user — the navbar still reads it,
- * and only the proxy can store the rotated tokens. `getClaims` refreshes through `getSession`
- * and, with asymmetric signing keys, verifies the token without an Auth round trip.
+ * and only the proxy can store the rotated tokens. `getSession` refreshes only when the token
+ * has expired and never calls Auth otherwise; nothing here trusts its result, the Server
+ * Components still verify the user themselves. (`getClaims` would add an Auth round trip per
+ * page on projects still signing JWTs with the legacy symmetric secret.)
  */
 export async function refreshSession(
 	request: NextRequest,
 	requestHeaders: Headers
 ): Promise<NextResponse> {
 	const { supabase, response } = createProxySupabase(request, requestHeaders);
-	await supabase.auth.getClaims();
+	await supabase.auth.getSession();
 	return response();
-}
-
-/** Login URL that brings the visitor back to the page they asked for once signed in. */
-export function loginUrlFor(request: NextRequest, locale: Language): URL {
-	const url = request.nextUrl.clone();
-	url.pathname = `/${locale}/login`;
-	url.search = '';
-	url.searchParams.set(
-		'next',
-		`${request.nextUrl.pathname}${request.nextUrl.search}`
-	);
-	return url;
 }
 
 /**
@@ -165,7 +156,10 @@ export async function handleAuthRouting(
 	} = await supabase.auth.getUser();
 
 	if (access.isProtected && !user) {
-		return redirect(loginUrlFor(request, locale));
+		const { pathname, search } = request.nextUrl;
+		return redirect(
+			new URL(loginHref(locale, `${pathname}${search}`), request.nextUrl)
+		);
 	}
 
 	if (access.isRecovery && !user) {

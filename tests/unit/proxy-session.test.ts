@@ -35,9 +35,9 @@ vi.mock('@supabase/ssr', () => ({
 		};
 		return {
 			auth: {
-				getClaims: async () => {
+				getSession: async () => {
 					rotate();
-					return { data: null, error: null };
+					return { data: { session: null }, error: null };
 				},
 				getUser: async () => {
 					rotate();

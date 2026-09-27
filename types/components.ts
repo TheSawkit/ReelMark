@@ -81,6 +81,8 @@ export interface WatchButtonProps {
 	onDark?: boolean;
 	blur?: boolean;
 	releaseDate?: string;
+	/** Shares a phone-width row with another button: long labels shorten below `sm`. */
+	compact?: boolean;
 }
 
 export interface NavbarUser {

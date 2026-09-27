@@ -52,15 +52,12 @@ const VARIANT_STYLE: Record<
 		iconClass?: string;
 		labelClass?: string;
 		iconOnlyBelowLg?: boolean;
-		/** Two pills share a phone-width row: long idle labels switch to their short form below `sm`. */
-		shortBelowSm?: boolean;
 	}
 > = {
 	pill: {
 		base: 'flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold whitespace-nowrap sm:flex-none sm:px-5 active:scale-95',
 		iconClass: 'h-4 w-4 shrink-0',
 		labelClass: 'truncate',
-		shortBelowSm: true,
 	},
 	responsive: {
 		base: 'h-12 w-12 lg:h-auto lg:w-auto lg:min-h-11 lg:px-4 lg:py-2.5 rounded-full lg:rounded-lg flex items-center justify-center gap-2 shrink-0 border text-sm font-semibold',
@@ -131,7 +128,7 @@ function stateLabel(
 	return isWatched ? t.movie.markAsWatched : t.movie.addToList;
 }
 
-/** Phone-width form of a label, or null when the full one already fits. */
+/** Phone-width form of an idle label, or null when it is already short. */
 function shortLabel(
 	t: Translations,
 	status: WatchStatus,
@@ -139,11 +136,11 @@ function shortLabel(
 	hasError: boolean
 ): string | null {
 	if (isActive || hasError) return null;
-	const short =
+	const [full, short] =
 		status === 'watched'
-			? t.movie.markAsWatchedShort
-			: t.movie.addToListShort;
-	return short === stateLabel(t, status, isActive, hasError) ? null : short;
+			? [t.movie.markAsWatched, t.movie.markAsWatchedShort]
+			: [t.movie.addToList, t.movie.addToListShort];
+	return short === full ? null : short;
 }
 
 function ButtonLabel({
@@ -193,6 +190,7 @@ export function WatchButton({
 	blur = true,
 	fallbackStatus,
 	releaseDate,
+	compact = false,
 }: WatchButtonProps) {
 	const { loading, error, run } = useOptimisticAction();
 	const [reviewOpen, setReviewOpen] = useState(false);
@@ -236,9 +234,7 @@ export function WatchButton({
 
 	const style = VARIANT_STYLE[variant];
 	const label = stateLabel(t, status, isActive, error);
-	const short = style.shortBelowSm
-		? shortLabel(t, status, isActive, error)
-		: null;
+	const short = compact ? shortLabel(t, status, isActive, error) : null;
 
 	return (
 		<>

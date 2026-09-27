@@ -53,7 +53,7 @@ export function SettingsContent({
 	// itself. A tab click rewrites it with the native History API, which Next syncs into
 	// useSearchParams without a server round trip.
 	const searchParams = useSearchParams();
-	const section = searchParams.get('section') ?? undefined;
+	const section = searchParams.get('section');
 	const activeTab: SettingsTab = isSettingsTab(section) ? section : 'profile';
 
 	function setActiveTab(tab: SettingsTab) {
