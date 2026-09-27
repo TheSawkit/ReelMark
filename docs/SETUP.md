@@ -22,7 +22,7 @@ cp .env.example .env.local
 ## 3. Créer le projet Supabase
 
 1. Nouveau projet sur [supabase.com](https://supabase.com) → noter l'URL du projet et la clé publishable (Settings → API).
-2. **Schéma** : le schéma n'est pas versionné en SQL dans le repo — il est appliqué directement sur le projet Supabase (voir [DATA-MODEL.md](./DATA-MODEL.md) pour le schéma complet des 12 tables, les policies RLS et les triggers à créer). Pour une nouvelle instance, recréer les tables depuis ce document via l'éditeur SQL Supabase.
+2. **Schéma** : le schéma n'est pas versionné en SQL dans le repo — il est appliqué directement sur le projet Supabase (voir [DATA-MODEL.md](./DATA-MODEL.md) pour le schéma complet des 15 tables, les policies RLS et les triggers à créer). Pour une nouvelle instance, recréer les tables depuis ce document via l'éditeur SQL Supabase.
 3. **Auth** :
     - Activer Email + Google (Authentication → Providers). Pour Google : créer un OAuth Client dans Google Cloud Console avec le redirect `https://<projet>.supabase.co/auth/v1/callback`.
     - **URL Configuration** : Site URL = ton domaine (ou `http://localhost:3000` en dev) ; ajouter aux Redirect URLs : `<domaine>/auth/callback`, `<domaine>/auth/confirm`, `http://localhost:3000/**`. Un Site URL obsolète redirige les logins OAuth vers l'ancien domaine.
@@ -32,16 +32,18 @@ cp .env.example .env.local
 
 Remplir `.env.local` :
 
-| Variable                                 | Où la trouver                                            |
-| ---------------------------------------- | -------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`               | Supabase → Settings → API                                |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`          | Supabase → Settings → API (clé publishable)              |
-| `SUPABASE_SERVICE_ROLE_KEY`              | Supabase → Settings → API (secrète — jamais côté client) |
-| `TMDB_READ_ACCESS_TOKEN`                 | TMDB → Settings → API → API Read Access Token            |
-| `WATCHMODE_API_KEY`                      | watchmode.com → dashboard                                |
-| `NEXT_PUBLIC_BASE_URL`                   | `http://localhost:3000` en dev, le domaine en prod       |
-| `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN`  | Bugsink → projet → DSN (**https obligatoire** en prod)   |
-| `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` | compte de test créé à la main, pour les E2E authentifiés |
+| Variable                                                               | Où la trouver                                                                                         |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`                                             | Supabase → Settings → API                                                                             |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`                                        | Supabase → Settings → API (clé publishable)                                                           |
+| `SUPABASE_SERVICE_ROLE_KEY`                                            | Supabase → Settings → API (secrète — jamais côté client)                                              |
+| `TMDB_READ_ACCESS_TOKEN`                                               | TMDB → Settings → API → API Read Access Token                                                         |
+| `WATCHMODE_API_KEY`                                                    | watchmode.com → dashboard                                                                             |
+| `NEXT_PUBLIC_BASE_URL`                                                 | `http://localhost:3000` en dev, le domaine en prod                                                    |
+| `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN`                                | Bugsink → projet → DSN (**https obligatoire** en prod)                                                |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | `npx web-push generate-vapid-keys` ; `VAPID_SUBJECT` = `mailto:` de contact (notifications push)      |
+| `CRON_SECRET`                                                          | chaîne aléatoire longue (`openssl rand -hex 32`) ; les CronJobs l'envoient en `Authorization: Bearer` |
+| `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`                               | compte de test créé à la main, pour les E2E authentifiés et `pnpm screenshots`                        |
 
 Piège : pour les env vars pouvant valoir `""`, le code utilise `||` et non `??` — une chaîne vide doit retomber sur le défaut.
 
@@ -62,6 +64,7 @@ En local, Playwright ne démarre pas le serveur lui-même (`webServer` n'est con
 2. Signup email → le profil `user_profiles` est créé automatiquement.
 3. Rechercher un film, l'ajouter à la watchlist, marquer des épisodes d'une série.
 4. `curl http://localhost:3000/api/health` → `{"status":"ok"}`.
+5. Réglages → Données → Assistant IA : générer un lien, puis vérifier qu'il répond (`POST` JSON-RPC `tools/list`, voir `tests/e2e/protected/mcp-link.spec.ts`).
 
 ## 7. Production
 
