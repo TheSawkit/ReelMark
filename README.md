@@ -32,9 +32,7 @@
 ## 🇬🇧 English
 
 <p align="center">
-  <img src="./public/screenshots/screenshot-mobile-1.png" alt="Personalised home screen" width="30%">
-  <img src="./public/screenshots/screenshot-mobile-2.png" alt="Your library" width="30%">
-  <img src="./public/screenshots/screenshot-mobile-3.png" alt="Where to watch, ratings and reviews" width="30%">
+  <img src="./docs/assets/screenshots/en-showcase.jpg" alt="ReelMark on a phone: a title page, where to stream it, and a show's seasons">
 </p>
 
 ### What you get
@@ -42,12 +40,15 @@
 |     |                                      |                                                                                                                                         |
 | --- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | 📺  | **Episode-level tracking**           | Tick episodes one by one, season by season. Your progress follows you everywhere, and the next episode to watch is always one tap away. |
+| 🏠  | **A home made for you**              | Pick up where you left off and get recommendations built from what you watch, rate and set aside.                                       |
 | 🎬  | **A catalogue that knows what's on** | Browse what is actually in theatres near you, what is coming, and what is trending — filtered for your region, not someone else's.      |
 | ⭐  | **Your ratings, your words**         | Rate from 1 to 10 and write reviews. See what the community thought before you press play.                                              |
-| 📡  | **Where to watch it**                | See which of_your_ streaming services carries a title, plus rental and purchase prices, before you go looking.                          |
+| 📡  | **Where to watch it**                | See which of _your_ streaming services carries a title, plus rental and purchase prices, before you go looking.                         |
 | 📁  | **Playlists**                        | Group titles into themed collections and share them with a link.                                                                        |
 | 👥  | **Friends**                          | Follow what people you know are watching, reviewing and adding.                                                                         |
 | 🔒  | **Privacy you control**              | Every section — watchlist, watched, reviews, playlists, friends — is public, friends-only or private. Your call, per section.           |
+| 🤖  | **Your AI assistant, in the loop**   | Connect Claude, ChatGPT, Perplexity or Gemini with a private link: it knows your tastes, and marks titles watched when you ask.         |
+| 📥  | **Bring your history**               | Import from Letterboxd, Trakt or TV Time, and export everything whenever you like.                                                      |
 | 🌍  | **Bilingual**                        | Full English and French, switched instantly.                                                                                            |
 
 ### Install it
@@ -62,6 +63,10 @@ ReelMark is a PWA: no app store, no download, and it updates itself.
 
 Once installed it runs full-screen, keeps working offline for pages you have already visited, and can send you notifications.
 
+<p align="center">
+  <img src="./docs/assets/screenshots/en-desktop.jpg" alt="A title page on desktop">
+</p>
+
 ### Good to know
 
 - Your watch history is yours. Nothing is sold, and nothing is shared beyond the visibility you set.
@@ -74,30 +79,41 @@ Once installed it runs full-screen, keeps working offline for pages you have alr
 
 ## 🇫🇷 Français
 
+<p align="center">
+  <img src="./docs/assets/screenshots/fr-showcase.jpg" alt="ReelMark sur téléphone : une fiche, où la regarder, et les saisons d'une série">
+</p>
+
 ### Ce que ça vous apporte
 
 |     |                                        |                                                                                                                                                      |
 | --- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 📺  | **Suivi épisode par épisode**          | Cochez vos épisodes un à un, saison après saison. Votre progression vous suit partout, et le prochain épisode à voir est toujours à portée de pouce. |
+| 🏠  | **Un accueil à votre goût**            | Reprenez où vous en étiez et recevez des recommandations tirées de ce que vous regardez, notez et mettez de côté.                                    |
 | 🎬  | **Un catalogue qui sait ce qui passe** | Ce qui est vraiment à l'affiche près de chez vous, ce qui arrive, ce qui monte — filtré pour votre région, pas celle d'un autre.                     |
 | ⭐  | **Vos notes, vos mots**                | Notez de 1 à 10 et écrivez vos critiques. Voyez ce qu'en a pensé la communauté avant de lancer.                                                      |
-| 📡  | **Où le regarder**                     | Sachez lesquels de_vos_ services de streaming l'ont, et à quel prix en location ou achat, avant de chercher.                                         |
+| 📡  | **Où le regarder**                     | Sachez lesquels de _vos_ services de streaming l'ont, et à quel prix en location ou achat, avant de chercher.                                        |
 | 📁  | **Playlists**                          | Regroupez des titres en collections thématiques et partagez-les par lien.                                                                            |
 | 👥  | **Amis**                               | Suivez ce que vos proches regardent, notent et ajoutent.                                                                                             |
 | 🔒  | **Confidentialité maîtrisée**          | Chaque section — à voir, vu, critiques, playlists, amis — est publique, réservée aux amis ou privée. Vous décidez, section par section.              |
+| 🤖  | **Votre assistant IA, dans la boucle** | Connectez Claude, ChatGPT, Perplexity ou Gemini par un lien privé : il connaît vos goûts et marque un titre comme vu quand vous le lui demandez.     |
+| 📥  | **Votre historique vous suit**         | Importez depuis Letterboxd, Trakt ou TV Time, et exportez tout quand vous voulez.                                                                    |
 | 🌍  | **Bilingue**                           | Français et anglais complets, bascule instantanée.                                                                                                   |
 
 ### L'installer
 
 ReelMark est une PWA : pas de store, pas de téléchargement, et elle se met à jour toute seule.
 
-| Appareil                  | Comment                                                                                                         |
-| :------------------------ | :-------------------------------------------------------------------------------------------------------------- |
-| **iPhone / iPad**         | Ouvrez[reelmark.silexio.be](https://reelmark.silexio.be) dans Safari → **Partager** → **Sur l'écran d'accueil** |
-| **Android**               | Ouvrez dans Chrome → menu**⋮** → **Installer l'application**                                                    |
-| **Mac / Windows / Linux** | Ouvrez dans Chrome ou Edge → icône d'installation dans la barre d'adresse                                       |
+| Appareil                  | Comment                                                                                                          |
+| :------------------------ | :--------------------------------------------------------------------------------------------------------------- |
+| **iPhone / iPad**         | Ouvrez [reelmark.silexio.be](https://reelmark.silexio.be) dans Safari → **Partager** → **Sur l'écran d'accueil** |
+| **Android**               | Ouvrez dans Chrome → menu **⋮** → **Installer l'application**                                                    |
+| **Mac / Windows / Linux** | Ouvrez dans Chrome ou Edge → icône d'installation dans la barre d'adresse                                        |
 
 Une fois installée, elle s'affiche en plein écran, reste consultable hors ligne sur les pages déjà visitées, et peut vous envoyer des notifications.
+
+<p align="center">
+  <img src="./docs/assets/screenshots/fr-desktop.jpg" alt="Une fiche sur ordinateur">
+</p>
 
 ### Bon à savoir
 
@@ -109,8 +125,8 @@ Une fois installée, elle s'affiche en plein écran, reste consultable hors lign
 
 ## For developers
 
-The technical README — stack, prerequisites, quick start, scripts, project structure,
-configuration and deployment — moved to **[docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md)**.
+Stack, prerequisites, quick start, scripts, project structure, configuration and deployment:
+**[docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md)**.
 
 |                                              |                                                            |
 | :------------------------------------------- | :--------------------------------------------------------- |
