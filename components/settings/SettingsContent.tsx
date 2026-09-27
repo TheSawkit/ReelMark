@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { ProfileSettings } from './ProfileSettings';
 import { PasswordSettings } from './PasswordSettings';
@@ -17,6 +17,7 @@ import { StreamingSettings } from './StreamingSettings';
 import { SupportSettings } from './SupportSettings';
 import { AiAssistantCard } from './AiAssistantCard';
 import { SettingsNav, type SettingsTab } from './SettingsNav';
+import { isSettingsTab } from './tabs';
 import { SignoutButton } from '@/components/auth/SignoutButton';
 import type {
 	UserProfile,
@@ -36,7 +37,6 @@ interface SettingsContentProps {
 	selectedProviderIds: number[];
 	notificationPreferences: NotificationPreferences;
 	mcpLink: McpLinkStatus | null;
-	initialTab: SettingsTab;
 }
 
 export function SettingsContent({
@@ -48,9 +48,19 @@ export function SettingsContent({
 	selectedProviderIds,
 	notificationPreferences,
 	mcpLink,
-	initialTab,
 }: SettingsContentProps) {
-	const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
+	// The URL is the source of truth, so deep links (`?section=`) switch tabs even from Settings
+	// itself. A tab click rewrites it with the native History API, which Next syncs into
+	// useSearchParams without a server round trip.
+	const searchParams = useSearchParams();
+	const section = searchParams.get('section') ?? undefined;
+	const activeTab: SettingsTab = isSettingsTab(section) ? section : 'profile';
+
+	function setActiveTab(tab: SettingsTab) {
+		const params = new URLSearchParams(searchParams);
+		params.set('section', tab);
+		window.history.replaceState(null, '', `?${params}`);
+	}
 
 	return (
 		<div className="flex flex-col lg:flex-row gap-6 lg:gap-8">

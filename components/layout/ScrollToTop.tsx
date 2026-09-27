@@ -20,6 +20,8 @@ export function ScrollToTop() {
 			isPopRef.current = false;
 			return;
 		}
+		// A link to an anchor (`#ai-assistant`) wants that anchor, not the top of the page.
+		if (window.location.hash) return;
 		window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 	}, [pathname]);
 

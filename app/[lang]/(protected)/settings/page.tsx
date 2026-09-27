@@ -3,7 +3,6 @@ import { requireAuth } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { isOAuthOnly } from '@/lib/supabase/auth-helpers';
 import { SettingsContent } from '@/components/settings/SettingsContent';
-import { isSettingsTab, type SettingsTab } from '@/components/settings/tabs';
 import { SettingsContentSkeleton } from '@/components/settings/SettingsContentSkeleton';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { getTranslations } from '@/lib/i18n/server';
@@ -19,7 +18,6 @@ import type { User } from '@supabase/supabase-js';
 
 type Props = {
 	params: Promise<{ lang: Language }>;
-	searchParams: Promise<{ section?: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
@@ -36,15 +34,7 @@ export async function generateMetadata({ params }: Props) {
 	};
 }
 
-async function SettingsSection({
-	user,
-	lang,
-	initialTab,
-}: {
-	user: User;
-	lang: Language;
-	initialTab: SettingsTab;
-}) {
+async function SettingsSection({ user, lang }: { user: User; lang: Language }) {
 	const supabase = await createClient();
 
 	const [
@@ -87,13 +77,12 @@ async function SettingsSection({
 			selectedProviderIds={selectedProviderIds}
 			notificationPreferences={notificationPreferences}
 			mcpLink={mcpLink}
-			initialTab={initialTab}
 		/>
 	);
 }
 
-export default async function SettingsPage({ params, searchParams }: Props) {
-	const [{ lang }, { section }] = await Promise.all([params, searchParams]);
+export default async function SettingsPage({ params }: Props) {
+	const { lang } = await params;
 	const user = await requireAuth();
 	const t = await getTranslations(lang);
 
@@ -104,11 +93,7 @@ export default async function SettingsPage({ params, searchParams }: Props) {
 				subtitle={t.settings.subtitle}
 			/>
 			<Suspense fallback={<SettingsContentSkeleton />}>
-				<SettingsSection
-					user={user}
-					lang={lang}
-					initialTab={isSettingsTab(section) ? section : 'profile'}
-				/>
+				<SettingsSection user={user} lang={lang} />
 			</Suspense>
 		</PageLayout>
 	);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Copy, Link2, Sparkles, Unlink } from 'lucide-react';
 import {
@@ -20,6 +20,7 @@ import { formatShortDate } from '@/lib/format';
 import { BASE_URL } from '@/lib/metadata';
 import { RATE_LIMITED } from '@/lib/action-errors';
 import { createMcpLink, revokeMcpLink } from '@/app/actions/mcp';
+import { AI_ASSISTANT_ANCHOR } from './tabs';
 import type { McpLinkStatus } from '@/types/mcp';
 
 /** Lets the user plug their own AI assistant into ReelMark through a secret, read-only, revocable MCP link. */
@@ -34,6 +35,15 @@ export function AiAssistantCard({
 	const [link, setLink] = useState(initialLink);
 	const [freshUrl, setFreshUrl] = useState<string | null>(null);
 	const [isPending, startTransition] = useGuardedTransition();
+
+	// The card streams in with the page, often after Next has tried to scroll to the anchor.
+	useEffect(() => {
+		if (window.location.hash === `#${AI_ASSISTANT_ANCHOR}`) {
+			document
+				.getElementById(AI_ASSISTANT_ANCHOR)
+				?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+	}, []);
 
 	function handleGenerate() {
 		startTransition(async () => {
@@ -75,7 +85,7 @@ export function AiAssistantCard({
 	}
 
 	return (
-		<Card>
+		<Card id={AI_ASSISTANT_ANCHOR} className="scroll-mt-24">
 			<CardHeader>
 				<CardTitle>{ta.title}</CardTitle>
 				<CardDescription>{ta.description}</CardDescription>
