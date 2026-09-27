@@ -4,6 +4,7 @@ import { fetchAllRows } from '@/lib/supabase/pagination';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
 import { mapLimit } from '@/lib/data-transfer/resolve';
 import { getUserReviewRatings } from '@/lib/data/reviews';
+import { getUserTvWatchCounts } from '@/lib/data/episodes';
 import {
 	getMovieRecommendations,
 	getTvShowRecommendations,
@@ -30,9 +31,10 @@ async function candidatesFor(
 	type: MediaType,
 	entries: WatchlistEntry[],
 	ratingByKey: Record<string, number>,
+	episodesWatched: Record<number, number>,
 	lang: Language
 ) {
-	const seeds = pickSeeds(entries, ratingByKey);
+	const seeds = pickSeeds(entries, ratingByKey, episodesWatched);
 	return Promise.all(
 		seeds.map(async ({ entry, weight }) => ({
 			weight,
@@ -75,6 +77,16 @@ async function suggestionFor(
 			.eq('type', 'suggestion'),
 	]);
 	const entries = rows as WatchlistEntry[];
+	const episodesWatched = await getUserTvWatchCounts(
+		admin,
+		userId,
+		entries
+			.filter(
+				(entry) =>
+					entry.media_type === 'tv' && entry.status === 'to_watch'
+			)
+			.map((entry) => entry.media_id)
+	);
 	const alreadySuggested = new Set(
 		(past.data ?? []).map((row) => `${row.media_type}-${row.media_id}`)
 	);
@@ -91,8 +103,15 @@ async function suggestionFor(
 			(dismissals.data ?? [])
 				.filter((row) => row.media_type === type)
 				.map((row) => ({ ...row, media_type: type })),
-			await candidatesFor(type, typeEntries, ratingByKey, lang),
-			alreadySuggested
+			await candidatesFor(
+				type,
+				typeEntries,
+				ratingByKey,
+				episodesWatched,
+				lang
+			),
+			alreadySuggested,
+			episodesWatched
 		);
 		if (pick) return pick;
 	}

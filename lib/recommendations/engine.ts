@@ -460,7 +460,8 @@ export function pickSuggestion(
 	ratingByKey: Record<string, number>,
 	dismissals: DismissedRecommendation[],
 	seedCandidates: SeedCandidates[],
-	alreadySuggested: Set<string>
+	alreadySuggested: Set<string>,
+	episodesWatched: Readonly<Record<number, number>> = {}
 ): MediaItem | null {
 	const excluded = new Set([
 		...alreadySuggested,
@@ -468,7 +469,7 @@ export function pickSuggestion(
 			getMediaKey({ media_type: entry.media_type, id: entry.media_id })
 		),
 	]);
-	const affinity = genreAffinity(entries, ratingByKey);
+	const affinity = genreAffinity(entries, ratingByKey, episodesWatched);
 	applyDismissals(excluded, affinity, dismissals);
 	return rankRecommendations(seedCandidates, excluded, affinity)[0] ?? null;
 }

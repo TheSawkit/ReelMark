@@ -469,6 +469,30 @@ describe('pickSuggestion', () => {
 		).toBe(103);
 	});
 
+	it('favours the genres of a show the user is watching right now', () => {
+		const binge = entry({
+			media_id: 7,
+			media_type: 'tv',
+			status: 'to_watch',
+			genre_ids: [10765],
+			total_episodes: 10,
+		});
+		const candidates = [
+			{
+				weight: 1,
+				items: [
+					item(201, { media_type: 'tv', genre_ids: [18] }),
+					item(202, { media_type: 'tv', genre_ids: [10765] }),
+				],
+			},
+		];
+
+		const pick = pickSuggestion([binge], {}, [], candidates, new Set(), {
+			7: 4,
+		});
+		expect(pick?.id).toBe(202);
+	});
+
 	it('returns null when every candidate is excluded', () => {
 		const entries = [101, 102, 103, 104].map((id) =>
 			entry({ media_id: id })
