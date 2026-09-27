@@ -75,4 +75,27 @@ test.describe('Diaporama de la bannière Explorer', () => {
 		await page.waitForTimeout(6000);
 		await expect(dots.nth(0)).toHaveAttribute('aria-current', 'true');
 	});
+
+	test('activer « réduire les animations » en cours de route arrête la rotation', async ({
+		page,
+	}) => {
+		await page.goto('/en/explorer', { waitUntil: 'load' });
+
+		const dots = page.getByRole('button', { name: DOT_LABEL });
+		await expect(dots).toHaveCount(5, { timeout: 15000 });
+		await page.emulateMedia({ reducedMotion: 'reduce' });
+
+		const activeIndex = () =>
+			dots.evaluateAll((buttons) =>
+				buttons.findIndex(
+					(button) => button.getAttribute('aria-current') === 'true'
+				)
+			);
+		const before = await activeIndex();
+		await page.waitForTimeout(6000);
+		expect(await activeIndex()).toBe(before);
+		await expect(
+			dots.nth(before).locator('[data-slide-progress]')
+		).toHaveCSS('animation-name', 'none');
+	});
 });

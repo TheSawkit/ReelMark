@@ -20,16 +20,13 @@ interface HeroSlideshowProps {
 	label: string;
 }
 
-function prefersReducedMotion(): boolean {
-	return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
 /**
  * Cross-fading hero carousel for a `.hero-stage`: only the first slide is server-rendered (its
  * image stays the LCP), the others mount once the page has loaded and the browser is idle.
  * Advances every `--duration-slideshow` (5 s): the active dot fills up meanwhile and its animation
  * end triggers the next slide, so the progress shown is exactly the time left. Paused on hover,
- * keyboard focus, off-screen and "reduce motion"; dots and horizontal swipes navigate by hand.
+ * keyboard focus and off-screen; under "reduce motion" the dot never animates, so it never
+ * advances. Dots and horizontal swipes navigate by hand.
  */
 export function HeroSlideshow({ slides, label }: HeroSlideshowProps) {
 	const { t } = useTranslation();
@@ -38,7 +35,6 @@ export function HeroSlideshow({ slides, label }: HeroSlideshowProps) {
 	const [active, setActive] = useState(0);
 	const [isReady, setIsReady] = useState(false);
 	const [isPaused, setIsPaused] = useState(false);
-	const [autoPlay, setAutoPlay] = useState(false);
 	const isInView = useInView(rootRef);
 
 	const count = slides.length;
@@ -49,9 +45,7 @@ export function HeroSlideshow({ slides, label }: HeroSlideshowProps) {
 	useEffect(() => {
 		let cancelled = false;
 		afterLoadAndIdle().then(() => {
-			if (cancelled) return;
-			setAutoPlay(!prefersReducedMotion());
-			setIsReady(true);
+			if (!cancelled) setIsReady(true);
 		});
 		return () => {
 			cancelled = true;
@@ -137,19 +131,15 @@ export function HeroSlideshow({ slides, label }: HeroSlideshowProps) {
 							<span
 								className={cn(
 									'h-1.5 overflow-hidden rounded-full transition-all duration-(--duration-base) ease-apple',
-									index !== current &&
-										'w-1.5 bg-text/40 group-hover:bg-text/70',
-									index === current &&
-										(autoPlay
-											? 'w-6 bg-text/30'
-											: 'w-6 bg-text')
+									index === current
+										? 'w-6 bg-text/30'
+										: 'w-1.5 bg-text/40 group-hover:bg-text/70'
 								)}
 							>
-								{index === current && autoPlay && (
+								{index === current && (
 									<span
-										key={current}
 										data-slide-progress
-										className="block h-full origin-left rounded-full bg-text animate-slide-progress"
+										className="block h-full origin-left rounded-full bg-text motion-safe:animate-slide-progress"
 										style={{
 											animationPlayState: isPlaying
 												? 'running'
