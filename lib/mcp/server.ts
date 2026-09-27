@@ -4,8 +4,8 @@ import { McpServer, type CallToolResult } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import { createAdminClient } from '@/lib/supabase/server';
 import { loadUserMarks, loadUserTaste, tasteOfType } from '@/lib/data/taste';
-import { cachedUserTaste } from '@/lib/mcp/taste-cache';
-import type { McpUserContext } from '@/lib/data/mcp';
+import { cachedUserTaste } from '@/lib/mcp/user-cache';
+import { getMcpUserContext } from '@/lib/data/mcp';
 import {
 	pickSeeds,
 	rankSuggestions,
@@ -52,20 +52,24 @@ const failure = (message: string): CallToolResult => ({
 	isError: true,
 });
 
-/** Builds the read-only ReelMark MCP server for one user: every tool answers from their library, never writes, and only returns titles that exist on TMDB. */
-export function createReelMarkMcpServer({
-	userId,
-	lang,
-	region,
-}: McpUserContext): McpServer {
+/**
+ * Builds the read-only ReelMark MCP server for one user: every tool answers from their library,
+ * never writes, and only returns titles that exist on TMDB. Nothing loads until a tool runs, so
+ * handshakes and `tools/list` cost no I/O.
+ */
+export function createReelMarkMcpServer(userId: string): McpServer {
 	const admin = createAdminClient();
 	const userTaste = () =>
 		cachedUserTaste(userId, () => loadUserTaste(admin, userId));
-	const formatting = async (): Promise<AssistantFormat> => ({
-		genres: await getGenres(lang),
-		link: (type, id) =>
-			`${BASE_URL}${localizedHref(lang, `/${type}/${id}`)}`,
-	});
+	const userContext = () => getMcpUserContext(userId);
+	const formatting = async (): Promise<AssistantFormat> => {
+		const { lang } = await userContext();
+		return {
+			genres: await getGenres(lang),
+			link: (type, id) =>
+				`${BASE_URL}${localizedHref(lang, `/${type}/${id}`)}`,
+		};
+	};
 
 	const server = new McpServer(
 		{ name: 'reelmark', version: '1.0.0' },
@@ -118,9 +122,10 @@ export function createReelMarkMcpServer({
 			annotations: READ_ONLY,
 		},
 		async ({ type, limit }) => {
-			const [taste, format] = await Promise.all([
+			const [taste, format, { lang }] = await Promise.all([
 				userTaste(),
 				formatting(),
+				userContext(),
 			]);
 			const { entries, dismissals } = tasteOfType(taste, type);
 			const seeds = pickSeeds(entries, taste.profile);
@@ -163,6 +168,7 @@ export function createReelMarkMcpServer({
 			annotations: READ_ONLY,
 		},
 		async ({ query }) => {
+			const { lang } = await userContext();
 			const [results, format] = await Promise.all([
 				searchMulti(query, 1, lang),
 				formatting(),
@@ -190,6 +196,7 @@ export function createReelMarkMcpServer({
 			annotations: READ_ONLY,
 		},
 		async ({ type, id }) => {
+			const { lang, region } = await userContext();
 			try {
 				const [details, providers, marks, format] = await Promise.all([
 					type === 'movie'
