@@ -108,6 +108,31 @@ const fr = {
 		unsupported:
 			'Ton navigateur ne gère pas les clés d’accès. Essaie Safari, Chrome ou Edge à jour.',
 	},
+	aiAssistant: {
+		title: 'Assistant IA',
+		description:
+			'Connecte ton assistant (Claude, ChatGPT…) à ReelMark : il connaîtra tes goûts pour te conseiller films et séries. Il peut seulement lire, jamais modifier.',
+		generate: 'Générer mon lien',
+		regenerate: 'Régénérer le lien',
+		regenerateHint:
+			'Régénérer ou révoquer coupe immédiatement l’ancien lien.',
+		revoke: 'Révoquer',
+		revoked: 'Lien révoqué',
+		linkLabel: 'Ton lien de connexion',
+		copy: 'Copier',
+		copied: 'Lien copié',
+		showOnce:
+			'Copie-le maintenant : il ne sera plus affiché. Garde-le secret comme un mot de passe, toute personne qui l’a peut lire ta bibliothèque.',
+		activeSince: 'Lien actif depuis le',
+		lastUsed: 'dernière utilisation le',
+		neverUsed: 'jamais utilisé',
+		rateLimited: 'Trop de liens générés, réessaie dans un moment',
+		howTo: 'Comment le brancher',
+		steps: [
+			'Claude : Paramètres → Connecteurs → Ajouter un connecteur personnalisé, puis colle le lien.',
+			'ChatGPT (offre payante) : Paramètres → Applications et connecteurs → active le mode développeur, puis crée un connecteur avec ce lien, sans authentification.',
+		],
+	},
 	dangerZone: {
 		title: 'Données',
 		description: 'Les actions suivantes ne peuvent pas être annulées',
@@ -346,6 +371,31 @@ const en = {
 		removed: 'Passkey removed',
 		unsupported:
 			'Your browser doesn’t support passkeys. Try an up-to-date Safari, Chrome or Edge.',
+	},
+	aiAssistant: {
+		title: 'AI assistant',
+		description:
+			'Connect your assistant (Claude, ChatGPT…) to ReelMark: it will know your tastes and suggest movies and shows. It can only read, never change anything.',
+		generate: 'Generate my link',
+		regenerate: 'Regenerate link',
+		regenerateHint:
+			'Regenerating or revoking cuts off the old link immediately.',
+		revoke: 'Revoke',
+		revoked: 'Link revoked',
+		linkLabel: 'Your connection link',
+		copy: 'Copy',
+		copied: 'Link copied',
+		showOnce:
+			'Copy it now: it will not be shown again. Keep it secret like a password — anyone who has it can read your library.',
+		activeSince: 'Link active since',
+		lastUsed: 'last used on',
+		neverUsed: 'never used',
+		rateLimited: 'Too many links generated, try again in a moment',
+		howTo: 'How to connect it',
+		steps: [
+			'Claude: Settings → Connectors → Add custom connector, then paste the link.',
+			'ChatGPT (paid plan): Settings → Apps & Connectors → enable developer mode, then create a connector with this link, no authentication.',
+		],
 	},
 	dangerZone: {
 		title: 'Account Data',

@@ -12,6 +12,7 @@ import { getAvailableProviders } from '@/lib/tmdb';
 import { getUserRegion } from '@/lib/tmdb/client';
 import { getMyStreamingProviders } from '@/lib/data/recommendations';
 import { getNotificationPreferences } from '@/lib/data/notifications';
+import { getMcpLinkStatus } from '@/lib/data/mcp';
 import type { Language } from '@/lib/i18n/translations';
 import type { UserProfile, PrivacySettings } from '@/types/profile';
 import type { User } from '@supabase/supabase-js';
@@ -52,6 +53,7 @@ async function SettingsSection({
 		region,
 		selectedProviderIds,
 		notificationPreferences,
+		mcpLink,
 	] = await Promise.all([
 		supabase
 			.from('user_profiles')
@@ -66,6 +68,7 @@ async function SettingsSection({
 		getUserRegion(lang),
 		getMyStreamingProviders(),
 		getNotificationPreferences(),
+		getMcpLinkStatus(),
 	]);
 
 	const streamingProviders = await getAvailableProviders(region, lang);
@@ -83,6 +86,7 @@ async function SettingsSection({
 			streamingProviders={streamingProviders}
 			selectedProviderIds={selectedProviderIds}
 			notificationPreferences={notificationPreferences}
+			mcpLink={mcpLink}
 			initialTab={initialTab}
 		/>
 	);

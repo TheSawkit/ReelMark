@@ -15,6 +15,7 @@ import { DataSettings } from './DataSettings';
 import { NotificationSettings } from './NotificationSettings';
 import { StreamingSettings } from './StreamingSettings';
 import { SupportSettings } from './SupportSettings';
+import { AiAssistantCard } from './AiAssistantCard';
 import { SettingsNav, type SettingsTab } from './SettingsNav';
 import { SignoutButton } from '@/components/auth/SignoutButton';
 import type {
@@ -23,6 +24,7 @@ import type {
 } from '@/types/profile';
 import type { WatchProvider } from '@/types/tmdb';
 import type { NotificationPreferences } from '@/types/notifications';
+import type { McpLinkStatus } from '@/types/mcp';
 import { SwapIn } from '@/components/motion/SwapIn';
 
 interface SettingsContentProps {
@@ -33,6 +35,7 @@ interface SettingsContentProps {
 	streamingProviders: WatchProvider[];
 	selectedProviderIds: number[];
 	notificationPreferences: NotificationPreferences;
+	mcpLink: McpLinkStatus | null;
 	initialTab: SettingsTab;
 }
 
@@ -44,6 +47,7 @@ export function SettingsContent({
 	streamingProviders,
 	selectedProviderIds,
 	notificationPreferences,
+	mcpLink,
 	initialTab,
 }: SettingsContentProps) {
 	const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
@@ -97,6 +101,7 @@ export function SettingsContent({
 							<LanguageSettings />
 							<RegionalSettings user={user} />
 							<DataSettings />
+							<AiAssistantCard initialLink={mcpLink} />
 							<SupportSettings />
 							<DangerZone isOAuthOnly={isOAuthOnly} />
 						</div>
