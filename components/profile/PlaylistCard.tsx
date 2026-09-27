@@ -17,6 +17,7 @@ import type {
 	PlaylistItem,
 	PrivacyVisibility,
 } from '@/types/profile';
+import { isRedirectSignal } from '@/lib/action-errors';
 
 const PlaylistEditDialog = dynamic(
 	() =>
@@ -74,7 +75,8 @@ export function PlaylistCard({
 			try {
 				await deletePlaylist(playlist.id);
 				onDelete(playlist.id);
-			} catch {
+			} catch (err) {
+				if (isRedirectSignal(err)) return;
 				toast.error(t.profile.errorDelete);
 				setConfirmDelete(false);
 			}

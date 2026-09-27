@@ -19,6 +19,7 @@ import { StarRating } from '@/components/ui/StarRating';
 import { DeleteIconButton } from '@/components/ui/DeleteIconButton';
 import { Button } from '@/components/ui/button';
 import { ReviewDialog } from '@/components/media/reviews/ReviewDialog';
+import { isRedirectSignal } from '@/lib/action-errors';
 
 interface ReviewsSectionProps {
 	reviews: Review[];
@@ -85,7 +86,8 @@ export function ReviewsSection({
 			try {
 				await deleteReview(reviewId);
 				setReviews((prev) => prev.filter((r) => r.id !== reviewId));
-			} catch {
+			} catch (err) {
+				if (isRedirectSignal(err)) return;
 				toast.error(t.common.actionError);
 			}
 		});

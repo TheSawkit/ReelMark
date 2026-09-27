@@ -12,7 +12,7 @@ import {
 	cancelFriendRequest,
 } from '@/app/actions/friends';
 import { createClient } from '@/lib/supabase/client';
-import { RATE_LIMITED } from '@/lib/action-errors';
+import { RATE_LIMITED, isRedirectSignal } from '@/lib/action-errors';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Friendship } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
@@ -98,6 +98,7 @@ export function FriendshipButton({
 				});
 				toast.success(t.profile.requestSentToast);
 			} catch (err) {
+				if (isRedirectSignal(err)) return;
 				const msg = err instanceof Error ? err.message : '';
 				if (msg === 'SELF_REQUEST')
 					toast.error(t.profile.errors.selfRequest);
@@ -121,7 +122,8 @@ export function FriendshipButton({
 				);
 				setLocalFriendship({ ...localFriendship, status: 'accepted' });
 				toast.success(t.profile.requestAcceptedToast);
-			} catch {
+			} catch (err) {
+				if (isRedirectSignal(err)) return;
 				setLocalFriendship(snapshot);
 				toast.error(t.common.actionError);
 			}
@@ -136,7 +138,8 @@ export function FriendshipButton({
 				await cancelFriendRequest(localFriendship.id, targetUserId);
 				setLocalFriendship(null);
 				toast.success(t.profile.requestCancelledToast);
-			} catch {
+			} catch (err) {
+				if (isRedirectSignal(err)) return;
 				setLocalFriendship(snapshot);
 				toast.error(t.common.actionError);
 			}
@@ -154,7 +157,8 @@ export function FriendshipButton({
 				);
 				setLocalFriendship(null);
 				toast.success(t.profile.requestRejectedToast);
-			} catch {
+			} catch (err) {
+				if (isRedirectSignal(err)) return;
 				setLocalFriendship(snapshot);
 				toast.error(t.common.actionError);
 			}

@@ -18,7 +18,7 @@ import { useTranslation } from '@/lib/i18n/context';
 import { getLocale } from '@/lib/i18n/utils';
 import { formatShortDate } from '@/lib/format';
 import { BASE_URL } from '@/lib/metadata';
-import { RATE_LIMITED } from '@/lib/action-errors';
+import { RATE_LIMITED, isRedirectSignal } from '@/lib/action-errors';
 import { createMcpLink, revokeMcpLink } from '@/app/actions/mcp';
 import { AI_ASSISTANT_ANCHOR } from './tabs';
 import type { McpLinkStatus } from '@/types/mcp';
@@ -55,6 +55,7 @@ export function AiAssistantCard({
 					lastUsedAt: null,
 				});
 			} catch (err) {
+				if (isRedirectSignal(err)) return;
 				const message = err instanceof Error ? err.message : '';
 				toast.error(
 					message === RATE_LIMITED
@@ -72,7 +73,8 @@ export function AiAssistantCard({
 				setLink(null);
 				setFreshUrl(null);
 				toast.success(ta.revoked);
-			} catch {
+			} catch (err) {
+				if (isRedirectSignal(err)) return;
 				toast.error(t.common.actionError);
 			}
 		});

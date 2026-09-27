@@ -30,13 +30,13 @@ export function useAbandonShow(
 		const target = abandoned ? 'abandoned' : 'to_watch';
 
 		mediaWatchStore.set('tv', tvId, target);
-		const result = await execute(() =>
-			setWatchlistStatus(tvId, 'tv', target)
+		const result = await execute(
+			() => setWatchlistStatus(tvId, 'tv', target),
+			{ errorToast: t.common.actionError }
 		);
 
 		if (result === undefined) {
 			mediaWatchStore.restore('tv', tvId, previous);
-			toast.error(t.common.actionError);
 			return false;
 		}
 

@@ -28,6 +28,7 @@ import { VisibilitySelector } from '@/components/profile/VisibilitySelector';
 import { PlaylistGrid } from '@/components/profile/PlaylistGrid';
 import { PlaylistSearchResults } from '@/components/profile/PlaylistSearchResults';
 import { BASE_URL } from '@/lib/metadata';
+import { isRedirectSignal } from '@/lib/action-errors';
 
 type DialogMode = 'edit' | 'view';
 
@@ -95,7 +96,8 @@ export function PlaylistEditDialog({
 				editDesc.trim() || null
 			);
 			onUpdateMeta?.(editName.trim(), editDesc.trim() || null);
-		} catch {
+		} catch (err) {
+			if (isRedirectSignal(err)) return;
 			toast.error(t.profile.errorSavePlaylistMeta);
 		} finally {
 			setIsSavingMeta(false);
@@ -108,7 +110,8 @@ export function PlaylistEditDialog({
 		onUpdateVisibility?.(v);
 		try {
 			await updatePlaylistVisibility(playlist.id, v);
-		} catch {
+		} catch (err) {
+			if (isRedirectSignal(err)) return;
 			setCurrentVisibility(prev);
 			onUpdateVisibility?.(prev);
 			toast.error(t.profile.errorSavePlaylistMeta);
@@ -146,7 +149,8 @@ export function PlaylistEditDialog({
 				genre_ids: item.genre_ids ?? null,
 			});
 			setQuery('');
-		} catch {
+		} catch (err) {
+			if (isRedirectSignal(err)) return;
 			toast.error(t.profile.errorAdd);
 		} finally {
 			setPendingAdd(null);
@@ -167,7 +171,8 @@ export function PlaylistEditDialog({
 				item.media_type
 			);
 			onRemoveItem(item.media_id, item.media_type);
-		} catch {
+		} catch (err) {
+			if (isRedirectSignal(err)) return;
 			toast.error(t.profile.errorRemove);
 		} finally {
 			setPendingRemove(null);

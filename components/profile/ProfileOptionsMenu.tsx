@@ -15,6 +15,7 @@ import { MoreHorizontal, UserMinus, Flag } from 'lucide-react';
 import { removeFriend } from '@/app/actions/friends';
 import type { Friendship } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
+import { isRedirectSignal } from '@/lib/action-errors';
 
 interface ProfileOptionsMenuProps {
 	targetUserId: string;
@@ -39,7 +40,8 @@ export function ProfileOptionsMenu({
 				await removeFriend(localFriendship.id, targetUserId);
 				setLocalFriendship(null);
 				toast.success(t.profile.friendRemovedToast);
-			} catch {
+			} catch (err) {
+				if (isRedirectSignal(err)) return;
 				setLocalFriendship(snapshot);
 				toast.error(t.common.actionError);
 			}
