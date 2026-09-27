@@ -1,6 +1,6 @@
 # Architecture
 
-ReelMark est une application **100 % frontend** : un seul projet Next.js 16 (App Router), sans backend custom. Supabase fournit l'authentification et la base de données, TMDB les données médias. Tout le rendu initial se fait côté serveur (Server Components), toutes les mutations passent par des Server Actions.
+ReelMark est un seul projet Next.js 16 (App Router), sans service séparé. Supabase fournit l'authentification et la base de données, TMDB et Watchmode les données médias. Le rendu initial se fait côté serveur (Server Components), les mutations passent par des Server Actions, et quelques Route Handlers couvrent ce qui n'est pas une page : recherche, tâches planifiées, serveur MCP de l'assistant IA.
 
 ## Vue d'ensemble
 
@@ -8,15 +8,20 @@ ReelMark est une application **100 % frontend** : un seul projet Next.js 16 (App
 Navigateur / PWA
    │
    ▼
-proxy.ts (middleware Next 16) ── redirect locale · garde des routes protégées · rate-limit /api/search
+proxy.ts (middleware Next 16) ── redirect locale · rafraîchissement de session · garde des routes protégées · rate-limit /api/search
    │
    ▼
 Server Components (app/[lang]/**/page.tsx)
-   ├──► lib/tmdb/*          → API TMDB (fetch avec revalidate: 3600)
+   ├──► lib/tmdb/*          → API TMDB ("use cache", 1 h par défaut)
    └──► lib/supabase/server → PostgreSQL (RLS active)
 
 Client Components ("use client")
    └──► Server Actions (app/actions/*) ──► Supabase + revalidatePath()
+
+Route Handlers (app/api/*)
+   ├──► /api/search           recherche du navigateur
+   ├──► /api/cron/*           notifications planifiées (CronJobs, CRON_SECRET)
+   └──► /api/mcp/[key]        serveur MCP de l'assistant IA (lien secret)
 ```
 
 ## Routing et i18n
@@ -29,16 +34,29 @@ Client Components ("use client")
 
 - Supabase Auth (email/password + OAuth Google). Cookies gérés par `@supabase/ssr`.
 - Deux points d'entrée uniques dans `lib/supabase/auth-helpers.ts` :
-    - `getAuthenticatedUser()` — jette si non connecté ; utilisé par toutes les mutations.
+    - `getAuthenticatedUser()` — sans session, redirige vers `/{lang}/login?next=<page>` ; utilisé par toutes les mutations et les lectures réservées au compte. Une Server Action appelée déconnectée envoie donc sur la page de connexion, puis ramène à la page d'origine une fois connecté.
     - `getOptionalUser()` — `userId` nullable ; utilisé par les lectures publiques.
-- `createAdminClient()` (service role, bypass RLS) sert uniquement aux lectures/écritures que la RLS interdit par construction : création du profil au signup, suppression de compte, et lecture des amis d'un autre utilisateur (`getFriendsWithProfiles`). Règle : toute fonction qui l'utilise porte elle-même son contrôle d'autorisation, jamais seulement celui de la page appelante. Quand la donnée s'y prête, préférer une fonction SQL `SECURITY DEFINER` qui porte la visibilité en base (`episode_watch_counts_for`) — le service role ne quitte alors jamais le serveur d'auth. Ne jamais l'utiliser pour résoudre des avatars — `user_profiles` est la source d'affichage.
+- Côté client, une action qui redirige rejette avec le signal de redirection de Next pendant que le routeur navigue : `isRedirectSignal()` (`lib/action-errors.ts`) évite d'afficher un toast d'erreur dans ce cas.
+- **Rafraîchissement de session** : `proxy.ts` rafraîchit la session sur toute page qui porte un cookie Supabase (`getClaims()` sur les pages publiques, `getUser()` sur les pages protégées) et écrit les jetons dans la réponse **et** dans la requête transmise. Les Server Components ne peuvent pas écrire de cookies : un jeton qu'ils rafraîchiraient eux-mêmes serait perdu, et la réutilisation de l'ancien refresh token révoque toute la session (déconnexions aléatoires).
+- Le paramètre `next` du login est validé par `sanitizeRedirectPath()` : seuls les chemins internes sont suivis ; il est transmis au mot de passe, à la passkey, au lien magique et à OAuth.
+- `createAdminClient()` (service role, bypass RLS) sert uniquement aux lectures/écritures que la RLS interdit par construction : création du profil au signup, suppression de compte, lecture des amis d'un autre utilisateur (`getFriendsWithProfiles`), et serveur MCP (requêtes sans cookie, toujours bornées au propriétaire du lien). Règle : toute fonction qui l'utilise porte elle-même son contrôle d'autorisation, jamais seulement celui de la page appelante. Quand la donnée s'y prête, préférer une fonction SQL `SECURITY DEFINER` qui porte la visibilité en base (`episode_watch_counts_for`) — le service role ne quitte alors jamais le serveur d'auth. Ne jamais l'utiliser pour résoudre des avatars — `user_profiles` est la source d'affichage.
 - Flux OAuth : `signInWithOAuth` (client) → Supabase → `/auth/callback` (échange du code, redirige vers `BASE_URL`). Les liens email passent par `/auth/confirm`.
+
+## Assistant IA (serveur MCP)
+
+Chaque utilisateur peut générer, dans Réglages → Données, un lien secret à coller dans Claude, ChatGPT, Perplexity ou Gemini. Ce lien est un serveur [MCP](https://modelcontextprotocol.io) sans état.
+
+- **Endpoint** : `app/api/mcp/[key]/route.ts`, `POST` uniquement, via `createMcpHandler` de `@modelcontextprotocol/server`. Le segment `[key]` est le secret : 256 bits aléatoires, dont seul le SHA-256 est stocké (`mcp_keys`). Un lien inconnu répond `404` sans corps.
+- **Outils** (`lib/mcp/server.ts`) : `get_taste_profile`, `get_recommendations`, `search_titles`, `get_title`, `get_watchlist` en lecture ; `update_library` en écriture (marquer vu, à voir, abandonné, ou retirer), limité à la bibliothèque du propriétaire du lien et annoncé comme destructif pour que le client demande confirmation.
+- **Budget** (`lib/mcp/budget.ts`) : seuls les `tools/call` comptent (30/min, 100/jour par utilisateur) ; le reste du protocole (handshake, `tools/list`, notifications) ne passe que par un garde-fou de 120 requêtes/min.
+- **Cache** (`lib/mcp/user-cache.ts`) : goûts de l'utilisateur 2 min (une grosse bibliothèque pèse ~750 Ko d'egress Supabase), langue et région 10 min. Une écriture vide le cache des goûts.
+- Les écritures passent par `lib/data/watchlist-writes.ts`, comme les Server Actions : mêmes métadonnées TMDB, même revalidation des pages.
 
 ## Données médias (TMDB / Watchmode)
 
-- Tous les appels TMDB passent par `fetchTMDB()` (`lib/tmdb/client.ts`) : injection du token, de la langue et de la région, cache `revalidate: 3600`. Jamais d'appel TMDB direct depuis le client — le navigateur passe par `/api/search` ou par des Server Actions.
+- Tous les appels TMDB passent par `fetchTMDB()` (`lib/tmdb/client.ts`) : injection du token, de la langue et de la région, mise en cache par `"use cache"` + `cacheLife` (1 h par défaut, jusqu'à une semaine pour les genres ; les échecs sont gardés moins longtemps que les réponses). Jamais d'appel TMDB direct depuis le client — le navigateur passe par `/api/search` ou par des Server Actions.
 - La Belgique (`BE`) fusionne les régions BE + FR (`REGION_MERGE_CONFIG`).
-- Watchmode fournit les plateformes de streaming (`lib/watchmode/`), même modèle de cache.
+- Watchmode fournit les plateformes de streaming (`lib/watchmode/`), mis en cache par `fetch` + `next.revalidate` (1 h, une semaine pour les logos des stores).
 - La recherche utilise `searchMulti` (`lib/tmdb/search.ts`) avec un ranking custom (`lib/search/score.ts`) et des requêtes de repli si trop peu de résultats.
 
 ## Design system
@@ -59,13 +77,15 @@ Client Components ("use client")
 
 | Couche                    | Mécanisme                                                                      | Durée                               |
 | ------------------------- | ------------------------------------------------------------------------------ | ----------------------------------- |
-| TMDB / Watchmode          | `fetch` + `next.revalidate`                                                    | 1 h                                 |
+| TMDB                      | `"use cache"` + `cacheLife` (`lib/tmdb/client.ts`)                             | 1 h par défaut, 1 min sur échec     |
+| Watchmode                 | `fetch` + `next.revalidate`                                                    | 1 h                                 |
+| Assistant IA (MCP)        | mémoire, par utilisateur (`lib/mcp/user-cache.ts`)                             | goûts 2 min, langue/région 10 min   |
 | `/api/search`             | `Cache-Control: s-maxage=3600, stale-while-revalidate=86400` (edge Cloudflare) | 1 h + SWR 24 h                      |
 | Router client             | Router Cache de Next (défauts, aucun réglage expérimental)                     | 0 s (dynamique) / 5 min (préchargé) |
 | Déduplication par requête | `React.cache()` (watchlist, auth, i18n, genres, région)                        | requête                             |
 | Mutations                 | `revalidatePath()` sur chaque Server Action d'écriture                         | immédiat                            |
 
-Avec 2 replicas en production, chaque pod a son propre cache `fetch` — sans conséquence avec un TTL d'une heure sur des données publiques TMDB. Si un jour le projet adopte ISR ou `use cache`, il faudra un cache handler partagé (Redis).
+`cacheComponents` est activé. Le cache `"use cache"` vit en mémoire, par pod (`cacheMaxMemorySize` : 10 Mo, voir `next.config.ts`) : avec 2 replicas, chaque pod a le sien — sans conséquence pour des données publiques TMDB à durée courte. Les budgets de requêtes (`lib/rate-limiter.ts`) sont eux aussi par pod : la limite effective se multiplie par le nombre de replicas.
 
 ## SEO
 
@@ -79,4 +99,4 @@ Erreurs client, serveur et edge envoyées à **Bugsink** (compatible protocole S
 
 ## Arborescence
 
-Voir la section « Project Structure » du [README](../README.md) pour l'arborescence détaillée. Règle générale : Server Components dans `app/`, composants réutilisables dans `components/` (skeleton co-localisé avec chaque composant complexe), logique partagée dans `lib/`, hooks client dans `hooks/`, types partagés (2+ fichiers) dans `types/`.
+Voir la section « Project Structure » de [DEVELOPMENT.md](./DEVELOPMENT.md) pour l'arborescence détaillée. Règle générale : Server Components dans `app/`, composants réutilisables dans `components/` (skeleton co-localisé avec chaque composant complexe), logique partagée dans `lib/`, hooks client dans `hooks/`, types partagés (2+ fichiers) dans `types/`.

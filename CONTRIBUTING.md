@@ -52,7 +52,7 @@ pnpm build       # next build --webpack (Serwist requires webpack, not Turbopack
 - **All mutations via Server Actions** (`app/actions/`), authenticated with `getAuthenticatedUser()`. Never call Supabase/TMDB from a client component.
 - **No hardcoded UI strings** — everything through `lib/i18n/translations.ts` (EN + FR).
 - **Design tokens only** — no arbitrary Tailwind colors (`bg-surface`, not `bg-[#...]`).
-- **No inline comments**; docstrings only on public functions (one line, what + why).
+- **Comments explain why**, never what the code already says; docstrings on exported functions.
 - Absolute imports via `@/` — never relative `../../`.
 
 ## Database changes

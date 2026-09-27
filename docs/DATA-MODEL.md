@@ -1,6 +1,12 @@
 # Modèle de données
 
-PostgreSQL (Supabase). **RLS activée sur les 12 tables.** Le schéma est appliqué directement sur le projet Supabase (pas de fichiers SQL versionnés) ; `types/database.ts` est le type généré qui fait foi côté code (`supabase gen types typescript` via MCP/CLI).
+PostgreSQL (Supabase), 15 tables, RLS attendue sur chacune — à contrôler après toute modification du schéma :
+
+```sql
+select tablename, rowsecurity from pg_tables where schemaname = 'public';
+```
+
+Le schéma est appliqué directement sur le projet Supabase (pas de fichiers SQL versionnés) ; `types/database.ts` est le type généré qui fait foi côté code (`supabase gen types typescript` via MCP/CLI).
 
 ## Tables
 
@@ -11,9 +17,10 @@ PostgreSQL (Supabase). **RLS activée sur les 12 tables.** Le schéma est appliq
 | `watchlist`       | Films/séries suivis avec statut | UNIQUE (`user_id`, `media_id`, `media_type`)            |
 | `episode_watches` | Épisodes vus, un par ligne      | (`user_id`, `tv_id`, `season_number`, `episode_number`) |
 
-- `watchlist` : `media_id` (int TMDB), `media_type` (`movie`\|`tv`), `media_title`, `poster_path`, `status` (`to_watch`\|`watched`), plus les colonnes de tri/filtre : `release_date`, `genre_ids`, `total_episodes` (peuplées à l'insertion via `getListMediaMetadata`).
+- `watchlist` : `media_id` (int TMDB), `media_type` (`movie`\|`tv`), `media_title`, `poster_path`, `status` (`to_watch`\|`watched`\|`abandoned`, ce dernier réservé aux séries), plus les colonnes de tri/filtre : `release_date`, `genre_ids`, `total_episodes` (peuplées à l'insertion via `getListMediaMetadata`).
 - Le statut watchlist d'une série est resynchronisé après chaque toggle d'épisode (`syncTvShowWatchlistStatus`) ; la saison 0 (specials) est exclue du total. Le passage à « vu » utilise `>=` (TMDB peut réduire le nombre d'épisodes).
 - Supprimer une série de la watchlist supprime aussi ses `episode_watches`.
+- Les écritures passent par `upsertWatchlistEntry` / `deleteWatchlistEntry` (`lib/data/watchlist-writes.ts`), partagées par les Server Actions et l'outil `update_library` du serveur MCP.
 
 ### Profil et social
 
@@ -27,6 +34,26 @@ PostgreSQL (Supabase). **RLS activée sur les 12 tables.** Le schéma est appliq
 
 - `user_profiles.full_name` + `avatar_url` sont **la source d'affichage** partout (amis, playlists, recherche `@username`). Copiés depuis les metadata auth par le trigger `handle_new_user` au signup, synchronisés par settings/onboarding. Ne jamais rappeler l'API admin Supabase pour les résoudre.
 - Valeurs de visibilité : `public` | `friends` | `private` (défaut : tout public).
+
+### Recommandations et préférences
+
+| Table                       | Rôle                                                                                          | Clés                                         |
+| --------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `recommendation_dismissals` | Titres écartés des suggestions (« pas pour moi »), avec leurs genres pour le moteur de goûts  | UNIQUE (`user_id`, `media_id`, `media_type`) |
+| `user_streaming_providers`  | Plateformes cochées dans Réglages → Services de streaming (`provider_ids`)                    | une ligne par `user_id`                      |
+| `user_prompts`              | État des invitations affichées une fois (installation, import, push…) : `prompt_key`, `state` | UNIQUE (`user_id`, `prompt_key`)             |
+
+Les trois sont lues et écrites avec la session de l'utilisateur, filtrées par `user_id`.
+
+### Assistant IA
+
+| Table      | Rôle                                                                                      | Clés             |
+| ---------- | ----------------------------------------------------------------------------------------- | ---------------- |
+| `mcp_keys` | Lien secret du serveur MCP : `key_hash` (SHA-256 du secret), `created_at`, `last_used_at` | UNIQUE `user_id` |
+
+- Une ligne par utilisateur : régénérer le lien remplace la ligne, l'ancien secret cesse aussitôt de fonctionner.
+- Seul le hash est stocké ; le secret n'est montré qu'une fois, à la génération.
+- RLS réservée au propriétaire (lecture de l'état et révocation depuis Réglages) ; la résolution d'un lien par `/api/mcp/[key]` passe par le service role, sur le hash.
 
 ### Notifications
 
