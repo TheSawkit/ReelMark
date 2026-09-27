@@ -7,6 +7,7 @@ import {
 	pickFavoritePerson,
 	isPersonSeedRating,
 	pickSuggestion,
+	pickSimilarSeeds,
 } from '@/lib/recommendations';
 import type { MediaItem, WatchlistEntry, WatchStatus } from '@/types/tmdb';
 
@@ -338,7 +339,7 @@ describe('rankRecommendations', () => {
 });
 
 describe('applyDismissals', () => {
-	it('excludes dismissed titles and marks their genres disliked', () => {
+	it('excludes dismissed titles and marks a genre disliked after repeated dismissals', () => {
 		const excluded = new Set<string>();
 		const affinity = {
 			favorites: new Set([18]),
@@ -347,11 +348,44 @@ describe('applyDismissals', () => {
 
 		applyDismissals(excluded, affinity, [
 			{ media_id: 42, media_type: 'movie', genre_ids: [27, 18] },
+			{ media_id: 43, media_type: 'movie', genre_ids: [27, 18] },
 		]);
 
 		expect(excluded.has('movie-42')).toBe(true);
+		expect(excluded.has('movie-43')).toBe(true);
 		expect(affinity.disliked.has(27)).toBe(true);
 		expect(affinity.disliked.has(18)).toBe(false);
+	});
+
+	it('only hides the title after a single dismissal', () => {
+		const excluded = new Set<string>();
+		const affinity = {
+			favorites: new Set<number>(),
+			disliked: new Set<number>(),
+		};
+
+		applyDismissals(excluded, affinity, [
+			{ media_id: 42, media_type: 'movie', genre_ids: [80] },
+		]);
+
+		expect(excluded.has('movie-42')).toBe(true);
+		expect(affinity.disliked.has(80)).toBe(false);
+	});
+});
+
+describe('pickSimilarSeeds', () => {
+	it('opens rows only from the latest watched titles the user liked', () => {
+		const entries = [
+			entry({ media_id: 1, created_at: '2026-09-05T00:00:00Z' }),
+			entry({ media_id: 2, created_at: '2026-09-04T00:00:00Z' }),
+			entry({ media_id: 3, created_at: '2026-09-03T00:00:00Z' }),
+			entry({ media_id: 4, created_at: '2026-09-02T00:00:00Z' }),
+			entry({ media_id: 5, created_at: '2026-09-01T00:00:00Z' }),
+			entry({ media_id: 6, status: 'to_watch' }),
+		];
+
+		const seeds = pickSimilarSeeds(entries, { 'movie-1': 1, 'movie-3': 5 });
+		expect(seeds.map((s) => s.media_id)).toEqual([2, 4, 5]);
 	});
 });
 

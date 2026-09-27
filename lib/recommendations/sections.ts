@@ -35,6 +35,7 @@ import {
 	pickFavoritePerson,
 	pickPersonSeeds,
 	pickSeeds,
+	pickSimilarSeeds,
 	rankRecommendations,
 	type FavoritePerson,
 } from '@/lib/recommendations/engine';
@@ -264,7 +265,6 @@ export async function buildLibrarySections(
 	const tvProgressMap =
 		type === 'tv' ? knownTvProgress(toWatch, tvProgress) : {};
 	const watched = typeEntries.filter((entry) => entry.status === 'watched');
-	const seedForSimilars = watched.slice(0, 3);
 
 	const isMovie = type === 'movie';
 	const getRecs = isMovie
@@ -281,6 +281,7 @@ export async function buildLibrarySections(
 	]);
 	const seeds = pickSeeds(typeEntries, ratingByKey, tvProgress);
 	const personSeedEntries = pickPersonSeeds(watched, ratingByKey);
+	const seedForSimilars = pickSimilarSeeds(typeEntries, ratingByKey);
 
 	const [recommendationsResults, similarResults, personCredits, freshRaw] =
 		await Promise.all([

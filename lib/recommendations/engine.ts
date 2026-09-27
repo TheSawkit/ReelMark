@@ -17,6 +17,8 @@ const RANK_DECAY = 0.04;
 const GENRE_CAP = 6;
 const RATING_SPREAD = 5;
 const DISLIKE_RATIO = 0.5;
+const DISMISSALS_TO_DISLIKE = 2;
+const MAX_SIMILAR_SEEDS = 3;
 
 export interface RecommendationSeed {
 	entry: WatchlistEntry;
@@ -249,15 +251,16 @@ export interface DismissedRecommendation {
 }
 
 /**
- * Folds explicit "not interested" signals into the ranking inputs: dismissed keys
- * join the exclusion set, and their genres join the disliked set unless the user
- * loves that genre elsewhere.
+ * Folds explicit "not interested" signals into the ranking inputs: dismissed keys join
+ * the exclusion set, and a genre joins the disliked set only once the user dismissed it
+ * repeatedly — one rejected title says nothing about a whole genre — unless it is a favourite.
  */
 export function applyDismissals(
 	excludedKeys: Set<string>,
 	affinity: GenreAffinity,
 	dismissals: DismissedRecommendation[]
 ): void {
+	const dismissalsPerGenre = new Map<number, number>();
 	for (const dismissal of dismissals) {
 		excludedKeys.add(
 			getMediaKey({
@@ -265,12 +268,27 @@ export function applyDismissals(
 				id: dismissal.media_id,
 			})
 		);
-		for (const genreId of dismissal.genre_ids) {
-			if (!affinity.favorites.has(genreId)) {
-				affinity.disliked.add(genreId);
-			}
+		addToGenres(dismissalsPerGenre, dismissal.genre_ids, 1);
+	}
+	for (const [genreId, count] of dismissalsPerGenre) {
+		if (
+			count >= DISMISSALS_TO_DISLIKE &&
+			!affinity.favorites.has(genreId)
+		) {
+			affinity.disliked.add(genreId);
 		}
 	}
+}
+
+/** The latest watched titles the user liked — each one opens a "Similar to X" row. */
+export function pickSimilarSeeds(
+	entries: WatchlistEntry[],
+	ratingByKey: Record<string, number>
+): WatchlistEntry[] {
+	const rating = ratingLookup(ratingByKey);
+	return newestFirst(entries)
+		.filter((entry) => entry.status === 'watched' && isLiked(rating(entry)))
+		.slice(0, MAX_SIMILAR_SEEDS);
 }
 
 export type PersonRole = 'director' | 'actor';
