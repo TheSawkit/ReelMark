@@ -186,6 +186,22 @@ async function waitForImages(page) {
 	});
 }
 
+/** Fonts, scripts, styles and images: retried on their own, so one dropped request does not cost a whole page load. */
+const STATIC_ASSET =
+	/\/_next\/(static|image)\/|\.(woff2?|jpe?g|png|webp|avif|svg)(\?|$)|image\.tmdb\.org|i\.ytimg\.com/;
+
+async function retryRequest(route) {
+	for (let attempt = 0; attempt < 4; attempt++) {
+		try {
+			const response = await route.fetch();
+			if (response.status() < 500) return route.fulfill({ response });
+		} catch {
+			// Network failure: try again.
+		}
+	}
+	return route.abort();
+}
+
 async function capture(browser, { url, viewport, cookies, scroll, file }) {
 	for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
 		const context = await browser.newContext({
@@ -199,6 +215,7 @@ async function capture(browser, { url, viewport, cookies, scroll, file }) {
 				process.env.SCREENSHOTS_IGNORE_HTTPS_ERRORS === '1',
 		});
 		if (cookies) await context.addCookies(cookies);
+		await context.route(STATIC_ASSET, retryRequest);
 		const page = await context.newPage();
 		try {
 			await page.goto(url, { waitUntil: 'load', timeout: 60_000 });
