@@ -130,9 +130,11 @@ async function scrollTo(page, { anchor, heading }) {
 	await page.waitForTimeout(1500);
 }
 
-/** Throws when the page shows the error screen or an image in view failed, so the capture is retried. */
+/** Throws when the page shows the error screen, a font failed or an image in view is broken, so the capture is retried. */
 async function assertPresentable(page) {
 	const problem = await page.evaluate(() => {
+		if ([...document.fonts].some((font) => font.status === 'error'))
+			return 'font failed to load';
 		if (
 			/Something went wrong|Un problème est survenu/.test(
 				document.body.innerText
@@ -200,6 +202,7 @@ async function capture(browser, { url, viewport, cookies, scroll, file }) {
 			await waitForImages(page);
 			await assertPresentable(page);
 			await page.screenshot({ path: file, type: 'jpeg', quality: 90 });
+			if (!appFonts) appFonts = await collectFonts(page).catch(() => '');
 			await context.close();
 			return file;
 		} catch (error) {
@@ -212,11 +215,60 @@ async function capture(browser, { url, viewport, cookies, scroll, file }) {
 	return null;
 }
 
+/** The app's own Inter and Bebas Neue (latin subset), inlined so the layouts need no network. */
+let appFonts = '';
+
+async function collectFonts(page) {
+	return page.evaluate(async () => {
+		const families = ['Inter', 'Bebas Neue'];
+		const faces = [];
+		for (const sheet of document.styleSheets) {
+			let rules;
+			try {
+				rules = sheet.cssRules;
+			} catch {
+				continue;
+			}
+			for (const rule of rules) {
+				if (!(rule instanceof CSSFontFaceRule)) continue;
+				const family = rule.style
+					.getPropertyValue('font-family')
+					.replace(/['"]/g, '')
+					.trim();
+				const range = rule.style.getPropertyValue('unicode-range');
+				const src = rule.style
+					.getPropertyValue('src')
+					.match(/url\("?([^")]+)"?\)/);
+				if (!families.includes(family) || !src) continue;
+				if (range && !/U\+0+-0*FF\b/i.test(range)) continue;
+				const bytes = new Uint8Array(
+					await (
+						await fetch(
+							new URL(src[1], sheet.href ?? location.href)
+						)
+					).arrayBuffer()
+				);
+				let binary = '';
+				for (let i = 0; i < bytes.length; i += 0x8000)
+					binary += String.fromCharCode(
+						...bytes.subarray(i, i + 0x8000)
+					);
+				const weight =
+					rule.style.getPropertyValue('font-weight') || '400';
+				faces.push(
+					`@font-face{font-family:'${family}';font-weight:${weight};font-display:block;src:url(data:font/woff2;base64,${btoa(binary)}) format('woff2')}`
+				);
+			}
+		}
+		return faces.join('\n');
+	});
+}
+
 const dataUrl = async (file) =>
 	`data:image/jpeg;base64,${(await readFile(file)).toString('base64')}`;
 
-const PAGE_STYLE = `
-	@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=block');
+const pageStyle = () => `
+	${appFonts || "@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=block');"}
 	* { margin: 0; box-sizing: border-box; }
 	body {
 		width: 1600px; font-family: Inter, system-ui, sans-serif; color: #f5f5f7;
@@ -225,7 +277,7 @@ const PAGE_STYLE = `
 			radial-gradient(700px 500px at 50% 115%, rgba(185, 9, 11, .18), transparent 70%),
 			#070707;
 	}
-	.wordmark { font-family: 'Bebas Neue', Impact, sans-serif; letter-spacing: .02em; }
+	.wordmark { font-family: 'Bebas Neue', Impact, sans-serif; letter-spacing: .02em; text-transform: uppercase; }
 	header { text-align: center; padding: 64px 80px 0; }
 	header .wordmark { font-size: 40px; color: #fff; opacity: .9; }
 	h1 { font-size: 46px; font-weight: 600; letter-spacing: -.02em; margin-top: 10px; }
@@ -243,7 +295,7 @@ function showcaseHtml(copy, shots) {
 		</figure>`
 		)
 		.join('');
-	return `<!doctype html><html><head><meta charset="utf-8"><style>${PAGE_STYLE}
+	return `<!doctype html><html><head><meta charset="utf-8"><style>${pageStyle()}
 		main { display: flex; justify-content: center; align-items: flex-start; gap: 64px; padding: 64px 0 96px; }
 		.phone {
 			width: 380px; height: 824px; border-radius: 58px; padding: 12px; background: #1b1b1d;
@@ -257,7 +309,7 @@ function showcaseHtml(copy, shots) {
 }
 
 function desktopHtml(copy, image) {
-	return `<!doctype html><html><head><meta charset="utf-8"><style>${PAGE_STYLE}
+	return `<!doctype html><html><head><meta charset="utf-8"><style>${pageStyle()}
 		main { padding: 56px 110px 104px; }
 		.window { border-radius: 18px; overflow: hidden; background: #161618;
 			box-shadow: 0 0 0 1px #2c2c30, 0 50px 110px rgba(0,0,0,.7), 0 0 140px rgba(185,9,11,.2); }
