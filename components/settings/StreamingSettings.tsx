@@ -53,15 +53,16 @@ export function StreamingSettings({
 
 	async function handleSave() {
 		const ids = [...selected];
-		const saved = await execute(async () => {
-			await updateStreamingProviders(ids);
-			return true;
-		});
+		const saved = await execute(
+			async () => {
+				await updateStreamingProviders(ids);
+				return true;
+			},
+			{ errorToast: t.common.actionError }
+		);
 		if (saved) {
 			setSavedSnapshot(new Set(ids));
 			toast.success(t.settings.streaming.saved);
-		} else {
-			toast.error(t.common.actionError);
 		}
 	}
 

@@ -11,6 +11,7 @@ import { dismissRecommendation } from '@/app/actions/recommendations';
 import { useTranslation } from '@/lib/i18n/context';
 import { getMediaKey } from '@/lib/media';
 import type { MediaItem, RecommendationSource } from '@/types/tmdb';
+import { isRedirectSignal } from '@/lib/action-errors';
 
 const CARD_ANIMATION_DELAY_MS = 50;
 
@@ -54,7 +55,8 @@ export function ForYouSection({ title, items }: ForYouSectionProps) {
 				item.media_type,
 				item.genre_ids ?? []
 			);
-		} catch {
+		} catch (err) {
+			if (isRedirectSignal(err)) return;
 			setDismissedKeys((previous) => {
 				const next = new Set(previous);
 				next.delete(key);
