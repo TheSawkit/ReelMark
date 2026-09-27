@@ -26,7 +26,9 @@ const supabaseHost = new URL(
 const cspDirectives = [
 	"default-src 'self'",
 	"worker-src 'self'",
-	`script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.youtube.com https://s.ytimg.com`,
+	// static.cloudflareinsights.com : beacon Cloudflare Web Analytics, injecté par le proxy Cloudflare ;
+	// ses mesures repartent vers /cdn-cgi/rum sur le domaine lui-même, déjà couvert par 'self'.
+	`script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.youtube.com https://s.ytimg.com https://static.cloudflareinsights.com`,
 	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
 	"img-src 'self' data: blob: https://image.tmdb.org https://i.ytimg.com https://lh3.googleusercontent.com https://*.supabase.co https://cdn.watchmode.com https://*.mzstatic.com",
 	"font-src 'self' data: https://fonts.gstatic.com",

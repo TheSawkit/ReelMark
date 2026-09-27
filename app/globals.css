@@ -240,7 +240,9 @@ body {
 body {
 	background-color: var(--color-background);
 	color: var(--color-text);
-	font-family: var(--font-sans);
+	/* Generic family last: next/font's metric fallback targets Arial, missing on some systems,
+	   and without it text dropped to the browser's serif default. */
+	font-family: var(--font-sans), system-ui, sans-serif;
 	line-height: 1.6;
 	letter-spacing: -0.011em;
 	overflow-x: clip;
@@ -686,7 +688,7 @@ a {
 
 	/* Canonical display-heading recipe — pair with leading-none + a text-* size. */
 	.heading-display {
-		font-family: var(--font-display);
+		font-family: var(--font-display), Impact, 'Arial Narrow', sans-serif;
 		font-weight: 400;
 	}
 
