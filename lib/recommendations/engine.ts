@@ -1,4 +1,9 @@
-import type { MediaItem, WatchlistEntry } from '@/types/tmdb';
+import type {
+	MediaItem,
+	RecommendationReason,
+	RecommendationSource,
+	WatchlistEntry,
+} from '@/types/tmdb';
 import { getMediaKey } from '@/lib/media';
 
 const MAX_SEEDS = 6;
@@ -23,10 +28,12 @@ const MAX_SIMILAR_SEEDS = 3;
 export interface RecommendationSeed {
 	entry: WatchlistEntry;
 	weight: number;
+	reason: RecommendationReason;
 }
 
 export interface SeedCandidates {
 	weight: number;
+	because?: RecommendationSource;
 	items: MediaItem[];
 }
 
@@ -83,6 +90,16 @@ function isInProgress(
 	);
 }
 
+function seedReason(
+	entry: WatchlistEntry,
+	rating: number | undefined,
+	watching: boolean
+): RecommendationReason {
+	if (watching) return 'watching';
+	if (entry.status !== 'watched') return 'listed';
+	return isLiked(rating) ? 'liked' : 'watched';
+}
+
 /**
  * Picks the recommendation seeds for a user, mixing what they watch now with what they
  * love most: shows in progress first, then the best-rated titles, then the latest liked
@@ -118,12 +135,16 @@ export function pickSeeds(
 		...toWatch,
 	]);
 
-	return [...ordered].slice(0, MAX_SEEDS).map((entry) => ({
-		entry,
-		weight: inProgress.includes(entry)
-			? Math.max(IN_PROGRESS_WEIGHT, seedWeight(rating(entry)))
-			: seedWeight(rating(entry)),
-	}));
+	return [...ordered].slice(0, MAX_SEEDS).map((entry) => {
+		const watching = inProgress.includes(entry);
+		return {
+			entry,
+			weight: watching
+				? Math.max(IN_PROGRESS_WEIGHT, seedWeight(rating(entry)))
+				: seedWeight(rating(entry)),
+			reason: seedReason(entry, rating(entry), watching),
+		};
+	});
 }
 
 function tasteSignal(
@@ -417,17 +438,29 @@ export function rankRecommendations(
 	excludedKeys: Set<string>,
 	affinity: GenreAffinity
 ): MediaItem[] {
-	const scored = new Map<string, { item: MediaItem; score: number }>();
+	const scored = new Map<
+		string,
+		{
+			item: MediaItem;
+			score: number;
+			source?: { amount: number; because: RecommendationSource };
+		}
+	>();
 
-	for (const { weight, items } of seedCandidates) {
+	for (const { weight, because, items } of seedCandidates) {
 		items.forEach((item, index) => {
 			const key = getMediaKey(item);
 			if (excludedKeys.has(key)) return;
-			const rankFactor = Math.max(0.2, 1 - index * RANK_DECAY);
+			const amount = weight * Math.max(0.2, 1 - index * RANK_DECAY);
 			const previous = scored.get(key);
+			const keepsSource =
+				!because ||
+				(previous?.source !== undefined &&
+					previous.source.amount >= amount);
 			scored.set(key, {
 				item: previous?.item ?? item,
-				score: (previous?.score ?? 0) + weight * rankFactor,
+				score: (previous?.score ?? 0) + amount,
+				source: keepsSource ? previous?.source : { amount, because },
 			});
 		});
 	}
@@ -444,6 +477,9 @@ export function rankRecommendations(
 			Math.min(bonusMatches, FAVORITE_GENRES) * GENRE_BONUS -
 			Math.min(penaltyMatches, 2) * GENRE_PENALTY +
 			(entry.item.vote_average ?? 0) / 100;
+		if (entry.source) {
+			entry.item = { ...entry.item, becauseOf: entry.source.because };
+		}
 	}
 
 	return applyGenreCap(

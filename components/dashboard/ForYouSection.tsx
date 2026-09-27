@@ -10,7 +10,7 @@ import { StaggeredItem } from '@/components/ui/StaggeredItem';
 import { dismissRecommendation } from '@/app/actions/recommendations';
 import { useTranslation } from '@/lib/i18n/context';
 import { getMediaKey } from '@/lib/media';
-import type { MediaItem } from '@/types/tmdb';
+import type { MediaItem, RecommendationSource } from '@/types/tmdb';
 
 const CARD_ANIMATION_DELAY_MS = 50;
 
@@ -19,7 +19,21 @@ interface ForYouSectionProps {
 	items: MediaItem[];
 }
 
-/** "For you" recommendation row with per-card "not interested" dismissal. */
+function BecauseOf({ source }: { source: RecommendationSource }) {
+	const { t } = useTranslation();
+	const [before, after] =
+		t.pages.dashboard.because[source.reason].split('${title}');
+
+	return (
+		<p className="px-1 text-xs leading-snug text-muted line-clamp-2">
+			{before}
+			<span className="font-medium text-text">{source.title}</span>
+			{after}
+		</p>
+	);
+}
+
+/** "For you" recommendation row with per-card "not interested" dismissal and the reason behind each pick. */
 export function ForYouSection({ title, items }: ForYouSectionProps) {
 	const { t } = useTranslation();
 	const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(
@@ -61,12 +75,11 @@ export function ForYouSection({ title, items }: ForYouSectionProps) {
 					key={getMediaKey(item)}
 					index={index}
 					staggerMs={CARD_ANIMATION_DELAY_MS}
-					className="flex-none w-40 md:w-50 snap-start"
+					className="flex flex-none w-40 md:w-50 snap-start flex-col gap-2"
 				>
 					<MediaCard
 						media={item}
 						priority={index < 4}
-						className="h-full"
 						action={
 							<button
 								onClick={(e) => {
@@ -82,6 +95,7 @@ export function ForYouSection({ title, items }: ForYouSectionProps) {
 							</button>
 						}
 					/>
+					{item.becauseOf && <BecauseOf source={item.becauseOf} />}
 				</StaggeredItem>
 			))}
 		</HorizontalScroll>

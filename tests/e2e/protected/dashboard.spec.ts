@@ -21,6 +21,24 @@ test.describe('Dashboard', () => {
 		await page.goto('/en/dashboard');
 		await expect(page).not.toHaveURL(/\/login/);
 	});
+
+	test('explains why each "For You" title is suggested', async ({ page }) => {
+		await page.goto('/en/dashboard');
+		const heading = page.getByRole('heading', {
+			name: 'For You',
+			exact: true,
+		});
+		test.skip(
+			!(await heading
+				.waitFor({ state: 'visible', timeout: 20000 })
+				.then(() => true)
+				.catch(() => false)),
+			'Test account has no "For You" row'
+		);
+		await expect(
+			page.getByText(/^Because (you|.+ is on your list)/).first()
+		).toBeVisible();
+	});
 });
 
 test.describe('Explorer', () => {

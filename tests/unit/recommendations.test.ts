@@ -141,6 +141,31 @@ describe('pickSeeds', () => {
 	});
 });
 
+describe('pickSeeds reasons', () => {
+	it('tells why each seed was picked', () => {
+		const seeds = pickSeeds(
+			[
+				entry({
+					media_id: 1,
+					media_type: 'tv',
+					status: 'to_watch',
+					total_episodes: 10,
+				}),
+				entry({ media_id: 2, media_type: 'tv' }),
+				entry({ media_id: 3, media_type: 'tv', status: 'to_watch' }),
+			],
+			{},
+			{ 1: 2 }
+		);
+
+		expect(seeds.map((s) => [s.entry.media_id, s.reason])).toEqual([
+			[1, 'watching'],
+			[2, 'liked'],
+			[3, 'listed'],
+		]);
+	});
+});
+
 describe('genreAffinity', () => {
 	it('builds favourites from liked titles only', () => {
 		const entries = [
@@ -303,6 +328,29 @@ describe('rankRecommendations', () => {
 		);
 
 		expect(ranked[0].id).toBe(1);
+	});
+
+	it('credits each title to the seed that contributed most', () => {
+		const ranked = rankRecommendations(
+			[
+				{
+					weight: 1.1,
+					because: { title: 'Dune', reason: 'liked' },
+					items: [item(1), item(2)],
+				},
+				{
+					weight: 1.6,
+					because: { title: 'Arrival', reason: 'liked' },
+					items: [item(2)],
+				},
+			],
+			new Set(),
+			noAffinity
+		);
+
+		const byId = Object.fromEntries(ranked.map((r) => [r.id, r.becauseOf]));
+		expect(byId[1]).toEqual({ title: 'Dune', reason: 'liked' });
+		expect(byId[2]).toEqual({ title: 'Arrival', reason: 'liked' });
 	});
 
 	it('caps the result size at 20', () => {

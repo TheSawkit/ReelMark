@@ -308,10 +308,13 @@ export async function buildLibrarySections(
 			}),
 		]);
 
-	const seedCandidates = seeds.map(({ weight }, index) => ({
-		weight,
-		items: toMediaItems(recommendationsResults[index], isMovie),
-	}));
+	const toSeedCandidates = (results: Array<Movie[] | TvShow[]>) =>
+		seeds.map(({ weight, entry, reason }, index) => ({
+			weight,
+			because: { title: entry.media_title, reason },
+			items: toMediaItems(results[index], isMovie),
+		}));
+	const seedCandidates = toSeedCandidates(recommendationsResults);
 	const excludedKeys = consumedKeys(typeEntries, tvProgress);
 	const affinity = genreAffinity(typeEntries, ratingByKey, tvProgress);
 	applyDismissals(
@@ -333,12 +336,7 @@ export async function buildLibrarySections(
 		const extraResults = await Promise.all(
 			seeds.map(({ entry }) => getRecs(entry.media_id, lang, page))
 		);
-		seedCandidates.push(
-			...seeds.map(({ weight }, index) => ({
-				weight,
-				items: toMediaItems(extraResults[index], isMovie),
-			}))
-		);
+		seedCandidates.push(...toSeedCandidates(extraResults));
 		forYouItems = rankRecommendations(
 			seedCandidates,
 			excludedKeys,
