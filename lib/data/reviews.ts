@@ -7,6 +7,8 @@ import type { Database } from '@/types/database';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { reportSwallowed } from '@/lib/report';
 import { REVIEW_COLUMNS } from '@/lib/supabase/columns';
+import { getMediaKey } from '@/lib/media';
+import type { MediaType } from '@/types/tmdb';
 import type {
 	Review,
 	PublicReview,
@@ -95,7 +97,10 @@ export async function getUserReviewSignals(
 	const signals: ReviewSignals = { ratings: {}, ratedAt: {} };
 	for (const row of data) {
 		if (row.rating === null) continue;
-		const key = `${row.media_type}-${row.media_id}`;
+		const key = getMediaKey({
+			media_type: row.media_type as MediaType,
+			id: row.media_id,
+		});
 		signals.ratings[key] = row.rating;
 		signals.ratedAt[key] = row.updated_at;
 	}

@@ -21,7 +21,6 @@ const GENRE_PENALTY = 0.5;
 const RANK_DECAY = 0.04;
 const GENRE_CAP = 6;
 const RATING_SPREAD = 5;
-const DISLIKE_RATIO = 0.5;
 const DISMISSALS_TO_DISLIKE = 2;
 const MAX_SIMILAR_SEEDS = 3;
 
@@ -42,13 +41,22 @@ export interface GenreAffinity {
 	disliked: Set<number>;
 }
 
-type RatingLookup = (entry: WatchlistEntry) => number | undefined;
+/** Everything the engine reads about a user's tastes: ratings and when they were given, keyed by media key, and episode progress per show. */
+export interface TasteProfile {
+	ratings: Readonly<Record<string, number>>;
+	ratedAt: Readonly<Record<string, string>>;
+	episodesWatched: Readonly<Record<number, number>>;
+}
 
-function ratingLookup(ratingByKey: Record<string, number>): RatingLookup {
-	return (entry) =>
-		ratingByKey[
-			getMediaKey({ media_type: entry.media_type, id: entry.media_id })
-		];
+function entryKey(entry: WatchlistEntry): string {
+	return getMediaKey({ media_type: entry.media_type, id: entry.media_id });
+}
+
+function ratingOf(
+	ratings: Readonly<Record<string, number>>,
+	entry: WatchlistEntry
+): number | undefined {
+	return ratings[entryKey(entry)];
 }
 
 function seedWeight(rating: number | undefined): number {
@@ -74,25 +82,21 @@ function isLiked(rating: number | undefined): boolean {
 
 function latestActivity(
 	entry: WatchlistEntry,
-	ratedAtByKey: Readonly<Record<string, string>>
+	ratedAt: Readonly<Record<string, string>>
 ): string {
-	const ratedAt =
-		ratedAtByKey[
-			getMediaKey({ media_type: entry.media_type, id: entry.media_id })
-		] ?? '';
-	const addedAt = entry.created_at ?? '';
-	return ratedAt > addedAt ? ratedAt : addedAt;
+	const rated = ratedAt[entryKey(entry)] ?? '';
+	const added = entry.created_at ?? '';
+	return rated > added ? rated : added;
 }
 
 function mostRecentFirst(
 	entries: readonly WatchlistEntry[],
-	ratedAtByKey: Readonly<Record<string, string>>
+	ratedAt: Readonly<Record<string, string>>
 ): WatchlistEntry[] {
-	return [...entries].sort((a, b) =>
-		latestActivity(b, ratedAtByKey).localeCompare(
-			latestActivity(a, ratedAtByKey)
-		)
-	);
+	return entries
+		.map((entry) => ({ entry, activity: latestActivity(entry, ratedAt) }))
+		.sort((a, b) => b.activity.localeCompare(a.activity))
+		.map(({ entry }) => entry);
 }
 
 function isInProgress(
@@ -117,27 +121,19 @@ function seedReason(
 	return isLiked(rating) ? 'liked' : 'watched';
 }
 
-/**
- * Picks the recommendation seeds for a user, mixing what they watch now with what they
- * love most: shows in progress first, then the best-rated titles, then the latest liked
- * ones — added or rated most recently — so the row follows current tastes instead of
- * freezing on all-time favourites.
- * Abandoned shows and titles rated under 2 stars (4/10) never seed.
- */
+/** Seeds the "For you" row from what the user watches now and loves most, so it follows current tastes rather than all-time favourites. */
 export function pickSeeds(
 	entries: WatchlistEntry[],
-	ratingByKey: Record<string, number>,
-	episodesWatched: Readonly<Record<number, number>> = {},
-	ratedAtByKey: Readonly<Record<string, string>> = {}
+	profile: TasteProfile
 ): RecommendationSeed[] {
-	const rating = ratingLookup(ratingByKey);
-	const usable = mostRecentFirst(entries, ratedAtByKey).filter(
+	const rating = (entry: WatchlistEntry) => ratingOf(profile.ratings, entry);
+	const usable = mostRecentFirst(entries, profile.ratedAt).filter(
 		(entry) => !isDisliked(entry, rating(entry))
 	);
 
 	const watched = usable.filter((entry) => entry.status === 'watched');
 	const inProgress = usable
-		.filter((entry) => isInProgress(entry, episodesWatched))
+		.filter((entry) => isInProgress(entry, profile.episodesWatched))
 		.slice(0, MAX_IN_PROGRESS_SEEDS);
 	const topRated = watched
 		.filter((entry) => rating(entry) !== undefined)
@@ -156,11 +152,10 @@ export function pickSeeds(
 
 	return [...ordered].slice(0, MAX_SEEDS).map((entry) => {
 		const watching = inProgress.includes(entry);
+		const weight = seedWeight(rating(entry));
 		return {
 			entry,
-			weight: watching
-				? Math.max(IN_PROGRESS_WEIGHT, seedWeight(rating(entry)))
-				: seedWeight(rating(entry)),
+			weight: watching ? Math.max(IN_PROGRESS_WEIGHT, weight) : weight,
 			reason: seedReason(entry, rating(entry), watching),
 		};
 	});
@@ -173,10 +168,8 @@ function tasteSignal(
 	episodesWatched: Readonly<Record<number, number>>
 ): number {
 	if (isDisliked(entry, rating)) return -1;
-	if (rating !== undefined) {
-		if (rating < MIN_FAVORITE_RATING) return 0;
-		return Math.max(0, 1 + (rating - meanRating) / RATING_SPREAD);
-	}
+	if (!isLiked(rating)) return 0;
+	if (rating !== undefined) return 1 + (rating - meanRating) / RATING_SPREAD;
 	const seen =
 		entry.status === 'watched' || isInProgress(entry, episodesWatched);
 	return seen ? 1 : 0;
@@ -192,18 +185,12 @@ function addToGenres(
 	}
 }
 
-/**
- * Derives the user's genre tastes from what they actually saw or rated — the unwatched
- * backlog says nothing. Each rating counts relative to the user's own average, so a 10
- * from a generous rater still stands out. A genre is disliked when most of its signals
- * (abandons, poor ratings) are negative.
- */
+/** Derives favourite and disliked genres from what the user saw or rated, each rating weighed against their own average. */
 export function genreAffinity(
 	entries: WatchlistEntry[],
-	ratingByKey: Record<string, number>,
-	episodesWatched: Readonly<Record<number, number>> = {}
+	profile: TasteProfile
 ): GenreAffinity {
-	const rating = ratingLookup(ratingByKey);
+	const rating = (entry: WatchlistEntry) => ratingOf(profile.ratings, entry);
 	const ratings = entries
 		.map(rating)
 		.filter((value): value is number => value !== undefined);
@@ -219,7 +206,7 @@ export function genreAffinity(
 			entry,
 			rating(entry),
 			meanRating,
-			episodesWatched
+			profile.episodesWatched
 		);
 		if (signal === 0) continue;
 		addToGenres(
@@ -229,24 +216,22 @@ export function genreAffinity(
 		);
 	}
 
+	const outweighs = (
+		totals: Map<number, number>,
+		other: Map<number, number>
+	) =>
+		[...totals.entries()].filter(
+			([genreId, weight]) => weight > (other.get(genreId) ?? 0)
+		);
+
 	const favorites = new Set(
-		[...positive.entries()]
-			.filter(
-				([genreId, weight]) => weight > (negative.get(genreId) ?? 0)
-			)
+		outweighs(positive, negative)
 			.sort((a, b) => b[1] - a[1])
 			.slice(0, FAVORITE_GENRES)
 			.map(([genreId]) => genreId)
 	);
 	const disliked = new Set(
-		[...negative.entries()]
-			.filter(
-				([genreId, weight]) =>
-					!favorites.has(genreId) &&
-					weight / (weight + (positive.get(genreId) ?? 0)) >
-						DISLIKE_RATIO
-			)
-			.map(([genreId]) => genreId)
+		outweighs(negative, positive).map(([genreId]) => genreId)
 	);
 	return { favorites, disliked };
 }
@@ -277,9 +262,7 @@ export function consumedKeys(
 	const keys = new Set<string>();
 	for (const entry of entries) {
 		if (!isConsumed(entry, episodesWatched)) continue;
-		keys.add(
-			getMediaKey({ media_type: entry.media_type, id: entry.media_id })
-		);
+		keys.add(entryKey(entry));
 	}
 	return keys;
 }
@@ -290,11 +273,7 @@ export interface DismissedRecommendation {
 	genre_ids: number[];
 }
 
-/**
- * Folds explicit "not interested" signals into the ranking inputs: dismissed keys join
- * the exclusion set, and a genre joins the disliked set only once the user dismissed it
- * repeatedly — one rejected title says nothing about a whole genre — unless it is a favourite.
- */
+/** Folds "not interested" clicks into the ranking: the title is excluded, and a genre dismissed repeatedly becomes disliked unless it is a favourite. */
 export function applyDismissals(
 	excludedKeys: Set<string>,
 	affinity: GenreAffinity,
@@ -323,16 +302,18 @@ export function applyDismissals(
 /** The watched titles the user liked most recently (added or rated) — each one opens a "Similar to X" row. */
 export function pickSimilarSeeds(
 	entries: WatchlistEntry[],
-	ratingByKey: Record<string, number>,
-	ratedAtByKey: Readonly<Record<string, string>> = {}
+	profile: TasteProfile
 ): WatchlistEntry[] {
-	const rating = ratingLookup(ratingByKey);
-	return mostRecentFirst(entries, ratedAtByKey)
-		.filter((entry) => entry.status === 'watched' && isLiked(rating(entry)))
+	return mostRecentFirst(entries, profile.ratedAt)
+		.filter(
+			(entry) =>
+				entry.status === 'watched' &&
+				isLiked(ratingOf(profile.ratings, entry))
+		)
 		.slice(0, MAX_SIMILAR_SEEDS);
 }
 
-export type PersonRole = 'director' | 'actor';
+type PersonRole = 'director' | 'actor';
 
 export interface FavoritePerson {
 	id: number;
@@ -340,11 +321,7 @@ export interface FavoritePerson {
 	role: PersonRole;
 }
 
-/**
- * Picks the person (director first, then recurring lead actor) most present across
- * the user's top-rated titles — the seed for a "Because you like X" row. The role says
- * which of their credits earned the pick, so the row lists what they directed or played in.
- */
+/** The director or lead actor most present across the user's top-rated titles, with the role that earned the pick — the seed of a "Because you like X" row. */
 export function pickFavoritePerson(
 	creditsBySeed: Array<{
 		directors: Array<{ id: number; name: string }>;
@@ -353,37 +330,37 @@ export function pickFavoritePerson(
 ): FavoritePerson | null {
 	const scores = new Map<
 		number,
-		{ name: string; directing: number; acting: number }
+		{ name: string } & Record<PersonRole, number>
 	>();
 	const bump = (
 		person: { id: number; name: string },
-		role: 'directing' | 'acting',
+		role: PersonRole,
 		amount: number
 	) => {
 		const current = scores.get(person.id) ?? {
 			name: person.name,
-			directing: 0,
-			acting: 0,
+			director: 0,
+			actor: 0,
 		};
 		current[role] += amount;
 		scores.set(person.id, current);
 	};
 
 	for (const credits of creditsBySeed) {
-		for (const director of credits.directors)
-			bump(director, 'directing', 2);
-		for (const actor of credits.cast.slice(0, 5)) bump(actor, 'acting', 1);
+		for (const director of credits.directors) bump(director, 'director', 2);
+		for (const actor of credits.cast.slice(0, 5)) bump(actor, 'actor', 1);
 	}
 
-	let best: (FavoritePerson & { score: number }) | null = null;
-	for (const [id, { name, directing, acting }] of scores) {
-		const score = directing + acting;
-		if (score >= 3 && (!best || score > best.score)) {
-			const role = directing >= acting ? 'director' : 'actor';
-			best = { id, name, role, score };
+	let best: FavoritePerson | null = null;
+	let bestScore = 0;
+	for (const [id, { name, director, actor }] of scores) {
+		const score = director + actor;
+		if (score >= 3 && score > bestScore) {
+			best = { id, name, role: director >= actor ? 'director' : 'actor' };
+			bestScore = score;
 		}
 	}
-	return best ? { id: best.id, name: best.name, role: best.role } : null;
+	return best;
 }
 
 /** Rating threshold above which a title's people count toward the favourite person. */
@@ -394,11 +371,10 @@ export function isPersonSeedRating(rating: number | undefined): boolean {
 /** Watched entries rated high enough for their credits to reveal a favourite director or actor. */
 export function pickPersonSeeds(
 	watched: WatchlistEntry[],
-	ratingByKey: Record<string, number>
+	ratings: Readonly<Record<string, number>>
 ): WatchlistEntry[] {
-	const ratingOf = ratingLookup(ratingByKey);
 	return watched
-		.filter((entry) => isPersonSeedRating(ratingOf(entry)))
+		.filter((entry) => isPersonSeedRating(ratingOf(ratings, entry)))
 		.slice(0, MAX_PERSON_SEEDS);
 }
 
@@ -440,19 +416,13 @@ function applyGenreCap(
 			continue;
 		}
 		picked.push(item);
-		for (const genreId of genres) {
-			genreCounts.set(genreId, (genreCounts.get(genreId) ?? 0) + 1);
-		}
+		addToGenres(genreCounts, genres, 1);
 	}
 
 	return [...picked, ...skipped].slice(0, RESULT_SIZE);
 }
 
-/**
- * Ranks TMDB candidates across all seeds: weighted seed frequency with positional
- * decay, favourite-genre bonus, disliked-genre penalty, library exclusion, the
- * TMDB score as tie-break, and a per-genre cap so one genre can't fill the row.
- */
+/** Ranks TMDB candidates across seeds by weighted frequency and genre affinity, credits each to its strongest seed, and caps any single genre. */
 export function rankRecommendations(
 	seedCandidates: SeedCandidates[],
 	excludedKeys: Set<string>,
@@ -473,14 +443,12 @@ export function rankRecommendations(
 			if (excludedKeys.has(key)) return;
 			const amount = weight * Math.max(0.2, 1 - index * RANK_DECAY);
 			const previous = scored.get(key);
-			const keepsSource =
-				!because ||
-				(previous?.source !== undefined &&
-					previous.source.amount >= amount);
+			const best = previous?.source;
+			const takesSource = because && (!best || amount > best.amount);
 			scored.set(key, {
 				item: previous?.item ?? item,
 				score: (previous?.score ?? 0) + amount,
-				source: keepsSource ? previous?.source : { amount, because },
+				source: takesSource ? { amount, because } : best,
 			});
 		});
 	}
@@ -507,25 +475,16 @@ export function rankRecommendations(
 	);
 }
 
-/**
- * The single title to suggest this week: best-ranked by the same scoring as the dashboard,
- * never one already in the user's list, dismissed, or suggested before.
- */
+/** The single title to suggest this week, ranked like the dashboard, never one in the user's list, dismissed or suggested before. */
 export function pickSuggestion(
 	entries: WatchlistEntry[],
-	ratingByKey: Record<string, number>,
+	profile: TasteProfile,
 	dismissals: DismissedRecommendation[],
 	seedCandidates: SeedCandidates[],
-	alreadySuggested: Set<string>,
-	episodesWatched: Readonly<Record<number, number>> = {}
+	alreadySuggested: Set<string>
 ): MediaItem | null {
-	const excluded = new Set([
-		...alreadySuggested,
-		...entries.map((entry) =>
-			getMediaKey({ media_type: entry.media_type, id: entry.media_id })
-		),
-	]);
-	const affinity = genreAffinity(entries, ratingByKey, episodesWatched);
+	const excluded = new Set([...alreadySuggested, ...entries.map(entryKey)]);
+	const affinity = genreAffinity(entries, profile);
 	applyDismissals(excluded, affinity, dismissals);
 	return rankRecommendations(seedCandidates, excluded, affinity)[0] ?? null;
 }

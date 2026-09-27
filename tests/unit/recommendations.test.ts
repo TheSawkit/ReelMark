@@ -8,6 +8,7 @@ import {
 	isPersonSeedRating,
 	pickSuggestion,
 	pickSimilarSeeds,
+	type TasteProfile,
 } from '@/lib/recommendations';
 import type { MediaItem, WatchlistEntry, WatchStatus } from '@/types/tmdb';
 
@@ -47,6 +48,10 @@ function item(id: number, overrides: Partial<MediaItem> = {}): MediaItem {
 	};
 }
 
+function taste(overrides: Partial<TasteProfile> = {}): TasteProfile {
+	return { ratings: {}, ratedAt: {}, episodesWatched: {}, ...overrides };
+}
+
 const noAffinity = {
 	favorites: new Set<number>(),
 	disliked: new Set<number>(),
@@ -59,7 +64,10 @@ describe('pickSeeds', () => {
 			entry({ media_id: 2 }),
 			entry({ media_id: 3 }),
 		];
-		const seeds = pickSeeds(entries, { 'movie-2': 9, 'movie-3': 7 });
+		const seeds = pickSeeds(
+			entries,
+			taste({ ratings: { 'movie-2': 9, 'movie-3': 7 } })
+		);
 
 		expect(seeds.map((s) => s.entry.media_id)).toEqual([2, 3, 1]);
 		expect(seeds[0].weight).toBeGreaterThan(seeds[1].weight);
@@ -67,14 +75,17 @@ describe('pickSeeds', () => {
 	});
 
 	it('treats an unrated watched title as liked', () => {
-		const seeds = pickSeeds([entry({ media_id: 1 })], {});
+		const seeds = pickSeeds([entry({ media_id: 1 })], taste());
 
 		expect(seeds).toHaveLength(1);
 		expect(seeds[0].weight).toBeGreaterThan(1);
 	});
 
 	it('still seeds a 2-star title (4/10) but with reduced weight', () => {
-		const seeds = pickSeeds([entry({ media_id: 1 })], { 'movie-1': 4 });
+		const seeds = pickSeeds(
+			[entry({ media_id: 1 })],
+			taste({ ratings: { 'movie-1': 4 } })
+		);
 
 		expect(seeds).toHaveLength(1);
 		expect(seeds[0].weight).toBeLessThan(1);
@@ -86,7 +97,7 @@ describe('pickSeeds', () => {
 			entry({ media_id: 2 }),
 			entry({ media_id: 3 }),
 		];
-		const seeds = pickSeeds(entries, { 'movie-3': 3 });
+		const seeds = pickSeeds(entries, taste({ ratings: { 'movie-3': 3 } }));
 
 		expect(seeds.map((s) => s.entry.media_id)).toEqual([2]);
 	});
@@ -98,7 +109,7 @@ describe('pickSeeds', () => {
 			),
 			...Array.from({ length: 4 }, (_, i) => entry({ media_id: i + 10 })),
 		];
-		const seeds = pickSeeds(entries, {});
+		const seeds = pickSeeds(entries, taste());
 
 		expect(seeds).toHaveLength(6);
 		expect(seeds.slice(0, 4).every((s) => s.entry.media_id >= 10)).toBe(
@@ -119,7 +130,7 @@ describe('pickSeeds', () => {
 			...favourites.map((f) => [`movie-${f.media_id}`, 10]),
 		]);
 
-		const seeds = pickSeeds([...favourites, recent], ratings);
+		const seeds = pickSeeds([...favourites, recent], taste({ ratings }));
 		expect(seeds.map((s) => s.entry.media_id)).toContain(100);
 		expect(seeds).toHaveLength(6);
 	});
@@ -144,9 +155,7 @@ describe('pickSeeds', () => {
 
 		const seeds = pickSeeds(
 			[...favourites, ...newlyAdded, rewatched],
-			ratings,
-			{},
-			{ 'movie-7': '2026-09-20T00:00:00Z' }
+			taste({ ratings, ratedAt: { 'movie-7': '2026-09-20T00:00:00Z' } })
 		);
 		expect(seeds.map((s) => s.entry.media_id)).toContain(7);
 	});
@@ -162,7 +171,10 @@ describe('pickSeeds', () => {
 			total_episodes: 20,
 		});
 
-		const seeds = pickSeeds([...done, binge], {}, { 77: 5 });
+		const seeds = pickSeeds(
+			[...done, binge],
+			taste({ episodesWatched: { 77: 5 } })
+		);
 		expect(seeds[0].entry.media_id).toBe(77);
 		expect(seeds[0].weight).toBeGreaterThan(seeds[1].weight);
 	});
@@ -181,8 +193,7 @@ describe('pickSeeds reasons', () => {
 				entry({ media_id: 2, media_type: 'tv' }),
 				entry({ media_id: 3, media_type: 'tv', status: 'to_watch' }),
 			],
-			{},
-			{ 1: 2 }
+			taste({ episodesWatched: { 1: 2 } })
 		);
 
 		expect(seeds.map((s) => [s.entry.media_id, s.reason])).toEqual([
@@ -202,7 +213,10 @@ describe('genreAffinity', () => {
 			entry({ media_id: 4, genre_ids: [10749] }),
 		];
 
-		const { favorites } = genreAffinity(entries, { 'movie-4': 5 });
+		const { favorites } = genreAffinity(
+			entries,
+			taste({ ratings: { 'movie-4': 5 } })
+		);
 		expect(favorites.has(18)).toBe(true);
 		expect(favorites.has(80)).toBe(true);
 		expect(favorites.has(10749)).toBe(false);
@@ -215,7 +229,10 @@ describe('genreAffinity', () => {
 			entry({ media_id: 2, genre_ids: [10770] }),
 		];
 
-		const { disliked } = genreAffinity(entries, { 'movie-2': 2 });
+		const { disliked } = genreAffinity(
+			entries,
+			taste({ ratings: { 'movie-2': 2 } })
+		);
 		expect(disliked.has(27)).toBe(true);
 		expect(disliked.has(10770)).toBe(true);
 	});
@@ -227,7 +244,7 @@ describe('genreAffinity', () => {
 			entry({ media_id: 3, status: 'abandoned', genre_ids: [18, 27] }),
 		];
 
-		const { disliked } = genreAffinity(entries, {});
+		const { disliked } = genreAffinity(entries, taste());
 		expect(disliked.has(18)).toBe(false);
 		expect(disliked.has(27)).toBe(true);
 	});
@@ -243,7 +260,10 @@ describe('genreAffinity', () => {
 			loved.map((l) => [`movie-${l.media_id}`, 10])
 		);
 
-		const { favorites } = genreAffinity([...loved, ...backlog], ratings);
+		const { favorites } = genreAffinity(
+			[...loved, ...backlog],
+			taste({ ratings })
+		);
 		expect(favorites.has(878)).toBe(true);
 		expect(favorites.has(18)).toBe(false);
 	});
@@ -257,7 +277,7 @@ describe('genreAffinity', () => {
 			entry({ media_id: 7, status: 'to_watch', genre_ids: [27] }),
 		];
 
-		const { disliked } = genreAffinity(entries, {});
+		const { disliked } = genreAffinity(entries, taste());
 		expect(disliked.has(27)).toBe(true);
 	});
 
@@ -279,7 +299,7 @@ describe('genreAffinity', () => {
 			'movie-8': 10,
 		};
 
-		const { favorites } = genreAffinity(entries, ratings);
+		const { favorites } = genreAffinity(entries, taste({ ratings }));
 		expect(favorites.has(878)).toBe(true);
 	});
 
@@ -294,9 +314,12 @@ describe('genreAffinity', () => {
 			}),
 		];
 
-		expect(genreAffinity(entries, {}, { 1: 3 }).favorites.has(10765)).toBe(
-			true
-		);
+		expect(
+			genreAffinity(
+				entries,
+				taste({ episodesWatched: { 1: 3 } })
+			).favorites.has(10765)
+		).toBe(true);
 	});
 });
 
@@ -459,7 +482,10 @@ describe('pickSimilarSeeds', () => {
 			entry({ media_id: 6, status: 'to_watch' }),
 		];
 
-		const seeds = pickSimilarSeeds(entries, { 'movie-1': 1, 'movie-3': 5 });
+		const seeds = pickSimilarSeeds(
+			entries,
+			taste({ ratings: { 'movie-1': 1, 'movie-3': 5 } })
+		);
 		expect(seeds.map((s) => s.media_id)).toEqual([2, 4, 5]);
 	});
 
@@ -471,8 +497,10 @@ describe('pickSimilarSeeds', () => {
 
 		const seeds = pickSimilarSeeds(
 			entries,
-			{ 'movie-2': 9 },
-			{ 'movie-2': '2026-09-20T00:00:00Z' }
+			taste({
+				ratings: { 'movie-2': 9 },
+				ratedAt: { 'movie-2': '2026-09-20T00:00:00Z' },
+			})
 		);
 		expect(seeds.map((s) => s.media_id)).toEqual([2, 1]);
 	});
@@ -546,7 +574,9 @@ describe('pickSuggestion', () => {
 
 	it('returns the best-ranked title the user does not have yet', () => {
 		const entries = [entry({ media_id: 101, status: 'to_watch' })];
-		expect(pickSuggestion(entries, {}, [], seeds, new Set())?.id).toBe(102);
+		expect(pickSuggestion(entries, taste(), [], seeds, new Set())?.id).toBe(
+			102
+		);
 	});
 
 	it('never repeats a past suggestion nor a dismissed title', () => {
@@ -554,7 +584,13 @@ describe('pickSuggestion', () => {
 			{ media_id: 102, media_type: 'movie' as const, genre_ids: [] },
 		];
 		expect(
-			pickSuggestion([], {}, dismissed, seeds, new Set(['movie-101']))?.id
+			pickSuggestion(
+				[],
+				taste(),
+				dismissed,
+				seeds,
+				new Set(['movie-101'])
+			)?.id
 		).toBe(103);
 	});
 
@@ -576,9 +612,13 @@ describe('pickSuggestion', () => {
 			},
 		];
 
-		const pick = pickSuggestion([binge], {}, [], candidates, new Set(), {
-			7: 4,
-		});
+		const pick = pickSuggestion(
+			[binge],
+			taste({ episodesWatched: { 7: 4 } }),
+			[],
+			candidates,
+			new Set()
+		);
 		expect(pick?.id).toBe(202);
 	});
 
@@ -586,6 +626,8 @@ describe('pickSuggestion', () => {
 		const entries = [101, 102, 103, 104].map((id) =>
 			entry({ media_id: id })
 		);
-		expect(pickSuggestion(entries, {}, [], seeds, new Set())).toBeNull();
+		expect(
+			pickSuggestion(entries, taste(), [], seeds, new Set())
+		).toBeNull();
 	});
 });

@@ -6,12 +6,11 @@ import { mapLimit } from '@/lib/data-transfer/resolve';
 import { getUserReviewSignals } from '@/lib/data/reviews';
 import { getUserTvWatchCounts } from '@/lib/data/episodes';
 import {
-	getMovieRecommendations,
-	getTvShowRecommendations,
-	movieToMediaItem,
-	tvShowToMediaItem,
-} from '@/lib/tmdb';
-import { pickSeeds, pickSuggestion } from '@/lib/recommendations';
+	pickSeeds,
+	pickSuggestion,
+	type TasteProfile,
+} from '@/lib/recommendations';
+import { fetchSeedCandidates } from '@/lib/recommendations/candidates';
 import { translations, type Language } from '@/lib/i18n/translations';
 import { localizedHref } from '@/lib/i18n/utils';
 import { reportSwallowed } from '@/lib/report';
@@ -27,34 +26,8 @@ export interface SuggestionResult {
 	suggested: number;
 }
 
-async function candidatesFor(
-	type: MediaType,
-	entries: WatchlistEntry[],
-	ratingByKey: Record<string, number>,
-	episodesWatched: Record<number, number>,
-	ratedAtByKey: Record<string, string>,
-	lang: Language
-) {
-	const seeds = pickSeeds(
-		entries,
-		ratingByKey,
-		episodesWatched,
-		ratedAtByKey
-	);
-	return Promise.all(
-		seeds.map(async ({ entry, weight }) => ({
-			weight,
-			items:
-				type === 'movie'
-					? (await getMovieRecommendations(entry.media_id, lang)).map(
-							movieToMediaItem
-						)
-					: (
-							await getTvShowRecommendations(entry.media_id, lang)
-						).map(tvShowToMediaItem),
-		}))
-	);
-}
+const isShowToWatch = (entry: WatchlistEntry) =>
+	entry.media_type === 'tv' && entry.status === 'to_watch';
 
 async function suggestionFor(
 	userId: string,
@@ -62,42 +35,37 @@ async function suggestionFor(
 ): Promise<MediaItem | null> {
 	const admin = createAdminClient();
 
-	const [
-		rows,
-		{ ratings: ratingByKey, ratedAt: ratedAtByKey },
-		dismissals,
-		past,
-	] = await Promise.all([
-		fetchAllRows((from, to) =>
-			admin
-				.from('watchlist')
-				.select(WATCHLIST_COLUMNS)
-				.eq('user_id', userId)
-				.order('id')
-				.range(from, to)
-		),
-		getUserReviewSignals(userId, admin),
+	const entriesRead = fetchAllRows((from, to) =>
 		admin
-			.from('recommendation_dismissals')
-			.select('media_id, media_type, genre_ids')
-			.eq('user_id', userId),
-		admin
-			.from('notifications')
-			.select('media_id, media_type')
+			.from('watchlist')
+			.select(WATCHLIST_COLUMNS)
 			.eq('user_id', userId)
-			.eq('type', 'suggestion'),
-	]);
-	const entries = rows as WatchlistEntry[];
-	const episodesWatched = await getUserTvWatchCounts(
-		admin,
-		userId,
-		entries
-			.filter(
-				(entry) =>
-					entry.media_type === 'tv' && entry.status === 'to_watch'
-			)
-			.map((entry) => entry.media_id)
-	);
+			.order('id')
+			.range(from, to)
+	).then((rows) => rows as WatchlistEntry[]);
+
+	const [entries, reviewSignals, episodesWatched, dismissals, past] =
+		await Promise.all([
+			entriesRead,
+			getUserReviewSignals(userId, admin),
+			entriesRead.then((rows) =>
+				getUserTvWatchCounts(
+					admin,
+					userId,
+					rows.filter(isShowToWatch).map((entry) => entry.media_id)
+				)
+			),
+			admin
+				.from('recommendation_dismissals')
+				.select('media_id, media_type, genre_ids')
+				.eq('user_id', userId),
+			admin
+				.from('notifications')
+				.select('media_id, media_type')
+				.eq('user_id', userId)
+				.eq('type', 'suggestion'),
+		]);
+	const profile: TasteProfile = { ...reviewSignals, episodesWatched };
 	const alreadySuggested = new Set(
 		(past.data ?? []).map((row) => `${row.media_type}-${row.media_id}`)
 	);
@@ -110,20 +78,16 @@ async function suggestionFor(
 
 		const pick = pickSuggestion(
 			typeEntries,
-			ratingByKey,
+			profile,
 			(dismissals.data ?? [])
 				.filter((row) => row.media_type === type)
 				.map((row) => ({ ...row, media_type: type })),
-			await candidatesFor(
+			await fetchSeedCandidates(
 				type,
-				typeEntries,
-				ratingByKey,
-				episodesWatched,
-				ratedAtByKey,
+				pickSeeds(typeEntries, profile),
 				lang
 			),
-			alreadySuggested,
-			episodesWatched
+			alreadySuggested
 		);
 		if (pick) return pick;
 	}
