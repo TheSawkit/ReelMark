@@ -765,6 +765,12 @@ a {
 
 /* Défilement horizontal sans barre visible (rangées, méta des héros) — la classe était déjà
    posée sur les rangées sans être définie. */
+/* Room for a two-line line of text, so text picked after hydration (the local-time dashboard
+   greeting) never pushes the content around when it wraps. */
+@utility min-h-two-lines {
+	min-height: 2lh;
+}
+
 @utility scrollbar-hide {
 	scrollbar-width: none;
 

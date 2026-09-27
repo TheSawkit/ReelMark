@@ -17,6 +17,7 @@ import { ProgressBar } from '@/components/shared/ProgressBar';
 import { PageHeader } from '@/components/layout/PageLayout';
 import { CinematicBackdrop } from '@/components/media/detail/CinematicBackdrop';
 import { HeroSlideshow } from '@/components/shared/HeroSlideshow';
+import { useGreeting } from '@/hooks/useGreeting';
 
 export interface FeaturedHero {
 	id: number;
@@ -32,7 +33,7 @@ export interface FeaturedHero {
 
 interface DashboardHeroProps {
 	items: FeaturedHero[];
-	greeting: string;
+	name: string;
 	resumeLabel: string;
 	discoverLabel: string;
 }
@@ -64,7 +65,7 @@ function HeroSlide({ item, isFirst, greeting, cta, href }: HeroSlideProps) {
 
 			<div className="hero-scroll-fade relative z-10 container mx-auto flex flex-col items-center gap-3 px-6 text-center md:items-start md:text-left lg:px-12">
 				<Greeting
-					className="hero-rise text-sm font-semibold text-muted"
+					className="hero-rise flex min-h-two-lines items-end justify-center text-sm font-semibold text-muted md:justify-start"
 					style={riseStyle(0)}
 				>
 					{greeting}
@@ -121,11 +122,12 @@ function HeroSlide({ item, isFirst, greeting, cta, href }: HeroSlideProps) {
  */
 export function DashboardHero({
 	items,
-	greeting,
+	name,
 	resumeLabel,
 	discoverLabel,
 }: DashboardHeroProps) {
 	const { lang } = useTranslation();
+	const greeting = useGreeting(name);
 	useEpisodeWatchVersion();
 
 	const slides = resumableSlides(

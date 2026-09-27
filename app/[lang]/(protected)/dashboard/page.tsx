@@ -17,6 +17,7 @@ import {
 } from '@/components/media/card/MediaSection';
 import { MediaTypeSwitcherSkeleton } from '@/components/media/card/MediaTypeSwitcherSkeleton';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { getUserContext } from '@/lib/supabase/auth-helpers';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
 import { localizedHref } from '@/lib/i18n/utils';
@@ -120,9 +121,10 @@ async function buildHero(
 }
 
 async function HeroSection({ t, lang }: { t: Translations; lang: Language }) {
-	const [{ watchlist, tvProgress }, resumable] = await Promise.all([
+	const [{ watchlist, tvProgress }, resumable, { user }] = await Promise.all([
 		getWatchlistWithProgress(),
 		getContinueWatching(),
+		getUserContext(),
 	]);
 
 	const upNext = resumable.slice(0, HERO_CANDIDATES);
@@ -137,7 +139,11 @@ async function HeroSection({ t, lang }: { t: Translations; lang: Language }) {
 	return (
 		<DashboardHero
 			items={heroes}
-			greeting={t.pages.dashboard.welcome}
+			name={
+				user?.user_metadata.username ||
+				user?.user_metadata.full_name ||
+				t.pages.dashboard.greetings.fallbackName
+			}
 			resumeLabel={t.pages.dashboard.resume}
 			discoverLabel={t.pages.dashboard.discover}
 		/>
