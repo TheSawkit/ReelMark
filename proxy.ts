@@ -1,7 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { handleSearchRateLimit } from '@/lib/proxy/search-rate-limit';
-import { handleLocaleRedirect, buildRequestHeaders } from '@/lib/proxy/locale';
-import { getRouteAccess, handleAuthRouting } from '@/lib/proxy/auth-routing';
+import {
+	handleLocaleRedirect,
+	buildRequestHeaders,
+	hasSessionCookie,
+} from '@/lib/proxy/locale';
+import {
+	getRouteAccess,
+	handleAuthRouting,
+	refreshSession,
+} from '@/lib/proxy/auth-routing';
 import type { Language } from '@/lib/i18n/translations';
 
 function isBypassedPath(pathname: string): boolean {
@@ -36,7 +44,9 @@ export async function proxy(request: NextRequest) {
 		!access.isRecovery &&
 		!access.isLanding
 	) {
-		return NextResponse.next({ request: { headers: requestHeaders } });
+		return hasSessionCookie(request)
+			? refreshSession(request, requestHeaders)
+			: NextResponse.next({ request: { headers: requestHeaders } });
 	}
 
 	return handleAuthRouting(request, locale, requestHeaders, access);

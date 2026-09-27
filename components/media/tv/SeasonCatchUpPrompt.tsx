@@ -21,6 +21,7 @@ import { dismissCatchUp } from '@/lib/season-catch-up';
 import { useTranslation } from '@/lib/i18n/context';
 import { useSeasonUndoToast } from '@/hooks/useSeasonUndoToast';
 import type { SeasonWatchResult } from '@/app/actions/episodes';
+import { isRedirectSignal } from '@/lib/action-errors';
 
 type CatchUpAction = 'upTo' | 'season';
 
@@ -84,9 +85,9 @@ export function SeasonCatchUpPrompt({
 			mediaWatchStore.set('tv', tvId, result.tvStatus);
 			undoToast(t.movie.catchUpDone, result.previousEpisodes);
 			onClose();
-		} catch {
+		} catch (err) {
 			episodeWatchStore.restore(tvId, seasonNumber, previous);
-			toast.error(t.common.actionError);
+			if (!isRedirectSignal(err)) toast.error(t.common.actionError);
 		} finally {
 			setPending(null);
 		}

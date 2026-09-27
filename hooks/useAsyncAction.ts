@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useAutoResetError } from '@/hooks/useAutoResetError';
+import { isRedirectSignal } from '@/lib/action-errors';
 
 interface UseAsyncActionResult {
 	loading: boolean;
@@ -24,8 +25,8 @@ export function useAsyncAction(): UseAsyncActionResult {
 		setError(false);
 		try {
 			return await action();
-		} catch {
-			setError(true);
+		} catch (err) {
+			if (!isRedirectSignal(err)) setError(true);
 			return undefined;
 		} finally {
 			inFlightRef.current = false;
