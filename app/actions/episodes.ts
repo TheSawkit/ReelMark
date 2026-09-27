@@ -5,7 +5,7 @@ import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 import {
 	SHARED_REVALIDATE_PATHS,
 	revalidateLocalizedAfterResponse,
-} from '@/app/actions/_helpers';
+} from '@/lib/revalidate';
 import { getTvShowDetails } from '@/lib/tmdb/tv';
 import { reportCritical, reportSwallowed } from '@/lib/report';
 import type { SupabaseServerClient } from '@/lib/supabase/server';

@@ -6,7 +6,7 @@ import { getTranslations } from '@/lib/i18n/server';
 import {
 	revalidateProfileAfterResponse,
 	revalidateLocalizedAfterResponse,
-} from '@/app/actions/_helpers';
+} from '@/lib/revalidate';
 import { parseVisibility } from '@/lib/privacy';
 
 export async function updateSocialLinks(

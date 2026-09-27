@@ -47,7 +47,7 @@ Route Handlers (app/api/*)
 Chaque utilisateur peut générer, dans Réglages → Données, un lien secret à coller dans Claude, ChatGPT, Perplexity ou Gemini. Ce lien est un serveur [MCP](https://modelcontextprotocol.io) sans état.
 
 - **Endpoint** : `app/api/mcp/[key]/route.ts`, `POST` uniquement, via `createMcpHandler` de `@modelcontextprotocol/server`. Le segment `[key]` est le secret : 256 bits aléatoires, dont seul le SHA-256 est stocké (`mcp_keys`). Un lien inconnu répond `404` sans corps.
-- **Outils** (`lib/mcp/server.ts`) : `get_taste_profile`, `get_recommendations`, `search_titles`, `get_title`, `get_watchlist` en lecture ; `update_library` en écriture (marquer vu, à voir, abandonné, ou retirer), limité à la bibliothèque du propriétaire du lien et annoncé comme destructif pour que le client demande confirmation.
+- **Outils** (`lib/mcp/tools/`, assemblés par `lib/mcp/server.ts`) : `get_taste_profile`, `get_recommendations`, `search_titles`, `get_title`, `get_watchlist` en lecture ; `update_library` en écriture (marquer vu, à voir, abandonné, ou retirer), limité à la bibliothèque du propriétaire du lien et annoncé comme destructif pour que le client demande confirmation.
 - **Budget** (`lib/mcp/budget.ts`) : seuls les `tools/call` comptent (30/min, 100/jour par utilisateur) ; le reste du protocole (handshake, `tools/list`, notifications) ne passe que par un garde-fou de 120 requêtes/min.
 - **Cache** (`lib/mcp/user-cache.ts`) : goûts de l'utilisateur 2 min (une grosse bibliothèque pèse ~750 Ko d'egress Supabase), langue et région 10 min. Une écriture vide le cache des goûts.
 - Les écritures passent par `lib/data/watchlist-writes.ts`, comme les Server Actions : mêmes métadonnées TMDB, même revalidation des pages.

@@ -1,5 +1,5 @@
 import type { UserTaste } from '@/lib/data/taste';
-import type { McpUserContext } from '@/lib/data/mcp';
+import type { McpUserContext } from '@/types/mcp';
 
 interface UserCache<T> {
 	(userId: string, load: () => Promise<T>): Promise<T>;

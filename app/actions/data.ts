@@ -5,7 +5,7 @@ import { fetchAllRows } from '@/lib/supabase/pagination';
 import { parseVisibility } from '@/lib/privacy';
 import { reportCritical } from '@/lib/report';
 import { enforceUserRateLimit } from '@/lib/rate-limiter';
-import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
+import { revalidateProfileAfterResponse } from '@/lib/revalidate';
 import { VALID_STATUSES, validateRating } from '@/lib/validators';
 import {
 	RESOLVE_CONCURRENCY,
