@@ -2,7 +2,7 @@ import type {
 	MediaItem,
 	RecommendationReason,
 	RecommendationSource,
-	WatchlistEntry,
+	TasteEntry,
 	WatchStatus,
 } from '@/types/tmdb';
 import { getMediaKey } from '@/lib/media';
@@ -28,7 +28,7 @@ const SUMMARY_LIST_SIZE = 10;
 const SUMMARY_LOW_RATED_SIZE = 5;
 
 export interface RecommendationSeed {
-	entry: WatchlistEntry;
+	entry: TasteEntry;
 	weight: number;
 	reason: RecommendationReason;
 }
@@ -51,13 +51,13 @@ export interface TasteProfile {
 	episodesWatched: Readonly<Record<number, number>>;
 }
 
-function entryKey(entry: WatchlistEntry): string {
+function entryKey(entry: TasteEntry): string {
 	return getMediaKey({ media_type: entry.media_type, id: entry.media_id });
 }
 
 function ratingOf(
 	ratings: Readonly<Record<string, number>>,
-	entry: WatchlistEntry
+	entry: TasteEntry
 ): number | undefined {
 	return ratings[entryKey(entry)];
 }
@@ -71,10 +71,7 @@ function seedWeight(rating: number | undefined): number {
 	return 0.9;
 }
 
-function isDisliked(
-	entry: WatchlistEntry,
-	rating: number | undefined
-): boolean {
+function isDisliked(entry: TasteEntry, rating: number | undefined): boolean {
 	if (entry.status === 'abandoned') return true;
 	return rating !== undefined && rating < MIN_LIKED_RATING;
 }
@@ -84,7 +81,7 @@ function isLiked(rating: number | undefined): boolean {
 }
 
 function latestActivity(
-	entry: WatchlistEntry,
+	entry: TasteEntry,
 	ratedAt: Readonly<Record<string, string>>
 ): string {
 	const rated = ratedAt[entryKey(entry)] ?? '';
@@ -92,10 +89,10 @@ function latestActivity(
 	return rated > added ? rated : added;
 }
 
-function mostRecentFirst(
-	entries: readonly WatchlistEntry[],
+function mostRecentFirst<E extends TasteEntry>(
+	entries: readonly E[],
 	ratedAt: Readonly<Record<string, string>>
-): WatchlistEntry[] {
+): E[] {
 	return entries
 		.map((entry) => ({ entry, activity: latestActivity(entry, ratedAt) }))
 		.sort((a, b) => b.activity.localeCompare(a.activity))
@@ -103,7 +100,7 @@ function mostRecentFirst(
 }
 
 function isInProgress(
-	entry: WatchlistEntry,
+	entry: TasteEntry,
 	episodesWatched: Readonly<Record<number, number>>
 ): boolean {
 	return (
@@ -115,7 +112,7 @@ function isInProgress(
 }
 
 function seedReason(
-	entry: WatchlistEntry,
+	entry: TasteEntry,
 	rating: number | undefined,
 	watching: boolean
 ): RecommendationReason {
@@ -126,10 +123,10 @@ function seedReason(
 
 /** Seeds the "For you" row from what the user watches now and loves most, so it follows current tastes rather than all-time favourites. */
 export function pickSeeds(
-	entries: WatchlistEntry[],
+	entries: TasteEntry[],
 	profile: TasteProfile
 ): RecommendationSeed[] {
-	const rating = (entry: WatchlistEntry) => ratingOf(profile.ratings, entry);
+	const rating = (entry: TasteEntry) => ratingOf(profile.ratings, entry);
 	const usable = mostRecentFirst(entries, profile.ratedAt).filter(
 		(entry) => !isDisliked(entry, rating(entry))
 	);
@@ -165,7 +162,7 @@ export function pickSeeds(
 }
 
 function tasteSignal(
-	entry: WatchlistEntry,
+	entry: TasteEntry,
 	rating: number | undefined,
 	meanRating: number,
 	episodesWatched: Readonly<Record<number, number>>
@@ -190,10 +187,10 @@ function addToGenres(
 
 /** Derives favourite and disliked genres from what the user saw or rated, each rating weighed against their own average. */
 export function genreAffinity(
-	entries: WatchlistEntry[],
+	entries: TasteEntry[],
 	profile: TasteProfile
 ): GenreAffinity {
-	const rating = (entry: WatchlistEntry) => ratingOf(profile.ratings, entry);
+	const rating = (entry: TasteEntry) => ratingOf(profile.ratings, entry);
 	const ratings = entries
 		.map(rating)
 		.filter((value): value is number => value !== undefined);
@@ -248,7 +245,7 @@ export function genreAffinity(
  * @param episodesWatched - Watched episode count per show id.
  */
 export function isConsumed(
-	entry: WatchlistEntry,
+	entry: TasteEntry,
 	episodesWatched: Readonly<Record<number, number>>
 ): boolean {
 	if (entry.media_type === 'movie') return entry.status === 'watched';
@@ -259,7 +256,7 @@ export function isConsumed(
 
 /** Keys of every title the user is done with — what suggestions must never surface again. */
 export function consumedKeys(
-	entries: readonly WatchlistEntry[],
+	entries: readonly TasteEntry[],
 	episodesWatched: Readonly<Record<number, number>>
 ): Set<string> {
 	const keys = new Set<string>();
@@ -272,7 +269,7 @@ export function consumedKeys(
 
 export interface DismissedRecommendation {
 	media_id: number;
-	media_type: WatchlistEntry['media_type'];
+	media_type: TasteEntry['media_type'];
 	genre_ids: number[];
 }
 
@@ -303,10 +300,10 @@ export function applyDismissals(
 }
 
 /** The watched titles the user liked most recently (added or rated) — each one opens a "Similar to X" row. */
-export function pickSimilarSeeds(
-	entries: WatchlistEntry[],
+export function pickSimilarSeeds<E extends TasteEntry>(
+	entries: E[],
 	profile: TasteProfile
-): WatchlistEntry[] {
+): E[] {
 	return mostRecentFirst(entries, profile.ratedAt)
 		.filter(
 			(entry) =>
@@ -372,10 +369,10 @@ export function isPersonSeedRating(rating: number | undefined): boolean {
 }
 
 /** Watched entries rated high enough for their credits to reveal a favourite director or actor. */
-export function pickPersonSeeds(
-	watched: WatchlistEntry[],
+export function pickPersonSeeds<E extends TasteEntry>(
+	watched: E[],
 	ratings: Readonly<Record<string, number>>
-): WatchlistEntry[] {
+): E[] {
 	return watched
 		.filter((entry) => isPersonSeedRating(ratingOf(ratings, entry)))
 		.slice(0, MAX_PERSON_SEEDS);
@@ -480,7 +477,7 @@ export function rankRecommendations(
 
 /** Titles to suggest, ranked like the dashboard, never one in the user's list, dismissed or suggested before. */
 export function rankSuggestions(
-	entries: WatchlistEntry[],
+	entries: TasteEntry[],
 	profile: TasteProfile,
 	dismissals: DismissedRecommendation[],
 	seedCandidates: SeedCandidates[],
@@ -494,7 +491,7 @@ export function rankSuggestions(
 
 /** The single title to suggest this week — the head of {@link rankSuggestions}. */
 export function pickSuggestion(
-	entries: WatchlistEntry[],
+	entries: TasteEntry[],
 	profile: TasteProfile,
 	dismissals: DismissedRecommendation[],
 	seedCandidates: SeedCandidates[],
@@ -512,7 +509,7 @@ export function pickSuggestion(
 }
 
 export interface RatedEntry {
-	entry: WatchlistEntry;
+	entry: TasteEntry;
 	rating: number;
 }
 
@@ -522,14 +519,14 @@ export interface TasteSummary {
 	meanRating: number | null;
 	topRated: RatedEntry[];
 	lowRated: RatedEntry[];
-	watching: WatchlistEntry[];
-	abandoned: WatchlistEntry[];
+	watching: TasteEntry[];
+	abandoned: TasteEntry[];
 	counts: Record<WatchStatus, number>;
 }
 
 /** Condenses one media type's history into what an assistant needs to grasp the user's tastes, from the same signals the engine ranks with. */
 export function summarizeTaste(
-	entries: WatchlistEntry[],
+	entries: TasteEntry[],
 	profile: TasteProfile
 ): TasteSummary {
 	const affinity = genreAffinity(entries, profile);

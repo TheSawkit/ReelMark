@@ -14,6 +14,9 @@ export interface WatchlistEntry {
 	genre_ids: number[] | null;
 }
 
+/** A library entry as the taste engine reads it — without the row id and poster, which it never uses and which weigh ~30 % of a library download. */
+export type TasteEntry = Omit<WatchlistEntry, 'id' | 'poster_path'>;
+
 export interface Movie {
 	id: number;
 	title: string;

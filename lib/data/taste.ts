@@ -2,7 +2,7 @@ import 'server-only';
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { fetchAllRows } from '@/lib/supabase/pagination';
-import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
+import { TASTE_COLUMNS } from '@/lib/supabase/columns';
 import { getUserReviewSignals } from '@/lib/data/reviews';
 import { getUserTvWatchCounts } from '@/lib/data/episodes';
 import type {
@@ -11,15 +11,15 @@ import type {
 } from '@/lib/recommendations';
 import type { Database } from '@/types/database';
 import { getMediaKey } from '@/lib/media';
-import type { MediaType, WatchStatus, WatchlistEntry } from '@/types/tmdb';
+import type { MediaType, TasteEntry, WatchStatus } from '@/types/tmdb';
 
 export interface UserTaste {
-	entries: WatchlistEntry[];
+	entries: TasteEntry[];
 	profile: TasteProfile;
 	dismissals: DismissedRecommendation[];
 }
 
-const isShowToWatch = (entry: WatchlistEntry) =>
+const isShowToWatch = (entry: TasteEntry) =>
 	entry.media_type === 'tv' && entry.status === 'to_watch';
 
 const isMediaType = (value: string): value is MediaType =>
@@ -33,11 +33,11 @@ export async function loadUserTaste(
 	const entriesRead = fetchAllRows((from, to) =>
 		client
 			.from('watchlist')
-			.select(WATCHLIST_COLUMNS)
+			.select(TASTE_COLUMNS)
 			.eq('user_id', userId)
 			.order('id')
 			.range(from, to)
-	).then((rows) => rows as WatchlistEntry[]);
+	).then((rows) => rows as TasteEntry[]);
 
 	const [entries, reviewSignals, episodesWatched, dismissals] =
 		await Promise.all([

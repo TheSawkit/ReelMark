@@ -3,6 +3,8 @@
 // /library sérialise pour une bibliothèque de 2 000 titres.
 export const WATCHLIST_COLUMNS =
 	'id, media_id, media_title, media_type, poster_path, status, created_at, total_episodes, release_date, genre_ids';
+export const TASTE_COLUMNS =
+	'media_id, media_title, media_type, status, created_at, total_episodes, release_date, genre_ids';
 export const REVIEW_COLUMNS =
 	'id, user_id, media_id, media_type, media_title, poster_path, rating, content, tv_id, season_number, created_at, updated_at';
 export const USER_PROFILE_COLUMNS =

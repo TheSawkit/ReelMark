@@ -5,11 +5,11 @@ import type {
 	MediaType,
 	MovieDetails,
 	RecommendationSource,
+	TasteEntry,
 	TvShowDetails,
 	WatchProvider,
 	WatchProvidersRegion,
 	WatchStatus,
-	WatchlistEntry,
 } from '@/types/tmdb';
 
 const OVERVIEW_MAX = 280;
@@ -89,7 +89,7 @@ export function toAssistantTitle(
 
 /** One title of the user's library, with their rating when they gave one. */
 export function toAssistantEntry(
-	entry: WatchlistEntry,
+	entry: TasteEntry,
 	format: AssistantFormat,
 	rating?: number
 ): AssistantEntry {
@@ -113,7 +113,7 @@ export function toAssistantTaste(
 ) {
 	const rated = ({ entry, rating }: RatedEntry) =>
 		toAssistantEntry(entry, format, rating);
-	const listed = (entry: WatchlistEntry) => toAssistantEntry(entry, format);
+	const listed = (entry: TasteEntry) => toAssistantEntry(entry, format);
 
 	return {
 		favoriteGenres: namesOf(summary.favoriteGenreIds, format.genres),
