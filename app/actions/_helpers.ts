@@ -2,6 +2,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { after } from 'next/server';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n/config';
 import type { User } from '@supabase/supabase-js';
+import type { MediaType } from '@/types/tmdb';
 import type { createClient } from '@/lib/supabase/server';
 
 export const SHARED_REVALIDATE_PATHS = ['/library', '/dashboard'] as const;
@@ -20,6 +21,17 @@ export function revalidateLocalizedAfterResponse(paths: readonly string[]) {
 	after(() => {
 		for (const path of paths) revalidateLocalized(path);
 	});
+}
+
+/** Refreshes the pages that show one title's library status, after the response. */
+export function revalidateWatchlistPaths(
+	mediaType: MediaType,
+	mediaId: number
+) {
+	revalidateLocalizedAfterResponse([
+		...SHARED_REVALIDATE_PATHS,
+		`/${mediaType}/${mediaId}`,
+	]);
 }
 
 /**

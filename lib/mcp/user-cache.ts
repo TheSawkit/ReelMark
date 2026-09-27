@@ -1,7 +1,11 @@
 import type { UserTaste } from '@/lib/data/taste';
 import type { McpUserContext } from '@/lib/data/mcp';
 
-type UserCache<T> = (userId: string, load: () => Promise<T>) => Promise<T>;
+interface UserCache<T> {
+	(userId: string, load: () => Promise<T>): Promise<T>;
+	/** Drops a user's entry, so the next call loads fresh data after a write. */
+	forget: (userId: string) => void;
+}
 
 /**
  * Per-user memo with a TTL, for the loads an assistant repeats across a burst of tool calls.
@@ -11,7 +15,7 @@ type UserCache<T> = (userId: string, load: () => Promise<T>) => Promise<T>;
 function createUserCache<T>(ttlMs: number, maxUsers: number): UserCache<T> {
 	const store = new Map<string, { expiresAt: number; value: Promise<T> }>();
 
-	return (userId, load) => {
+	const cached = (userId: string, load: () => Promise<T>) => {
 		const now = Date.now();
 		const hit = store.get(userId);
 		if (hit && hit.expiresAt > now) return hit.value;
@@ -26,6 +30,9 @@ function createUserCache<T>(ttlMs: number, maxUsers: number): UserCache<T> {
 		value.catch(() => store.delete(userId));
 		return value;
 	};
+	return Object.assign(cached, {
+		forget: (userId: string) => void store.delete(userId),
+	});
 }
 
 /** Two minutes: a full load of a large library costs ~750 KB of Supabase egress. Few users, since each entry is heavy. */
