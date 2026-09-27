@@ -179,37 +179,57 @@ export function applyDismissals(
 	}
 }
 
+export type PersonRole = 'director' | 'actor';
+
+export interface FavoritePerson {
+	id: number;
+	name: string;
+	role: PersonRole;
+}
+
 /**
  * Picks the person (director first, then recurring lead actor) most present across
- * the user's top-rated titles — the seed for a "Because you like X" row.
+ * the user's top-rated titles — the seed for a "Because you like X" row. The role says
+ * which of their credits earned the pick, so the row lists what they directed or played in.
  */
 export function pickFavoritePerson(
 	creditsBySeed: Array<{
 		directors: Array<{ id: number; name: string }>;
 		cast: Array<{ id: number; name: string }>;
 	}>
-): { id: number; name: string } | null {
-	const scores = new Map<number, { name: string; score: number }>();
-	const bump = (person: { id: number; name: string }, amount: number) => {
-		const previous = scores.get(person.id);
-		scores.set(person.id, {
+): FavoritePerson | null {
+	const scores = new Map<
+		number,
+		{ name: string; directing: number; acting: number }
+	>();
+	const bump = (
+		person: { id: number; name: string },
+		role: 'directing' | 'acting',
+		amount: number
+	) => {
+		const current = scores.get(person.id) ?? {
 			name: person.name,
-			score: (previous?.score ?? 0) + amount,
-		});
+			directing: 0,
+			acting: 0,
+		};
+		current[role] += amount;
+		scores.set(person.id, current);
 	};
 
 	for (const credits of creditsBySeed) {
-		for (const director of credits.directors) bump(director, 2);
-		for (const actor of credits.cast.slice(0, 5)) bump(actor, 1);
+		for (const director of credits.directors) bump(director, 'directing', 2);
+		for (const actor of credits.cast.slice(0, 5)) bump(actor, 'acting', 1);
 	}
 
-	let best: { id: number; name: string; score: number } | null = null;
-	for (const [id, { name, score }] of scores) {
+	let best: (FavoritePerson & { score: number }) | null = null;
+	for (const [id, { name, directing, acting }] of scores) {
+		const score = directing + acting;
 		if (score >= 3 && (!best || score > best.score)) {
-			best = { id, name, score };
+			const role = directing >= acting ? 'director' : 'actor';
+			best = { id, name, role, score };
 		}
 	}
-	return best ? { id: best.id, name: best.name } : null;
+	return best ? { id: best.id, name: best.name, role: best.role } : null;
 }
 
 /** Rating threshold above which a title's people count toward the favourite person. */

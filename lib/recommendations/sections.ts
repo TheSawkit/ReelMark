@@ -13,7 +13,12 @@ import {
 } from '@/lib/tmdb';
 import { getUserRegion } from '@/lib/tmdb/client';
 import { getCrewMovieCredits, getCrewTvCredits } from '@/lib/tmdb/crew';
-import { movieCreditToMediaItem, tvCreditToMediaItem } from '@/lib/mappers';
+import {
+	movieCreditToMediaItem,
+	movieCrewCreditToMediaItem,
+	tvCreditToMediaItem,
+	tvCrewCreditToMediaItem,
+} from '@/lib/mappers';
 import { knownTvProgress } from '@/lib/tv-progress';
 import {
 	getCachedDismissals,
@@ -31,6 +36,7 @@ import {
 	pickPersonSeeds,
 	pickSeeds,
 	rankRecommendations,
+	type FavoritePerson,
 } from '@/lib/recommendations/engine';
 import { getMediaKey } from '@/lib/media';
 import type { Translations } from '@/lib/i18n/server';
@@ -106,6 +112,25 @@ async function buildOnServicesItems(
 	return matches;
 }
 
+const isDirecting = (credit: { job: string }) => credit.job === 'Director';
+
+async function personFilmography(
+	type: MediaType,
+	person: FavoritePerson,
+	lang: Language
+): Promise<MediaItem[]> {
+	if (type === 'movie') {
+		const { cast, crew } = await getCrewMovieCredits(person.id, lang);
+		return person.role === 'director'
+			? crew.filter(isDirecting).map(movieCrewCreditToMediaItem)
+			: cast.map(movieCreditToMediaItem);
+	}
+	const { cast, crew } = await getCrewTvCredits(person.id, lang);
+	return person.role === 'director'
+		? crew.filter(isDirecting).map(tvCrewCreditToMediaItem)
+		: cast.map(tvCreditToMediaItem);
+}
+
 async function buildPersonSection(
 	type: MediaType,
 	personCredits: Credits[],
@@ -125,14 +150,7 @@ async function buildPersonSection(
 	);
 	if (!favoritePerson) return null;
 
-	const filmography =
-		type === 'movie'
-			? (await getCrewMovieCredits(favoritePerson.id, lang)).cast.map(
-					movieCreditToMediaItem
-				)
-			: (await getCrewTvCredits(favoritePerson.id, lang)).cast.map(
-					tvCreditToMediaItem
-				);
+	const filmography = await personFilmography(type, favoritePerson, lang);
 
 	const seen = new Set<string>();
 	const items = filmography

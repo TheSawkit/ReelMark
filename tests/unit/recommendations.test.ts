@@ -285,6 +285,25 @@ describe('pickFavoritePerson', () => {
 
 		expect(person?.id).toBe(2);
 	});
+
+	it('tags a person picked for their directing as a director', () => {
+		const person = pickFavoritePerson([
+			{ directors: [nolan], cast: [] },
+			{ directors: [nolan], cast: [] },
+		]);
+
+		expect(person?.role).toBe('director');
+	});
+
+	it('tags a person picked for their acting as an actor', () => {
+		const person = pickFavoritePerson([
+			{ directors: [], cast: [bale] },
+			{ directors: [], cast: [bale] },
+			{ directors: [], cast: [bale] },
+		]);
+
+		expect(person?.role).toBe('actor');
+	});
 });
 
 describe('isPersonSeedRating', () => {
