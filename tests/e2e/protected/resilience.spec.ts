@@ -45,7 +45,11 @@ test.describe('Résilience de rendu', () => {
 	test('une fiche au TMDB id inexistant ne casse pas le rendu', async ({
 		page,
 	}) => {
-		for (const url of ['/en/tv/99999999', '/en/movie/99999999']) {
+		for (const url of [
+			'/en/tv/99999999',
+			'/en/movie/99999999',
+			'/en/crew/99999999',
+		]) {
 			const res = await page.goto(url, {
 				waitUntil: 'domcontentloaded',
 			});

@@ -158,7 +158,7 @@ export default async function CrewPage(props: CrewPageProps) {
 
 	const [crew, movieCredits] = await Promise.all([
 		getCrewDetails(crewId, lang).catch(notFoundIfMissing),
-		getCrewMovieCredits(crewId, lang),
+		getCrewMovieCredits(crewId, lang).catch(notFoundIfMissing),
 	]);
 	const knownForBackdrop = pickKnownForBackdrop([
 		...movieCredits.cast,
