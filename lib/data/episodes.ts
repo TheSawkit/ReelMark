@@ -111,35 +111,34 @@ export async function getProfileTvWatchProgress(
 	return totals;
 }
 
+const TV_IDS_PER_CALL = 1000;
+
 /**
  * Watched episode count per show for any user, through a privileged client — the weekly
  * suggestion job runs without a session, so `episode_watch_counts` (bound to auth.uid()) is empty.
+ * Counted in SQL (`user_episode_watch_counts`, service role only): one row per show crosses the
+ * network instead of one per episode. Ids go in batches so the 1000-row response cap can never truncate.
  *
  * @param client - Service-role Supabase client.
  * @param userId - Supabase user ID whose progress is read.
  * @param tvIds - TMDB show IDs to count.
  * @returns Watched episode count keyed by TMDB show ID.
+ * @throws Error when the count query fails.
  */
 export async function getUserTvWatchCounts(
 	client: SupabaseClient<Database>,
 	userId: string,
 	tvIds: number[]
 ): Promise<Record<number, number>> {
-	if (tvIds.length === 0) return {};
-
-	const watches = await fetchAllRows((from, to) =>
-		client
-			.from('episode_watches')
-			.select('tv_id')
-			.eq('user_id', userId)
-			.in('tv_id', tvIds)
-			.order('tv_id')
-			.order('season_number')
-			.order('episode_number')
-			.range(from, to)
-	);
-
 	const counts: Record<number, number> = {};
-	for (const { tv_id } of watches) counts[tv_id] = (counts[tv_id] ?? 0) + 1;
+	for (let start = 0; start < tvIds.length; start += TV_IDS_PER_CALL) {
+		const { data, error } = await client.rpc('user_episode_watch_counts', {
+			p_user_id: userId,
+			p_tv_ids: tvIds.slice(start, start + TV_IDS_PER_CALL),
+		});
+		if (error) throw new Error(error.message);
+		for (const { tv_id, watched_count } of data)
+			counts[tv_id] = watched_count;
+	}
 	return counts;
 }

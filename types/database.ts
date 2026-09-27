@@ -599,6 +599,13 @@ export type Database = {
 				};
 				Returns: undefined;
 			};
+			user_episode_watch_counts: {
+				Args: { p_tv_ids: number[]; p_user_id: string };
+				Returns: {
+					tv_id: number;
+					watched_count: number;
+				}[];
+			};
 		};
 		Enums: {
 			[_ in never]: never;
