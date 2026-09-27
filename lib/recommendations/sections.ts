@@ -312,7 +312,7 @@ export async function buildLibrarySections(
 		items: toMediaItems(recommendationsResults[index], isMovie),
 	}));
 	const excludedKeys = consumedKeys(typeEntries, tvProgress);
-	const affinity = genreAffinity(typeEntries, ratingByKey);
+	const affinity = genreAffinity(typeEntries, ratingByKey, tvProgress);
 	applyDismissals(
 		excludedKeys,
 		affinity,

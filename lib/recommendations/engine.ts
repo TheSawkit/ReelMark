@@ -15,6 +15,8 @@ const GENRE_BONUS = 0.35;
 const GENRE_PENALTY = 0.5;
 const RANK_DECAY = 0.04;
 const GENRE_CAP = 6;
+const RATING_SPREAD = 5;
+const DISLIKE_RATIO = 0.5;
 
 export interface RecommendationSeed {
 	entry: WatchlistEntry;
@@ -122,39 +124,87 @@ export function pickSeeds(
 	}));
 }
 
+function tasteSignal(
+	entry: WatchlistEntry,
+	rating: number | undefined,
+	meanRating: number,
+	episodesWatched: Readonly<Record<number, number>>
+): number {
+	if (isDisliked(entry, rating)) return -1;
+	if (rating !== undefined) {
+		if (rating < MIN_FAVORITE_RATING) return 0;
+		return Math.max(0, 1 + (rating - meanRating) / RATING_SPREAD);
+	}
+	const seen =
+		entry.status === 'watched' || isInProgress(entry, episodesWatched);
+	return seen ? 1 : 0;
+}
+
+function addToGenres(
+	totals: Map<number, number>,
+	genreIds: number[],
+	amount: number
+): void {
+	for (const genreId of genreIds) {
+		totals.set(genreId, (totals.get(genreId) ?? 0) + amount);
+	}
+}
+
 /**
- * Derives the user's genre tastes: favourites from clearly liked titles (rating ≥6
- * or unrated), disliked from abandoned or poorly rated ones — a genre the user
- * still loves elsewhere is never marked disliked.
+ * Derives the user's genre tastes from what they actually saw or rated — the unwatched
+ * backlog says nothing. Each rating counts relative to the user's own average, so a 10
+ * from a generous rater still stands out. A genre is disliked when most of its signals
+ * (abandons, poor ratings) are negative.
  */
 export function genreAffinity(
 	entries: WatchlistEntry[],
-	ratingByKey: Record<string, number>
+	ratingByKey: Record<string, number>,
+	episodesWatched: Readonly<Record<number, number>> = {}
 ): GenreAffinity {
 	const rating = ratingLookup(ratingByKey);
-	const liked = new Map<number, number>();
-	const negative = new Set<number>();
+	const ratings = entries
+		.map(rating)
+		.filter((value): value is number => value !== undefined);
+	const meanRating =
+		ratings.length > 0
+			? ratings.reduce((sum, value) => sum + value, 0) / ratings.length
+			: 0;
 
+	const positive = new Map<number, number>();
+	const negative = new Map<number, number>();
 	for (const entry of entries) {
-		const r = rating(entry);
-		if (isDisliked(entry, r)) {
-			for (const genreId of entry.genre_ids ?? []) negative.add(genreId);
-			continue;
-		}
-		if (r !== undefined && r < MIN_FAVORITE_RATING) continue;
-		for (const genreId of entry.genre_ids ?? []) {
-			liked.set(genreId, (liked.get(genreId) ?? 0) + 1);
-		}
+		const signal = tasteSignal(
+			entry,
+			rating(entry),
+			meanRating,
+			episodesWatched
+		);
+		if (signal === 0) continue;
+		addToGenres(
+			signal > 0 ? positive : negative,
+			entry.genre_ids ?? [],
+			Math.abs(signal)
+		);
 	}
 
 	const favorites = new Set(
-		[...liked.entries()]
+		[...positive.entries()]
+			.filter(
+				([genreId, weight]) => weight > (negative.get(genreId) ?? 0)
+			)
 			.sort((a, b) => b[1] - a[1])
 			.slice(0, FAVORITE_GENRES)
 			.map(([genreId]) => genreId)
 	);
 	const disliked = new Set(
-		[...negative].filter((genreId) => !liked.has(genreId))
+		[...negative.entries()]
+			.filter(
+				([genreId, weight]) =>
+					!favorites.has(genreId) &&
+					weight / (weight + (positive.get(genreId) ?? 0)) >
+						DISLIKE_RATIO
+			)
+			.map(([genreId]) => genreId)
 	);
 	return { favorites, disliked };
 }
@@ -261,7 +311,8 @@ export function pickFavoritePerson(
 	};
 
 	for (const credits of creditsBySeed) {
-		for (const director of credits.directors) bump(director, 'directing', 2);
+		for (const director of credits.directors)
+			bump(director, 'directing', 2);
 		for (const actor of credits.cast.slice(0, 5)) bump(actor, 'acting', 1);
 	}
 

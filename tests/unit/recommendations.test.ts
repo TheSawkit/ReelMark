@@ -178,6 +178,73 @@ describe('genreAffinity', () => {
 		expect(disliked.has(18)).toBe(false);
 		expect(disliked.has(27)).toBe(true);
 	});
+
+	it('ignores the unwatched backlog when deriving favourites', () => {
+		const loved = [1, 2, 3, 4].map((id) =>
+			entry({ media_id: id, genre_ids: [878] })
+		);
+		const backlog = Array.from({ length: 10 }, (_, i) =>
+			entry({ media_id: 50 + i, status: 'to_watch', genre_ids: [18, 35] })
+		);
+		const ratings = Object.fromEntries(
+			loved.map((l) => [`movie-${l.media_id}`, 10])
+		);
+
+		const { favorites } = genreAffinity([...loved, ...backlog], ratings);
+		expect(favorites.has(878)).toBe(true);
+		expect(favorites.has(18)).toBe(false);
+	});
+
+	it('marks a genre disliked when most of its signals are negative', () => {
+		const entries = [
+			...[1, 2, 3, 4, 5].map((id) =>
+				entry({ media_id: id, status: 'abandoned', genre_ids: [27] })
+			),
+			entry({ media_id: 6, genre_ids: [27] }),
+			entry({ media_id: 7, status: 'to_watch', genre_ids: [27] }),
+		];
+
+		const { disliked } = genreAffinity(entries, {});
+		expect(disliked.has(27)).toBe(true);
+	});
+
+	it('ranks genres by how much more than usual the user liked them', () => {
+		const entries = [
+			...[1, 2].map((id) => entry({ media_id: id, genre_ids: [18] })),
+			...[3, 4].map((id) => entry({ media_id: id, genre_ids: [35] })),
+			...[5, 6].map((id) => entry({ media_id: id, genre_ids: [99] })),
+			...[7, 8].map((id) => entry({ media_id: id, genre_ids: [878] })),
+		];
+		const ratings = {
+			'movie-1': 7,
+			'movie-2': 7,
+			'movie-3': 7,
+			'movie-4': 7,
+			'movie-5': 7,
+			'movie-6': 7,
+			'movie-7': 10,
+			'movie-8': 10,
+		};
+
+		const { favorites } = genreAffinity(entries, ratings);
+		expect(favorites.has(878)).toBe(true);
+	});
+
+	it('counts a show in progress as a liked signal', () => {
+		const entries = [
+			entry({
+				media_id: 1,
+				media_type: 'tv',
+				status: 'to_watch',
+				genre_ids: [10765],
+				total_episodes: 10,
+			}),
+		];
+
+		expect(genreAffinity(entries, {}, { 1: 3 }).favorites.has(10765)).toBe(
+			true
+		);
+	});
 });
 
 describe('rankRecommendations', () => {
