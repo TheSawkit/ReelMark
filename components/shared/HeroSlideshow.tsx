@@ -13,7 +13,6 @@ import { afterLoadAndIdle } from '@/lib/idle';
 import { useInView } from '@/hooks/useInView';
 import { useTranslation } from '@/lib/i18n/context';
 
-const INTERVAL_MS = 7000;
 const SWIPE_THRESHOLD_PX = 50;
 
 interface HeroSlideshowProps {
@@ -28,8 +27,9 @@ function prefersReducedMotion(): boolean {
 /**
  * Cross-fading hero carousel for a `.hero-stage`: only the first slide is server-rendered (its
  * image stays the LCP), the others mount once the page has loaded and the browser is idle.
- * Advances every 7 s, paused on hover, keyboard focus, off-screen and "reduce motion"; dots and
- * horizontal swipes navigate by hand.
+ * Advances every `--duration-slideshow` (5 s): the active dot fills up meanwhile and its animation
+ * end triggers the next slide, so the progress shown is exactly the time left. Paused on hover,
+ * keyboard focus, off-screen and "reduce motion"; dots and horizontal swipes navigate by hand.
  */
 export function HeroSlideshow({ slides, label }: HeroSlideshowProps) {
 	const { t } = useTranslation();
@@ -38,31 +38,25 @@ export function HeroSlideshow({ slides, label }: HeroSlideshowProps) {
 	const [active, setActive] = useState(0);
 	const [isReady, setIsReady] = useState(false);
 	const [isPaused, setIsPaused] = useState(false);
+	const [autoPlay, setAutoPlay] = useState(false);
 	const isInView = useInView(rootRef);
 
 	const count = slides.length;
 	const current = Math.min(active, count - 1);
 	const canSlide = isReady && count > 1;
+	const isPlaying = !isPaused && isInView;
 
 	useEffect(() => {
 		let cancelled = false;
 		afterLoadAndIdle().then(() => {
-			if (!cancelled) setIsReady(true);
+			if (cancelled) return;
+			setAutoPlay(!prefersReducedMotion());
+			setIsReady(true);
 		});
 		return () => {
 			cancelled = true;
 		};
 	}, []);
-
-	useEffect(() => {
-		if (!canSlide || isPaused || !isInView || prefersReducedMotion())
-			return;
-		const timer = window.setTimeout(
-			() => setActive((current + 1) % count),
-			INTERVAL_MS
-		);
-		return () => window.clearTimeout(timer);
-	}, [canSlide, isPaused, isInView, current, count]);
 
 	function goBy(step: number) {
 		setActive((current + step + count) % count);
@@ -138,16 +132,33 @@ export function HeroSlideshow({ slides, label }: HeroSlideshowProps) {
 							)}
 							aria-current={index === current}
 							onClick={() => setActive(index)}
-							className="group grid h-6 min-w-6 items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+							className="group grid h-6 min-w-6 place-items-center rounded-full px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 						>
 							<span
 								className={cn(
-									'h-1.5 rounded-full transition-all duration-(--duration-base) ease-apple',
-									index === current
-										? 'w-5 bg-text'
-										: 'w-1.5 bg-text/40 group-hover:bg-text/70'
+									'h-1.5 overflow-hidden rounded-full transition-all duration-(--duration-base) ease-apple',
+									index !== current &&
+										'w-1.5 bg-text/40 group-hover:bg-text/70',
+									index === current &&
+										(autoPlay
+											? 'w-6 bg-text/30'
+											: 'w-6 bg-text')
 								)}
-							/>
+							>
+								{index === current && autoPlay && (
+									<span
+										key={current}
+										data-slide-progress
+										className="block h-full origin-left rounded-full bg-text animate-slide-progress"
+										style={{
+											animationPlayState: isPlaying
+												? 'running'
+												: 'paused',
+										}}
+										onAnimationEnd={() => goBy(1)}
+									/>
+								)}
+							</span>
 						</button>
 					))}
 				</div>

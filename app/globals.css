@@ -79,6 +79,7 @@
 	--duration-slower: 600ms;
 	--duration-slowest: 800ms;
 	--duration-stagger: 70ms;
+	--duration-slideshow: 5000ms;
 
 	--font-sans: var(--font-sans);
 	--font-display: var(--font-display);
@@ -103,6 +104,8 @@
 	--animate-scale-in: scaleIn var(--duration-slow) var(--ease-apple) backwards;
 	--animate-shimmer: shimmer 2s linear infinite;
 	--animate-swap-in: fadeIn var(--duration-base) var(--ease-apple) backwards;
+	--animate-slide-progress: slideProgress var(--duration-slideshow) linear
+		forwards;
 }
 
 :root {
@@ -298,6 +301,16 @@ a {
 		animation-duration: 0.01ms !important;
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
+	}
+}
+
+@keyframes slideProgress {
+	from {
+		transform: scaleX(0);
+	}
+
+	to {
+		transform: scaleX(1);
 	}
 }
 
