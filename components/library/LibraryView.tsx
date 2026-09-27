@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { LibraryTabs } from '@/components/library/LibraryTabs';
 import { BackToTopButton } from '@/components/shared/BackToTopButton';
+import { SwapIn } from '@/components/motion/SwapIn';
 import { fetchLibraryBucket } from '@/app/actions/watchlist';
 import {
 	libraryBucketStore,
@@ -95,25 +96,26 @@ export function LibraryView({
 
 	return (
 		<>
-			<LibraryTabs
-				key={type}
-				toWatch={dataset.toWatch.entries}
-				watched={dataset.watched.entries}
-				abandoned={dataset.abandoned.entries}
-				tvProgress={
-					type === 'tv'
-						? {
-								...dataset.toWatch.tvProgress,
-								...dataset.watched.tvProgress,
-								...dataset.abandoned.tvProgress,
-							}
-						: {}
-				}
-				counts={counts[type]}
-				loadingStatuses={loadingStatuses}
-				genreNames={genreNames}
-				ratingByKey={ratingByKey}
-			/>
+			<SwapIn swapKey={type}>
+				<LibraryTabs
+					toWatch={dataset.toWatch.entries}
+					watched={dataset.watched.entries}
+					abandoned={dataset.abandoned.entries}
+					tvProgress={
+						type === 'tv'
+							? {
+									...dataset.toWatch.tvProgress,
+									...dataset.watched.tvProgress,
+									...dataset.abandoned.tvProgress,
+								}
+							: {}
+					}
+					counts={counts[type]}
+					loadingStatuses={loadingStatuses}
+					genreNames={genreNames}
+					ratingByKey={ratingByKey}
+				/>
+			</SwapIn>
 			<BackToTopButton />
 		</>
 	);

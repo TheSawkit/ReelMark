@@ -117,7 +117,7 @@ export function ReviewsList({
 
 	const sheet = (
 		<Sheet open={open} onOpenChange={setOpen}>
-			<SheetContent className="w-full sm:max-w-md p-0 flex flex-col bg-surface border-border/10">
+			<SheetContent className="w-full sm:max-w-md flex flex-col bg-surface border-border/10">
 				<SheetHeader className="px-6 py-5 border-b border-border/10 shrink-0">
 					<SheetTitle className="text-left text-text">
 						{t.movie.communityReviews}

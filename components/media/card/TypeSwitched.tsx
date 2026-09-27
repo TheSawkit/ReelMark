@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { SwapIn } from '@/components/motion/SwapIn';
 
 /** Renders the variant matching the URL's ?type= — pairs with MediaTypeSwitcher `shallow`. */
 export function TypeSwitched({
@@ -11,6 +12,6 @@ export function TypeSwitched({
 	movie: ReactNode;
 	tv: ReactNode;
 }) {
-	const searchParams = useSearchParams();
-	return <>{searchParams.get('type') === 'tv' ? tv : movie}</>;
+	const type = useSearchParams().get('type') === 'tv' ? 'tv' : 'movie';
+	return <SwapIn swapKey={type}>{type === 'tv' ? tv : movie}</SwapIn>;
 }

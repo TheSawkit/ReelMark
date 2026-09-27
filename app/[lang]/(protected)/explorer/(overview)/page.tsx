@@ -17,6 +17,7 @@ import { MediaSection } from '@/components/media/card/MediaSection';
 import { MediaSectionsSkeleton } from '@/components/media/card/MediaSectionsSkeleton';
 import { SpotlightPick } from '@/components/explorer/SpotlightPick';
 import { SpotlightPickSkeleton } from '@/components/explorer/SpotlightPickSkeleton';
+import { HeroSlideshow } from '@/components/shared/HeroSlideshow';
 import { CategoryNav } from '@/components/navigation/CategoryNav';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
@@ -56,18 +57,29 @@ async function fetchSectionItems(
 	);
 }
 
+const HERO_SLIDES = 5;
+
 async function TrendingHero({ t, lang }: { t: Translations; lang: Language }) {
 	const hero = async (type: MediaType) => {
-		const [featured] = await fetchSectionItems(
-			type,
-			() => getTrendingMovies('week', 1, lang),
-			() => getTrendingTvShows('week', 1, lang)
-		);
-		return featured ? (
-			<SpotlightPick
-				item={featured}
-				badgeLabel={t.pages.explorer.featured}
-				ctaLabel={t.pages.dashboard.discover}
+		const featured = (
+			await fetchSectionItems(
+				type,
+				() => getTrendingMovies('week', 1, lang),
+				() => getTrendingTvShows('week', 1, lang)
+			)
+		).slice(0, HERO_SLIDES);
+		return featured.length > 0 ? (
+			<HeroSlideshow
+				label={t.pages.explorer.featured}
+				slides={featured.map((item, index) => (
+					<SpotlightPick
+						key={item.id}
+						item={item}
+						priority={index === 0}
+						badgeLabel={t.pages.explorer.featured}
+						ctaLabel={t.pages.dashboard.discover}
+					/>
+				))}
 			/>
 		) : null;
 	};

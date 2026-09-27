@@ -44,7 +44,7 @@ export function BackToTopButton() {
 			data-state={visible ? 'visible' : 'hidden'}
 			aria-label={t.common.backToTop}
 			className={cn(
-				'glass-surface fixed right-4 bottom-24 z-40 grid size-11 place-items-center rounded-full text-text shadow-card-lift md:right-6 md:bottom-8',
+				'glass-surface fixed right-(--floating-control-right) bottom-(--floating-control-bottom) z-40 grid size-11 place-items-center rounded-full text-text shadow-card-lift',
 				'transition duration-(--duration-base) ease-apple motion-reduce:transition-none',
 				'hover:scale-105 hover:opacity-100 active:scale-95',
 				'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',

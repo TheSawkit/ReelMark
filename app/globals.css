@@ -102,6 +102,7 @@
 	--animate-slide-down: slideDown var(--duration-base) ease-out;
 	--animate-scale-in: scaleIn var(--duration-slow) var(--ease-apple) backwards;
 	--animate-shimmer: shimmer 2s linear infinite;
+	--animate-swap-in: fadeIn var(--duration-base) var(--ease-apple) backwards;
 }
 
 :root {
@@ -146,6 +147,24 @@
 	--shadow-text: 0 1px 2px rgba(0, 0, 0, 0.8);
 	--shadow-search-dropdown:
 		0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(185, 9, 11, 0.1);
+
+	--bottom-nav-clearance: calc(4rem + 0.75rem + env(safe-area-inset-bottom));
+	--floating-control-bottom: calc(var(--bottom-nav-clearance) + 1rem);
+	--floating-control-right: calc(1rem + env(safe-area-inset-right));
+	--floating-control-left: calc(1rem + env(safe-area-inset-left));
+	--floating-stack-bottom: calc(var(--floating-control-bottom) + 3.5rem);
+}
+
+@media (min-width: 768px) {
+	:root {
+		--floating-control-right: calc(1.5rem + env(safe-area-inset-right));
+	}
+}
+
+@media (min-width: 1024px) {
+	:root {
+		--floating-control-bottom: calc(2rem + env(safe-area-inset-bottom));
+	}
 }
 
 :root.light {
@@ -657,9 +676,6 @@ a {
 
 	/* Clears the floating tab bar (h-16 pill + mb-3 + safe-area) with breathing room. */
 	.page-bottom-clearance {
-		--bottom-nav-clearance: calc(
-			4rem + 0.75rem + env(safe-area-inset-bottom)
-		);
 		padding-bottom: calc(var(--bottom-nav-clearance) + 3rem);
 	}
 

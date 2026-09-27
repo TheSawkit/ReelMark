@@ -13,6 +13,7 @@ interface SpotlightPickProps {
 	item: MediaItem;
 	badgeLabel: string;
 	ctaLabel: string;
+	priority?: boolean;
 }
 
 /**
@@ -23,6 +24,7 @@ export async function SpotlightPick({
 	item,
 	badgeLabel,
 	ctaLabel,
+	priority,
 }: SpotlightPickProps) {
 	const lang = await getServerLanguage();
 	const entry = item.watchlistEntry;
@@ -36,6 +38,7 @@ export async function SpotlightPick({
 				)}
 				posterPath={item.poster_path}
 				alt={item.title}
+				priority={priority}
 			/>
 
 			<div className="hero-scroll-fade relative z-10 container mx-auto flex flex-col items-center gap-3 px-6 text-center md:items-start md:text-left lg:px-12">

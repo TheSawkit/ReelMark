@@ -2,6 +2,7 @@
 
 import { useId, useMemo, useState } from 'react';
 import { ActiveIndicator } from '@/components/motion/ActiveIndicator';
+import { SwapIn } from '@/components/motion/SwapIn';
 import { cn } from '@/lib/utils';
 import { MediaCard } from '@/components/media/card/MediaCard';
 import { AbandonShowMenu } from '@/components/media/tv/AbandonShowMenu';
@@ -189,80 +190,89 @@ export function LibraryTabs({
 				})}
 			</div>
 
-			{loadingStatuses.has(visibleTab) ? (
-				// Le compartiment arrive : montrer la grille en attente plutôt que l'état vide,
-				// qui annoncerait à tort une bibliothèque sans titre.
-				<div role="tabpanel" id={`panel-${visibleTab}`}>
-					<MediaListControlsSkeleton className="mb-6" />
-					<PosterGridSkeleton count={12} variant="library" />
-				</div>
-			) : current.items.length === 0 ? (
-				<div
-					role="tabpanel"
-					id={`panel-${visibleTab}`}
-					className="flex flex-col items-center justify-center py-32 animate-fade-in"
-				>
-					<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/10 mb-6">
-						<current.icon className="h-10 w-10 text-muted/50" />
+			<SwapIn swapKey={visibleTab}>
+				{loadingStatuses.has(visibleTab) ? (
+					// Le compartiment arrive : montrer la grille en attente plutôt que l'état vide,
+					// qui annoncerait à tort une bibliothèque sans titre.
+					<div role="tabpanel" id={`panel-${visibleTab}`}>
+						<MediaListControlsSkeleton className="mb-6" />
+						<PosterGridSkeleton count={12} variant="library" />
 					</div>
-					<p className="text-xl font-semibold text-text mb-2">
-						{emptyState[visibleTab].title}
-					</p>
-					<p className="text-muted max-w-sm text-center">
-						{emptyState[visibleTab].description}
-					</p>
-				</div>
-			) : (
-				<>
-					<MediaListControls controls={controls} className="mb-6" />
-
-					{processed.length === 0 ? (
-						<p className="text-muted text-sm py-20 text-center">
-							{t.lists.noResults}
-						</p>
-					) : (
-						<div role="tabpanel" id={`panel-${visibleTab}`}>
-							<VirtualMediaGrid
-								key={visibleTab}
-								items={processed}
-								columns={LIBRARY_GRID.columns}
-								rowClassName={LIBRARY_GRID.rowClassName}
-								renderItem={(item, index) => {
-									const entry = item.watchlistEntry;
-									const progress =
-										item.media_type === 'tv'
-											? tvProgress[item.id]
-											: undefined;
-									return (
-										<div
-											key={entry?.id ?? getMediaKey(item)}
-											className="media-grid-cell"
-										>
-											<MediaCard
-												media={item}
-												watchlistEntry={entry}
-												hideRating
-												priority={index < 6}
-												tvProgress={progress}
-												action={
-													item.media_type === 'tv' ? (
-														<AbandonShowMenu
-															tvId={item.id}
-															initialStatus={
-																entry?.status
-															}
-														/>
-													) : undefined
-												}
-											/>
-										</div>
-									);
-								}}
-							/>
+				) : current.items.length === 0 ? (
+					<div
+						role="tabpanel"
+						id={`panel-${visibleTab}`}
+						className="flex flex-col items-center justify-center py-32 animate-fade-in"
+					>
+						<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/10 mb-6">
+							<current.icon className="h-10 w-10 text-muted/50" />
 						</div>
-					)}
-				</>
-			)}
+						<p className="text-xl font-semibold text-text mb-2">
+							{emptyState[visibleTab].title}
+						</p>
+						<p className="text-muted max-w-sm text-center">
+							{emptyState[visibleTab].description}
+						</p>
+					</div>
+				) : (
+					<>
+						<MediaListControls
+							controls={controls}
+							className="mb-6"
+						/>
+
+						{processed.length === 0 ? (
+							<p className="text-muted text-sm py-20 text-center">
+								{t.lists.noResults}
+							</p>
+						) : (
+							<div role="tabpanel" id={`panel-${visibleTab}`}>
+								<VirtualMediaGrid
+									key={visibleTab}
+									items={processed}
+									columns={LIBRARY_GRID.columns}
+									rowClassName={LIBRARY_GRID.rowClassName}
+									renderItem={(item, index) => {
+										const entry = item.watchlistEntry;
+										const progress =
+											item.media_type === 'tv'
+												? tvProgress[item.id]
+												: undefined;
+										return (
+											<div
+												key={
+													entry?.id ??
+													getMediaKey(item)
+												}
+												className="media-grid-cell"
+											>
+												<MediaCard
+													media={item}
+													watchlistEntry={entry}
+													hideRating
+													priority={index < 6}
+													tvProgress={progress}
+													action={
+														item.media_type ===
+														'tv' ? (
+															<AbandonShowMenu
+																tvId={item.id}
+																initialStatus={
+																	entry?.status
+																}
+															/>
+														) : undefined
+													}
+												/>
+											</div>
+										);
+									}}
+								/>
+							</div>
+						)}
+					</>
+				)}
+			</SwapIn>
 		</div>
 	);
 }

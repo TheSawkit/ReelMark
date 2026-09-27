@@ -2,10 +2,18 @@
 
 import { Toaster as SonnerToaster } from 'sonner';
 
+const OFFSET = {
+	bottom: 'var(--floating-stack-bottom)',
+	right: 'var(--floating-control-right)',
+	left: 'var(--floating-control-left)',
+};
+
 export function Toaster() {
 	return (
 		<SonnerToaster
 			position="bottom-right"
+			offset={OFFSET}
+			mobileOffset={OFFSET}
 			toastOptions={{
 				classNames: {
 					toast: 'bg-surface border border-border-subtle shadow-card text-text text-sm rounded-xl',

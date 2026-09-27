@@ -23,6 +23,7 @@ import type {
 } from '@/types/profile';
 import type { WatchProvider } from '@/types/tmdb';
 import type { NotificationPreferences } from '@/types/notifications';
+import { SwapIn } from '@/components/motion/SwapIn';
 
 interface SettingsContentProps {
 	user: User | null;
@@ -54,49 +55,53 @@ export function SettingsContent({
 			</aside>
 
 			<div className="flex-1 min-w-0">
-				{activeTab === 'profile' && (
-					<div className="space-y-6">
-						<ProfileSettings
-							user={user}
-							profileAvatarUrl={userProfile?.avatar_url ?? null}
+				<SwapIn swapKey={activeTab}>
+					{activeTab === 'profile' && (
+						<div className="space-y-6">
+							<ProfileSettings
+								user={user}
+								profileAvatarUrl={
+									userProfile?.avatar_url ?? null
+								}
+							/>
+							<SocialLinksSettings profile={userProfile} />
+						</div>
+					)}
+					{activeTab === 'security' && (
+						<div className="space-y-6">
+							<PasswordSettings isOAuthOnly={isOAuthOnly} />
+							<PasskeySettings />
+						</div>
+					)}
+					{activeTab === 'notifications' && (
+						<NotificationSettings
+							initialPreferences={notificationPreferences}
 						/>
-						<SocialLinksSettings profile={userProfile} />
-					</div>
-				)}
-				{activeTab === 'security' && (
-					<div className="space-y-6">
-						<PasswordSettings isOAuthOnly={isOAuthOnly} />
-						<PasskeySettings />
-					</div>
-				)}
-				{activeTab === 'notifications' && (
-					<NotificationSettings
-						initialPreferences={notificationPreferences}
-					/>
-				)}
-				{activeTab === 'appearance' && (
-					<div className="space-y-6">
-						<ThemeSettings />
-					</div>
-				)}
-				{activeTab === 'services' && (
-					<StreamingSettings
-						providers={streamingProviders}
-						initialSelected={selectedProviderIds}
-					/>
-				)}
-				{activeTab === 'privacy' && (
-					<PrivacySettings settings={privacySettings} />
-				)}
-				{activeTab === 'data' && (
-					<div className="space-y-6">
-						<LanguageSettings />
-						<RegionalSettings user={user} />
-						<DataSettings />
-						<SupportSettings />
-						<DangerZone isOAuthOnly={isOAuthOnly} />
-					</div>
-				)}
+					)}
+					{activeTab === 'appearance' && (
+						<div className="space-y-6">
+							<ThemeSettings />
+						</div>
+					)}
+					{activeTab === 'services' && (
+						<StreamingSettings
+							providers={streamingProviders}
+							initialSelected={selectedProviderIds}
+						/>
+					)}
+					{activeTab === 'privacy' && (
+						<PrivacySettings settings={privacySettings} />
+					)}
+					{activeTab === 'data' && (
+						<div className="space-y-6">
+							<LanguageSettings />
+							<RegionalSettings user={user} />
+							<DataSettings />
+							<SupportSettings />
+							<DangerZone isOAuthOnly={isOAuthOnly} />
+						</div>
+					)}
+				</SwapIn>
 
 				<div className="mt-6 rounded-(--radius-xl) border border-border bg-surface p-4">
 					<SignoutButton />
