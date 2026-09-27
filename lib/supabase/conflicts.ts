@@ -12,4 +12,5 @@ export const ON_CONFLICT = {
 	notificationPreferences: 'user_id',
 	userPrompts: 'user_id,prompt_key',
 	pushSubscriptions: 'endpoint',
+	mcpKeys: 'user_id',
 } as const;
