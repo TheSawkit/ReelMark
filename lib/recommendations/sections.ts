@@ -1,23 +1,24 @@
 import {
-	getMovieRecommendations,
 	getSimilarMovies,
-	getTvShowRecommendations,
 	getSimilarTvShows,
 	getMovieCredits,
 	getTvShowCredits,
 	getUpcomingMovies,
 	getOnTheAirTvShows,
 	getFlatrateProviderIds,
-	movieToMediaItem,
-	tvShowToMediaItem,
 } from '@/lib/tmdb';
 import { getUserRegion } from '@/lib/tmdb/client';
 import { getCrewMovieCredits, getCrewTvCredits } from '@/lib/tmdb/crew';
-import { movieCreditToMediaItem, tvCreditToMediaItem } from '@/lib/mappers';
+import {
+	movieCreditToMediaItem,
+	movieCrewCreditToMediaItem,
+	tvCreditToMediaItem,
+	tvCrewCreditToMediaItem,
+} from '@/lib/mappers';
 import { knownTvProgress } from '@/lib/tv-progress';
 import {
 	getCachedDismissals,
-	getCachedMyRatings,
+	getCachedMyReviewSignals,
 	getCachedStreamingProviders,
 	getWatchlistWithProgress,
 	mergeWithWatchlist,
@@ -30,8 +31,15 @@ import {
 	pickFavoritePerson,
 	pickPersonSeeds,
 	pickSeeds,
+	pickSimilarSeeds,
 	rankRecommendations,
+	type FavoritePerson,
+	type TasteProfile,
 } from '@/lib/recommendations/engine';
+import {
+	fetchSeedCandidates,
+	toMediaItems,
+} from '@/lib/recommendations/candidates';
 import { getMediaKey } from '@/lib/media';
 import type { Translations } from '@/lib/i18n/server';
 import type { Language } from '@/lib/i18n/translations';
@@ -50,14 +58,6 @@ type WatchlistWithProgress = Awaited<
 
 const MIN_ROW_ITEMS = 12;
 const MAX_RECOMMENDATION_PAGES = 3;
-
-const toMediaItems = (
-	results: Movie[] | TvShow[],
-	isMovie: boolean
-): MediaItem[] =>
-	isMovie
-		? (results as Movie[]).map(movieToMediaItem)
-		: (results as TvShow[]).map(tvShowToMediaItem);
 
 export interface DashboardSection {
 	title: string;
@@ -106,6 +106,25 @@ async function buildOnServicesItems(
 	return matches;
 }
 
+const isDirecting = (credit: { job: string }) => credit.job === 'Director';
+
+async function personFilmography(
+	type: MediaType,
+	person: FavoritePerson,
+	lang: Language
+): Promise<MediaItem[]> {
+	if (type === 'movie') {
+		const { cast, crew } = await getCrewMovieCredits(person.id, lang);
+		return person.role === 'director'
+			? crew.filter(isDirecting).map(movieCrewCreditToMediaItem)
+			: cast.map(movieCreditToMediaItem);
+	}
+	const { cast, crew } = await getCrewTvCredits(person.id, lang);
+	return person.role === 'director'
+		? crew.filter(isDirecting).map(tvCrewCreditToMediaItem)
+		: cast.map(tvCreditToMediaItem);
+}
+
 async function buildPersonSection(
 	type: MediaType,
 	personCredits: Credits[],
@@ -116,23 +135,14 @@ async function buildPersonSection(
 	const favoritePerson = pickFavoritePerson(
 		personCredits.map((credits) => ({
 			directors: credits.crew
-				.filter((member) => member.job === 'Director')
+				.filter(isDirecting)
 				.map(({ id, name }) => ({ id, name })),
-			cast: credits.cast
-				.slice(0, 5)
-				.map(({ id, name }) => ({ id, name })),
+			cast: credits.cast.map(({ id, name }) => ({ id, name })),
 		}))
 	);
 	if (!favoritePerson) return null;
 
-	const filmography =
-		type === 'movie'
-			? (await getCrewMovieCredits(favoritePerson.id, lang)).cast.map(
-					movieCreditToMediaItem
-				)
-			: (await getCrewTvCredits(favoritePerson.id, lang)).cast.map(
-					tvCreditToMediaItem
-				);
+	const filmography = await personFilmography(type, favoritePerson, lang);
 
 	const seen = new Set<string>();
 	const items = filmography
@@ -176,7 +186,7 @@ function buildSimilarSections(
 				entry.media_title
 			),
 			categoryUrl: `/${type}/${entry.media_id}/similar`,
-			items: toMediaItems(similarResults[index], type === 'movie'),
+			items: toMediaItems(similarResults[index], type),
 		}))
 		.filter((section) => section.items.length > 0);
 }
@@ -246,29 +256,27 @@ export async function buildLibrarySections(
 	const tvProgressMap =
 		type === 'tv' ? knownTvProgress(toWatch, tvProgress) : {};
 	const watched = typeEntries.filter((entry) => entry.status === 'watched');
-	const seedForSimilars = watched.slice(0, 3);
 
 	const isMovie = type === 'movie';
-	const getRecs = isMovie
-		? getMovieRecommendations
-		: getTvShowRecommendations;
 	const getSims = isMovie ? getSimilarMovies : getSimilarTvShows;
-
 	const getCredits = isMovie ? getMovieCredits : getTvShowCredits;
 
-	const [ratingByKey, dismissals, myProviderIds] = await Promise.all([
-		getCachedMyRatings(),
+	const [reviewSignals, dismissals, myProviderIds] = await Promise.all([
+		getCachedMyReviewSignals(),
 		getCachedDismissals(),
 		getCachedStreamingProviders(),
 	]);
-	const seeds = pickSeeds(typeEntries, ratingByKey);
-	const personSeedEntries = pickPersonSeeds(watched, ratingByKey);
+	const profile: TasteProfile = {
+		...reviewSignals,
+		episodesWatched: tvProgress,
+	};
+	const seeds = pickSeeds(typeEntries, profile);
+	const personSeedEntries = pickPersonSeeds(watched, profile.ratings);
+	const seedForSimilars = pickSimilarSeeds(typeEntries, profile);
 
-	const [recommendationsResults, similarResults, personCredits, freshRaw] =
+	const [seedCandidates, similarResults, personCredits, freshRaw] =
 		await Promise.all([
-			Promise.all(
-				seeds.map(({ entry }) => getRecs(entry.media_id, lang))
-			),
+			fetchSeedCandidates(type, seeds, lang),
 			Promise.all(
 				seedForSimilars.map((entry) => getSims(entry.media_id, lang))
 			),
@@ -289,12 +297,8 @@ export async function buildLibrarySections(
 			}),
 		]);
 
-	const seedCandidates = seeds.map(({ weight }, index) => ({
-		weight,
-		items: toMediaItems(recommendationsResults[index], isMovie),
-	}));
 	const excludedKeys = consumedKeys(typeEntries, tvProgress);
-	const affinity = genreAffinity(typeEntries, ratingByKey);
+	const affinity = genreAffinity(typeEntries, profile);
 	applyDismissals(
 		excludedKeys,
 		affinity,
@@ -311,14 +315,8 @@ export async function buildLibrarySections(
 		page <= MAX_RECOMMENDATION_PAGES && forYouItems.length < MIN_ROW_ITEMS;
 		page++
 	) {
-		const extraResults = await Promise.all(
-			seeds.map(({ entry }) => getRecs(entry.media_id, lang, page))
-		);
 		seedCandidates.push(
-			...seeds.map(({ weight }, index) => ({
-				weight,
-				items: toMediaItems(extraResults[index], isMovie),
-			}))
+			...(await fetchSeedCandidates(type, seeds, lang, page))
 		);
 		forYouItems = rankRecommendations(
 			seedCandidates,
@@ -327,26 +325,22 @@ export async function buildLibrarySections(
 		);
 	}
 
-	const onServicesItems = await buildOnServicesItems(
-		type,
-		forYouItems,
-		myProviderIds,
-		lang
-	);
-
-	const personSection = await buildPersonSection(
-		type,
-		personCredits.filter(
-			(credits): credits is NonNullable<typeof credits> =>
-				credits !== null
+	const [onServicesItems, personSection] = await Promise.all([
+		buildOnServicesItems(type, forYouItems, myProviderIds, lang),
+		buildPersonSection(
+			type,
+			personCredits.filter(
+				(credits): credits is NonNullable<typeof credits> =>
+					credits !== null
+			),
+			excludedKeys,
+			t,
+			lang
 		),
-		excludedKeys,
-		t,
-		lang
-	);
+	]);
 
 	const freshItems = filterFreshItems(
-		toMediaItems(freshRaw, isMovie),
+		toMediaItems(freshRaw, type),
 		excludedKeys,
 		affinity
 	);

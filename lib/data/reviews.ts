@@ -7,6 +7,8 @@ import type { Database } from '@/types/database';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { reportSwallowed } from '@/lib/report';
 import { REVIEW_COLUMNS } from '@/lib/supabase/columns';
+import { getMediaKey } from '@/lib/media';
+import type { MediaType } from '@/types/tmdb';
 import type {
 	Review,
 	PublicReview,
@@ -58,6 +60,53 @@ export async function getUserReviews(
 	return { reviews, nextCursor };
 }
 
+export interface ReviewSignals {
+	ratings: Record<string, number>;
+	ratedAt: Record<string, string>;
+}
+
+/**
+ * Returns a user's own movie/tv ratings keyed by media key, with when each was last rated —
+ * the closest thing to a watch date the schema has, used to spot what the user saw recently.
+ * Reviews RLS restricts direct reads to the user's own rows.
+ *
+ * @param userId - Owner of the reviews.
+ * @param client - Admin client for jobs that run without a session; defaults to the request's.
+ */
+export async function getUserReviewSignals(
+	userId: string,
+	client?: SupabaseClient<Database>
+): Promise<ReviewSignals> {
+	const supabase = client ?? (await createClient());
+
+	const data = await fetchAllRows((from, to) =>
+		supabase
+			.from('reviews')
+			.select('media_id, media_type, rating, updated_at')
+			.eq('user_id', userId)
+			.in('media_type', ['movie', 'tv'])
+			.not('rating', 'is', null)
+			.order('media_type')
+			.order('media_id')
+			.range(from, to)
+	).catch((error: unknown) => {
+		reportSwallowed('reviews:ratings', error);
+		return [];
+	});
+
+	const signals: ReviewSignals = { ratings: {}, ratedAt: {} };
+	for (const row of data) {
+		if (row.rating === null) continue;
+		const key = getMediaKey({
+			media_type: row.media_type as MediaType,
+			id: row.media_id,
+		});
+		signals.ratings[key] = row.rating;
+		signals.ratedAt[key] = row.updated_at;
+	}
+	return signals;
+}
+
 /**
  * Returns a `media_key → rating` map of a user's own movie/tv ratings, for sorting lists
  * by user rating. Reviews RLS restricts direct reads to the user's own rows, so callers
@@ -70,37 +119,19 @@ export async function getUserReviewRatings(
 	userId: string,
 	client?: SupabaseClient<Database>
 ): Promise<Record<string, number>> {
-	const supabase = client ?? (await createClient());
-
-	const data = await fetchAllRows((from, to) =>
-		supabase
-			.from('reviews')
-			.select('media_id, media_type, rating')
-			.eq('user_id', userId)
-			.in('media_type', ['movie', 'tv'])
-			.not('rating', 'is', null)
-			.order('media_type')
-			.order('media_id')
-			.range(from, to)
-	).catch((error: unknown) => {
-		reportSwallowed('reviews:ratings', error);
-		return [];
-	});
-
-	const map: Record<string, number> = {};
-	for (const row of data) {
-		if (row.rating !== null) {
-			map[`${row.media_type}-${row.media_id}`] = row.rating;
-		}
-	}
-	return map;
+	return (await getUserReviewSignals(userId, client)).ratings;
 }
 
 /** Returns the authenticated user's own `media_key → rating` map, or an empty map if signed out. */
 export async function getMyReviewRatings(): Promise<Record<string, number>> {
+	return (await getMyReviewSignals()).ratings;
+}
+
+/** Returns the authenticated user's ratings and rating dates, or empty maps if signed out. */
+export async function getMyReviewSignals(): Promise<ReviewSignals> {
 	const { userId } = await getOptionalUser();
-	if (!userId) return {};
-	return getUserReviewRatings(userId);
+	if (!userId) return { ratings: {}, ratedAt: {} };
+	return getUserReviewSignals(userId);
 }
 
 /**

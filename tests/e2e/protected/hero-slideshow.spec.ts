@@ -39,4 +39,63 @@ test.describe('Diaporama de la bannière Explorer', () => {
 		await expect(active.locator('h2')).not.toHaveText(firstTitle ?? '');
 		await expect(page.locator(`${SLIDE}:not([inert])`)).toHaveCount(1);
 	});
+
+	test('avance seule au bout de 5 s pendant que le point actif se remplit', async ({
+		page,
+	}) => {
+		await page.goto('/en/explorer', { waitUntil: 'load' });
+
+		const dots = page.getByRole('button', { name: DOT_LABEL });
+		await expect(dots).toHaveCount(5, { timeout: 15000 });
+		await expect(dots.nth(0).locator('[data-slide-progress]')).toHaveCSS(
+			'animation-duration',
+			'5s'
+		);
+
+		const start = Date.now();
+		await expect(dots.nth(1)).toHaveAttribute('aria-current', 'true', {
+			timeout: 6500,
+		});
+		expect(Date.now() - start).toBeGreaterThan(3500);
+	});
+
+	test('le survol met en pause la progression et la rotation', async ({
+		page,
+	}) => {
+		await page.goto('/en/explorer', { waitUntil: 'load' });
+
+		const dots = page.getByRole('button', { name: DOT_LABEL });
+		await expect(dots).toHaveCount(5, { timeout: 15000 });
+		await page.locator('[aria-roledescription="carousel"]').hover();
+
+		await expect(dots.nth(0).locator('[data-slide-progress]')).toHaveCSS(
+			'animation-play-state',
+			'paused'
+		);
+		await page.waitForTimeout(6000);
+		await expect(dots.nth(0)).toHaveAttribute('aria-current', 'true');
+	});
+
+	test('activer « réduire les animations » en cours de route arrête la rotation', async ({
+		page,
+	}) => {
+		await page.goto('/en/explorer', { waitUntil: 'load' });
+
+		const dots = page.getByRole('button', { name: DOT_LABEL });
+		await expect(dots).toHaveCount(5, { timeout: 15000 });
+		await page.emulateMedia({ reducedMotion: 'reduce' });
+
+		const activeIndex = () =>
+			dots.evaluateAll((buttons) =>
+				buttons.findIndex(
+					(button) => button.getAttribute('aria-current') === 'true'
+				)
+			);
+		const before = await activeIndex();
+		await page.waitForTimeout(6000);
+		expect(await activeIndex()).toBe(before);
+		await expect(
+			dots.nth(before).locator('[data-slide-progress]')
+		).toHaveCSS('animation-name', 'none');
+	});
 });

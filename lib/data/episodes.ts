@@ -6,6 +6,8 @@ import {
 } from '@/lib/supabase/auth-helpers';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { validateUUID } from '@/lib/validators';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
 
 /**
  * Returns the set of watched episode numbers for a given season.
@@ -107,4 +109,37 @@ export async function getProfileTvWatchProgress(
 		if (wanted.has(row.tv_id)) totals[row.tv_id] = row.watched_count;
 	}
 	return totals;
+}
+
+/**
+ * Watched episode count per show for any user, through a privileged client — the weekly
+ * suggestion job runs without a session, so `episode_watch_counts` (bound to auth.uid()) is empty.
+ *
+ * @param client - Service-role Supabase client.
+ * @param userId - Supabase user ID whose progress is read.
+ * @param tvIds - TMDB show IDs to count.
+ * @returns Watched episode count keyed by TMDB show ID.
+ */
+export async function getUserTvWatchCounts(
+	client: SupabaseClient<Database>,
+	userId: string,
+	tvIds: number[]
+): Promise<Record<number, number>> {
+	if (tvIds.length === 0) return {};
+
+	const watches = await fetchAllRows((from, to) =>
+		client
+			.from('episode_watches')
+			.select('tv_id')
+			.eq('user_id', userId)
+			.in('tv_id', tvIds)
+			.order('tv_id')
+			.order('season_number')
+			.order('episode_number')
+			.range(from, to)
+	);
+
+	const counts: Record<number, number> = {};
+	for (const { tv_id } of watches) counts[tv_id] = (counts[tv_id] ?? 0) + 1;
+	return counts;
 }

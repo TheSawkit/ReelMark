@@ -7,7 +7,7 @@ import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
 import { getAllTvShowsWatchProgress } from '@/lib/data/episodes';
 import { getTvShowsTotalEpisodes } from '@/lib/tmdb';
 import type { Language } from '@/lib/i18n/translations';
-import { getMyReviewRatings } from '@/lib/data/reviews';
+import { getMyReviewSignals } from '@/lib/data/reviews';
 import {
 	getMyDismissals,
 	getMyStreamingProviders,
@@ -202,7 +202,7 @@ export async function getMediaWatchlistEntries(
 }
 
 export const getCachedUserWatchlist = cache(getUserWatchlist);
-export const getCachedMyRatings = cache(getMyReviewRatings);
+export const getCachedMyReviewSignals = cache(getMyReviewSignals);
 export const getCachedDismissals = cache(getMyDismissals);
 export const getCachedStreamingProviders = cache(getMyStreamingProviders);
 

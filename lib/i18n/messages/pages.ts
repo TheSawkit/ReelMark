@@ -156,7 +156,33 @@ const fr = {
 	},
 	dashboard: {
 		title: 'Tableau de bord',
-		welcome: 'Bonjour, content de te revoir !',
+		greetings: {
+			neutral: 'Salut, {name} !',
+			fallbackName: 'cinéphile',
+			morning: [
+				'Bonjour, {name} ! Café d’abord, générique ensuite.',
+				'Bonjour, {name}. « Je reviendrai »… et te revoilà !',
+				'Bonjour, {name} ! Le spice doit couler, les épisodes aussi.',
+				'Bonjour, {name}. Que la Force soit avec ta journée.',
+			],
+			afternoon: [
+				'Bonjour, {name} ! Une petite séance en matinée ?',
+				'Bonjour, {name}. This is the way… vers ta watchlist.',
+				'Bonjour, {name} ! Houston, on a un nouveau programme.',
+				'Bonjour, {name}. Pause bien méritée, non ?',
+			],
+			evening: [
+				'Bonsoir, {name} ! Les lumières s’éteignent…',
+				'Bonsoir, {name}. L’hiver vient… ta watchlist aussi.',
+				'Bonsoir, {name} ! Ce soir, on se fait une toile ?',
+				'Bonsoir, {name}. Que la Force soit avec ta soirée.',
+			],
+			night: [
+				'Encore debout, {name} ? Un dernier épisode…',
+				'Bonsoir, {name}. Les meilleures séances sont tardives.',
+				'Service de nuit, {name} ? Yes, chef !',
+			],
+		},
 		nextWatchings: 'Tes prochains visionnages',
 		emptyLibrary:
 			'Ta bibliothèque est vide. Commence à explorer pour obtenir des recommandations !',
@@ -169,6 +195,12 @@ const fr = {
 		onAirForYou: 'En ce moment, pour toi',
 		notInterested: 'Pas intéressé',
 		similarTo: 'Similaire à ${movie.movie_title}',
+		because: {
+			watching: 'Parce que tu regardes ${title}',
+			liked: 'Parce que tu as aimé ${title}',
+			watched: 'Parce que tu as vu ${title}',
+			listed: 'Parce que ${title} est dans ta liste',
+		},
 		resume: 'Reprendre',
 		discover: 'Voir la fiche',
 		trendingNow: 'Tendances du moment',
@@ -372,7 +404,33 @@ const en = {
 	},
 	dashboard: {
 		title: 'Dashboard',
-		welcome: 'Hello, glad to see you again!',
+		greetings: {
+			neutral: 'Hi, {name}!',
+			fallbackName: 'movie lover',
+			morning: [
+				'Good morning, {name}! Coffee first, credits next.',
+				'Good morning, {name}. “I’ll be back”… and here you are!',
+				'Good morning, {name}! The spice must flow, and so must the episodes.',
+				'Good morning, {name}. May the Force be with your day.',
+			],
+			afternoon: [
+				'Good afternoon, {name}! Up for a matinee?',
+				'Good afternoon, {name}. This is the way… to your watchlist.',
+				'Good afternoon, {name}! Houston, we have a new show.',
+				'Good afternoon, {name}. Well-earned break, right?',
+			],
+			evening: [
+				'Good evening, {name}! The lights are going down…',
+				'Good evening, {name}. Winter is coming… and so is your watchlist.',
+				'Good evening, {name}! Movie night?',
+				'Good evening, {name}. May the Force be with your night.',
+			],
+			night: [
+				'Still up, {name}? Just one more episode…',
+				'Good evening, {name}. The best screenings run late.',
+				'Night shift, {name}? Yes, chef!',
+			],
+		},
 		nextWatchings: 'Your next watchings',
 		emptyLibrary:
 			'Your library is empty. Start exploring to get recommendations!',
@@ -385,6 +443,12 @@ const en = {
 		onAirForYou: 'Airing now, for you',
 		notInterested: 'Not interested',
 		similarTo: 'Similar to ${movie.movie_title}',
+		because: {
+			watching: 'Because you’re watching ${title}',
+			liked: 'Because you liked ${title}',
+			watched: 'Because you watched ${title}',
+			listed: 'Because ${title} is on your list',
+		},
 		resume: 'Resume',
 		discover: 'View details',
 		trendingNow: 'Trending now',

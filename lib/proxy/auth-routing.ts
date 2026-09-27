@@ -23,6 +23,7 @@ export type RouteAccess = {
 	isAuthRoute: boolean;
 	isRecovery: boolean;
 	isOnboarding: boolean;
+	isLanding: boolean;
 };
 
 /** Classifies a localized pathname against the protected, auth and recovery route lists. */
@@ -42,6 +43,7 @@ export function getRouteAccess(
 		),
 		isRecovery: pathWithoutLocale.startsWith(RECOVERY_SEGMENT),
 		isOnboarding: pathWithoutLocale.startsWith(ONBOARDING_SEGMENT),
+		isLanding: pathWithoutLocale === '/',
 	};
 }
 
@@ -73,7 +75,7 @@ async function hasIncompleteOnboarding(
 	return needsOnboarding(user.user_metadata, data?.onboarding_completed);
 }
 
-/** Refreshes the Supabase session and enforces the redirect rules of protected, auth and recovery routes. */
+/** Refreshes the Supabase session and enforces the redirect rules of protected, auth, recovery and landing routes — the landing sends a signed-in visitor straight to the dashboard with one HTTP redirect. */
 export async function handleAuthRouting(
 	request: NextRequest,
 	locale: Language,
@@ -116,7 +118,7 @@ export async function handleAuthRouting(
 		return NextResponse.redirect(errorUrl);
 	}
 
-	if (access.isAuthRoute && user) {
+	if ((access.isAuthRoute || access.isLanding) && user) {
 		const dashboardUrl = request.nextUrl.clone();
 		dashboardUrl.pathname = `/${locale}/dashboard`;
 		return NextResponse.redirect(dashboardUrl);

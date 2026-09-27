@@ -79,6 +79,7 @@
 	--duration-slower: 600ms;
 	--duration-slowest: 800ms;
 	--duration-stagger: 70ms;
+	--duration-slideshow: 5000ms;
 
 	--font-sans: var(--font-sans);
 	--font-display: var(--font-display);
@@ -103,6 +104,8 @@
 	--animate-scale-in: scaleIn var(--duration-slow) var(--ease-apple) backwards;
 	--animate-shimmer: shimmer 2s linear infinite;
 	--animate-swap-in: fadeIn var(--duration-base) var(--ease-apple) backwards;
+	--animate-slide-progress: slideProgress var(--duration-slideshow) linear
+		forwards;
 }
 
 :root {
@@ -298,6 +301,16 @@ a {
 		animation-duration: 0.01ms !important;
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
+	}
+}
+
+@keyframes slideProgress {
+	from {
+		transform: scaleX(0);
+	}
+
+	to {
+		transform: scaleX(1);
 	}
 }
 
@@ -605,6 +618,27 @@ a {
 		border-top-color: var(--glass-border-hover);
 	}
 
+	/* Chips repeated on every card (rating badge, dismiss button): the glass-overlay tint without
+	   backdrop-filter — one blur per card is one GPU layer per card, over a hundred on a dashboard. */
+	.poster-chip,
+	.poster-chip-button {
+		background-color: color-mix(in srgb, var(--surface) 80%, transparent);
+		border: 1px solid var(--border);
+		border-top-color: var(--glass-border-hover);
+	}
+
+	.poster-chip-button {
+		transition:
+			background-color var(--duration-fast) var(--ease-apple),
+			border-color var(--duration-fast) var(--ease-apple),
+			color var(--duration-fast) var(--ease-apple);
+	}
+
+	.poster-chip-button:hover {
+		background-color: color-mix(in srgb, var(--surface) 92%, transparent);
+		border-color: var(--glass-border-hover);
+	}
+
 	/* Interactive variant: hover densifies the glass instead of tinting it. */
 	.glass-overlay-button {
 		transition:
@@ -731,6 +765,12 @@ a {
 
 /* Défilement horizontal sans barre visible (rangées, méta des héros) — la classe était déjà
    posée sur les rangées sans être définie. */
+/* Room for a two-line line of text, so text picked after hydration (the local-time dashboard
+   greeting) never pushes the content around when it wraps. */
+@utility min-h-two-lines {
+	min-height: 2lh;
+}
+
 @utility scrollbar-hide {
 	scrollbar-width: none;
 

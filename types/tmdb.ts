@@ -120,6 +120,13 @@ export interface Episode {
 	guest_stars?: Cast[];
 }
 
+export type RecommendationReason = 'watching' | 'liked' | 'watched' | 'listed';
+
+export interface RecommendationSource {
+	title: string;
+	reason: RecommendationReason;
+}
+
 export interface MediaItem {
 	id: number;
 	media_type: MediaType;
@@ -137,6 +144,7 @@ export interface MediaItem {
 	watchlistEntry?: WatchlistEntry;
 	userRating?: number | null;
 	addedAt?: string;
+	becauseOf?: RecommendationSource;
 }
 
 export interface Cast {

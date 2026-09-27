@@ -30,7 +30,12 @@ export async function proxy(request: NextRequest) {
 	const access = getRouteAccess(pathname, locale);
 	const requestHeaders = buildRequestHeaders(request, locale);
 
-	if (!access.isProtected && !access.isAuthRoute && !access.isRecovery) {
+	if (
+		!access.isProtected &&
+		!access.isAuthRoute &&
+		!access.isRecovery &&
+		!access.isLanding
+	) {
 		return NextResponse.next({ request: { headers: requestHeaders } });
 	}
 

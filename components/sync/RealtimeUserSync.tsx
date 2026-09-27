@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { withBrowserClient } from '@/lib/supabase/lazy-client';
 import { mediaWatchStore } from '@/lib/stores/media-watch';
 import { episodeWatchStore } from '@/lib/stores/episode-watch';
 import { VALID_MEDIA_TYPES, VALID_STATUSES } from '@/lib/validators';
@@ -45,74 +45,76 @@ function isSyncableEpisodeRow(
  * re-render the page on every click.
  */
 export function RealtimeUserSync({ userId }: RealtimeUserSyncProps) {
-	useEffect(() => {
-		const supabase = createClient();
+	useEffect(
+		() =>
+			withBrowserClient((supabase) => {
+				const channel = supabase
+					.channel(`user-sync:${userId}`)
+					.on<WatchlistRow>(
+						'postgres_changes',
+						{
+							event: '*',
+							schema: 'public',
+							table: 'watchlist',
+							filter: `user_id=eq.${userId}`,
+						},
+						(payload) => {
+							const row =
+								payload.eventType === 'DELETE'
+									? payload.old
+									: payload.new;
+							if (!isSyncableWatchlistRow(row)) return;
 
-		const channel = supabase
-			.channel(`user-sync:${userId}`)
-			.on<WatchlistRow>(
-				'postgres_changes',
-				{
-					event: '*',
-					schema: 'public',
-					table: 'watchlist',
-					filter: `user_id=eq.${userId}`,
-				},
-				(payload) => {
-					const row =
-						payload.eventType === 'DELETE'
-							? payload.old
-							: payload.new;
-					if (!isSyncableWatchlistRow(row)) return;
+							const mediaType = row.media_type as MediaType;
+							if (payload.eventType === 'DELETE') {
+								mediaWatchStore.applyRemote(
+									mediaType,
+									row.media_id,
+									'none'
+								);
+								if (mediaType === 'tv')
+									episodeWatchStore.clearShow(row.media_id);
+								return;
+							}
 
-					const mediaType = row.media_type as MediaType;
-					if (payload.eventType === 'DELETE') {
-						mediaWatchStore.applyRemote(
-							mediaType,
-							row.media_id,
-							'none'
-						);
-						if (mediaType === 'tv')
-							episodeWatchStore.clearShow(row.media_id);
-						return;
-					}
+							mediaWatchStore.applyRemote(
+								mediaType,
+								row.media_id,
+								row.status as WatchStatus
+							);
+						}
+					)
+					.on<EpisodeWatchRow>(
+						'postgres_changes',
+						{
+							event: '*',
+							schema: 'public',
+							table: 'episode_watches',
+							filter: `user_id=eq.${userId}`,
+						},
+						(payload) => {
+							const row =
+								payload.eventType === 'DELETE'
+									? payload.old
+									: payload.new;
+							if (!isSyncableEpisodeRow(row)) return;
 
-					mediaWatchStore.applyRemote(
-						mediaType,
-						row.media_id,
-						row.status as WatchStatus
-					);
-				}
-			)
-			.on<EpisodeWatchRow>(
-				'postgres_changes',
-				{
-					event: '*',
-					schema: 'public',
-					table: 'episode_watches',
-					filter: `user_id=eq.${userId}`,
-				},
-				(payload) => {
-					const row =
-						payload.eventType === 'DELETE'
-							? payload.old
-							: payload.new;
-					if (!isSyncableEpisodeRow(row)) return;
+							episodeWatchStore.applyRemoteEpisode(
+								row.tv_id,
+								row.season_number,
+								row.episode_number,
+								payload.eventType !== 'DELETE'
+							);
+						}
+					)
+					.subscribe();
 
-					episodeWatchStore.applyRemoteEpisode(
-						row.tv_id,
-						row.season_number,
-						row.episode_number,
-						payload.eventType !== 'DELETE'
-					);
-				}
-			)
-			.subscribe();
-
-		return () => {
-			void supabase.removeChannel(channel);
-		};
-	}, [userId]);
+				return () => {
+					void supabase.removeChannel(channel);
+				};
+			}),
+		[userId]
+	);
 
 	return null;
 }
