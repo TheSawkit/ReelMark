@@ -15,7 +15,6 @@ import {
 	MediaSection,
 	LibraryMediaSection,
 } from '@/components/media/card/MediaSection';
-import { MediaSectionsSkeleton } from '@/components/media/card/MediaSectionsSkeleton';
 import { MediaTypeSwitcherSkeleton } from '@/components/media/card/MediaTypeSwitcherSkeleton';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { getTranslations, type Translations } from '@/lib/i18n/server';
@@ -35,6 +34,7 @@ import {
 	DashboardHeroSkeleton,
 	BentoStatsSkeleton,
 	TrendingMarqueeSkeleton,
+	LibrarySectionsSkeleton,
 } from '@/components/dashboard/DashboardSkeletons';
 import {
 	getContinueWatching,
@@ -328,14 +328,7 @@ export default async function DashboardPage({ params: paramsPromise }: Props) {
 					<MediaTypeSwitcher defaultType="movie" shallow />
 				</Suspense>
 
-				<Suspense
-					fallback={
-						<MediaSectionsSkeleton
-							sections={3}
-							cardsPerSection={8}
-						/>
-					}
-				>
+				<Suspense fallback={<LibrarySectionsSkeleton />}>
 					<LibraryContentSection t={t} lang={lang} />
 				</Suspense>
 			</PageLayout>

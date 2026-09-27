@@ -1,5 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { SectionHeadingSkeleton } from '@/components/ui/SectionHeading';
+import { MediaSectionsSkeleton } from '@/components/media/card/MediaSectionsSkeleton';
+import { ForYouSectionSkeleton } from '@/components/dashboard/ForYouSectionSkeleton';
 
 /** DashboardHero placeholder: same full-bleed stage, greeting and resume block on the same line boxes. */
 export function DashboardHeroSkeleton() {
@@ -45,5 +47,16 @@ export function TrendingMarqueeSkeleton() {
 				))}
 			</div>
 		</section>
+	);
+}
+
+/** Personalized rows placeholder in their usual order: next watchings, "For you" with its reasons, then one more row. */
+export function LibrarySectionsSkeleton() {
+	return (
+		<>
+			<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
+			<ForYouSectionSkeleton />
+			<MediaSectionsSkeleton sections={1} cardsPerSection={8} />
+		</>
 	);
 }
