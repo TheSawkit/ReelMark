@@ -618,6 +618,27 @@ a {
 		border-top-color: var(--glass-border-hover);
 	}
 
+	/* Chips repeated on every card (rating badge, dismiss button): the glass-overlay tint without
+	   backdrop-filter — one blur per card is one GPU layer per card, over a hundred on a dashboard. */
+	.poster-chip,
+	.poster-chip-button {
+		background-color: color-mix(in srgb, var(--surface) 80%, transparent);
+		border: 1px solid var(--border);
+		border-top-color: var(--glass-border-hover);
+	}
+
+	.poster-chip-button {
+		transition:
+			background-color var(--duration-fast) var(--ease-apple),
+			border-color var(--duration-fast) var(--ease-apple),
+			color var(--duration-fast) var(--ease-apple);
+	}
+
+	.poster-chip-button:hover {
+		background-color: color-mix(in srgb, var(--surface) 92%, transparent);
+		border-color: var(--glass-border-hover);
+	}
+
 	/* Interactive variant: hover densifies the glass instead of tinting it. */
 	.glass-overlay-button {
 		transition:

@@ -52,7 +52,7 @@ export function AbandonShowMenu({
 					disabled={loading}
 					aria-label={t.movie.moreActions}
 					className={cn(
-						'relative flex h-8 w-8 items-center justify-center rounded-full glass-overlay-button text-text',
+						'relative flex h-8 w-8 items-center justify-center rounded-full poster-chip-button text-text',
 						'shadow-card-sm cursor-pointer',
 						// Cible tactile élargie, mais d'un cran seulement : dans « Continuer à
 						// regarder » le voisin n'est qu'à 6 px, qu'un `-inset-2` recouvrirait.

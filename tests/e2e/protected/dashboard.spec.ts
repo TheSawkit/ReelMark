@@ -17,9 +17,38 @@ test.describe('Dashboard', () => {
 		});
 	});
 
+	test('the landing sends a signed-in visitor to the dashboard with one HTTP redirect', async ({
+		page,
+	}) => {
+		const res = await page.request.get('/en', { maxRedirects: 0 });
+		expect(res.status()).toBe(307);
+		expect(res.headers().location).toMatch(/\/en\/dashboard$/);
+	});
+
 	test('does not redirect to login when authenticated', async ({ page }) => {
 		await page.goto('/en/dashboard');
 		await expect(page).not.toHaveURL(/\/login/);
+	});
+
+	/** Un flou par carte = une couche GPU par carte : le dashboard en empilait 172 (kill mémoire WebKit mobile). */
+	test('cards repeated in the rows carry no backdrop-filter', async ({
+		page,
+	}) => {
+		await page.goto('/en/dashboard');
+		await expect(page.locator('.snap-start').first()).toBeVisible({
+			timeout: 20000,
+		});
+		const blurredInCards = await page.evaluate(
+			() =>
+				[...document.querySelectorAll('.snap-start *')].filter((el) => {
+					const style = getComputedStyle(el);
+					return (
+						style.backdropFilter !== 'none' ||
+						(style.webkitBackdropFilter ?? 'none') !== 'none'
+					);
+				}).length
+		);
+		expect(blurredInCards).toBe(0);
 	});
 
 	test('explains why each "For You" title is suggested', async ({ page }) => {
