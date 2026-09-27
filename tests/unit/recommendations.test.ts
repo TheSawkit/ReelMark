@@ -124,6 +124,33 @@ describe('pickSeeds', () => {
 		expect(seeds).toHaveLength(6);
 	});
 
+	it('treats a title rated recently as recent, even if added long ago', () => {
+		const favourites = [1, 2, 3].map((id) =>
+			entry({ media_id: id, created_at: '2019-01-01T00:00:00Z' })
+		);
+		const newlyAdded = [4, 5, 6].map((id) =>
+			entry({ media_id: id, created_at: '2026-08-01T00:00:00Z' })
+		);
+		const rewatched = entry({
+			media_id: 7,
+			created_at: '2020-01-01T00:00:00Z',
+		});
+		const ratings = {
+			'movie-1': 10,
+			'movie-2': 10,
+			'movie-3': 10,
+			'movie-7': 8,
+		};
+
+		const seeds = pickSeeds(
+			[...favourites, ...newlyAdded, rewatched],
+			ratings,
+			{},
+			{ 'movie-7': '2026-09-20T00:00:00Z' }
+		);
+		expect(seeds.map((s) => s.entry.media_id)).toContain(7);
+	});
+
 	it('seeds first from a show the user is watching right now', () => {
 		const done = [1, 2, 3, 4, 5, 6].map((id) =>
 			entry({ media_id: id, media_type: 'tv' })
@@ -434,6 +461,20 @@ describe('pickSimilarSeeds', () => {
 
 		const seeds = pickSimilarSeeds(entries, { 'movie-1': 1, 'movie-3': 5 });
 		expect(seeds.map((s) => s.media_id)).toEqual([2, 4, 5]);
+	});
+
+	it('opens a row for the title rated most recently first', () => {
+		const entries = [
+			entry({ media_id: 1, created_at: '2026-09-05T00:00:00Z' }),
+			entry({ media_id: 2, created_at: '2020-01-01T00:00:00Z' }),
+		];
+
+		const seeds = pickSimilarSeeds(
+			entries,
+			{ 'movie-2': 9 },
+			{ 'movie-2': '2026-09-20T00:00:00Z' }
+		);
+		expect(seeds.map((s) => s.media_id)).toEqual([2, 1]);
 	});
 });
 

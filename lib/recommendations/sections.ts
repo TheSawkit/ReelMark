@@ -22,7 +22,7 @@ import {
 import { knownTvProgress } from '@/lib/tv-progress';
 import {
 	getCachedDismissals,
-	getCachedMyRatings,
+	getCachedMyReviewSignals,
 	getCachedStreamingProviders,
 	getWatchlistWithProgress,
 	mergeWithWatchlist,
@@ -274,14 +274,22 @@ export async function buildLibrarySections(
 
 	const getCredits = isMovie ? getMovieCredits : getTvShowCredits;
 
-	const [ratingByKey, dismissals, myProviderIds] = await Promise.all([
-		getCachedMyRatings(),
+	const [
+		{ ratings: ratingByKey, ratedAt: ratedAtByKey },
+		dismissals,
+		myProviderIds,
+	] = await Promise.all([
+		getCachedMyReviewSignals(),
 		getCachedDismissals(),
 		getCachedStreamingProviders(),
 	]);
-	const seeds = pickSeeds(typeEntries, ratingByKey, tvProgress);
+	const seeds = pickSeeds(typeEntries, ratingByKey, tvProgress, ratedAtByKey);
 	const personSeedEntries = pickPersonSeeds(watched, ratingByKey);
-	const seedForSimilars = pickSimilarSeeds(typeEntries, ratingByKey);
+	const seedForSimilars = pickSimilarSeeds(
+		typeEntries,
+		ratingByKey,
+		ratedAtByKey
+	);
 
 	const [recommendationsResults, similarResults, personCredits, freshRaw] =
 		await Promise.all([

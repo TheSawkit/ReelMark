@@ -72,9 +72,26 @@ function isLiked(rating: number | undefined): boolean {
 	return rating === undefined || rating >= MIN_FAVORITE_RATING;
 }
 
-function newestFirst(entries: readonly WatchlistEntry[]): WatchlistEntry[] {
+function latestActivity(
+	entry: WatchlistEntry,
+	ratedAtByKey: Readonly<Record<string, string>>
+): string {
+	const ratedAt =
+		ratedAtByKey[
+			getMediaKey({ media_type: entry.media_type, id: entry.media_id })
+		] ?? '';
+	const addedAt = entry.created_at ?? '';
+	return ratedAt > addedAt ? ratedAt : addedAt;
+}
+
+function mostRecentFirst(
+	entries: readonly WatchlistEntry[],
+	ratedAtByKey: Readonly<Record<string, string>>
+): WatchlistEntry[] {
 	return [...entries].sort((a, b) =>
-		(b.created_at ?? '').localeCompare(a.created_at ?? '')
+		latestActivity(b, ratedAtByKey).localeCompare(
+			latestActivity(a, ratedAtByKey)
+		)
 	);
 }
 
@@ -103,16 +120,18 @@ function seedReason(
 /**
  * Picks the recommendation seeds for a user, mixing what they watch now with what they
  * love most: shows in progress first, then the best-rated titles, then the latest liked
- * ones, so the row follows current tastes instead of freezing on all-time favourites.
+ * ones — added or rated most recently — so the row follows current tastes instead of
+ * freezing on all-time favourites.
  * Abandoned shows and titles rated under 2 stars (4/10) never seed.
  */
 export function pickSeeds(
 	entries: WatchlistEntry[],
 	ratingByKey: Record<string, number>,
-	episodesWatched: Readonly<Record<number, number>> = {}
+	episodesWatched: Readonly<Record<number, number>> = {},
+	ratedAtByKey: Readonly<Record<string, string>> = {}
 ): RecommendationSeed[] {
 	const rating = ratingLookup(ratingByKey);
-	const usable = newestFirst(entries).filter(
+	const usable = mostRecentFirst(entries, ratedAtByKey).filter(
 		(entry) => !isDisliked(entry, rating(entry))
 	);
 
@@ -301,13 +320,14 @@ export function applyDismissals(
 	}
 }
 
-/** The latest watched titles the user liked — each one opens a "Similar to X" row. */
+/** The watched titles the user liked most recently (added or rated) — each one opens a "Similar to X" row. */
 export function pickSimilarSeeds(
 	entries: WatchlistEntry[],
-	ratingByKey: Record<string, number>
+	ratingByKey: Record<string, number>,
+	ratedAtByKey: Readonly<Record<string, string>> = {}
 ): WatchlistEntry[] {
 	const rating = ratingLookup(ratingByKey);
-	return newestFirst(entries)
+	return mostRecentFirst(entries, ratedAtByKey)
 		.filter((entry) => entry.status === 'watched' && isLiked(rating(entry)))
 		.slice(0, MAX_SIMILAR_SEEDS);
 }

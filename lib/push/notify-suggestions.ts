@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
 import { mapLimit } from '@/lib/data-transfer/resolve';
-import { getUserReviewRatings } from '@/lib/data/reviews';
+import { getUserReviewSignals } from '@/lib/data/reviews';
 import { getUserTvWatchCounts } from '@/lib/data/episodes';
 import {
 	getMovieRecommendations,
@@ -32,9 +32,15 @@ async function candidatesFor(
 	entries: WatchlistEntry[],
 	ratingByKey: Record<string, number>,
 	episodesWatched: Record<number, number>,
+	ratedAtByKey: Record<string, string>,
 	lang: Language
 ) {
-	const seeds = pickSeeds(entries, ratingByKey, episodesWatched);
+	const seeds = pickSeeds(
+		entries,
+		ratingByKey,
+		episodesWatched,
+		ratedAtByKey
+	);
 	return Promise.all(
 		seeds.map(async ({ entry, weight }) => ({
 			weight,
@@ -56,7 +62,12 @@ async function suggestionFor(
 ): Promise<MediaItem | null> {
 	const admin = createAdminClient();
 
-	const [rows, ratingByKey, dismissals, past] = await Promise.all([
+	const [
+		rows,
+		{ ratings: ratingByKey, ratedAt: ratedAtByKey },
+		dismissals,
+		past,
+	] = await Promise.all([
 		fetchAllRows((from, to) =>
 			admin
 				.from('watchlist')
@@ -65,7 +76,7 @@ async function suggestionFor(
 				.order('id')
 				.range(from, to)
 		),
-		getUserReviewRatings(userId, admin),
+		getUserReviewSignals(userId, admin),
 		admin
 			.from('recommendation_dismissals')
 			.select('media_id, media_type, genre_ids')
@@ -108,6 +119,7 @@ async function suggestionFor(
 				typeEntries,
 				ratingByKey,
 				episodesWatched,
+				ratedAtByKey,
 				lang
 			),
 			alreadySuggested,
