@@ -44,7 +44,7 @@ test.beforeEach(() => {
 });
 
 test.describe('AI assistant link', () => {
-	test('a generated link serves the read-only tools until it is revoked', async ({
+	test('a generated link serves the tools until it is revoked', async ({
 		page,
 		request,
 	}) => {
@@ -73,9 +73,12 @@ test.describe('AI assistant link', () => {
 			'get_title',
 			'get_watchlist',
 			'search_titles',
+			'update_library',
 		]);
 		for (const tool of result.tools) {
-			expect(tool.annotations?.readOnlyHint).toBe(true);
+			expect(tool.annotations?.readOnlyHint).toBe(
+				tool.name !== 'update_library'
+			);
 		}
 
 		const call = await callMcp(request, path, 'tools/call', {

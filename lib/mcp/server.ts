@@ -5,6 +5,11 @@ import { z } from 'zod';
 import { createAdminClient } from '@/lib/supabase/server';
 import { loadUserMarks, loadUserTaste, tasteOfType } from '@/lib/data/taste';
 import { cachedUserTaste } from '@/lib/mcp/user-cache';
+import {
+	deleteWatchlistEntry,
+	upsertWatchlistEntry,
+} from '@/lib/data/watchlist-writes';
+import { revalidateWatchlistPaths } from '@/app/actions/_helpers';
 import { getMcpUserContext } from '@/lib/data/mcp';
 import {
 	pickSeeds,
@@ -43,6 +48,9 @@ const mediaType = z
 
 const READ_ONLY = { readOnlyHint: true, openWorldHint: false } as const;
 
+/** What `update_library` can do to a title: the three library statuses, or taking it out. */
+const LIBRARY_CHANGES = ['to_watch', 'watched', 'abandoned', 'remove'] as const;
+
 const json = (data: unknown): CallToolResult => ({
 	content: [{ type: 'text', text: JSON.stringify(data) }],
 });
@@ -53,9 +61,10 @@ const failure = (message: string): CallToolResult => ({
 });
 
 /**
- * Builds the read-only ReelMark MCP server for one user: every tool answers from their library,
- * never writes, and only returns titles that exist on TMDB. Nothing loads until a tool runs, so
- * handshakes and `tools/list` cost no I/O.
+ * Builds the ReelMark MCP server for one user: every tool answers from their library and only
+ * returns titles that exist on TMDB; `update_library` is the single write, limited to that
+ * user's library statuses. Nothing loads until a tool runs, so handshakes and `tools/list` cost
+ * no I/O.
  */
 export function createReelMarkMcpServer(userId: string): McpServer {
 	const admin = createAdminClient();
@@ -75,7 +84,7 @@ export function createReelMarkMcpServer(userId: string): McpServer {
 		{ name: 'reelmark', version: '1.0.0' },
 		{
 			instructions:
-				"ReelMark is the user's movie and TV tracker. Start with get_taste_profile to learn what they love and dislike, then use get_recommendations or search_titles to find candidates, and get_title for details and where to stream. Only recommend titles returned by these tools. Ratings use a 1–10 scale.",
+				"ReelMark is the user's movie and TV tracker. Start with get_taste_profile to learn what they love and dislike, then use get_recommendations or search_titles to find candidates, and get_title for details and where to stream. Only recommend titles returned by these tools. Ratings use a 1–10 scale. Use update_library only when the user explicitly asks to mark a title as watched, to watch or abandoned, or to remove it — find its id with search_titles first.",
 		}
 	);
 
@@ -262,6 +271,67 @@ export function createReelMarkMcpServer(userId: string): McpServer {
 						]
 					)
 				),
+			});
+		}
+	);
+
+	server.registerTool(
+		'update_library',
+		{
+			title: 'Update the library',
+			description:
+				"Marks a movie or series in the user's library as to watch, watched or abandoned (series only), or removes it from the library. Only call it when the user explicitly asks for that change. Returns the title's new state.",
+			inputSchema: z.object({
+				type: mediaType,
+				id: z.number().int().positive().describe('TMDB id'),
+				status: z
+					.enum(LIBRARY_CHANGES)
+					.describe(
+						'"to_watch", "watched", "abandoned" (series only), or "remove" to take it out of the library'
+					),
+			}),
+			annotations: {
+				readOnlyHint: false,
+				destructiveHint: true,
+				idempotentHint: true,
+				openWorldHint: false,
+			},
+		},
+		async ({ type, id, status }) => {
+			if (status === 'abandoned' && type === 'movie') {
+				return failure('Only a series can be abandoned.');
+			}
+			try {
+				if (status === 'remove') {
+					await deleteWatchlistEntry(admin, userId, id, type);
+				} else {
+					const { lang } = await userContext();
+					const details =
+						type === 'movie'
+							? await getMovieDetails(id, lang)
+							: await getTvShowDetails(id, lang);
+					await upsertWatchlistEntry(admin, userId, {
+						mediaId: id,
+						mediaType: type,
+						mediaTitle:
+							'title' in details ? details.title : details.name,
+						posterPath: details.poster_path,
+						status,
+					});
+				}
+			} catch (error) {
+				if (isTMDBNotFound(error)) return failure('Title not found.');
+				throw error;
+			}
+
+			cachedUserTaste.forget(userId);
+			revalidateWatchlistPaths(type, id);
+			const { link } = await formatting();
+			return json({
+				id,
+				type,
+				status: status === 'remove' ? null : status,
+				url: link(type, id),
 			});
 		}
 	);

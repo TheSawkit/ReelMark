@@ -16,7 +16,7 @@ const handler = createMcpHandler(
 	{ onerror: (error) => reportSwallowed('mcp:handler', error) }
 );
 
-/** MCP endpoint of one user's AI link: the secret path segment is the credential, the tools only read. */
+/** MCP endpoint of one user's AI link: the secret path segment is the credential; the tools read, and only `update_library` writes, to that user's library alone. */
 async function handle(request: Request, { params }: Context) {
 	const { key } = await params;
 	const owner = await resolveMcpKey(key);
