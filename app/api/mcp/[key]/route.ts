@@ -1,6 +1,11 @@
 import { after } from 'next/server';
 import { createMcpHandler } from '@modelcontextprotocol/server';
-import { getMcpUserContext, resolveMcpKey, touchMcpKey } from '@/lib/data/mcp';
+import {
+	getMcpUserContext,
+	resolveMcpKey,
+	touchMcpKey,
+	type McpUserContext,
+} from '@/lib/data/mcp';
 import { createReelMarkMcpServer } from '@/lib/mcp/server';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { reportSwallowed } from '@/lib/report';
@@ -11,6 +16,16 @@ const BUDGETS = [
 ] as const;
 
 type Context = { params: Promise<{ key: string }> };
+
+/**
+ * One handler for every link: each request still gets a fresh server from the factory, built for
+ * the user the route resolved — handed over through `authInfo`, the SDK's per-principal channel.
+ */
+const handler = createMcpHandler(
+	({ authInfo }) =>
+		createReelMarkMcpServer(authInfo?.extra?.context as McpUserContext),
+	{ onerror: (error) => reportSwallowed('mcp:handler', error) }
+);
 
 /** MCP endpoint of one user's AI link: the secret path segment is the credential, the tools only read. */
 async function handle(request: Request, { params }: Context) {
@@ -37,12 +52,16 @@ async function handle(request: Request, { params }: Context) {
 	}
 
 	const context = await getMcpUserContext(owner.userId);
-	const handler = createMcpHandler(() => createReelMarkMcpServer(context), {
-		responseMode: 'json',
-		onerror: (error) => reportSwallowed('mcp:handler', error),
+	after(() => touchMcpKey(owner));
+	return handler.fetch(request, {
+		authInfo: {
+			token: '',
+			clientId: owner.userId,
+			scopes: [],
+			extra: { context },
+		},
 	});
-	after(() => Promise.all([touchMcpKey(owner), handler.close()]));
-	return handler.fetch(request);
 }
 
-export { handle as GET, handle as POST, handle as DELETE };
+/** POST only: the server is stateless, so GET (SSE stream) and DELETE (session end) would be 405 anyway — Next answers them before any key lookup or budget spend. */
+export { handle as POST };
