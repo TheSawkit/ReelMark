@@ -4,12 +4,6 @@ import { WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/context';
 
-if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-	navigator.serviceWorker.ready.then((registration) => {
-		registration.active?.postMessage({ type: 'PREFETCH_OFFLINE_PAGE' });
-	});
-}
-
 export default function OfflinePage() {
 	const { t } = useTranslation();
 	return (

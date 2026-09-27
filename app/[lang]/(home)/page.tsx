@@ -12,7 +12,7 @@ import {
 	tvShowToMediaItem,
 } from '@/lib/tmdb';
 import type { Movie, TvShow } from '@/types/tmdb';
-import { DEFAULT_OG_IMAGE } from '@/lib/metadata';
+import { DEFAULT_OG_IMAGE, localizedAlternates } from '@/lib/metadata';
 import { webSiteJsonLd, organizationJsonLd } from '@/lib/structured-data';
 import { JsonLd } from '@/components/seo/JsonLd';
 
@@ -26,6 +26,7 @@ export async function generateMetadata({
 	return {
 		title: { absolute: t.metadata.landingTitle },
 		description: t.metadata.landingDescription,
+		alternates: localizedAlternates(lang, '/'),
 		openGraph: {
 			title: t.metadata.landingTitle,
 			description: t.metadata.landingDescription,

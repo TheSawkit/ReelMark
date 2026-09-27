@@ -22,4 +22,20 @@ test.describe('Landing page', () => {
 		});
 		await expect(skipLink).toBeAttached();
 	});
+
+	test('declares its canonical URL and language alternates', async ({
+		request,
+	}) => {
+		const html = await (await request.get('/fr')).text();
+		expect(html).toMatch(/<link rel="canonical" href="[^"]*\/fr"/);
+		expect(html).toMatch(/hrefLang="en" href="[^"]*\/en"/i);
+	});
+
+	test('the offline fallback page is localized and kept out of the index', async ({
+		request,
+	}) => {
+		const html = await (await request.get('/fr/offline')).text();
+		expect(html).toMatch(/<meta name="robots" content="noindex/);
+		expect(html).toMatch(/<title>[^<]*hors ligne/i);
+	});
 });
