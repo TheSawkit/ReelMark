@@ -133,8 +133,13 @@ async function scrollTo(page, { anchor, heading }) {
 /** Throws when the page shows the error screen, a font failed or an image in view is broken, so the capture is retried. */
 async function assertPresentable(page) {
 	const problem = await page.evaluate(() => {
-		if ([...document.fonts].some((font) => font.status === 'error'))
-			return 'font failed to load';
+		// "… Fallback" faces are next/font's local('Arial') metric stand-ins: they error wherever
+		// Arial is not installed, which says nothing about the real fonts.
+		const failedFont = [...document.fonts].some(
+			(font) =>
+				font.status === 'error' && !font.family.endsWith(' Fallback')
+		);
+		if (failedFont) return 'font failed to load';
 		if (
 			/Something went wrong|Un problème est survenu/.test(
 				document.body.innerText
