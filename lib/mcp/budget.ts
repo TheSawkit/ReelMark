@@ -1,4 +1,4 @@
-import { checkRateLimit } from '@/lib/rate-limiter';
+import { checkRateLimit, retryAfterSeconds } from '@/lib/rate-limiter';
 
 interface Budget {
 	scope: string;
@@ -34,15 +34,15 @@ export async function countToolCalls(request: Request): Promise<number> {
 
 /** Spends `cost` units of each budget; returns when the first exhausted one resets, or null when all allow it. */
 function spend(userId: string, budgets: Budget[], cost: number) {
+	if (cost === 0) return null;
 	for (const { scope, limit, windowMs } of budgets) {
-		for (let unit = 0; unit < cost; unit++) {
-			const { allowed, resetAt } = checkRateLimit(
-				`${scope}:${userId}`,
-				limit,
-				windowMs
-			);
-			if (!allowed) return resetAt;
-		}
+		const { allowed, resetAt } = checkRateLimit(
+			`${scope}:${userId}`,
+			limit,
+			windowMs,
+			cost
+		);
+		if (!allowed) return resetAt;
 	}
 	return null;
 }
@@ -63,8 +63,6 @@ export async function chargeMcpRequest(
 	if (resetAt === null) return null;
 	return new Response(null, {
 		status: 429,
-		headers: {
-			'Retry-After': String(Math.ceil((resetAt - Date.now()) / 1000)),
-		},
+		headers: { 'Retry-After': retryAfterSeconds(resetAt) },
 	});
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import {
 	Dialog,
@@ -21,7 +20,7 @@ import { dismissCatchUp } from '@/lib/season-catch-up';
 import { useTranslation } from '@/lib/i18n/context';
 import { useSeasonUndoToast } from '@/hooks/useSeasonUndoToast';
 import type { SeasonWatchResult } from '@/app/actions/episodes';
-import { isRedirectSignal } from '@/lib/action-errors';
+import { toastActionError } from '@/lib/action-toast';
 
 type CatchUpAction = 'upTo' | 'season';
 
@@ -87,7 +86,7 @@ export function SeasonCatchUpPrompt({
 			onClose();
 		} catch (err) {
 			episodeWatchStore.restore(tvId, seasonNumber, previous);
-			if (!isRedirectSignal(err)) toast.error(t.common.actionError);
+			toastActionError(err, t.common.actionError);
 		} finally {
 			setPending(null);
 		}

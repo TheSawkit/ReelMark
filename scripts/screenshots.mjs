@@ -15,7 +15,7 @@
  * Optional: CHROMIUM_PATH (browser binary), SCREENSHOTS_IGNORE_HTTPS_ERRORS=1 (behind a TLS proxy),
  * SCREENSHOTS_ATTEMPTS (retries per capture, 5 by default).
  */
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { config } from 'dotenv';
 import { chromium } from '@playwright/test';
@@ -117,6 +117,7 @@ async function signInCookies() {
 
 /** Scrolls a section just under the fixed navbar, then lets scroll-driven reveals settle. */
 async function scrollTo(page, { anchor, heading }) {
+	if (!anchor && !heading) return;
 	const target = anchor
 		? page.locator(anchor).first()
 		: page.getByRole('heading', { name: heading }).first();
@@ -202,7 +203,15 @@ async function retryRequest(route) {
 	return route.abort();
 }
 
-async function capture(browser, { url, viewport, cookies, scroll, file }) {
+/**
+ * Captures `url` into `file`, retrying a failed attempt.
+ *
+ * @returns The page's own fonts as @font-face rules when `withFonts` is set (else ''), or null when every attempt failed.
+ */
+async function capture(
+	browser,
+	{ url, viewport, cookies, shot, file, withFonts = false }
+) {
 	for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
 		const context = await browser.newContext({
 			viewport: { width: viewport.width, height: viewport.height },
@@ -220,26 +229,23 @@ async function capture(browser, { url, viewport, cookies, scroll, file }) {
 		try {
 			await page.goto(url, { waitUntil: 'load', timeout: 60_000 });
 			await page.waitForTimeout(2500);
-			if (scroll) await scrollTo(page, scroll);
+			if (shot) await scrollTo(page, shot);
 			await waitForImages(page);
 			await assertPresentable(page);
 			await page.screenshot({ path: file, type: 'jpeg', quality: 90 });
-			if (!appFonts) appFonts = await collectFonts(page).catch(() => '');
-			await context.close();
-			return file;
+			return withFonts ? await collectFonts(page).catch(() => '') : '';
 		} catch (error) {
 			console.warn(
 				`  ${path.basename(file)}: attempt ${attempt} failed (${error.message.split('\n')[0]})`
 			);
+		} finally {
 			await context.close();
 		}
 	}
 	return null;
 }
 
-/** The app's own Inter and Bebas Neue (latin subset), inlined so the layouts need no network. */
-let appFonts = '';
-
+/** The app's own Inter and Bebas Neue (latin subset), as data-URL @font-face rules, so the layouts need no network. */
 async function collectFonts(page) {
 	return page.evaluate(async () => {
 		const families = ['Inter', 'Bebas Neue'];
@@ -289,8 +295,8 @@ async function collectFonts(page) {
 const dataUrl = async (file) =>
 	`data:image/jpeg;base64,${(await readFile(file)).toString('base64')}`;
 
-const pageStyle = () => `
-	${appFonts || "@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=block');"}
+const pageStyle = (fonts) => `
+	${fonts || "@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=block');"}
 	* { margin: 0; box-sizing: border-box; }
 	body {
 		width: 1600px; font-family: Inter, system-ui, sans-serif; color: #f5f5f7;
@@ -307,7 +313,7 @@ const pageStyle = () => `
 	figcaption { font-size: 22px; font-weight: 600; text-align: center; margin-top: 26px; }
 `;
 
-function showcaseHtml(copy, shots) {
+function showcaseHtml(copy, shots, fonts) {
 	const phones = shots
 		.map(
 			({ image, caption }, index) => `
@@ -317,7 +323,7 @@ function showcaseHtml(copy, shots) {
 		</figure>`
 		)
 		.join('');
-	return `<!doctype html><html><head><meta charset="utf-8"><style>${pageStyle()}
+	return `<!doctype html><html><head><meta charset="utf-8"><style>${pageStyle(fonts)}
 		main { display: flex; justify-content: center; align-items: flex-start; gap: 64px; padding: 64px 0 96px; }
 		.phone {
 			width: 380px; height: 824px; border-radius: 58px; padding: 12px; background: #1b1b1d;
@@ -330,8 +336,8 @@ function showcaseHtml(copy, shots) {
 	</body></html>`;
 }
 
-function desktopHtml(copy, image) {
-	return `<!doctype html><html><head><meta charset="utf-8"><style>${pageStyle()}
+function desktopHtml(copy, image, fonts) {
+	return `<!doctype html><html><head><meta charset="utf-8"><style>${pageStyle(fonts)}
 		main { padding: 56px 110px 104px; }
 		.window { border-radius: 18px; overflow: hidden; background: #161618;
 			box-shadow: 0 0 0 1px #2c2c30, 0 50px 110px rgba(0,0,0,.7), 0 0 140px rgba(185,9,11,.2); }
@@ -385,7 +391,7 @@ async function main() {
 			? { executablePath: process.env.CHROMIUM_PATH }
 			: {}
 	);
-	const manifest = [];
+	let fonts = '';
 
 	for (const lang of Object.keys(COPY)) {
 		const copy = COPY[lang];
@@ -395,14 +401,17 @@ async function main() {
 			if (captured.length === 3) break;
 			const file = path.join(RAW_DIR, `${lang}-${shot.key}.jpg`);
 			console.log(`${lang} ${shot.key}`);
-			const ok = await capture(browser, {
+			const pageFonts = await capture(browser, {
 				url: `${BASE_URL}/${lang}${shot.path}`,
 				viewport: PHONE,
 				cookies: shot.signedIn ? cookies : null,
-				scroll: shot.anchor || shot.heading ? shot : null,
+				shot,
 				file,
+				withFonts: !fonts,
 			});
-			if (ok) captured.push({ ...shot, file });
+			if (pageFonts === null) continue;
+			fonts ||= pageFonts;
+			captured.push({ ...shot, file });
 		}
 		if (captured.length < 3)
 			throw new Error(
@@ -417,45 +426,38 @@ async function main() {
 		);
 		await render(
 			browser,
-			showcaseHtml(copy, phones),
+			showcaseHtml(copy, phones, fonts),
 			path.join(SHOWCASE_DIR, `${lang}-showcase.jpg`)
 		);
 
 		const desktopFile = path.join(RAW_DIR, `${lang}-desktop.jpg`);
 		console.log(`${lang} desktop`);
 		if (
-			await capture(browser, {
+			(await capture(browser, {
 				url: `${BASE_URL}/${lang}${MOVIE}`,
 				viewport: DESKTOP,
 				file: desktopFile,
-			})
+			})) !== null
 		) {
 			await render(
 				browser,
-				desktopHtml(copy, await dataUrl(desktopFile)),
+				desktopHtml(copy, await dataUrl(desktopFile), fonts),
 				path.join(SHOWCASE_DIR, `${lang}-desktop.jpg`)
 			);
 		}
 
 		if (lang === 'en') {
 			for (const { key, file } of captured) {
-				await writeFile(
-					path.join(MANIFEST_DIR, `${key}.jpg`),
-					await readFile(file)
-				);
-				manifest.push(key);
+				await copyFile(file, path.join(MANIFEST_DIR, `${key}.jpg`));
 			}
-			await writeFile(
-				path.join(MANIFEST_DIR, 'desktop.jpg'),
-				await readFile(desktopFile)
+			await copyFile(desktopFile, path.join(MANIFEST_DIR, 'desktop.jpg'));
+			console.log(
+				`Manifest screenshots: ${[...captured.map(({ key }) => key), 'desktop'].join(', ')} — keep app/manifest.ts in sync.`
 			);
 		}
 	}
 
 	await browser.close();
-	console.log(
-		`Done. Manifest screenshots: ${[...manifest, 'desktop'].join(', ')} — keep app/manifest.ts in sync.`
-	);
 }
 
 main().catch((error) => {

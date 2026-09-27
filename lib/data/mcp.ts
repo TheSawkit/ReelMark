@@ -66,7 +66,7 @@ export async function touchMcpKey({
  * @throws The Auth error, so a failed read is never cached in place of the real settings.
  */
 export function getMcpUserContext(userId: string): Promise<McpUserContext> {
-	return cachedUserContext(userId, async () => {
+	return cachedUserContext.get(userId, async () => {
 		const { data, error } =
 			await createAdminClient().auth.admin.getUserById(userId);
 		if (error) throw error;

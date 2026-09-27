@@ -35,32 +35,42 @@ export function clientIpFrom(headers: Headers): string {
 	);
 }
 
-/** Sliding window in-memory rate limiter. Per-pod: the effective limit scales with replica count — global limiting belongs at the Cloudflare edge. */
+/**
+ * Sliding window in-memory rate limiter. Per-pod: the effective limit scales with replica count — global limiting belongs at the Cloudflare edge.
+ *
+ * @param cost - Units this call spends (a batch of several operations), all or nothing.
+ */
 export function checkRateLimit(
 	key: string,
 	limit: number,
-	windowMs: number
+	windowMs: number,
+	cost = 1
 ): RateLimitResult {
 	cleanup();
 
 	const now = Date.now();
-	const entry = store.get(key);
+	const current = store.get(key);
+	const entry =
+		current && current.resetAt > now
+			? current
+			: { count: 0, resetAt: now + windowMs };
 
-	if (!entry || entry.resetAt <= now) {
-		store.set(key, { count: 1, resetAt: now + windowMs });
-		return { allowed: true, remaining: limit - 1, resetAt: now + windowMs };
-	}
-
-	if (entry.count >= limit) {
+	if (entry.count + cost > limit) {
 		return { allowed: false, remaining: 0, resetAt: entry.resetAt };
 	}
 
-	entry.count++;
+	entry.count += cost;
+	store.set(key, entry);
 	return {
 		allowed: true,
 		remaining: limit - entry.count,
 		resetAt: entry.resetAt,
 	};
+}
+
+/** `Retry-After` value, in whole seconds, for a window that resets at `resetAt`. */
+export function retryAfterSeconds(resetAt: number): string {
+	return String(Math.ceil((resetAt - Date.now()) / 1000));
 }
 
 /**

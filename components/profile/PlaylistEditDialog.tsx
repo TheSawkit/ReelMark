@@ -28,7 +28,7 @@ import { VisibilitySelector } from '@/components/profile/VisibilitySelector';
 import { PlaylistGrid } from '@/components/profile/PlaylistGrid';
 import { PlaylistSearchResults } from '@/components/profile/PlaylistSearchResults';
 import { BASE_URL } from '@/lib/metadata';
-import { isRedirectSignal } from '@/lib/action-errors';
+import { toastActionError } from '@/lib/action-toast';
 
 type DialogMode = 'edit' | 'view';
 
@@ -97,8 +97,7 @@ export function PlaylistEditDialog({
 			);
 			onUpdateMeta?.(editName.trim(), editDesc.trim() || null);
 		} catch (err) {
-			if (isRedirectSignal(err)) return;
-			toast.error(t.profile.errorSavePlaylistMeta);
+			toastActionError(err, t.profile.errorSavePlaylistMeta);
 		} finally {
 			setIsSavingMeta(false);
 		}
@@ -111,10 +110,9 @@ export function PlaylistEditDialog({
 		try {
 			await updatePlaylistVisibility(playlist.id, v);
 		} catch (err) {
-			if (isRedirectSignal(err)) return;
 			setCurrentVisibility(prev);
 			onUpdateVisibility?.(prev);
-			toast.error(t.profile.errorSavePlaylistMeta);
+			toastActionError(err, t.profile.errorSavePlaylistMeta);
 		}
 	};
 
@@ -150,8 +148,7 @@ export function PlaylistEditDialog({
 			});
 			setQuery('');
 		} catch (err) {
-			if (isRedirectSignal(err)) return;
-			toast.error(t.profile.errorAdd);
+			toastActionError(err, t.profile.errorAdd);
 		} finally {
 			setPendingAdd(null);
 		}
@@ -172,8 +169,7 @@ export function PlaylistEditDialog({
 			);
 			onRemoveItem(item.media_id, item.media_type);
 		} catch (err) {
-			if (isRedirectSignal(err)) return;
-			toast.error(t.profile.errorRemove);
+			toastActionError(err, t.profile.errorRemove);
 		} finally {
 			setPendingRemove(null);
 		}

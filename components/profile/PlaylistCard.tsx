@@ -4,7 +4,6 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { ListVideo, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { deletePlaylist } from '@/app/actions/playlists';
 import { getImageUrl } from '@/lib/tmdb/images';
@@ -17,7 +16,7 @@ import type {
 	PlaylistItem,
 	PrivacyVisibility,
 } from '@/types/profile';
-import { isRedirectSignal } from '@/lib/action-errors';
+import { toastActionError } from '@/lib/action-toast';
 
 const PlaylistEditDialog = dynamic(
 	() =>
@@ -76,8 +75,7 @@ export function PlaylistCard({
 				await deletePlaylist(playlist.id);
 				onDelete(playlist.id);
 			} catch (err) {
-				if (isRedirectSignal(err)) return;
-				toast.error(t.profile.errorDelete);
+				toastActionError(err, t.profile.errorDelete);
 				setConfirmDelete(false);
 			}
 		});

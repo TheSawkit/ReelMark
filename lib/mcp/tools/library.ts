@@ -7,10 +7,10 @@ import {
 } from '@/lib/data/watchlist-writes';
 import { revalidateWatchlistPaths } from '@/lib/revalidate';
 import { getMediaKey } from '@/lib/media';
+import { fetchMediaDetails } from '@/lib/tmdb/media-endpoints';
 import { toAssistantEntry } from '@/lib/mcp/format';
 import {
 	failure,
-	fetchTitleDetails,
 	json,
 	mediaTypeSchema,
 	orTitleNotFound,
@@ -20,7 +20,7 @@ import {
 	type RegisterTools,
 } from '@/lib/mcp/tools/shared';
 import type { UserScope } from '@/lib/mcp/scope';
-import type { MediaType } from '@/types/tmdb';
+import type { MediaType, MovieDetails, TvShowDetails } from '@/types/tmdb';
 
 const LIBRARY_CHANGES = ['to_watch', 'watched', 'abandoned', 'remove'] as const;
 type LibraryChange = (typeof LIBRARY_CHANGES)[number];
@@ -36,7 +36,11 @@ async function applyLibraryChange(
 		return;
 	}
 	const { lang } = await scope.context();
-	const details = await fetchTitleDetails(type, id, lang);
+	const details = await fetchMediaDetails<MovieDetails | TvShowDetails>(
+		type,
+		id,
+		lang
+	);
 	await upsertWatchlistEntry(scope.admin, scope.userId, {
 		mediaId: id,
 		mediaType: type,
@@ -121,12 +125,11 @@ export const registerLibraryTools: RegisterTools = (server, scope) => {
 				await applyLibraryChange(scope, type, id, status);
 				scope.forgetTaste();
 				revalidateWatchlistPaths(type, id);
-				const { link } = await scope.format();
 				return json({
 					id,
 					type,
 					status: status === 'remove' ? null : status,
-					url: link(type, id),
+					url: await scope.linkTo(type, id),
 				});
 			});
 		}

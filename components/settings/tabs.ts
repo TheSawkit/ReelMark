@@ -15,9 +15,10 @@ export const AI_ASSISTANT_ANCHOR = 'ai-assistant';
 export const AI_ASSISTANT_SETTINGS_PATH = `/settings?section=data#${AI_ASSISTANT_ANCHOR}`;
 
 /** Narrows the `?section=` query param — the active tab, and what the call-to-actions deep-link to. */
-export function isSettingsTab(value: string | undefined): value is SettingsTab {
+export function isSettingsTab(
+	value: string | null | undefined
+): value is SettingsTab {
 	return (
-		value !== undefined &&
-		(SETTINGS_TABS as readonly string[]).includes(value)
+		value != null && (SETTINGS_TABS as readonly string[]).includes(value)
 	);
 }

@@ -13,7 +13,7 @@ import {
 } from '@/app/actions/friends';
 import { useTranslation } from '@/lib/i18n/context';
 import type { Friendship, PendingRequestEntry } from '@/types/profile';
-import { isRedirectSignal } from '@/lib/action-errors';
+import { toastActionError } from '@/lib/action-toast';
 
 interface PendingInvitationsProps {
 	requests: PendingRequestEntry[];
@@ -44,10 +44,9 @@ export function PendingInvitations({
 				);
 				toast.success(t.profile.requestAcceptedToast);
 			} catch (err) {
-				if (isRedirectSignal(err)) return;
 				setPending(snapshot);
 				onCountChange(snapshot.length);
-				toast.error(t.common.actionError);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	};
@@ -65,10 +64,9 @@ export function PendingInvitations({
 				);
 				toast.success(t.profile.requestRejectedToast);
 			} catch (err) {
-				if (isRedirectSignal(err)) return;
 				setPending(snapshot);
 				onCountChange(snapshot.length);
-				toast.error(t.common.actionError);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	};

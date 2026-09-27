@@ -22,17 +22,14 @@ vi.mock('@/lib/revalidate', () => ({
 }));
 vi.mock('@/lib/tmdb', () => ({
 	getGenres: async () => ({}),
-	getMovieDetails: async (id: number) => ({
-		id,
-		title: 'Prisoners',
-		poster_path: '/p.jpg',
-	}),
-	getTvShowDetails: async (id: number) => ({
-		id,
-		name: 'Severance',
-		poster_path: null,
-	}),
 	searchMulti: async () => [],
+}));
+vi.mock('@/lib/tmdb/media-endpoints', () => ({
+	fetchWatchProviders: async () => null,
+	fetchMediaDetails: async (type: string, id: number) =>
+		type === 'movie'
+			? { id, title: 'Prisoners', poster_path: '/p.jpg' }
+			: { id, name: 'Severance', poster_path: null },
 }));
 
 const { createReelMarkMcpServer } = await import('@/lib/mcp/server');

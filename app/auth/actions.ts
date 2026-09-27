@@ -143,7 +143,7 @@ export async function signout() {
  */
 export async function requestMagicLink(
 	email: string,
-	next = '/dashboard'
+	next?: string
 ): Promise<{ error?: string; success?: boolean }> {
 	const t = await getTranslations();
 	const validEmail = validateEmail(email);
@@ -154,7 +154,7 @@ export async function requestMagicLink(
 		email: validEmail,
 		options: {
 			shouldCreateUser: false,
-			emailRedirectTo: `${BASE_URL}/auth/confirm?next=${encodeURIComponent(sanitizeRedirectPath(next, '/dashboard'))}`,
+			emailRedirectTo: `${BASE_URL}/auth/confirm?next=${encodeURIComponent(sanitizeRedirectPath(next ?? null, '/dashboard'))}`,
 		},
 	});
 
