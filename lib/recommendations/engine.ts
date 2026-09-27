@@ -3,6 +3,7 @@ import type {
 	RecommendationReason,
 	RecommendationSource,
 	WatchlistEntry,
+	WatchStatus,
 } from '@/types/tmdb';
 import { getMediaKey } from '@/lib/media';
 
@@ -23,6 +24,8 @@ const GENRE_CAP = 6;
 const RATING_SPREAD = 5;
 const DISMISSALS_TO_DISLIKE = 2;
 const MAX_SIMILAR_SEEDS = 3;
+const SUMMARY_LIST_SIZE = 10;
+const SUMMARY_LOW_RATED_SIZE = 5;
 
 export interface RecommendationSeed {
 	entry: WatchlistEntry;
@@ -475,7 +478,21 @@ export function rankRecommendations(
 	);
 }
 
-/** The single title to suggest this week, ranked like the dashboard, never one in the user's list, dismissed or suggested before. */
+/** Titles to suggest, ranked like the dashboard, never one in the user's list, dismissed or suggested before. */
+export function rankSuggestions(
+	entries: WatchlistEntry[],
+	profile: TasteProfile,
+	dismissals: DismissedRecommendation[],
+	seedCandidates: SeedCandidates[],
+	alreadySuggested: Set<string> = new Set()
+): MediaItem[] {
+	const excluded = new Set([...alreadySuggested, ...entries.map(entryKey)]);
+	const affinity = genreAffinity(entries, profile);
+	applyDismissals(excluded, affinity, dismissals);
+	return rankRecommendations(seedCandidates, excluded, affinity);
+}
+
+/** The single title to suggest this week — the head of {@link rankSuggestions}. */
 export function pickSuggestion(
 	entries: WatchlistEntry[],
 	profile: TasteProfile,
@@ -483,8 +500,73 @@ export function pickSuggestion(
 	seedCandidates: SeedCandidates[],
 	alreadySuggested: Set<string>
 ): MediaItem | null {
-	const excluded = new Set([...alreadySuggested, ...entries.map(entryKey)]);
+	return (
+		rankSuggestions(
+			entries,
+			profile,
+			dismissals,
+			seedCandidates,
+			alreadySuggested
+		)[0] ?? null
+	);
+}
+
+export interface RatedEntry {
+	entry: WatchlistEntry;
+	rating: number;
+}
+
+export interface TasteSummary {
+	favoriteGenreIds: number[];
+	dislikedGenreIds: number[];
+	meanRating: number | null;
+	topRated: RatedEntry[];
+	lowRated: RatedEntry[];
+	watching: WatchlistEntry[];
+	abandoned: WatchlistEntry[];
+	counts: Record<WatchStatus, number>;
+}
+
+/** Condenses one media type's history into what an assistant needs to grasp the user's tastes, from the same signals the engine ranks with. */
+export function summarizeTaste(
+	entries: WatchlistEntry[],
+	profile: TasteProfile
+): TasteSummary {
 	const affinity = genreAffinity(entries, profile);
-	applyDismissals(excluded, affinity, dismissals);
-	return rankRecommendations(seedCandidates, excluded, affinity)[0] ?? null;
+	const recent = mostRecentFirst(entries, profile.ratedAt);
+	const rated = entries.flatMap((entry) => {
+		const rating = ratingOf(profile.ratings, entry);
+		return rating === undefined ? [] : [{ entry, rating }];
+	});
+	const byRatingDesc = [...rated].sort((a, b) => b.rating - a.rating);
+	const counts: Record<WatchStatus, number> = {
+		to_watch: 0,
+		watched: 0,
+		abandoned: 0,
+	};
+	for (const entry of entries) counts[entry.status]++;
+
+	return {
+		favoriteGenreIds: [...affinity.favorites],
+		dislikedGenreIds: [...affinity.disliked],
+		meanRating:
+			rated.length > 0
+				? rated.reduce((sum, { rating }) => sum + rating, 0) /
+					rated.length
+				: null,
+		topRated: byRatingDesc
+			.filter(({ rating }) => isLiked(rating))
+			.slice(0, SUMMARY_LIST_SIZE),
+		lowRated: byRatingDesc
+			.filter(({ rating }) => rating < MIN_LIKED_RATING)
+			.reverse()
+			.slice(0, SUMMARY_LOW_RATED_SIZE),
+		watching: recent
+			.filter((entry) => isInProgress(entry, profile.episodesWatched))
+			.slice(0, SUMMARY_LIST_SIZE),
+		abandoned: recent
+			.filter((entry) => entry.status === 'abandoned')
+			.slice(0, SUMMARY_LIST_SIZE),
+		counts,
+	};
 }

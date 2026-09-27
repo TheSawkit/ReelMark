@@ -1,22 +1,15 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/server';
-import { fetchAllRows } from '@/lib/supabase/pagination';
-import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
 import { mapLimit } from '@/lib/data-transfer/resolve';
-import { getUserReviewSignals } from '@/lib/data/reviews';
-import { getUserTvWatchCounts } from '@/lib/data/episodes';
-import {
-	pickSeeds,
-	pickSuggestion,
-	type TasteProfile,
-} from '@/lib/recommendations';
+import { loadUserTaste, tasteOfType } from '@/lib/data/taste';
+import { pickSeeds, pickSuggestion } from '@/lib/recommendations';
 import { fetchSeedCandidates } from '@/lib/recommendations/candidates';
 import { translations, type Language } from '@/lib/i18n/translations';
 import { localizedHref } from '@/lib/i18n/utils';
 import { reportSwallowed } from '@/lib/report';
 import { recipientLanguage } from '@/lib/push/notify-friend';
 import { sendPushToUser } from '@/lib/push/send';
-import type { MediaItem, MediaType, WatchlistEntry } from '@/types/tmdb';
+import type { MediaItem, MediaType } from '@/types/tmdb';
 
 const USER_CONCURRENCY = 3;
 const MEDIA_TYPES: MediaType[] = ['movie', 'tv'];
@@ -26,65 +19,35 @@ export interface SuggestionResult {
 	suggested: number;
 }
 
-const isShowToWatch = (entry: WatchlistEntry) =>
-	entry.media_type === 'tv' && entry.status === 'to_watch';
-
 async function suggestionFor(
 	userId: string,
 	lang: Language
 ): Promise<MediaItem | null> {
 	const admin = createAdminClient();
 
-	const entriesRead = fetchAllRows((from, to) =>
+	const [taste, past] = await Promise.all([
+		loadUserTaste(admin, userId),
 		admin
-			.from('watchlist')
-			.select(WATCHLIST_COLUMNS)
+			.from('notifications')
+			.select('media_id, media_type')
 			.eq('user_id', userId)
-			.order('id')
-			.range(from, to)
-	).then((rows) => rows as WatchlistEntry[]);
-
-	const [entries, reviewSignals, episodesWatched, dismissals, past] =
-		await Promise.all([
-			entriesRead,
-			getUserReviewSignals(userId, admin),
-			entriesRead.then((rows) =>
-				getUserTvWatchCounts(
-					admin,
-					userId,
-					rows.filter(isShowToWatch).map((entry) => entry.media_id)
-				)
-			),
-			admin
-				.from('recommendation_dismissals')
-				.select('media_id, media_type, genre_ids')
-				.eq('user_id', userId),
-			admin
-				.from('notifications')
-				.select('media_id, media_type')
-				.eq('user_id', userId)
-				.eq('type', 'suggestion'),
-		]);
-	const profile: TasteProfile = { ...reviewSignals, episodesWatched };
+			.eq('type', 'suggestion'),
+	]);
 	const alreadySuggested = new Set(
 		(past.data ?? []).map((row) => `${row.media_type}-${row.media_id}`)
 	);
 
 	for (const type of MEDIA_TYPES) {
-		const typeEntries = entries.filter(
-			(entry) => entry.media_type === type
-		);
-		if (typeEntries.length === 0) continue;
+		const { entries, dismissals } = tasteOfType(taste, type);
+		if (entries.length === 0) continue;
 
 		const pick = pickSuggestion(
-			typeEntries,
-			profile,
-			(dismissals.data ?? [])
-				.filter((row) => row.media_type === type)
-				.map((row) => ({ ...row, media_type: type })),
+			entries,
+			taste.profile,
+			dismissals,
 			await fetchSeedCandidates(
 				type,
-				pickSeeds(typeEntries, profile),
+				pickSeeds(entries, taste.profile),
 				lang
 			),
 			alreadySuggested
