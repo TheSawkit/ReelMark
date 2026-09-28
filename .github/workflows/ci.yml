@@ -5,6 +5,7 @@ on:
         branches: [main, dev]
     pull_request:
         branches: [main, dev]
+    workflow_dispatch:
 
 concurrency:
     group: ci-${{ github.ref }}
@@ -13,15 +14,19 @@ concurrency:
 permissions:
     contents: read
 
+# Les tests E2E parlent à une vraie base Supabase. Les secrets E2E_* désignent un projet dédié
+# aux tests ; tant qu'ils ne sont pas définis, la CI retombe sur le projet de production — dont
+# elle représentait ~22 % des requêtes (quota Free dépassé en septembre 2026). Le build lit les
+# mêmes valeurs : l'URL Supabase est inlinée dans le bundle client que le job e2e sert.
 env:
-    NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-    SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+    SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
     TMDB_READ_ACCESS_TOKEN: ${{ secrets.TMDB_READ_ACCESS_TOKEN }}
     NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
     WATCHMODE_API_KEY: ${{ secrets.WATCHMODE_API_KEY }}
-    TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-    TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+    TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL || secrets.TEST_USER_EMAIL }}
+    TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD || secrets.TEST_USER_PASSWORD }}
     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -160,6 +165,10 @@ jobs:
     e2e:
         name: E2E tests
         needs: build
+        # Un push sur dev avec une PR ouverte déclenchait la suite deux fois (push + pull_request),
+        # et chaque run coûte 7 000 à 26 000 requêtes Supabase. Elle tourne sur les PR, sur main
+        # et à la demande ; un push sur dev garde typecheck, lint, tests unitaires et build.
+        if: github.event_name != 'push' || github.ref == 'refs/heads/main'
         runs-on: ubuntu-24.04
         timeout-minutes: 30
         steps:
