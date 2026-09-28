@@ -32,13 +32,13 @@ test.describe('Row-Level Security', () => {
 			auth: { persistSession: false },
 		});
 		for (const table of PRIVATE_TABLES) {
-			const { count, error } = await anon
+			const { count, error, status } = await anon
 				.from(table)
 				.select('*', { count: 'exact', head: true });
 			const denied = error?.code === INSUFFICIENT_PRIVILEGE;
 			expect(
 				denied || (error === null && count === 0),
-				`${table}: ${error ? error.message : `${count} rows readable anonymously`}`
+				`${table}: ${error ? `HTTP ${status} ${error.code ?? ''} ${error.message}`.trim() : `${count} rows readable anonymously`}`
 			).toBe(true);
 		}
 	});
