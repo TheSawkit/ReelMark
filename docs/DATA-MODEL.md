@@ -6,9 +6,9 @@ PostgreSQL (Supabase), 16 tables, RLS attendue sur chacune — à contrôler apr
 select tablename, rowsecurity from pg_tables where schemaname = 'public';
 ```
 
-La CI vérifie aussi, avec la clé anonyme, qu'aucune table strictement privée n'est lisible par un visiteur (`tests/e2e/rls.spec.ts`).
+La CI vérifie aussi, avec la clé anonyme, qu'aucune table strictement privée n'est lisible par un visiteur (`tests/e2e/rls.spec.ts`) : sur la base construite depuis les migrations (job `e2e`) et sur la prod elle-même (job `rls-production`).
 
-Le schéma historique est appliqué directement sur le projet Supabase ; les migrations à partir du 2026-09-28 sont versionnées dans `supabase/migrations/` sous la version que leur a donnée Supabase. `types/database.ts` est le type généré qui fait foi côté code (`supabase gen types typescript` via MCP/CLI).
+Le schéma complet est versionné dans `supabase/migrations/` : `20260101000000_baseline.sql` reconstitue la prod telle qu'elle était le 2026-09-28 (tables, contraintes, index, RLS, policies, fonctions, droits, triggers dont `on_auth_user_created` sur `auth.users`, publication Realtime, bucket `avatars` et ses policies, event trigger `ensure_rls`), les migrations suivantes s'y ajoutent sous la version que leur a donnée Supabase. Une base construite depuis ce dossier est identique à la prod ; les migrations de prod passent par l'éditeur SQL ou `apply_migration`, jamais par `supabase db push` (voir [SUPABASE-USAGE.md](./SUPABASE-USAGE.md#ne-jamais-rejouer-les-migrations-sur-la-prod)). `types/database.ts` est le type généré qui fait foi côté code (`supabase gen types typescript` via MCP/CLI).
 
 ## Tables
 

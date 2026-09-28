@@ -22,11 +22,11 @@ cp .env.example .env.local
 ## 3. Créer le projet Supabase
 
 1. Nouveau projet sur [supabase.com](https://supabase.com) → noter l'URL du projet et la clé publishable (Settings → API).
-2. **Schéma** : le schéma n'est pas versionné en SQL dans le repo — il est appliqué directement sur le projet Supabase (voir [DATA-MODEL.md](./DATA-MODEL.md) pour le schéma complet des 15 tables, les policies RLS et les triggers à créer). Pour une nouvelle instance, recréer les tables depuis ce document via l'éditeur SQL Supabase.
+2. **Schéma** : versionné dans `supabase/migrations/`. Sur un nouveau projet : `npx supabase@latest link --project-ref <ref>` puis `npx supabase@latest db push` — il crée les 16 tables, la RLS, les fonctions, les triggers, la publication Realtime et le bucket `avatars`. Pour développer sans projet hébergé : `npx supabase@latest start` (Docker), voir [SUPABASE-USAGE.md](./SUPABASE-USAGE.md#tests-e2e-et-environnement-de-dev). Ne jamais lancer `db push` contre la prod.
 3. **Auth** :
     - Activer Email + Google (Authentication → Providers). Pour Google : créer un OAuth Client dans Google Cloud Console avec le redirect `https://<projet>.supabase.co/auth/v1/callback`.
     - **URL Configuration** : Site URL = ton domaine (ou `http://localhost:3000` en dev) ; ajouter aux Redirect URLs : `<domaine>/auth/callback`, `<domaine>/auth/confirm`, `http://localhost:3000/**`. Un Site URL obsolète redirige les logins OAuth vers l'ancien domaine.
-4. **Storage** : créer un bucket public `avatars` (upload d'avatar dans les settings).
+4. **Storage** : le bucket public `avatars` et ses policies sont créés par la migration de base.
 
 ## 4. Variables d'environnement
 
