@@ -95,6 +95,8 @@ export const registerLibraryTools: RegisterTools = (server, scope) => {
 		}
 	);
 
+	if (scope.access !== 'write') return;
+
 	server.registerTool(
 		'update_library',
 		{

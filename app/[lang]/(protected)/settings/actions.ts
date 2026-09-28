@@ -15,6 +15,8 @@ import {
 	formStr,
 } from '@/lib/validators';
 import { ON_CONFLICT } from '@/lib/supabase/conflicts';
+import { purgeUserData } from '@/lib/data/account-purge';
+import { reportSwallowed } from '@/lib/report';
 
 async function syncUserProfile(
 	supabase: Awaited<ReturnType<typeof createClient>>,
@@ -238,38 +240,14 @@ export async function deleteAccount(prevState: unknown, formData: FormData) {
 		}
 	}
 
-	await supabase.from('episode_watches').delete().eq('user_id', user.id);
-	await supabase.from('watchlist').delete().eq('user_id', user.id);
-	await supabase.from('reviews').delete().eq('user_id', user.id);
-
-	const { data: userPlaylists } = await supabase
-		.from('playlists')
-		.select('id')
-		.eq('user_id', user.id);
-	if (userPlaylists && userPlaylists.length > 0) {
-		await supabase
-			.from('playlist_items')
-			.delete()
-			.in(
-				'playlist_id',
-				userPlaylists.map((p) => p.id)
-			);
-	}
-	await supabase.from('playlists').delete().eq('user_id', user.id);
-	await supabase
-		.from('friendships')
-		.delete()
-		.or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
-	await supabase.from('privacy_settings').delete().eq('user_id', user.id);
-	await supabase.from('user_profiles').delete().eq('user_id', user.id);
-
 	const adminClient = createAdminClient();
 
-	// `notifications.sender_id` est NOT NULL alors que sa FK est ON DELETE SET NULL :
-	// sans cette purge, `deleteUser` échoue en 23502 dès que le compte a émis une
-	// notification. Les lignes émises appartiennent à leurs destinataires, d'où l'admin client.
-	await adminClient.from('notifications').delete().eq('user_id', user.id);
-	await adminClient.from('notifications').delete().eq('sender_id', user.id);
+	try {
+		await purgeUserData(adminClient, user.id);
+	} catch (error) {
+		reportSwallowed('settings:delete-account', error);
+		return { error: t.common.actionError, success: false };
+	}
 
 	const { data: avatarFiles } = await adminClient.storage
 		.from('avatars')

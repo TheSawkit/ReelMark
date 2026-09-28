@@ -8,9 +8,9 @@ import { reportSwallowed } from '@/lib/report';
 import { DEFAULT_LANGUAGE, isLanguage } from '@/lib/i18n/config';
 import type { McpLinkStatus, McpUserContext } from '@/types/mcp';
 
-/** The signed-in user's AI link, without its secret — only whether it exists and when it was used. */
+/** The signed-in user's AI link, without its secret — whether it exists, when it was used, and what it allows. */
 export async function getMcpLinkStatus(): Promise<McpLinkStatus | null> {
-	const { supabase, userId } = await getAuthenticatedUser();
+	const { supabase, userId, user } = await getAuthenticatedUser();
 	const { data, error } = await supabase
 		.from('mcp_keys')
 		.select('created_at, last_used_at')
@@ -21,7 +21,14 @@ export async function getMcpLinkStatus(): Promise<McpLinkStatus | null> {
 		return null;
 	}
 	return data
-		? { createdAt: data.created_at, lastUsedAt: data.last_used_at }
+		? {
+				createdAt: data.created_at,
+				lastUsedAt: data.last_used_at,
+				access:
+					user.user_metadata.mcp_access === 'write'
+						? 'write'
+						: 'read',
+			}
 		: null;
 }
 

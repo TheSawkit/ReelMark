@@ -8,13 +8,14 @@ import { getGenres } from '@/lib/tmdb';
 import { BASE_URL } from '@/lib/metadata';
 import { localizedHref } from '@/lib/i18n/utils';
 import type { AssistantFormat } from '@/lib/mcp/format';
-import type { McpUserContext } from '@/types/mcp';
+import type { McpAccess, McpUserContext } from '@/types/mcp';
 import type { Language } from '@/lib/i18n/translations';
 import type { MediaType } from '@/types/tmdb';
 
 /** Everything the tools know about the link owner, loaded only when a tool asks for it. */
 export interface UserScope {
 	userId: string;
+	access: McpAccess;
 	admin: ReturnType<typeof createAdminClient>;
 	taste: () => Promise<UserTaste>;
 	context: () => Promise<McpUserContext>;
@@ -26,12 +27,13 @@ export interface UserScope {
 const titleUrl = (lang: Language, type: MediaType, id: number) =>
 	`${BASE_URL}${localizedHref(lang, `/${type}/${id}`)}`;
 
-export function createUserScope(userId: string): UserScope {
+export function createUserScope(userId: string, access: McpAccess): UserScope {
 	const admin = createAdminClient();
 	const context = () => getMcpUserContext(userId);
 
 	return {
 		userId,
+		access,
 		admin,
 		taste: () =>
 			cachedUserTaste.get(userId, () => loadUserTaste(admin, userId)),

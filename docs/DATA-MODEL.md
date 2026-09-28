@@ -6,6 +6,8 @@ PostgreSQL (Supabase), 15 tables, RLS attendue sur chacune — à contrôler apr
 select tablename, rowsecurity from pg_tables where schemaname = 'public';
 ```
 
+La CI vérifie aussi, avec la clé anonyme, qu'aucune table strictement privée n'est lisible par un visiteur (`tests/e2e/rls.spec.ts`).
+
 Le schéma est appliqué directement sur le projet Supabase (pas de fichiers SQL versionnés) ; `types/database.ts` est le type généré qui fait foi côté code (`supabase gen types typescript` via MCP/CLI).
 
 ## Tables
@@ -53,6 +55,7 @@ Les trois sont lues et écrites avec la session de l'utilisateur, filtrées par 
 
 - Une ligne par utilisateur : régénérer le lien remplace la ligne, l'ancien secret cesse aussitôt de fonctionner.
 - Seul le hash est stocké ; le secret n'est montré qu'une fois, à la génération.
+- L'accès (lecture, ou lecture et modification) fait partie du secret haché, pas de la ligne : un lien en écriture commence par `rw-`. `auth.users.user_metadata.mcp_access` n'en garde qu'une copie pour l'affichage dans Réglages.
 - RLS réservée au propriétaire (lecture de l'état et révocation depuis Réglages) ; la résolution d'un lien par `/api/mcp/[key]` passe par le service role, sur le hash.
 
 ### Notifications
@@ -90,8 +93,8 @@ Deux mécanismes complémentaires — vérifier `pg_policies` avant de crier à 
 
 ## Métadonnées auth
 
-`auth.users.user_metadata` : `username`, `full_name`, `region`, `language`. La région (`BE`, `FR`, …) pilote le filtrage TMDB ; la langue le défaut i18n.
+`auth.users.user_metadata` : `username`, `full_name`, `region`, `language`, `mcp_access` (affichage de l'accès du lien IA). La région (`BE`, `FR`, …) pilote le filtrage TMDB ; la langue le défaut i18n.
 
 ## Suppression de compte
 
-`deleteAccount` (settings) supprime l'utilisateur via l'API admin ; toutes les FK sont `ON DELETE CASCADE` — aucune donnée orpheline.
+`deleteAccount` (settings) purge d'abord toutes les données de l'utilisateur avec `purgeUserData` (`lib/data/account-purge.ts`), puis supprime le compte via l'API admin. La purge ne dépend pas des cascades : elles ne sont pas toutes en `ON DELETE CASCADE` (`notifications.sender_id` est en `SET NULL`), et une cascade manquante laisserait des lignes orphelines ou ferait échouer `deleteUser`. Le lien IA est révoqué en premier. Un test unitaire compare la liste des tables purgées au schéma généré : toute nouvelle table avec un `user_id` doit y être ajoutée.

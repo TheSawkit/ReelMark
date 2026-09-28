@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { useTranslation } from '@/lib/i18n/context';
 import { getLocale } from '@/lib/i18n/utils';
@@ -21,10 +22,10 @@ import { BASE_URL } from '@/lib/metadata';
 import { RATE_LIMITED } from '@/lib/action-errors';
 import { createMcpLink, revokeMcpLink } from '@/app/actions/mcp';
 import { AI_ASSISTANT_ANCHOR } from './tabs';
-import type { McpLinkStatus } from '@/types/mcp';
+import type { McpAccess, McpLinkStatus } from '@/types/mcp';
 import { toastActionError } from '@/lib/action-toast';
 
-/** Lets the user plug their own AI assistant into ReelMark through a secret, revocable MCP link: it reads their tastes and updates their library on request. */
+/** Lets the user plug their own AI assistant into ReelMark through a secret, revocable MCP link: read-only by default, allowed to change title statuses when the user says so. */
 export function AiAssistantCard({
 	initialLink,
 }: {
@@ -34,6 +35,9 @@ export function AiAssistantCard({
 	const ta = t.settings.aiAssistant;
 	const locale = getLocale(lang);
 	const [link, setLink] = useState(initialLink);
+	const [access, setAccess] = useState<McpAccess>(
+		initialLink?.access ?? 'read'
+	);
 	const [freshUrl, setFreshUrl] = useState<string | null>(null);
 	const [isPending, startTransition] = useGuardedTransition();
 
@@ -49,11 +53,12 @@ export function AiAssistantCard({
 	function handleGenerate() {
 		startTransition(async () => {
 			try {
-				const key = await createMcpLink();
+				const key = await createMcpLink(access);
 				setFreshUrl(`${BASE_URL}/api/mcp/${key}`);
 				setLink({
 					createdAt: new Date().toISOString(),
 					lastUsedAt: null,
+					access,
 				});
 			} catch (err) {
 				const message = err instanceof Error ? err.message : '';
@@ -132,8 +137,33 @@ export function AiAssistantCard({
 							{link.lastUsedAt
 								? `${ta.lastUsed} ${formatShortDate(link.lastUsedAt, locale)}`
 								: ta.neverUsed}
+							{' · '}
+							{link.access === 'write'
+								? ta.accessWrite
+								: ta.accessRead}
 						</span>
 					</p>
+				)}
+
+				<label className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+					<span className="min-w-0">
+						<span className="block text-sm font-medium text-text">
+							{ta.allowWrite}
+						</span>
+						<span className="mt-0.5 block text-xs text-muted">
+							{ta.allowWriteHint}
+						</span>
+					</span>
+					<Switch
+						checked={access === 'write'}
+						onCheckedChange={(checked) =>
+							setAccess(checked ? 'write' : 'read')
+						}
+						aria-label={ta.allowWrite}
+					/>
+				</label>
+				{link && link.access !== access && (
+					<p className="text-xs text-gold">{ta.accessMismatch}</p>
 				)}
 
 				<div className="flex flex-wrap gap-2">

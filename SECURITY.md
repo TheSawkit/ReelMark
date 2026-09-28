@@ -33,7 +33,8 @@ Please include a description, steps to reproduce and the impact you expect. Repo
 ### AI-assistant link (MCP)
 
 - The link is a 256-bit random secret shown once. Only its SHA-256 hash is stored, and regenerating or revoking it disables the old link immediately.
-- An unknown link gets an empty `404`. A valid link can read the owner's tastes and library and change the status of titles in that library — nothing else, and never another user's data.
+- Links are read-only unless the user allows changes when generating one. The access is part of the hashed secret (`rw-` prefix), so it cannot be raised by editing a link; a read-only link does not even list the write tool.
+- An unknown link gets an empty `404`. A valid link reads the owner's tastes and library; a write link can also change the status of titles in that library — nothing else, and never another user's data.
 - Tool calls are limited to 30 per minute and 100 per day per user.
 
 ### User content
@@ -47,7 +48,7 @@ Server secrets live in `.env.local` locally and in the `reelmark-secrets` Kubern
 ## Personal data
 
 - Stored: account (email, username, profile), watch history, ratings and reviews, playlists, friendships, notification and privacy preferences, streaming services, and the hash of the AI-assistant link.
-- Users can export their data and delete their account from Settings → Data.
+- Users can export their data and delete their account from Settings → Data. Deletion purges every table explicitly (`lib/data/account-purge.ts`) instead of relying on foreign-key cascades, the AI link first.
 - TMDB and Watchmode receive no personal data — only public catalogue requests.
 
 ## For contributors

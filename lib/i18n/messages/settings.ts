@@ -111,7 +111,14 @@ const fr = {
 	aiAssistant: {
 		title: 'Assistant IA',
 		description:
-			'Connecte ton assistant (Claude, ChatGPT…) à ReelMark : il connaîtra tes goûts pour te conseiller films et séries, et pourra, si tu le lui demandes, marquer un titre comme vu, à voir ou abandonné. Il ne touche à rien d’autre.',
+			'Connecte ton assistant (Claude, ChatGPT…) à ReelMark : il connaîtra tes goûts pour te conseiller films et séries. Si tu l’y autorises, il pourra aussi marquer un titre comme vu, à voir ou abandonné, à ta demande.',
+		allowWrite: 'Autoriser l’assistant à modifier ma bibliothèque',
+		allowWriteHint:
+			'Marquer un titre comme vu, à voir, abandonné, ou le retirer. Rien d’autre.',
+		accessRead: 'lecture seule',
+		accessWrite: 'lecture et modification',
+		accessMismatch:
+			'Ce réglage s’applique au prochain lien : régénère-le pour que l’assistant en tienne compte.',
 		generate: 'Générer mon lien',
 		regenerate: 'Régénérer le lien',
 		regenerateHint:
@@ -122,7 +129,7 @@ const fr = {
 		copy: 'Copier',
 		copied: 'Lien copié',
 		showOnce:
-			'Copie-le maintenant : il ne sera plus affiché. Garde-le secret comme un mot de passe, toute personne qui l’a peut lire et modifier ta bibliothèque.',
+			'Copie-le maintenant : il ne sera plus affiché. Garde-le secret comme un mot de passe : toute personne qui l’a peut lire ta bibliothèque, et la modifier si tu l’as autorisé.',
 		activeSince: 'Lien actif depuis le',
 		lastUsed: 'dernière utilisation le',
 		neverUsed: 'jamais utilisé',
@@ -377,7 +384,14 @@ const en = {
 	aiAssistant: {
 		title: 'AI assistant',
 		description:
-			'Connect your assistant (Claude, ChatGPT…) to ReelMark: it will know your tastes to suggest movies and shows, and can mark a title as watched, to watch or abandoned when you ask it to. It touches nothing else.',
+			'Connect your assistant (Claude, ChatGPT…) to ReelMark: it will know your tastes to suggest movies and shows. If you allow it, it can also mark a title as watched, to watch or abandoned when you ask.',
+		allowWrite: 'Let the assistant change my library',
+		allowWriteHint:
+			'Mark a title as watched, to watch, abandoned, or remove it. Nothing else.',
+		accessRead: 'read-only',
+		accessWrite: 'read and change',
+		accessMismatch:
+			'This setting applies to the next link: regenerate it for the assistant to use it.',
 		generate: 'Generate my link',
 		regenerate: 'Regenerate link',
 		regenerateHint:
@@ -388,7 +402,7 @@ const en = {
 		copy: 'Copy',
 		copied: 'Link copied',
 		showOnce:
-			'Copy it now: it will not be shown again. Keep it secret like a password — anyone who has it can read and change your library.',
+			'Copy it now: it will not be shown again. Keep it secret like a password — anyone who has it can read your library, and change it if you allowed that.',
 		activeSince: 'Link active since',
 		lastUsed: 'last used on',
 		neverUsed: 'never used',

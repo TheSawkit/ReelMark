@@ -35,10 +35,23 @@ vi.mock('@/lib/tmdb/media-endpoints', () => ({
 const { createReelMarkMcpServer } = await import('@/lib/mcp/server');
 
 const handler = createMcpHandler(({ authInfo }) =>
-	createReelMarkMcpServer(authInfo!.clientId)
+	createReelMarkMcpServer(
+		authInfo!.clientId,
+		authInfo!.scopes.includes('library:write') ? 'write' : 'read'
+	)
 );
 
-async function callTool(args: object) {
+type RpcResult = {
+	isError?: boolean;
+	content: { text: string }[];
+	tools?: { name: string }[];
+};
+
+async function rpc(
+	method: string,
+	params: object,
+	access: 'read' | 'write'
+): Promise<{ result?: RpcResult; error?: { message: string } }> {
 	const response = await handler.fetch(
 		new Request('https://reelmark.test/api/mcp/key', {
 			method: 'POST',
@@ -46,25 +59,33 @@ async function callTool(args: object) {
 				'Content-Type': 'application/json',
 				Accept: 'application/json, text/event-stream',
 			},
-			body: JSON.stringify({
-				jsonrpc: '2.0',
-				id: 1,
-				method: 'tools/call',
-				params: { name: 'update_library', arguments: args },
-			}),
+			body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
 		}),
-		{ authInfo: { token: '', clientId: 'user-1', scopes: [] } }
+		{
+			authInfo: {
+				token: '',
+				clientId: 'user-1',
+				scopes: access === 'write' ? ['library:write'] : [],
+			},
+		}
 	);
 	const body = await response.text();
-	const data = body
-		.split('\n')
-		.filter((line) => line.startsWith('data:'))
-		.map((line) => line.slice('data:'.length))
-		.join('');
-	return JSON.parse(data).result as {
-		isError?: boolean;
-		content: { text: string }[];
-	};
+	return JSON.parse(
+		body
+			.split('\n')
+			.filter((line) => line.startsWith('data:'))
+			.map((line) => line.slice('data:'.length))
+			.join('')
+	);
+}
+
+async function callTool(args: object): Promise<RpcResult> {
+	const { result } = await rpc(
+		'tools/call',
+		{ name: 'update_library', arguments: args },
+		'write'
+	);
+	return result!;
 }
 
 beforeEach(() => {
@@ -123,6 +144,33 @@ describe('update_library', () => {
 		});
 
 		expect(result.isError).toBe(true);
+		expect(writes.upsert).not.toHaveBeenCalled();
+	});
+});
+
+describe('read-only link', () => {
+	it('does not list update_library', async () => {
+		const read = await rpc('tools/list', {}, 'read');
+		const write = await rpc('tools/list', {}, 'write');
+		const names = (tools?: { name: string }[]) =>
+			(tools ?? []).map(({ name }) => name);
+
+		expect(names(read.result?.tools)).not.toContain('update_library');
+		expect(names(read.result?.tools)).toContain('get_watchlist');
+		expect(names(write.result?.tools)).toContain('update_library');
+	});
+
+	it('cannot call update_library', async () => {
+		const { result, error } = await rpc(
+			'tools/call',
+			{
+				name: 'update_library',
+				arguments: { type: 'movie', id: 146233, status: 'watched' },
+			},
+			'read'
+		);
+
+		expect(error ?? result?.isError).toBeTruthy();
 		expect(writes.upsert).not.toHaveBeenCalled();
 	});
 });

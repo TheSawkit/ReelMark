@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { generateMcpKey, hashMcpKey, isMcpKeyFormat } from '@/lib/mcp/keys';
+import {
+	generateMcpKey,
+	hashMcpKey,
+	isMcpKeyFormat,
+	mcpKeyAccess,
+} from '@/lib/mcp/keys';
 import { cachedUserContext, cachedUserTaste } from '@/lib/mcp/user-cache';
 import { chargeMcpRequest, countToolCalls } from '@/lib/mcp/budget';
 import type { UserTaste } from '@/lib/data/taste';
@@ -41,15 +46,28 @@ function item(overrides: Partial<MediaItem> = {}): MediaItem {
 
 describe('MCP link keys', () => {
 	it('generates a url-safe 256-bit secret whose stored hash is not the secret', () => {
-		const { key, hash } = generateMcpKey();
-		expect(isMcpKeyFormat(key)).toBe(true);
-		expect(hash).toBe(hashMcpKey(key));
-		expect(hash).not.toContain(key);
-		expect(hash).toMatch(/^[0-9a-f]{64}$/);
+		for (const access of ['read', 'write'] as const) {
+			const { key, hash } = generateMcpKey(access);
+			expect(isMcpKeyFormat(key)).toBe(true);
+			expect(hash).toBe(hashMcpKey(key));
+			expect(hash).not.toContain(key);
+			expect(hash).toMatch(/^[0-9a-f]{64}$/);
+		}
 	});
 
 	it('never generates the same secret twice', () => {
-		expect(generateMcpKey().key).not.toBe(generateMcpKey().key);
+		expect(generateMcpKey('read').key).not.toBe(generateMcpKey('read').key);
+	});
+
+	it('binds the access to the secret itself', () => {
+		const read = generateMcpKey('read');
+		const write = generateMcpKey('write');
+
+		expect(mcpKeyAccess(read.key)).toBe('read');
+		expect(mcpKeyAccess(write.key)).toBe('write');
+		expect(hashMcpKey(`rw-${read.key}`)).not.toBe(read.hash);
+		expect(mcpKeyAccess('a'.repeat(43))).toBe('read');
+		expect(mcpKeyAccess(`rw-${'a'.repeat(40)}`)).toBe('read');
 	});
 
 	it('rejects malformed path segments before any lookup', () => {
@@ -57,6 +75,12 @@ describe('MCP link keys', () => {
 		expect(isMcpKeyFormat('short')).toBe(false);
 		expect(isMcpKeyFormat(`${'a'.repeat(42)}/`)).toBe(false);
 		expect(isMcpKeyFormat('a'.repeat(44))).toBe(false);
+		expect(isMcpKeyFormat(`rw.${'a'.repeat(43)}`)).toBe(false);
+		expect(isMcpKeyFormat(`rw-${'a'.repeat(43)}`)).toBe(true);
+	});
+
+	it('keeps write links clear of the file-extension rewrite in next.config', () => {
+		expect(generateMcpKey('write').key).not.toContain('.');
 	});
 });
 
