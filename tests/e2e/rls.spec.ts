@@ -32,13 +32,16 @@ test.describe('Row-Level Security', () => {
 			auth: { persistSession: false },
 		});
 		for (const table of PRIVATE_TABLES) {
-			const { count, error, status } = await anon
+			// GET, not HEAD: a refused HEAD comes back as a bare 401 with no body, so no error code
+			// to tell "permission denied" from "wrong API key". One row is enough to prove a leak.
+			const { data, error, status } = await anon
 				.from(table)
-				.select('*', { count: 'exact', head: true });
+				.select('*')
+				.limit(1);
 			const denied = error?.code === INSUFFICIENT_PRIVILEGE;
 			expect(
-				denied || (error === null && count === 0),
-				`${table}: ${error ? `HTTP ${status} ${error.code ?? ''} ${error.message}`.trim() : `${count} rows readable anonymously`}`
+				denied || (error === null && data.length === 0),
+				`${table}: ${error ? `HTTP ${status} ${error.code ?? ''} ${error.message}`.trim() : 'rows readable anonymously'}`
 			).toBe(true);
 		}
 	});
