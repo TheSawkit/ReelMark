@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import {
 	rejectFriendRequest,
 	cancelFriendRequest,
 } from '@/app/actions/friends';
-import { createClient } from '@/lib/supabase/client';
+import { withRealtimeClient } from '@/lib/supabase/lazy-client';
 import { RATE_LIMITED } from '@/lib/action-errors';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Friendship } from '@/types/profile';
@@ -34,7 +34,6 @@ export function FriendshipButton({
 	const [localFriendship, setLocalFriendship] = useState<Friendship | null>(
 		friendship
 	);
-	const supabase = useMemo(() => createClient(), []);
 
 	useEffect(() => {
 		const applyChange = (
@@ -56,34 +55,36 @@ export function FriendshipButton({
 			setLocalFriendship(row);
 		};
 
-		const channel = supabase
-			.channel(`friendship-${currentUserId}`)
-			.on<Friendship>(
-				'postgres_changes',
-				{
-					event: '*',
-					schema: 'public',
-					table: 'friendships',
-					filter: `requester_id=eq.${currentUserId}`,
-				},
-				applyChange
-			)
-			.on<Friendship>(
-				'postgres_changes',
-				{
-					event: '*',
-					schema: 'public',
-					table: 'friendships',
-					filter: `addressee_id=eq.${currentUserId}`,
-				},
-				applyChange
-			)
-			.subscribe();
+		return withRealtimeClient((supabase) => {
+			const channel = supabase
+				.channel(`friendship-${currentUserId}`)
+				.on<Friendship>(
+					'postgres_changes',
+					{
+						event: '*',
+						schema: 'public',
+						table: 'friendships',
+						filter: `requester_id=eq.${currentUserId}`,
+					},
+					applyChange
+				)
+				.on<Friendship>(
+					'postgres_changes',
+					{
+						event: '*',
+						schema: 'public',
+						table: 'friendships',
+						filter: `addressee_id=eq.${currentUserId}`,
+					},
+					applyChange
+				)
+				.subscribe();
 
-		return () => {
-			supabase.removeChannel(channel);
-		};
-	}, [currentUserId, targetUserId, supabase]);
+			return () => {
+				void supabase.removeChannel(channel);
+			};
+		});
+	}, [currentUserId, targetUserId]);
 
 	const handleSendRequest = () => {
 		startTransition(async () => {

@@ -4,8 +4,13 @@ import { cache } from 'react';
 import { getOptionalUser } from '@/lib/supabase/auth-helpers';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
-import { getAllTvShowsWatchProgress } from '@/lib/data/episodes';
+import {
+	getAllTvShowsWatchProgress,
+	getMyTvProgress,
+} from '@/lib/data/episodes';
 import { getTvShowsTotalEpisodes } from '@/lib/tmdb';
+import { getMediaKey } from '@/lib/media';
+import { reportSwallowed } from '@/lib/report';
 import type { Language } from '@/lib/i18n/translations';
 import { getMyReviewSignals } from '@/lib/data/reviews';
 import {
@@ -47,28 +52,22 @@ function emptyCounts(): WatchlistCounts {
 
 /**
  * Combien de titres l'utilisateur possède, par type et par statut.
- * Ne lit que les deux colonnes de regroupement : compter deux mille lignes ne doit pas en
- * rapatrier les titres et les affiches.
+ * Compté en base (`watchlist_counts`) : au plus six lignes traversent le réseau, là où la
+ * version précédente rapatriait toute la bibliothèque par pages de 1000 pour la compter en JS.
  */
 export const getWatchlistCounts = cache(async (): Promise<WatchlistCounts> => {
 	const { supabase, userId } = await getOptionalUser();
 	const counts = emptyCounts();
 	if (!userId) return counts;
 
-	const rows = await fetchAllRows<{ media_type: string; status: string }>(
-		(from, to) =>
-			supabase
-				.from('watchlist')
-				.select('media_type, status')
-				.eq('user_id', userId)
-				.order('id')
-				.range(from, to)
-	);
+	const { data, error } = await supabase.rpc('watchlist_counts');
+	if (error) throw new Error(error.message);
 
-	for (const row of rows) {
+	for (const row of data ?? []) {
 		const byStatus = counts[row.media_type as MediaType];
 		const status = row.status as WatchStatus;
-		if (byStatus && status in byStatus) byStatus[status] += 1;
+		if (byStatus && status in byStatus)
+			byStatus[status] = Number(row.count);
 	}
 	return counts;
 });
@@ -209,36 +208,133 @@ export const getCachedStreamingProviders = cache(getMyStreamingProviders);
 /**
  * Loads the user's watchlist and per-show episode progress in one request-deduped call.
  * Argument-free so React.cache shares a single execution across all streamed sections.
+ * `lastWatchedAt` rides along for the "continue watching" ordering, which used to cost its own
+ * round-trip.
  */
 export const getWatchlistWithProgress = cache(
 	async (): Promise<{
 		watchlist: WatchlistEntry[];
 		tvProgress: Record<number, number>;
+		lastWatchedAt: Map<number, string>;
 	}> => {
 		const watchlist = await getCachedUserWatchlist();
 		const tvIds = watchlist
 			.filter((e) => e.media_type === 'tv')
 			.map((e) => e.media_id);
-		const tvProgress = await getAllTvShowsWatchProgress(tvIds);
-		return { watchlist, tvProgress };
+		const { watched, lastWatchedAt } = await getMyTvProgress(tvIds);
+		return { watchlist, tvProgress: watched, lastWatchedAt };
 	}
 );
 
+/** Ids per `.in()` query: two rows at most per id (a movie and a show can share one), so a chunk can never reach PostgREST's 1000-row cap. */
+const ENTRY_IDS_PER_QUERY = 300;
+
 /**
- * Enriches media items with their watchlist entry using the request-cached full watchlist,
- * so concurrent streamed sections share a single Supabase read instead of one query each.
+ * Coalesces the watchlist lookups of one request. Streamed sections resolve at nearly the same
+ * time; each asks for its own ids, and the loader answers all of them with one query issued on
+ * the next tick, never asking twice for an id it already knows.
+ *
+ * @param fetchEntries - Reads the viewer's rows for a set of TMDB ids.
+ * @returns A function resolving the entries of the requested ids (both media types).
+ */
+export function createWatchlistEntryLoader(
+	fetchEntries: (mediaIds: number[]) => Promise<WatchlistEntry[]>
+): (mediaIds: number[]) => Promise<WatchlistEntry[]> {
+	const known = new Map<number, Promise<WatchlistEntry[]>>();
+	let batch: {
+		ids: Set<number>;
+		result: Promise<Map<number, WatchlistEntry[]>>;
+	} | null = null;
+
+	function enqueue(mediaId: number): Promise<WatchlistEntry[]> {
+		if (!batch) {
+			const ids = new Set<number>();
+			const result = new Promise<Map<number, WatchlistEntry[]>>(
+				(resolve, reject) => {
+					setTimeout(() => {
+						batch = null;
+						fetchEntries([...ids]).then((entries) => {
+							const byId = new Map<number, WatchlistEntry[]>();
+							for (const entry of entries) {
+								const list = byId.get(entry.media_id) ?? [];
+								list.push(entry);
+								byId.set(entry.media_id, list);
+							}
+							resolve(byId);
+						}, reject);
+					}, 0);
+				}
+			);
+			batch = { ids, result };
+		}
+		batch.ids.add(mediaId);
+		return batch.result.then((byId) => byId.get(mediaId) ?? []);
+	}
+
+	return async (mediaIds) => {
+		const lists = await Promise.all(
+			[...new Set(mediaIds)].map((mediaId) => {
+				let entries = known.get(mediaId);
+				if (!entries) {
+					entries = enqueue(mediaId);
+					known.set(mediaId, entries);
+				}
+				return entries;
+			})
+		);
+		return lists.flat();
+	};
+}
+
+/** The request's loader, bound to the signed-in viewer; one per request through `cache()`. */
+const getRequestEntryLoader = cache(() =>
+	createWatchlistEntryLoader(async (mediaIds) => {
+		const chunks: number[][] = [];
+		for (let i = 0; i < mediaIds.length; i += ENTRY_IDS_PER_QUERY)
+			chunks.push(mediaIds.slice(i, i + ENTRY_IDS_PER_QUERY));
+		const results = await Promise.all(chunks.map(getMediaWatchlistEntries));
+		return results.flat();
+	})
+);
+
+/**
+ * Enriches media items with their watchlist entry.
+ *
+ * Only the displayed titles are looked up — the full library was downloaded here before, all
+ * 2 000+ rows (~600 KB) to badge a row of twenty cards, on every detail, crew, explorer and
+ * search page: the single largest source of Supabase egress. Pass `watchlist` when the caller
+ * already holds the full list (dashboard) to skip the lookup altogether.
+ *
+ * A failed lookup leaves the cards unbadged instead of failing the section.
  */
 export async function mergeWithWatchlist(
-	items: MediaItem[]
+	items: MediaItem[],
+	watchlist?: readonly WatchlistEntry[]
 ): Promise<MediaItem[]> {
 	if (items.length === 0) return [];
-	const watchlist = await getCachedUserWatchlist();
+
+	let entries: readonly WatchlistEntry[];
+	if (watchlist) {
+		entries = watchlist;
+	} else {
+		const { userId } = await getOptionalUser();
+		if (!userId) return items;
+		entries = await getRequestEntryLoader()(
+			items.map((item) => item.id)
+		).catch((error: unknown) => {
+			reportSwallowed('watchlist:merge', error);
+			return [];
+		});
+	}
+
+	const byKey = new Map(
+		entries.map((entry) => [
+			getMediaKey({ media_type: entry.media_type, id: entry.media_id }),
+			entry,
+		])
+	);
 	return items.map((item) => ({
 		...item,
-		watchlistEntry: watchlist.find(
-			(entry) =>
-				entry.media_id === item.id &&
-				entry.media_type === item.media_type
-		),
+		watchlistEntry: byKey.get(getMediaKey(item)),
 	}));
 }

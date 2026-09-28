@@ -198,6 +198,7 @@ async function assembleExtraSections({
 	personSection,
 	freshItems,
 	similarSections,
+	watchlist,
 }: {
 	type: MediaType;
 	t: Translations;
@@ -205,6 +206,7 @@ async function assembleExtraSections({
 	personSection: DashboardSection | null;
 	freshItems: MediaItem[];
 	similarSections: DashboardSection[];
+	watchlist: WatchlistWithProgress['watchlist'];
 }): Promise<DashboardSection[]> {
 	const isMovie = type === 'movie';
 
@@ -234,7 +236,7 @@ async function assembleExtraSections({
 		...(await Promise.all(
 			similarSections.map(async (section) => ({
 				...section,
-				items: await mergeWithWatchlist(section.items),
+				items: await mergeWithWatchlist(section.items, watchlist),
 			}))
 		)),
 	];
@@ -357,6 +359,7 @@ export async function buildLibrarySections(
 			similarResults,
 			t
 		),
+		watchlist,
 	});
 
 	return {

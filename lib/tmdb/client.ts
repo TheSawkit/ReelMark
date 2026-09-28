@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { cacheLife } from 'next/cache';
 import { getServerLocale, getServerLanguage } from '@/lib/i18n/server';
-import { createClient } from '@/lib/supabase/server';
+import { getUserContext } from '@/lib/supabase/auth-helpers';
 import { TMDBNotFoundError } from '@/lib/tmdb/errors';
 import type { Language } from '@/lib/i18n/translations';
 
@@ -179,10 +179,8 @@ export async function fetchTMDB<T>(
 /** Resolves the user's region from profile metadata, falling back to locale country or "US". Deduped per request. */
 export const getUserRegion = cache(async (lang?: Language): Promise<string> => {
 	try {
-		const supabase = await createClient();
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
+		// Shares the request's verified session instead of a second Auth round-trip.
+		const { user } = await getUserContext();
 
 		if (user?.user_metadata?.region) {
 			return user.user_metadata.region.toUpperCase();

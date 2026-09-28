@@ -1,7 +1,11 @@
 import { Suspense } from 'react';
 import { requireAuth } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { isOAuthOnly } from '@/lib/supabase/auth-helpers';
+import {
+	getFullUser,
+	isOAuthOnly,
+	redirectToLogin,
+} from '@/lib/supabase/auth-helpers';
 import { SettingsContent } from '@/components/settings/SettingsContent';
 import { SettingsContentSkeleton } from '@/components/settings/SettingsContentSkeleton';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
@@ -14,7 +18,6 @@ import { getNotificationPreferences } from '@/lib/data/notifications';
 import { getMcpLinkStatus } from '@/lib/data/mcp';
 import type { Language } from '@/lib/i18n/translations';
 import type { UserProfile, PrivacySettings } from '@/types/profile';
-import type { User } from '@supabase/supabase-js';
 
 type Props = {
 	params: Promise<{ lang: Language }>;
@@ -34,8 +37,11 @@ export async function generateMetadata({ params }: Props) {
 	};
 }
 
-async function SettingsSection({ user, lang }: { user: User; lang: Language }) {
-	const supabase = await createClient();
+async function SettingsSection({ lang }: { lang: Language }) {
+	// The one screen that needs the full Auth record (identities for the password/delete
+	// flows, the freshest email) — every other page reads the verified token instead.
+	const [user, supabase] = await Promise.all([getFullUser(), createClient()]);
+	if (!user) return redirectToLogin();
 
 	const [
 		profileResult,
@@ -83,7 +89,7 @@ async function SettingsSection({ user, lang }: { user: User; lang: Language }) {
 
 export default async function SettingsPage({ params }: Props) {
 	const { lang } = await params;
-	const user = await requireAuth();
+	await requireAuth();
 	const t = await getTranslations(lang);
 
 	return (
@@ -93,7 +99,7 @@ export default async function SettingsPage({ params }: Props) {
 				subtitle={t.settings.subtitle}
 			/>
 			<Suspense fallback={<SettingsContentSkeleton />}>
-				<SettingsSection user={user} lang={lang} />
+				<SettingsSection lang={lang} />
 			</Suspense>
 		</PageLayout>
 	);

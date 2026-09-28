@@ -8,6 +8,7 @@ import { fetchAllRows } from '@/lib/supabase/pagination';
 import { reportSwallowed } from '@/lib/report';
 import { REVIEW_COLUMNS } from '@/lib/supabase/columns';
 import { getMediaKey } from '@/lib/media';
+import { getReviewedMediaSets, mayHaveReviews } from '@/lib/data/review-index';
 import type { MediaType } from '@/types/tmdb';
 import type {
 	Review,
@@ -181,6 +182,20 @@ export async function getMyEpisodeReviews(
 }
 
 /**
+ * Whether an anonymous viewer's community read can be skipped. Signed-in viewers always query
+ * — they may see friends-only reviews, and their own writes must show up at once — while an
+ * anonymous one only ever sees public data, which exists solely for titles in the review index.
+ */
+async function skipForAnonymous(
+	userId: string | null,
+	mediaType: ReviewMediaType,
+	mediaId: number
+): Promise<boolean> {
+	if (userId) return false;
+	return !mayHaveReviews(await getReviewedMediaSets(), mediaType, mediaId);
+}
+
+/**
  * Returns the community average rating (1–10 scale) and count for a media item.
  * Returns null if no ratings exist.
  */
@@ -188,7 +203,8 @@ export async function getAverageRating(
 	mediaId: number,
 	mediaType: ReviewMediaType
 ): Promise<{ avg: number; count: number } | null> {
-	const supabase = await createClient();
+	const { supabase, userId } = await getOptionalUser();
+	if (await skipForAnonymous(userId, mediaType, mediaId)) return null;
 
 	const { data } = await supabase.rpc('get_media_rating', {
 		p_media_id: mediaId,
@@ -200,12 +216,17 @@ export async function getAverageRating(
 /**
  * Returns the community average rating for a season, aggregated from its episode reviews.
  * Returns null if no episode ratings exist for this season.
+ *
+ * `get_season_rating` runs with the caller's rights and `reviews` is not readable by `anon`:
+ * an anonymous call always failed (permission denied — 9 400 error log lines a day), so it is
+ * no longer made.
  */
 export async function getSeasonAverageRating(
 	tvId: number,
 	seasonNumber: number
 ): Promise<{ avg: number; count: number } | null> {
-	const supabase = await createClient();
+	const { supabase, userId } = await getOptionalUser();
+	if (!userId) return null;
 
 	const { data } = await supabase.rpc('get_season_rating', {
 		p_tv_id: tvId,
@@ -216,12 +237,14 @@ export async function getSeasonAverageRating(
 
 /**
  * Returns the community average rating for a show, aggregated from all its episode reviews.
- * Returns null if no ratings exist.
+ * Returns null if no ratings exist. Skipped when anonymous, for the reason given on
+ * `getSeasonAverageRating` (15 000 failing calls a day).
  */
 export async function getShowAverageRating(
 	tvId: number
 ): Promise<{ avg: number; count: number } | null> {
-	const supabase = await createClient();
+	const { supabase, userId } = await getOptionalUser();
+	if (!userId) return null;
 
 	const { data } = await supabase.rpc('get_show_rating', { p_tv_id: tvId });
 	return parseRatingRow(data);
@@ -235,6 +258,7 @@ export async function getPublicReviews(
 	mediaType: ReviewMediaType
 ): Promise<PublicReview[]> {
 	const { supabase, userId } = await getOptionalUser();
+	if (await skipForAnonymous(userId, mediaType, mediaId)) return [];
 
 	const { data, error } = await supabase.rpc('get_public_reviews', {
 		p_media_id: mediaId,
@@ -248,12 +272,21 @@ export async function getPublicReviews(
 
 /**
  * Returns public reviews for a set of episode IDs, filtered by viewer's auth/friendship status.
+ *
+ * @param episodeIds - TMDB episode ids of the season.
+ * @param tvId - Their show, which lets an anonymous render skip the read when no episode of the
+ *   show was ever reviewed.
  */
 export async function getPublicEpisodeReviews(
-	episodeIds: number[]
+	episodeIds: number[],
+	tvId?: number
 ): Promise<PublicReview[]> {
 	if (episodeIds.length === 0) return [];
 	const { supabase, userId } = await getOptionalUser();
+	if (!userId && tvId !== undefined) {
+		const sets = await getReviewedMediaSets();
+		if (!sets?.episodeShows.has(tvId)) return [];
+	}
 
 	const { data, error } = await supabase.rpc('get_public_episode_reviews', {
 		p_episode_ids: episodeIds,

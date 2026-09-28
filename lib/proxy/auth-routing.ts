@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import type { User } from '@supabase/supabase-js';
+import {
+	sessionUserFromClaims,
+	type SessionUser,
+} from '@/lib/supabase/session-user';
 import { needsOnboarding } from '@/lib/onboarding';
 import { sanitizeRedirectPath } from '@/lib/validators';
 import { localizedHref } from '@/lib/i18n/utils';
@@ -126,7 +129,7 @@ export async function refreshSession(
  */
 async function hasIncompleteOnboarding(
 	supabase: ProxySupabase,
-	user: User
+	user: SessionUser
 ): Promise<boolean> {
 	if (!needsOnboarding(user.user_metadata, false)) return false;
 
@@ -151,9 +154,16 @@ export async function handleAuthRouting(
 		requestHeaders
 	);
 
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+	// Verified locally against the cached JWKS (ES256 signing key) and refreshed when expired:
+	// the proxy runs on every protected navigation and prefetch, and getUser() made each one
+	// an Auth round-trip.
+	let user: SessionUser | null = null;
+	try {
+		const { data } = await supabase.auth.getClaims();
+		user = sessionUserFromClaims(data?.claims);
+	} catch {
+		// Unverifiable token: routed as signed out.
+	}
 
 	if (access.isProtected && !user) {
 		const { pathname, search } = request.nextUrl;
