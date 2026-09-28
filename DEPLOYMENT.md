@@ -128,6 +128,14 @@ kubectl -n ingress-nginx get svc ingress-nginx-controller -o wide
    Edge TTL 1 an. Ces fichiers sont immutables (hachés par build). C'est l'optimisation la plus
    rentable du setup : elle sort les assets des pods et fait tomber la charge CPU qui déclenche
    le HPA.
+6. **Rate limiting** (Security → WAF → Rate limiting rules) : une règle sur la recherche, la seule
+   route publique qui appelle TMDB à chaque requête non cachée. Expression
+   `http.request.uri.path eq "/api/search"`, comptage par IP, 10 requêtes par 10 s, action
+   _Block_ pendant 10 s (valeurs du plan Free : 1 règle, période et blocage de 10 s, comptage par
+   IP uniquement). Elle s'ajoute au budget en mémoire de l'app (30/min par IP et par pod).
+   Ne **pas** limiter `/api/mcp/*` par IP : Claude, ChatGPT et les autres appellent depuis les
+   IP partagées de leurs serveurs, une règle par IP bloquerait tous leurs utilisateurs à la fois.
+   Le budget de l'assistant est déjà par utilisateur et global, dans Postgres.
 
 ## 5. Registry ghcr.io — pull secret
 

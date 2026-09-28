@@ -16,6 +16,7 @@ const PRIVATE_TABLES = [
 	'push_subscriptions',
 	'episode_watches',
 	'friendships',
+	'rate_limits',
 ] as const;
 
 /** Postgres refusing the table outright: as private as zero rows. Any other error means nothing was verified. */

@@ -86,7 +86,7 @@ Chaque utilisateur peut générer, dans Réglages → Données, un lien secret �
 | Déduplication par requête | `React.cache()` (watchlist, auth, i18n, genres, région)                        | requête                             |
 | Mutations                 | `revalidatePath()` sur chaque Server Action d'écriture                         | immédiat                            |
 
-`cacheComponents` est activé. Le cache `"use cache"` vit en mémoire, par pod (`cacheMaxMemorySize` : 10 Mo, voir `next.config.ts`) : avec 2 replicas, chaque pod a le sien — sans conséquence pour des données publiques TMDB à durée courte. Les budgets de requêtes (`lib/rate-limiter.ts`) sont eux aussi par pod : la limite effective se multiplie par le nombre de replicas.
+`cacheComponents` est activé. Le cache `"use cache"` vit en mémoire, par pod (`cacheMaxMemorySize` : 10 Mo, voir `next.config.ts`) : avec 2 replicas, chaque pod a le sien — sans conséquence pour des données publiques TMDB à durée courte. Les budgets de requêtes (`lib/rate-limiter.ts`) sont eux aussi par pod : la limite effective se multiplie par le nombre de replicas. Exception : le budget d'appels d'outils de l'assistant IA, le seul qui protège un coût réel (Supabase + TMDB), est compté dans Postgres (`consume_rate_limits`) et donc partagé entre pods ; il retombe sur la mémoire du pod si la base ne répond pas. `/api/search` se limite en plus par IP au niveau de Cloudflare (voir `DEPLOYMENT.md`).
 
 ## SEO
 

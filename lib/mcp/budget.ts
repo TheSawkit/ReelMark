@@ -1,4 +1,8 @@
+import 'server-only';
+
 import { checkRateLimit, retryAfterSeconds } from '@/lib/rate-limiter';
+import { createAdminClient } from '@/lib/supabase/server';
+import { reportSwallowed } from '@/lib/report';
 
 interface Budget {
 	scope: string;
@@ -6,12 +10,12 @@ interface Budget {
 	windowMs: number;
 }
 
-/** Every request — handshakes, `tools/list` and notifications cost no I/O, so this only stops floods. */
+/** Every request — handshakes, `tools/list` and notifications cost no I/O, so this only stops floods, and this pod's counters suffice. */
 const REQUEST_BUDGETS: Budget[] = [
 	{ scope: 'mcp-requests', limit: 120, windowMs: 60_000 },
 ];
 
-/** Tool calls — the only requests that read Supabase and TMDB, so the only ones the real budget counts. */
+/** Tool calls — the only requests that read Supabase and TMDB, so the only ones the real budget counts, shared by every pod. */
 const TOOL_BUDGETS: Budget[] = [
 	{ scope: 'mcp-tools-minute', limit: 30, windowMs: 60_000 },
 	{ scope: 'mcp-tools-day', limit: 100, windowMs: 86_400_000 },
@@ -32,8 +36,8 @@ export async function countToolCalls(request: Request): Promise<number> {
 	}
 }
 
-/** Spends `cost` units of each budget; returns when the first exhausted one resets, or null when all allow it. */
-function spend(userId: string, budgets: Budget[], cost: number) {
+/** Spends `cost` units of each budget on this pod; returns when the first exhausted one resets, or null when all allow it. */
+function spendLocal(userId: string, budgets: Budget[], cost: number) {
 	if (cost === 0) return null;
 	for (const { scope, limit, windowMs } of budgets) {
 		const { allowed, resetAt } = checkRateLimit(
@@ -48,6 +52,33 @@ function spend(userId: string, budgets: Budget[], cost: number) {
 }
 
 /**
+ * Spends `cost` units of every budget at once in Postgres, so the limit holds across pods: all or
+ * nothing, and returns when the first exhausted window resets, or null when all allow it. Falls back
+ * to this pod's counters when the database does not answer — the limit then applies per pod.
+ */
+async function spendShared(userId: string, budgets: Budget[], cost: number) {
+	if (cost === 0) return null;
+	try {
+		const { data, error } = await createAdminClient().rpc(
+			'consume_rate_limits',
+			{
+				p_keys: budgets.map(({ scope }) => `${scope}:${userId}`),
+				p_limits: budgets.map(({ limit }) => limit),
+				p_window_seconds: budgets.map(
+					({ windowMs }) => windowMs / 1000
+				),
+				p_cost: cost,
+			}
+		);
+		if (error) throw error;
+		return data ? Date.parse(data) : null;
+	} catch (error) {
+		reportSwallowed('mcp:budget', error);
+		return spendLocal(userId, budgets, cost);
+	}
+}
+
+/**
  * Charges one request to the user's budgets: always the flood guard, and the tool budgets once
  * per `tools/call` it carries.
  *
@@ -58,8 +89,12 @@ export async function chargeMcpRequest(
 	request: Request
 ): Promise<Response | null> {
 	const resetAt =
-		spend(userId, REQUEST_BUDGETS, 1) ??
-		spend(userId, TOOL_BUDGETS, await countToolCalls(request));
+		spendLocal(userId, REQUEST_BUDGETS, 1) ??
+		(await spendShared(
+			userId,
+			TOOL_BUDGETS,
+			await countToolCalls(request)
+		));
 	if (resetAt === null) return null;
 	return new Response(null, {
 		status: 429,
