@@ -301,6 +301,24 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			rate_limits: {
+				Row: {
+					count: number;
+					key: string;
+					reset_at: string;
+				};
+				Insert: {
+					count: number;
+					key: string;
+					reset_at: string;
+				};
+				Update: {
+					count?: number;
+					key?: string;
+					reset_at?: string;
+				};
+				Relationships: [];
+			};
 			recommendation_dismissals: {
 				Row: {
 					created_at: string;
@@ -510,6 +528,15 @@ export type Database = {
 			can_view_watch_activity: {
 				Args: { p_owner: string };
 				Returns: boolean;
+			};
+			consume_rate_limits: {
+				Args: {
+					p_cost: number;
+					p_keys: string[];
+					p_limits: number[];
+					p_window_seconds: number[];
+				};
+				Returns: string;
 			};
 			episode_last_watches: {
 				Args: never;

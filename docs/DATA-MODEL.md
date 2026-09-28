@@ -1,6 +1,6 @@
 # Modèle de données
 
-PostgreSQL (Supabase), 15 tables, RLS attendue sur chacune — à contrôler après toute modification du schéma :
+PostgreSQL (Supabase), 16 tables, RLS attendue sur chacune — à contrôler après toute modification du schéma :
 
 ```sql
 select tablename, rowsecurity from pg_tables where schemaname = 'public';
@@ -58,6 +58,13 @@ Les trois sont lues et écrites avec la session de l'utilisateur, filtrées par 
 - L'accès (lecture, ou lecture et modification) fait partie du secret haché, pas de la ligne : un lien en écriture commence par `rw-`. `auth.users.user_metadata.mcp_access` n'en garde qu'une copie pour l'affichage dans Réglages.
 - RLS réservée au propriétaire (lecture de l'état et révocation depuis Réglages) ; la résolution d'un lien par `/api/mcp/[key]` passe par le service role, sur le hash.
 
+| Table         | Rôle                                                                                                           | Clés     |
+| ------------- | -------------------------------------------------------------------------------------------------------------- | -------- |
+| `rate_limits` | Compteurs partagés entre pods du budget d'appels d'outils : `key` (`<fenêtre>:<user_id>`), `count`, `reset_at` | PK `key` |
+
+- Écrite uniquement par `consume_rate_limits` (voir plus bas) ; RLS activée sans policy, droits retirés à `anon` et `authenticated` : seul le service role y accède.
+- Deux lignes au plus par utilisateur (fenêtre minute, fenêtre jour), remises à zéro sur place à l'expiration : pas de purge nécessaire.
+
 ### Notifications
 
 | Table                      | Rôle                                                                                  |
@@ -90,6 +97,57 @@ Deux mécanismes complémentaires — vérifier `pg_policies` avant de crier à 
 - `get_media_rating`, `get_episodes_rating`, `get_public_episode_reviews` — agrégats de notes publiques, appelables par tous par design (advisors Supabase : warns acceptés).
 - `can_view_watch_activity(p_owner)` — `true` si `auth.uid()` peut voir l'activité de visionnage de `p_owner` (section watchlist **ou** vus visible ; pas de ligne `privacy_settings` = tout public, comme `getPrivacySettings`).
 - `episode_watch_counts_for(p_user_id)` — nombre d'épisodes vus par série pour un profil visité, gardé par la précédente. `SECURITY DEFINER`, `search_path` figé, `execute` révoqué de `public`/`anon` et accordé à `authenticated` : un appel non authentifié répond `permission denied`, et un appel service-role (sans `auth.uid()`) renvoie zéro ligne.
+
+- `consume_rate_limits(p_keys, p_limits, p_window_seconds, p_cost)` — débite `p_cost` de chaque fenêtre en une transaction, tout ou rien : renvoie `null` si toutes l'acceptent, sinon le `reset_at` de la première fenêtre épuisée, sans rien débiter. Le verrou de ligne pris par l'upsert sérialise les appels concurrents sur une même clé. `execute` réservé au service role. Appelée par `lib/mcp/budget.ts` ; tant qu'elle manque ou échoue, le budget retombe sur les compteurs en mémoire du pod (avec un avertissement `[mcp:budget]` dans les logs).
+
+Définition, à appliquer telle quelle sur le projet :
+
+```sql
+create table public.rate_limits (
+	key text primary key,
+	count integer not null,
+	reset_at timestamptz not null
+);
+
+alter table public.rate_limits enable row level security;
+revoke all on table public.rate_limits from anon, authenticated;
+grant select, insert, update on table public.rate_limits to service_role;
+
+create or replace function public.consume_rate_limits(
+	p_keys text[],
+	p_limits integer[],
+	p_window_seconds integer[],
+	p_cost integer
+) returns timestamptz
+language plpgsql
+set search_path = ''
+as $$
+declare
+	v_count integer;
+	v_reset_at timestamptz;
+begin
+	if p_cost <= 0 then
+		return null;
+	end if;
+	for i in 1 .. coalesce(array_length(p_keys, 1), 0) loop
+		insert into public.rate_limits as r (key, count, reset_at)
+		values (p_keys[i], 0, now() + make_interval(secs => p_window_seconds[i]))
+		on conflict (key) do update
+			set count = case when r.reset_at <= now() then 0 else r.count end,
+				reset_at = case when r.reset_at <= now() then excluded.reset_at else r.reset_at end
+		returning r.count, r.reset_at into v_count, v_reset_at;
+		if v_count + p_cost > p_limits[i] then
+			return v_reset_at;
+		end if;
+	end loop;
+	update public.rate_limits set count = count + p_cost where key = any (p_keys);
+	return null;
+end;
+$$;
+
+revoke execute on function public.consume_rate_limits(text[], integer[], integer[], integer) from public, anon, authenticated;
+grant execute on function public.consume_rate_limits(text[], integer[], integer[], integer) to service_role;
+```
 
 ## Métadonnées auth
 

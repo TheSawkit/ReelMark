@@ -36,7 +36,7 @@ export function clientIpFrom(headers: Headers): string {
 }
 
 /**
- * Sliding window in-memory rate limiter. Per-pod: the effective limit scales with replica count — global limiting belongs at the Cloudflare edge.
+ * Sliding window in-memory rate limiter. Per-pod: the effective limit scales with replica count. The AI-assistant budget is shared through Postgres instead (`lib/mcp/budget.ts`); `/api/search` is also limited at the Cloudflare edge.
  *
  * @param cost - Units this call spends (a batch of several operations), all or nothing.
  */

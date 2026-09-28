@@ -27,7 +27,7 @@ Please include a description, steps to reproduce and the impact you expect. Repo
 ### HTTP
 
 - Security headers on every response (`next.config.ts`): Content-Security-Policy, HSTS with preload, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, a strict `Referrer-Policy` and a restrictive `Permissions-Policy`.
-- Rate limits: `/api/search` per IP, data export and AI-link generation per user, AI-assistant tool calls per user. Limits are in memory and per pod; global limiting belongs at the Cloudflare edge.
+- Rate limits: `/api/search` per IP, data export and AI-link generation per user, AI-assistant tool calls per user. The AI-assistant budget is counted in Postgres and shared by every pod; the others are in memory and per pod, and `/api/search` is also limited per IP at the Cloudflare edge.
 - Scheduled jobs (`/api/cron/*`) require `CRON_SECRET`, compared in constant time; the routes stay closed when the variable is unset.
 
 ### AI-assistant link (MCP)
@@ -35,7 +35,7 @@ Please include a description, steps to reproduce and the impact you expect. Repo
 - The link is a 256-bit random secret shown once. Only its SHA-256 hash is stored, and regenerating or revoking it disables the old link immediately.
 - Links are read-only unless the user allows changes when generating one. The access is part of the hashed secret (`rw-` prefix), so it cannot be raised by editing a link; a read-only link does not even list the write tool.
 - An unknown link gets an empty `404`. A valid link reads the owner's tastes and library; a write link can also change the status of titles in that library — nothing else, and never another user's data.
-- Tool calls are limited to 30 per minute and 100 per day per user.
+- Tool calls are limited to 30 per minute and 100 per day per user, across all pods.
 
 ### User content
 
