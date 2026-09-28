@@ -617,6 +617,33 @@ export type Database = {
 					count: number;
 				}[];
 			};
+			my_shell_state: {
+				Args: never;
+				Returns: {
+					avatar_url: string | null;
+					has_streaming_providers: boolean;
+					profile_created_at: string | null;
+					prompts: Json;
+					unread_notifications: number;
+					watchlist_count: number;
+				}[];
+			};
+			my_tv_progress: {
+				Args: { p_tv_ids: number[] };
+				Returns: {
+					last_watched_at: string;
+					tv_id: number;
+					watched_count: number;
+				}[];
+			};
+			reviewed_media_index: {
+				Args: never;
+				Returns: {
+					episode_tv_ids: number[];
+					movie_ids: number[];
+					tv_ids: number[];
+				}[];
+			};
 			sync_tv_watchlist_status: {
 				Args: {
 					p_poster?: string;
@@ -631,6 +658,14 @@ export type Database = {
 				Returns: {
 					tv_id: number;
 					watched_count: number;
+				}[];
+			};
+			watchlist_counts: {
+				Args: never;
+				Returns: {
+					count: number;
+					media_type: string;
+					status: string;
 				}[];
 			};
 		};
