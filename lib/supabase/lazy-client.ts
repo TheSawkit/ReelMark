@@ -23,3 +23,35 @@ export function withBrowserClient(
 		cleanup?.();
 	};
 }
+
+/**
+ * `withBrowserClient` for Realtime subscriptions: runs `setup` once the socket carries the
+ * signed-in user's token, and not at all without a session. Joining earlier sends the
+ * publishable key, i.e. the `anon` role, which Realtime rejects on owner-only tables
+ * ("invalid column for filter user_id") before rejoining — two error log lines and an extra
+ * join on every page load.
+ */
+export function withRealtimeClient(
+	setup: (supabase: BrowserClient) => () => void
+): () => void {
+	return withBrowserClient((supabase) => {
+		let cancelled = false;
+		let cleanup: (() => void) | undefined;
+
+		supabase.auth
+			.getSession()
+			.then(async ({ data }) => {
+				if (cancelled || !data.session) return;
+				await supabase.realtime.setAuth();
+				if (!cancelled) cleanup = setup(supabase);
+			})
+			.catch((error: unknown) =>
+				reportSwallowed('supabase:realtime-auth', error)
+			);
+
+		return () => {
+			cancelled = true;
+			cleanup?.();
+		};
+	});
+}

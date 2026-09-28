@@ -42,6 +42,7 @@ import {
 	type ContinueWatchingItem,
 } from '@/lib/data/continue-watching';
 import {
+	getCachedUserWatchlist,
 	getWatchlistWithProgress,
 	mergeWithWatchlist,
 } from '@/lib/data/watchlist';
@@ -191,16 +192,18 @@ async function TrendingSection({
 	t: Translations;
 	lang: Language;
 }) {
-	const [trendingMovies, trendingTv] = await Promise.all([
+	const [trendingMovies, trendingTv, watchlist] = await Promise.all([
 		getTrendingMovies('week', 1, lang).catch((): Movie[] => []),
 		getTrendingTvShows('week', 1, lang).catch((): TvShow[] => []),
+		getCachedUserWatchlist(),
 	]);
 
 	const trendingItems = await mergeWithWatchlist(
 		[
 			...trendingMovies.slice(0, 10).map(movieToMediaItem),
 			...trendingTv.slice(0, 10).map(tvShowToMediaItem),
-		].slice(0, 16)
+		].slice(0, 16),
+		watchlist
 	);
 
 	return (

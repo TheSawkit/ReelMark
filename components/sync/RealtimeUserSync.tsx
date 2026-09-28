@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { withBrowserClient } from '@/lib/supabase/lazy-client';
+import { withRealtimeClient } from '@/lib/supabase/lazy-client';
 import { mediaWatchStore } from '@/lib/stores/media-watch';
 import { episodeWatchStore } from '@/lib/stores/episode-watch';
 import { VALID_MEDIA_TYPES, VALID_STATUSES } from '@/lib/validators';
@@ -47,7 +47,7 @@ function isSyncableEpisodeRow(
 export function RealtimeUserSync({ userId }: RealtimeUserSyncProps) {
 	useEffect(
 		() =>
-			withBrowserClient((supabase) => {
+			withRealtimeClient((supabase) => {
 				const channel = supabase
 					.channel(`user-sync:${userId}`)
 					.on<WatchlistRow>(

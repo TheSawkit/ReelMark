@@ -4,10 +4,17 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { revalidateLayoutAfterResponse } from '@/lib/revalidate';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
-import { getAuthenticatedUser, isOAuthOnly } from '@/lib/supabase/auth-helpers';
+import {
+	getAuthenticatedUser,
+	getFullUser,
+	isOAuthOnly,
+	redirectToLogin,
+	refreshSessionClaims,
+} from '@/lib/supabase/auth-helpers';
 import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import {
+	AVATAR_CACHE_CONTROL,
 	validatePassword,
 	validateUsername,
 	validateRegion,
@@ -96,6 +103,7 @@ export async function updateProfile(prevState: unknown, formData: FormData) {
 	if (error) {
 		return { error: error.message, success: false };
 	}
+	await refreshSessionClaims(supabase);
 
 	const syncError = await syncUserProfile(
 		supabase,
@@ -162,6 +170,7 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
 			.from('avatars')
 			.upload(fileName, buffer, {
 				contentType: avatarFile.type,
+				cacheControl: AVATAR_CACHE_CONTROL,
 				upsert: true,
 			});
 
@@ -203,7 +212,11 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
 }
 
 export async function deleteAccount(prevState: unknown, formData: FormData) {
-	const { supabase, user } = await getAuthenticatedUser();
+	const { supabase } = await getAuthenticatedUser();
+	// The token carries no identities: the OAuth-only check and the re-auth email need the
+	// Auth record itself — one round-trip, on the rarest action of the app.
+	const user = await getFullUser();
+	if (!user) return redirectToLogin();
 	const t = await getTranslations();
 
 	const confirmation = formData.get('confirmation');

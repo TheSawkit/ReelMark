@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { AuthPageShell } from '@/components/auth/AuthPageShell';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { getUserContext } from '@/lib/supabase/auth-helpers';
 import { getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import { localizedAlternates } from '@/lib/metadata';
@@ -40,10 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SignupPage({ params }: Props) {
 	const { lang } = await params;
-	const supabase = await createClient();
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+	const { user } = await getUserContext();
 
 	if (user) {
 		redirect(localizedHref(lang, '/dashboard'));

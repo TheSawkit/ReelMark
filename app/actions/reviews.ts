@@ -8,7 +8,10 @@ import {
 	validateReviewContent,
 	validateUUID,
 } from '@/lib/validators';
-import { revalidateProfileAfterResponse } from '@/lib/revalidate';
+import {
+	revalidateProfileAfterResponse,
+	revalidateReviewIndexAfterResponse,
+} from '@/lib/revalidate';
 import { MAX_REVIEW_LENGTH } from '@/types/profile';
 import type { Review, ReviewMediaType, UserReviewsPage } from '@/types/profile';
 import { REVIEW_COLUMNS } from '@/lib/supabase/columns';
@@ -76,6 +79,7 @@ export async function upsertReview(
 
 	if (error) throw new Error(error.message);
 	revalidateProfileAfterResponse(supabase, user);
+	revalidateReviewIndexAfterResponse();
 	return data as Review;
 }
 
@@ -95,4 +99,5 @@ export async function deleteReview(reviewId: string): Promise<void> {
 
 	if (error) throw new Error(error.message);
 	revalidateProfileAfterResponse(supabase, user);
+	revalidateReviewIndexAfterResponse();
 }

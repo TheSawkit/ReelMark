@@ -25,6 +25,7 @@ import { Upload } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { useTranslation } from '@/lib/i18n/context';
 import { useBrokenImage } from '@/hooks/useBrokenImage';
+import { downscaleAvatar } from '@/lib/avatar-resize';
 
 const initialState = {
 	error: undefined,
@@ -70,14 +71,17 @@ export function ProfileSettings({
 		setUsernameStr(user?.user_metadata?.username || '');
 	}
 
-	const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
+	const handleAvatarChange = async (
+		e: React.ChangeEvent<HTMLInputElement>
+	) => {
+		const picked = e.target.files?.[0];
+		if (!picked) return;
 
-		if (file.size > 5 * 1024 * 1024) {
+		if (picked.size > 5 * 1024 * 1024) {
 			return;
 		}
 
+		const file = await downscaleAvatar(picked);
 		const reader = new FileReader();
 		reader.onload = () => {
 			setAvatarPreview(reader.result as string);

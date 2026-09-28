@@ -2,7 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
+import {
+	getAuthenticatedUser,
+	refreshSessionClaims,
+} from '@/lib/supabase/auth-helpers';
 import { getServerLanguage, getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import { validateUsername, validateRegion } from '@/lib/validators';
@@ -52,6 +55,7 @@ export async function completeOnboarding(
 	if (profileError?.code === '23505')
 		return { error: t.settings.usernameTaken };
 	if (profileError) return { error: profileError.message };
+	await refreshSessionClaims(supabase);
 
 	revalidatePath('/', 'layout');
 	redirect(localizedHref(await getServerLanguage(), '/dashboard'));

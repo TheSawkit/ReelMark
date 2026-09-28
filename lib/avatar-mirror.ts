@@ -3,6 +3,7 @@ import 'server-only';
 import { createAdminClient } from '@/lib/supabase/server';
 import { reportSwallowed } from '@/lib/report';
 import {
+	AVATAR_CACHE_CONTROL,
 	avatarExtensionForMime,
 	isImportableAvatarUrl,
 	isStoredAvatarUrl,
@@ -58,6 +59,7 @@ export async function mirrorOAuthAvatar(
 			.from('avatars')
 			.upload(fileName, body, {
 				contentType: response.headers.get('content-type') ?? undefined,
+				cacheControl: AVATAR_CACHE_CONTROL,
 				upsert: true,
 			});
 		if (uploadError) {
