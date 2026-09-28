@@ -8,7 +8,7 @@ select tablename, rowsecurity from pg_tables where schemaname = 'public';
 
 La CI vérifie aussi, avec la clé anonyme, qu'aucune table strictement privée n'est lisible par un visiteur (`tests/e2e/rls.spec.ts`).
 
-Le schéma est appliqué directement sur le projet Supabase (pas de fichiers SQL versionnés) ; `types/database.ts` est le type généré qui fait foi côté code (`supabase gen types typescript` via MCP/CLI).
+Le schéma historique est appliqué directement sur le projet Supabase ; les migrations à partir du 2026-09-28 sont versionnées dans `supabase/migrations/` sous la version que leur a donnée Supabase. `types/database.ts` est le type généré qui fait foi côté code (`supabase gen types typescript` via MCP/CLI).
 
 ## Tables
 
@@ -90,13 +90,26 @@ Deux mécanismes complémentaires — vérifier `pg_policies` avant de crier à 
 | Friendships        | **RLS restrictive** (`friendships_read_own`) — on ne lit que ses propres liens ; afficher les amis d'un autre passe par `createAdminClient()` avec contrôle de visibilité applicatif dans l'action (`getFriendsWithProfiles`)                                                                                                                                                                                                       |
 | Episode_watches    | **RLS restrictive** (owner-only) — mesuré le 2026-08-02 : lecture croisée = 0 ligne, là où `watchlist` en renvoie. La progression d'un autre passe par la fonction `episode_watch_counts_for` (**RLS + visibilité en base**), appelée par `getProfileTvWatchProgress`                                                                                                                                                               |
 
-> Piège : la restriction d'`episode_watches` est **silencieuse**. Une lecture avec le client standard sur le `user_id` d'un autre ne lève aucune erreur — elle renvoie zéro ligne, donc une progression à 0 % qui passe pour une donnée valide. Les RPC `episode_watch_counts` / `episode_last_watches` sont sans argument et agrègent sur `auth.uid()` : elles ne servent que le viewer lui-même.
+> Piège : la restriction d'`episode_watches` est **silencieuse**. Une lecture avec le client standard sur le `user_id` d'un autre ne lève aucune erreur — elle renvoie zéro ligne, donc une progression à 0 % qui passe pour une donnée valide. `my_tv_progress` agrège sur `auth.uid()` : elle ne sert que le viewer lui-même.
 
 ## Fonctions SQL exposées
 
 - `get_media_rating`, `get_episodes_rating`, `get_public_episode_reviews` — agrégats de notes publiques, appelables par tous par design (advisors Supabase : warns acceptés).
 - `can_view_watch_activity(p_owner)` — `true` si `auth.uid()` peut voir l'activité de visionnage de `p_owner` (section watchlist **ou** vus visible ; pas de ligne `privacy_settings` = tout public, comme `getPrivacySettings`).
 - `episode_watch_counts_for(p_user_id)` — nombre d'épisodes vus par série pour un profil visité, gardé par la précédente. `SECURITY DEFINER`, `search_path` figé, `execute` révoqué de `public`/`anon` et accordé à `authenticated` : un appel non authentifié répond `permission denied`, et un appel service-role (sans `auth.uid()`) renvoie zéro ligne.
+- `get_show_rating`, `get_season_rating` — agrégats de notes d'épisodes, en `SECURITY INVOKER` : `reviews` n'étant pas lisible par `anon`, un appel anonyme échoue. L'app ne les appelle donc que pour un utilisateur connecté.
+
+Fonctions ajoutées pour réduire l'egress (voir [SUPABASE-USAGE.md](./SUPABASE-USAGE.md)) — toutes `SECURITY INVOKER`, `search_path` vide, `execute` révoqué de `public`/`anon` :
+
+| Fonction                                         | Rôle                                                                                                                  | Exécutable par                  |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `watchlist_counts()`                             | Titres du viewer par (`media_type`, `status`), au plus 6 lignes — compteurs de `/library`                             | `authenticated`, `service_role` |
+| `my_tv_progress(p_tv_ids int[])`                 | Épisodes vus (saison 0 incluse) et dernier visionnage par série demandée ; à appeler par paquets de 1 000 ids         | `authenticated`, `service_role` |
+| `my_shell_state()`                               | Non-lues, avatar, date du profil, taille de la watchlist, plateformes renseignées, réponses aux invitations           | `authenticated`, `service_role` |
+| `reviewed_media_index()`                         | Une ligne : ids des films / séries notés ou critiqués, séries ayant une critique d'épisode — gate des rendus anonymes | `service_role`                  |
+| `user_episode_watch_counts(p_user_id, p_tv_ids)` | Épisodes vus par série pour n'importe quel compte (cron hebdo, MCP)                                                   | `service_role`                  |
+
+`episode_watch_counts()` et `episode_last_watches()` ne sont plus appelées par l'app ; elles restent en base le temps qu'aucun pod d'une version antérieure ne tourne, puis peuvent être supprimées.
 
 - `consume_rate_limits(p_keys, p_limits, p_window_seconds, p_cost)` — débite `p_cost` de chaque fenêtre en une transaction, tout ou rien : renvoie `null` si toutes l'acceptent, sinon le `reset_at` de la première fenêtre épuisée, sans rien débiter. Le verrou de ligne pris par l'upsert sérialise les appels concurrents sur une même clé. `execute` réservé au service role. Appelée par `lib/mcp/budget.ts` ; tant qu'elle manque ou échoue, le budget retombe sur les compteurs en mémoire du pod (avec un avertissement `[mcp:budget]` dans les logs).
 

@@ -305,6 +305,12 @@ Deux workflows, deux rythmes :
 | `NEXT_PUBLIC_SENTRY_DSN`        | build-arg (client, https)   |
 | `KUBECONFIG_B64`                | `base64 -w0 ~/.kube/config` |
 
+Secrets **optionnels** de `ci.yml`, pour sortir les tests E2E du projet Supabase de prod (voir
+[docs/SUPABASE-USAGE.md](./docs/SUPABASE-USAGE.md#tests-e2e-et-environnement-de-dev)) :
+`E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`,
+`E2E_TEST_USER_EMAIL`, `E2E_TEST_USER_PASSWORD`. Absents, la CI retombe sur les secrets de prod.
+Le job E2E ne tourne que sur les PR, les push sur `main` et à la demande (`workflow_dispatch`).
+
 **`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`** — à générer une fois, puis à ne plus jamais changer :
 
 ```bash

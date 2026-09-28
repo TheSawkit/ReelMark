@@ -57,7 +57,7 @@ pnpm build       # next build --webpack (Serwist requires webpack, not Turbopack
 
 ## Database changes
 
-The schema lives on the Supabase project (applied via SQL editor or MCP — no versioned .sql files in the repo). Document any schema change in [`docs/DATA-MODEL.md`](./docs/DATA-MODEL.md) and regenerate `types/database.ts`. Respect Row-Level Security — see the visibility model in that same document.
+The historical schema lives on the Supabase project. From 2026-09-28 on, every migration applied (SQL editor or MCP `apply_migration`) is also committed to `supabase/migrations/<version>_<name>.sql`, `<version>` being the one Supabase recorded. Document any schema change in [`docs/DATA-MODEL.md`](./docs/DATA-MODEL.md) and regenerate `types/database.ts`. Respect Row-Level Security — see the visibility model in that same document. Before adding a query, read [`docs/SUPABASE-USAGE.md`](./docs/SUPABASE-USAGE.md): the project runs on the Free plan and its egress quota has already been exceeded once.
 
 ## Tests
 
