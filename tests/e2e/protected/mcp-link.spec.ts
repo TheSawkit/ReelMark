@@ -43,57 +43,92 @@ test.beforeEach(() => {
 	);
 });
 
+const READ_TOOLS = [
+	'get_recommendations',
+	'get_taste_profile',
+	'get_title',
+	'get_watchlist',
+	'search_titles',
+];
+
+async function toolNames(request: APIRequestContext, path: string) {
+	const { tools } = await rpcResult(
+		await callMcp(request, path, 'tools/list')
+	);
+	return {
+		names: tools.map(({ name }: { name: string }) => name).sort(),
+		writable: tools
+			.filter(
+				(tool: { annotations?: { readOnlyHint?: boolean } }) =>
+					!tool.annotations?.readOnlyHint
+			)
+			.map(({ name }: { name: string }) => name),
+	};
+}
+
 test.describe('AI assistant link', () => {
-	test('a generated link serves the tools until it is revoked', async ({
+	test('a read-only link, then a write link, each serving its own tools until revoked', async ({
 		page,
 		request,
 	}) => {
 		await page.goto('/fr/settings?section=data');
+		const allowWrite = page.getByRole('switch', {
+			name: 'Autoriser l’assistant à modifier ma bibliothèque',
+		});
+		const linkField = page.getByLabel('Ton lien de connexion');
+		const generate = page.getByRole('button', {
+			name: /Générer mon lien|Régénérer le lien/,
+		});
 
-		await page
-			.getByRole('button', { name: /Générer mon lien|Régénérer le lien/ })
-			.click();
-		const url = await page.getByLabel('Ton lien de connexion').inputValue();
-		const path = new URL(url).pathname;
-		expect(path).toMatch(/^\/api\/mcp\/[A-Za-z0-9_-]{43}$/);
+		if ((await allowWrite.getAttribute('aria-checked')) === 'true') {
+			await allowWrite.click();
+		}
+		await generate.click();
+		const readPath = new URL(await linkField.inputValue()).pathname;
+		expect(readPath).toMatch(/^\/api\/mcp\/[A-Za-z0-9_-]{43}$/);
 
-		const init = await callMcp(request, path, 'initialize', {
+		const init = await callMcp(request, readPath, 'initialize', {
 			protocolVersion: '2025-06-18',
 			capabilities: {},
 			clientInfo: { name: 'e2e', version: '1.0.0' },
 		});
 		expect(init.status()).toBe(200);
+		expect(await toolNames(request, readPath)).toEqual({
+			names: READ_TOOLS,
+			writable: [],
+		});
 
-		const list = await callMcp(request, path, 'tools/list');
-		const result = await rpcResult(list);
-		const tools = result.tools.map(({ name }: { name: string }) => name);
-		expect(tools.sort()).toEqual([
-			'get_recommendations',
-			'get_taste_profile',
-			'get_title',
-			'get_watchlist',
-			'search_titles',
-			'update_library',
-		]);
-		for (const tool of result.tools) {
-			expect(tool.annotations?.readOnlyHint).toBe(
-				tool.name !== 'update_library'
-			);
-		}
-
-		const call = await callMcp(request, path, 'tools/call', {
+		const call = await callMcp(request, readPath, 'tools/call', {
 			name: 'get_taste_profile',
 			arguments: {},
 		});
 		const taste = JSON.parse((await rpcResult(call)).content[0].text);
 		expect(Object.keys(taste).sort()).toEqual(['movie', 'tv']);
 
+		await allowWrite.click();
+		await expect(
+			page.getByText('Ce réglage s’applique au prochain lien', {
+				exact: false,
+			})
+		).toBeVisible();
+		await generate.click();
+		await expect(linkField).not.toHaveValue(new RegExp(readPath));
+		const writePath = new URL(await linkField.inputValue()).pathname;
+		expect(writePath).toMatch(/^\/api\/mcp\/rw-[A-Za-z0-9_-]{43}$/);
+		expect(await toolNames(request, writePath)).toEqual({
+			names: [...READ_TOOLS, 'update_library'].sort(),
+			writable: ['update_library'],
+		});
+
+		const replaced = await callMcp(request, readPath, 'tools/list');
+		expect(replaced.status()).toBe(404);
+
 		await page.getByRole('button', { name: 'Révoquer' }).click();
 		await expect(
 			page.getByRole('button', { name: 'Générer mon lien' })
 		).toBeVisible();
 
-		const revoked = await callMcp(request, path, 'tools/list');
+		const revoked = await callMcp(request, writePath, 'tools/list');
 		expect(revoked.status()).toBe(404);
 	});
 });
