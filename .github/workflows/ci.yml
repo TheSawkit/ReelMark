@@ -14,19 +14,21 @@ concurrency:
 permissions:
     contents: read
 
-# Les tests E2E parlent à une vraie base Supabase. Les secrets E2E_* désignent un projet dédié
-# aux tests ; tant qu'ils ne sont pas définis, la CI retombe sur le projet de production — dont
-# elle représentait ~22 % des requêtes (quota Free dépassé en septembre 2026). Le build lit les
-# mêmes valeurs : l'URL Supabase est inlinée dans le bundle client que le job e2e sert.
+# La CI ne parle plus à aucun projet Supabase hébergé : le job E2E démarre une base locale
+# (`supabase start`) construite depuis supabase/migrations/, y crée le compte de test
+# (`pnpm seed:test`) et joue la suite dessus. Avant, elle tapait la base de production — ~22 %
+# de ses requêtes le jour où le quota Free a sauté (septembre 2026). Le build inline cette URL
+# dans le bundle client que le job E2E sert. Les deux clés sont celles, publiques, de
+# démonstration de la CLI Supabase : elles n'ouvrent que la base éphémère du runner.
 env:
-    NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-    SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+    SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
     TMDB_READ_ACCESS_TOKEN: ${{ secrets.TMDB_READ_ACCESS_TOKEN }}
     NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
     WATCHMODE_API_KEY: ${{ secrets.WATCHMODE_API_KEY }}
-    TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL || secrets.TEST_USER_EMAIL }}
-    TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD || secrets.TEST_USER_PASSWORD }}
+    TEST_USER_EMAIL: e2e@reelmark.test
+    TEST_USER_PASSWORD: ci-e2e-local-password
     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -165,10 +167,6 @@ jobs:
     e2e:
         name: E2E tests
         needs: build
-        # Un push sur dev avec une PR ouverte déclenchait la suite deux fois (push + pull_request),
-        # et chaque run coûte 7 000 à 26 000 requêtes Supabase. Elle tourne sur les PR, sur main
-        # et à la demande ; un push sur dev garde typecheck, lint, tests unitaires et build.
-        if: github.event_name != 'push' || github.ref == 'refs/heads/main'
         runs-on: ubuntu-24.04
         timeout-minutes: 30
         steps:
@@ -203,6 +201,12 @@ jobs:
               with:
                   path: ~/.cache/ms-playwright
                   key: playwright-chromium-${{ hashFiles('**/pnpm-lock.yaml') }}
+            # Base vierge construite depuis supabase/migrations/ : ce que la baseline et les
+            # migrations suivantes créent, rien d'autre. Studio, logs, mail et edge runtime ne
+            # servent pas aux tests.
+            - name: Start Supabase from supabase/migrations
+              run: npx -y supabase@2.118.0 start -x studio,imgproxy,logflare,vector,edge-runtime,mailpit,postgres-meta,supavisor
+            - run: pnpm seed:test
             - run: pnpm run test:e2e
             - uses: actions/upload-artifact@v6
               if: always()
@@ -210,3 +214,30 @@ jobs:
                   name: playwright-report
                   path: playwright-report/
                   retention-days: 7
+
+    # La base locale vérifie les migrations ; celle-ci vérifie la production elle-même, où une
+    # modification faite à la main pourrait diverger du repo. Une dizaine de lectures anonymes
+    # par run, sans navigateur ni serveur (CI vidé : pas de webServer Playwright).
+    rls-production:
+        name: RLS of the production project
+        needs: setup
+        if: github.event_name != 'push' || github.ref == 'refs/heads/main'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        env:
+            CI: ''
+            NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v5
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - uses: actions/cache/restore@v5
+              with:
+                  path: node_modules
+                  key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+            - run: pnpm exec playwright test tests/e2e/rls.spec.ts --project=chromium --reporter=list
