@@ -100,7 +100,7 @@ Deux mécanismes complémentaires — vérifier `pg_policies` avant de crier à 
 
 - `consume_rate_limits(p_keys, p_limits, p_window_seconds, p_cost)` — débite `p_cost` de chaque fenêtre en une transaction, tout ou rien : renvoie `null` si toutes l'acceptent, sinon le `reset_at` de la première fenêtre épuisée, sans rien débiter. Le verrou de ligne pris par l'upsert sérialise les appels concurrents sur une même clé. `execute` réservé au service role. Appelée par `lib/mcp/budget.ts` ; tant qu'elle manque ou échoue, le budget retombe sur les compteurs en mémoire du pod (avec un avertissement `[mcp:budget]` dans les logs).
 
-Définition, à appliquer telle quelle sur le projet :
+Définition appliquée sur le projet (migration `mcp_shared_rate_limits`) :
 
 ```sql
 create table public.rate_limits (
