@@ -2,13 +2,14 @@
 
 Documentation pour les développeurs qui rejoignent le projet : comprendre l'architecture, reproduire l'environnement de zéro, et déboguer efficacement.
 
-| Document                             | Contenu                                                                 |
-| ------------------------------------ | ----------------------------------------------------------------------- |
-| [DEVELOPMENT.md](./DEVELOPMENT.md)   | Point d'entrée : stack, prérequis, quick start, scripts, structure, env |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Vue d'ensemble : data flow, auth, i18n, design system, PWA, cache, SEO  |
-| [SETUP.md](./SETUP.md)               | Reproduire le projet de zéro : Supabase, TMDB, env vars, dev local      |
-| [DATA-MODEL.md](./DATA-MODEL.md)     | Schéma PostgreSQL complet, RLS, modèle de visibilité                    |
-| [DEBUGGING.md](./DEBUGGING.md)       | Outils, erreurs courantes, pièges connus du projet                      |
+| Document                                 | Contenu                                                                 |
+| ---------------------------------------- | ----------------------------------------------------------------------- |
+| [DEVELOPMENT.md](./DEVELOPMENT.md)       | Point d'entrée : stack, prérequis, quick start, scripts, structure, env |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)     | Vue d'ensemble : data flow, auth, i18n, design system, PWA, cache, SEO  |
+| [SETUP.md](./SETUP.md)                   | Reproduire le projet de zéro : Supabase, TMDB, env vars, dev local      |
+| [DATA-MODEL.md](./DATA-MODEL.md)         | Schéma PostgreSQL complet, RLS, modèle de visibilité                    |
+| [DEBUGGING.md](./DEBUGGING.md)           | Outils, erreurs courantes, pièges connus du projet                      |
+| [SUPABASE-USAGE.md](./SUPABASE-USAGE.md) | Quotas Supabase : diagnostic, règles d'accès aux données, surveillance  |
 
 Documents à la racine du repo :
 

@@ -68,6 +68,13 @@ Voir [`DEPLOYMENT.md`](../DEPLOYMENT.md) pour le runbook complet. Les trois pann
 - **Badge de la cloche faux** → le compteur vit dans `NotificationsProvider` et se resynchronise au retour visible de l'app et à chaque reconnexion realtime. Ne pas compter sur l'événement realtime `DELETE` : Supabase ne le filtre que si la table est en `replica identity full`.
 - **Une notification disparaît de la cloche** → seuls « Marquer comme vu » et la suppression la sortent des non-lues ; l'ouvrir ne la marque pas.
 
+### Quota Supabase
+
+- **Toutes les requêtes Supabase en `402`** → quota Free dépassé (egress, logs…) : restrictions levées au cycle suivant ou par passage en Pro. Attribuer le trafic avec les requêtes de [SUPABASE-USAGE.md](./SUPABASE-USAGE.md#surveiller) avant de relancer quoi que ce soit.
+- **Un utilisateur renommé garde l'ancien nom (ou l'ancienne région) jusqu'à une heure** → les métadonnées sont lues dans le JWT. Toute action qui fait `updateUser({ data })` doit appeler `refreshSessionClaims()` ensuite.
+- **`invalid column for filter user_id` dans les logs Postgres** → un abonnement Realtime part avec le rôle `anon`. Passer par `withRealtimeClient`, jamais `.subscribe()` dès la création du client.
+- **`permission denied for table reviews` en rafale** → une RPC `SECURITY INVOKER` appelée en anonyme. `get_show_rating` / `get_season_rating` ne s'appellent que connecté.
+
 ### Données
 
 - **« Fuite » de playlists/watchlist suspectée** → lire le modèle de visibilité dans [DATA-MODEL.md](./DATA-MODEL.md) : playlists filtrées par RLS, watchlist/reviews filtrées en applicatif. Vérifier `pg_policies` avant de conclure.

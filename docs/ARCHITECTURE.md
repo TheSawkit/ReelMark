@@ -36,8 +36,9 @@ Route Handlers (app/api/*)
 - Deux points d'entrée uniques dans `lib/supabase/auth-helpers.ts` :
     - `getAuthenticatedUser()` — sans session, redirige vers `/{lang}/login?next=<page>` ; utilisé par toutes les mutations et les lectures réservées au compte. Une Server Action appelée déconnectée envoie donc sur la page de connexion, puis ramène à la page d'origine une fois connecté.
     - `getOptionalUser()` — `userId` nullable ; utilisé par les lectures publiques.
+- L'identité vient des **claims du JWT**, vérifiés localement par `getClaims()` contre la clé de signature asymétrique (ES256) du projet, JWKS en cache 10 min par process — dans `getUserContext()` comme dans `proxy.ts`. Aucun aller-retour Auth par requête. `getFullUser()` (un appel `getUser()`) est réservé aux réglages, qui ont besoin des `identities`. Les métadonnées d'un token ne changent qu'à son renouvellement : après `updateUser({ data })`, `refreshSessionClaims()`.
 - Côté client, une action qui redirige rejette avec le signal de redirection de Next pendant que le routeur navigue : `toastActionError()` (`lib/action-toast.ts`) n'affiche alors pas de toast d'erreur.
-- **Rafraîchissement de session** : `proxy.ts` rafraîchit la session sur toute page qui porte un cookie Supabase (`getSession()` sur les pages publiques — il ne rafraîchit que si le jeton a expiré, sans appel réseau sinon — et `getUser()` sur les pages protégées) et écrit les jetons dans la réponse **et** dans la requête transmise. Les Server Components ne peuvent pas écrire de cookies : un jeton qu'ils rafraîchiraient eux-mêmes serait perdu, et la réutilisation de l'ancien refresh token révoque toute la session (déconnexions aléatoires).
+- **Rafraîchissement de session** : `proxy.ts` rafraîchit la session sur toute page qui porte un cookie Supabase (`getSession()` sur les pages publiques — il ne rafraîchit que si le jeton a expiré, sans appel réseau sinon — et `getClaims()` sur les pages protégées) et écrit les jetons dans la réponse **et** dans la requête transmise. Les Server Components ne peuvent pas écrire de cookies : un jeton qu'ils rafraîchiraient eux-mêmes serait perdu, et la réutilisation de l'ancien refresh token révoque toute la session (déconnexions aléatoires).
 - Le paramètre `next` du login est validé par `sanitizeRedirectPath()` : seuls les chemins internes sont suivis ; il est transmis au mot de passe, à la passkey, au lien magique et à OAuth.
 - `createAdminClient()` (service role, bypass RLS) sert uniquement aux lectures/écritures que la RLS interdit par construction : création du profil au signup, suppression de compte, lecture des amis d'un autre utilisateur (`getFriendsWithProfiles`), et serveur MCP (requêtes sans cookie, toujours bornées au propriétaire du lien). Règle : toute fonction qui l'utilise porte elle-même son contrôle d'autorisation, jamais seulement celui de la page appelante. Quand la donnée s'y prête, préférer une fonction SQL `SECURITY DEFINER` qui porte la visibilité en base (`episode_watch_counts_for`) — le service role ne quitte alors jamais le serveur d'auth. Ne jamais l'utiliser pour résoudre des avatars — `user_profiles` est la source d'affichage.
 - Flux OAuth : `signInWithOAuth` (client) → Supabase → `/auth/callback` (échange du code, redirige vers `BASE_URL`). Les liens email passent par `/auth/confirm`.
@@ -76,17 +77,18 @@ Chaque utilisateur peut générer, dans Réglages → Données, un lien secret �
 
 ## Cache
 
-| Couche                    | Mécanisme                                                                      | Durée                               |
-| ------------------------- | ------------------------------------------------------------------------------ | ----------------------------------- |
-| TMDB                      | `"use cache"` + `cacheLife` (`lib/tmdb/client.ts`)                             | 1 h par défaut, 1 min sur échec     |
-| Watchmode                 | `fetch` + `next.revalidate`                                                    | 1 h                                 |
-| Assistant IA (MCP)        | mémoire, par utilisateur (`lib/mcp/user-cache.ts`)                             | goûts 2 min, langue/région 10 min   |
-| `/api/search`             | `Cache-Control: s-maxage=3600, stale-while-revalidate=86400` (edge Cloudflare) | 1 h + SWR 24 h                      |
-| Router client             | Router Cache de Next (défauts, aucun réglage expérimental)                     | 0 s (dynamique) / 5 min (préchargé) |
-| Déduplication par requête | `React.cache()` (watchlist, auth, i18n, genres, région)                        | requête                             |
-| Mutations                 | `revalidatePath()` sur chaque Server Action d'écriture                         | immédiat                            |
+| Couche                    | Mécanisme                                                                       | Durée                               |
+| ------------------------- | ------------------------------------------------------------------------------- | ----------------------------------- |
+| TMDB                      | `"use cache"` + `cacheLife` (`lib/tmdb/client.ts`)                              | 1 h par défaut, 1 min sur échec     |
+| Watchmode                 | `fetch` + `next.revalidate`                                                     | 1 h                                 |
+| Assistant IA (MCP)        | mémoire, par utilisateur (`lib/mcp/user-cache.ts`)                              | goûts 2 min, langue/région 10 min   |
+| `/api/search`             | `Cache-Control: s-maxage=3600, stale-while-revalidate=86400` (edge Cloudflare)  | 1 h + SWR 24 h                      |
+| Router client             | Router Cache de Next (défauts, aucun réglage expérimental)                      | 0 s (dynamique) / 5 min (préchargé) |
+| Index des titres notés    | `'use cache'` + `cacheTag('reviewed-media-index')` (`lib/data/review-index.ts`) | 60 s, invalidé à l'écriture         |
+| Déduplication par requête | `React.cache()` (watchlist, auth, i18n, genres, région)                         | requête                             |
+| Mutations                 | `revalidatePath()` sur chaque Server Action d'écriture                          | immédiat                            |
 
-`cacheComponents` est activé. Le cache `"use cache"` vit en mémoire, par pod (`cacheMaxMemorySize` : 10 Mo, voir `next.config.ts`) : avec 2 replicas, chaque pod a le sien — sans conséquence pour des données publiques TMDB à durée courte. Les budgets de requêtes (`lib/rate-limiter.ts`) sont eux aussi par pod : la limite effective se multiplie par le nombre de replicas. Exception : le budget d'appels d'outils de l'assistant IA, le seul qui protège un coût réel (Supabase + TMDB), est compté dans Postgres (`consume_rate_limits`) et donc partagé entre pods ; il retombe sur la mémoire du pod si la base ne répond pas. `/api/search` se limite en plus par IP au niveau de Cloudflare (voir `DEPLOYMENT.md`).
+`cacheComponents` est activé. Le cache `"use cache"` vit en mémoire, par pod (`cacheMaxMemorySize` : 10 Mo, voir `next.config.ts`) : avec 2 replicas, chaque pod a le sien — sans conséquence pour des données publiques TMDB à durée courte, ni pour l'index des titres notés : seuls les visiteurs anonymes le lisent, et l'autre pod le rafraîchit dans la minute. Les budgets de requêtes (`lib/rate-limiter.ts`) sont eux aussi par pod : la limite effective se multiplie par le nombre de replicas. Exception : le budget d'appels d'outils de l'assistant IA, le seul qui protège un coût réel (Supabase + TMDB), est compté dans Postgres (`consume_rate_limits`) et donc partagé entre pods ; il retombe sur la mémoire du pod si la base ne répond pas. `/api/search` se limite en plus par IP au niveau de Cloudflare (voir `DEPLOYMENT.md`).
 
 ## SEO
 
