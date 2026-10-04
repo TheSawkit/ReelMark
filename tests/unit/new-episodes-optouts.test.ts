@@ -5,7 +5,7 @@ vi.mock('@/lib/supabase/server', () => ({ createAdminClient: () => ({}) }));
 const fetchAllRows = vi.fn();
 vi.mock('@/lib/supabase/pagination', () => ({ fetchAllRows }));
 vi.mock('@/lib/push/send', () => ({ sendPushToUser: vi.fn() }));
-vi.mock('@/lib/tmdb', () => ({ getTvShowDetails: vi.fn() }));
+vi.mock('@/lib/tmdb/tv', () => ({ getTvShowDetails: vi.fn() }));
 
 const { announceNewEpisodes } = await import('@/lib/push/notify-new-episodes');
 

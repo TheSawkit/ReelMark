@@ -53,13 +53,14 @@ export async function sendPushToUser(
 	try {
 		const supabase = createAdminClient();
 
-		const { data: preferences } = await supabase
+		const { data: preferences, error } = await supabase
 			.from('notification_preferences')
 			.select(
 				'friend_requests, friend_accepted, new_episodes, suggestions'
 			)
 			.eq('user_id', userId)
 			.maybeSingle();
+		if (error) throw new Error(error.message);
 
 		if (preferences && preferences[PREFERENCE_BY_TYPE[type]] === false)
 			return;

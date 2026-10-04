@@ -103,19 +103,20 @@ export async function announceNewEpisodes(
 				if (!aired || !isFreshEpisode(aired.air_date, today))
 					return NOT_FRESH;
 
-				const { data: sent } = await admin
+				const { data: sent, error: sentError } = await admin
 					.from('notifications')
 					.select('user_id')
 					.eq('type', 'new_episode')
 					.eq('media_id', tvId)
 					.eq('season_number', aired.season_number)
 					.eq('episode_number', aired.episode_number);
+				if (sentError) throw new Error(sentError.message);
 
 				const recipientIds = new Set(
 					recipientsFor(
 						showFollows.map((follow) => follow.user_id),
 						optedOut,
-						new Set((sent ?? []).map((row) => row.user_id))
+						new Set(sent.map((row) => row.user_id))
 					)
 				);
 				const recipients = showFollows.filter((follow) =>
