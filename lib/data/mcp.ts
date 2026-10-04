@@ -72,12 +72,13 @@ export async function touchMcpKey({
 }
 
 /**
- * Language and region an assistant request answers in — read from the account, since the request
- * carries no cookie. Cached per user, and only the tools that format an answer ask for it.
+ * An account's language and region, read from its metadata for requests that carry no cookie — the
+ * assistant's tools and the push jobs. Cached per user for 10 minutes: one Auth admin call serves
+ * every push and tool answer of that window.
  *
  * @throws The Auth error, so a failed read is never cached in place of the real settings.
  */
-export function getMcpUserContext(userId: string): Promise<McpUserContext> {
+export function getAccountLocale(userId: string): Promise<McpUserContext> {
 	return cachedUserContext.get(userId, async () => {
 		const { data, error } =
 			await createAdminClient().auth.admin.getUserById(userId);
