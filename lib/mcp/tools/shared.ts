@@ -3,12 +3,11 @@ import 'server-only';
 import type { CallToolResult, McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import { isTMDBNotFound } from '@/lib/tmdb/errors';
+import { MEDIA_TYPES } from '@/lib/validators';
 import type { UserScope } from '@/lib/mcp/scope';
-import type { MediaType, MovieDetails, TvShowDetails } from '@/types/tmdb';
+import type { MovieDetails, TvShowDetails } from '@/types/tmdb';
 
 export type RegisterTools = (server: McpServer, scope: UserScope) => void;
-
-export const MEDIA_TYPES = ['movie', 'tv'] as const satisfies MediaType[];
 
 export const mediaTypeSchema = z
 	.enum(MEDIA_TYPES)

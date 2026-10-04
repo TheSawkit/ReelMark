@@ -3,12 +3,8 @@ import 'server-only';
 import { tasteOfType } from '@/lib/data/taste';
 import { summarizeTaste } from '@/lib/recommendations';
 import { toAssistantTaste } from '@/lib/mcp/format';
-import {
-	json,
-	MEDIA_TYPES,
-	READ_ONLY,
-	type RegisterTools,
-} from '@/lib/mcp/tools/shared';
+import { json, READ_ONLY, type RegisterTools } from '@/lib/mcp/tools/shared';
+import { MEDIA_TYPES } from '@/lib/validators';
 
 export const registerTasteTools: RegisterTools = (server, scope) => {
 	server.registerTool(

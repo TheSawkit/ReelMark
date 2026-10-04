@@ -85,10 +85,9 @@ export async function announceNewEpisodes(
 
 	const followsByShow = new Map<number, FollowRow[]>();
 	for (const follow of follows) {
-		followsByShow.set(follow.media_id, [
-			...(followsByShow.get(follow.media_id) ?? []),
-			follow,
-		]);
+		const showFollows = followsByShow.get(follow.media_id);
+		if (showFollows) showFollows.push(follow);
+		else followsByShow.set(follow.media_id, [follow]);
 	}
 
 	const perShow = await mapLimit(

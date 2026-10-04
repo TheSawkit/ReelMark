@@ -5,6 +5,8 @@ export const WATCHLIST_COLUMNS =
 	'media_id, media_title, media_type, poster_path, status, created_at, total_episodes, release_date, genre_ids';
 export const TASTE_COLUMNS =
 	'media_id, media_title, media_type, status, created_at, total_episodes, release_date, genre_ids';
+export const PLAYLIST_COLUMNS =
+	'id, user_id, name, description, visibility, created_at, updated_at, items:playlist_items(id, playlist_id, media_id, media_type, media_title, poster_path, added_at, release_date, genre_ids)';
 export const REVIEW_COLUMNS =
 	'id, user_id, media_id, media_type, media_title, poster_path, rating, content, tv_id, season_number, created_at, updated_at';
 export const USER_PROFILE_COLUMNS =

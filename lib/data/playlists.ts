@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { PLAYLIST_COLUMNS } from '@/lib/supabase/columns';
 import {
 	getAuthenticatedUser,
 	getOptionalUser,
@@ -22,7 +23,7 @@ export async function getUserPlaylists(userId: string): Promise<Playlist[]> {
 	const data = await fetchAllRows((from, to) =>
 		supabase
 			.from('playlists')
-			.select('*, items:playlist_items(*)')
+			.select(PLAYLIST_COLUMNS)
 			.eq('user_id', userId)
 			.order('created_at', { ascending: false })
 			.order('id')
@@ -48,7 +49,7 @@ export async function getPlaylistById(id: string): Promise<{
 
 	const { data, error } = await supabase
 		.from('playlists')
-		.select('*, items:playlist_items(*)')
+		.select(PLAYLIST_COLUMNS)
 		.eq('id', id)
 		.maybeSingle();
 	if (error) reportSwallowed('playlists:detail', error);

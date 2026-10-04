@@ -1,4 +1,5 @@
 import { MAX_REVIEW_LENGTH } from '@/types/profile';
+import type { MediaType } from '@/types/tmdb';
 import {
 	NOTIFICATION_TYPES,
 	type NotificationType,
@@ -9,7 +10,16 @@ export const VALID_STATUSES = new Set<string>([
 	'to_watch',
 	'abandoned',
 ]);
-export const VALID_MEDIA_TYPES = new Set<string>(['movie', 'tv']);
+export const MEDIA_TYPES = [
+	'movie',
+	'tv',
+] as const satisfies readonly MediaType[];
+export const VALID_MEDIA_TYPES = new Set<string>(MEDIA_TYPES);
+
+/** Narrows a value read from the database or a request to a media type. */
+export function isMediaType(value: unknown): value is MediaType {
+	return typeof value === 'string' && VALID_MEDIA_TYPES.has(value);
+}
 
 export function validateRating(rating: unknown): number | null {
 	if (
