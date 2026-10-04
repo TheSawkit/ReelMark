@@ -104,8 +104,9 @@ Pour qu'un jour `supabase migration list` soit cohérent sur la prod, il faudra 
 
 ### Ce que la baseline reproduit tel quel
 
-Elle copie la prod, défauts compris, pour qu'une base de test se comporte comme elle :
+Elle copie la prod du 2026-09-28, défauts compris ; les migrations qui la suivent les corrigent, comme elles l'ont fait en prod :
 
-- `friendships` porte deux CHECK identiques (`friendships_check`, `friendships_no_self_friendship`) ;
-- `anon` n'a que MAINTAIN sur `watchlist` et `privacy_settings`, mais tous les droits (RLS en garde) sur `recommendation_dismissals`, `user_prompts` et `user_streaming_providers` ;
-- la migration `disable_public_graphql_endpoint` (2026-07-05) n'a jamais pris effet : `postgres` n'est pas l'accordeur des droits sur `graphql_public.graphql`, son `revoke` n'a rien retiré. L'endpoint GraphQL reste exécutable par `anon` en prod ; le couper se fait dans le dashboard (Settings → API → Data API) ou en supprimant l'extension `pg_graphql`, pas par un `revoke` depuis `postgres`.
+- `friendships` porte deux CHECK identiques (`friendships_check`, `friendships_no_self_friendship`) → `friendships_check` supprimé par `api_grants_hygiene` ;
+- `anon` a MAINTAIN sur `watchlist` et `privacy_settings`, et tous les droits (RLS en garde) sur `recommendation_dismissals`, `user_prompts` et `user_streaming_providers` → retirés par `api_grants_hygiene`, qui ferme aussi les droits par défaut d'`anon` sur les futurs objets de `public` ;
+- `get_public_reviews` / `get_public_episode_reviews` font confiance à `p_viewer_id` → le lecteur vient de `auth.uid()` depuis `public_reviews_viewer_from_jwt` ;
+- l'endpoint GraphQL reste exécutable par `anon` (la migration `disable_public_graphql_endpoint` du 2026-07-05 n'a jamais pris effet : `postgres` n'est pas l'accordeur des droits sur `graphql_public.graphql`) → extension `pg_graphql` supprimée par `drop_unused_graphql`.
