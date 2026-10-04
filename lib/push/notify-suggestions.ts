@@ -1,5 +1,6 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/server';
+import { fetchAllRows } from '@/lib/supabase/pagination';
 import { mapLimit } from '@/lib/data-transfer/resolve';
 import { loadUserTaste, tasteOfType } from '@/lib/data/taste';
 import { pickSeeds, pickSuggestion } from '@/lib/recommendations';
@@ -12,6 +13,7 @@ import { sendPushToUser } from '@/lib/push/send';
 import type { MediaItem, MediaType } from '@/types/tmdb';
 
 const USER_CONCURRENCY = 3;
+const RESEND_AFTER_MS = 6 * 86_400_000;
 const MEDIA_TYPES: MediaType[] = ['movie', 'tv'];
 
 export interface SuggestionResult {
@@ -57,26 +59,56 @@ async function suggestionFor(
 	return null;
 }
 
+/** Every account to suggest to this week: not opted out, and not already served — so a retried job never sends a second suggestion. */
+export function usersToSuggest(
+	profiles: ReadonlyArray<{ user_id: string }>,
+	skipped: ReadonlyArray<{ user_id: string }>
+): string[] {
+	const skippedIds = new Set(skipped.map((row) => row.user_id));
+	return profiles
+		.map((row) => row.user_id)
+		.filter((userId) => !skippedIds.has(userId));
+}
+
 /**
  * Sends each user one personalized title a week, picked by the dashboard's ranking and never
  * repeated, honouring the `suggestions` preference. `dryRun` counts without writing or pushing.
+ * Reads every account page by page and fails loudly when a read fails: an empty list must not
+ * pass for "nobody to notify".
  */
 export async function sendWeeklySuggestions(
 	dryRun = false
 ): Promise<SuggestionResult> {
 	const admin = createAdminClient();
 
-	const [{ data: profiles }, { data: optOuts }] = await Promise.all([
-		admin.from('user_profiles').select('user_id'),
-		admin
-			.from('notification_preferences')
-			.select('user_id')
-			.eq('suggestions', false),
+	const since = new Date(Date.now() - RESEND_AFTER_MS).toISOString();
+	const [profiles, optOuts, recent] = await Promise.all([
+		fetchAllRows((from, to) =>
+			admin
+				.from('user_profiles')
+				.select('user_id')
+				.order('user_id')
+				.range(from, to)
+		),
+		fetchAllRows((from, to) =>
+			admin
+				.from('notification_preferences')
+				.select('user_id')
+				.eq('suggestions', false)
+				.order('user_id')
+				.range(from, to)
+		),
+		fetchAllRows((from, to) =>
+			admin
+				.from('notifications')
+				.select('user_id')
+				.eq('type', 'suggestion')
+				.gte('created_at', since)
+				.order('id')
+				.range(from, to)
+		),
 	]);
-	const optedOut = new Set((optOuts ?? []).map((row) => row.user_id));
-	const userIds = (profiles ?? [])
-		.map((row) => row.user_id)
-		.filter((userId) => !optedOut.has(userId));
+	const userIds = usersToSuggest(profiles, [...optOuts, ...recent]);
 
 	const sent = await mapLimit(userIds, USER_CONCURRENCY, async (userId) => {
 		try {
