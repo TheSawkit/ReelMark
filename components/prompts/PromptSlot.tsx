@@ -1,9 +1,5 @@
 import { getUserContext } from '@/lib/supabase/auth-helpers';
-import {
-	getCachedPromptStates,
-	getCachedWatchlistCount,
-} from '@/lib/data/prompts';
-import { getCachedStreamingProviders } from '@/lib/data/watchlist';
+import { getShellState } from '@/lib/data/prompts';
 import { PromptHost } from '@/components/prompts/PromptHost';
 
 /** Below this many watchlist entries, importing an existing library is worth offering. */
@@ -26,21 +22,16 @@ export async function PromptSlot() {
 			/>
 		);
 
-	const [states, watchlistCount, providerIds] = await Promise.all([
-		getCachedPromptStates(),
-		getCachedWatchlistCount(),
-		getCachedStreamingProviders(),
-	]);
-
-	const createdAt = Date.parse(user.created_at);
+	const shell = await getShellState();
 
 	return (
 		<PromptHost
-			initialStates={states}
-			accountCreatedAt={Number.isFinite(createdAt) ? createdAt : null}
-			canImport={watchlistCount < IMPORT_THRESHOLD}
+			initialStates={shell.promptStates}
+			accountCreatedAt={shell.accountCreatedAt}
+			canImport={shell.watchlistCount < IMPORT_THRESHOLD}
 			canPickServices={
-				providerIds.length === 0 && watchlistCount >= SERVICES_THRESHOLD
+				!shell.hasStreamingProviders &&
+				shell.watchlistCount >= SERVICES_THRESHOLD
 			}
 		/>
 	);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { Button } from '@/components/ui/button';
@@ -11,11 +11,12 @@ import {
 	rejectFriendRequest,
 	cancelFriendRequest,
 } from '@/app/actions/friends';
-import { createClient } from '@/lib/supabase/client';
+import { withRealtimeClient } from '@/lib/supabase/lazy-client';
 import { RATE_LIMITED } from '@/lib/action-errors';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Friendship } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
+import { toastActionError } from '@/lib/action-toast';
 
 interface FriendshipButtonProps {
 	targetUserId: string;
@@ -33,7 +34,6 @@ export function FriendshipButton({
 	const [localFriendship, setLocalFriendship] = useState<Friendship | null>(
 		friendship
 	);
-	const supabase = useMemo(() => createClient(), []);
 
 	useEffect(() => {
 		const applyChange = (
@@ -55,34 +55,36 @@ export function FriendshipButton({
 			setLocalFriendship(row);
 		};
 
-		const channel = supabase
-			.channel(`friendship-${currentUserId}`)
-			.on<Friendship>(
-				'postgres_changes',
-				{
-					event: '*',
-					schema: 'public',
-					table: 'friendships',
-					filter: `requester_id=eq.${currentUserId}`,
-				},
-				applyChange
-			)
-			.on<Friendship>(
-				'postgres_changes',
-				{
-					event: '*',
-					schema: 'public',
-					table: 'friendships',
-					filter: `addressee_id=eq.${currentUserId}`,
-				},
-				applyChange
-			)
-			.subscribe();
+		return withRealtimeClient((supabase) => {
+			const channel = supabase
+				.channel(`friendship-${currentUserId}`)
+				.on<Friendship>(
+					'postgres_changes',
+					{
+						event: '*',
+						schema: 'public',
+						table: 'friendships',
+						filter: `requester_id=eq.${currentUserId}`,
+					},
+					applyChange
+				)
+				.on<Friendship>(
+					'postgres_changes',
+					{
+						event: '*',
+						schema: 'public',
+						table: 'friendships',
+						filter: `addressee_id=eq.${currentUserId}`,
+					},
+					applyChange
+				)
+				.subscribe();
 
-		return () => {
-			supabase.removeChannel(channel);
-		};
-	}, [currentUserId, targetUserId, supabase]);
+			return () => {
+				void supabase.removeChannel(channel);
+			};
+		});
+	}, [currentUserId, targetUserId]);
 
 	const handleSendRequest = () => {
 		startTransition(async () => {
@@ -100,12 +102,12 @@ export function FriendshipButton({
 			} catch (err) {
 				const msg = err instanceof Error ? err.message : '';
 				if (msg === 'SELF_REQUEST')
-					toast.error(t.profile.errors.selfRequest);
+					toastActionError(err, t.profile.errors.selfRequest);
 				else if (msg === 'DUPLICATE_REQUEST')
-					toast.error(t.profile.errors.duplicateRequest);
+					toastActionError(err, t.profile.errors.duplicateRequest);
 				else if (msg === RATE_LIMITED)
-					toast.error(t.profile.errors.rateLimited);
-				else toast.error(t.common.actionError);
+					toastActionError(err, t.profile.errors.rateLimited);
+				else toastActionError(err, t.common.actionError);
 			}
 		});
 	};
@@ -121,9 +123,9 @@ export function FriendshipButton({
 				);
 				setLocalFriendship({ ...localFriendship, status: 'accepted' });
 				toast.success(t.profile.requestAcceptedToast);
-			} catch {
+			} catch (err) {
 				setLocalFriendship(snapshot);
-				toast.error(t.common.actionError);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	};
@@ -136,9 +138,9 @@ export function FriendshipButton({
 				await cancelFriendRequest(localFriendship.id, targetUserId);
 				setLocalFriendship(null);
 				toast.success(t.profile.requestCancelledToast);
-			} catch {
+			} catch (err) {
 				setLocalFriendship(snapshot);
-				toast.error(t.common.actionError);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	};
@@ -154,9 +156,9 @@ export function FriendshipButton({
 				);
 				setLocalFriendship(null);
 				toast.success(t.profile.requestRejectedToast);
-			} catch {
+			} catch (err) {
 				setLocalFriendship(snapshot);
-				toast.error(t.common.actionError);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	};

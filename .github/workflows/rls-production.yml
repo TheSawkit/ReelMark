@@ -1,0 +1,35 @@
+name: RLS production
+
+# Surveille la production elle-même, où une modification faite à la main pourrait diverger du repo :
+# une dizaine de lectures anonymes par run, sans navigateur ni serveur. Hors de la CI, car un état
+# de l'environnement (quota dépassé, panne) ne doit pas bloquer le déploiement d'un code testé.
+on:
+    pull_request:
+        branches: [main, dev]
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+env:
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+    rls-production:
+        name: RLS of the production project
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        env:
+            NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v5
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm exec playwright test tests/e2e/rls.spec.ts --project=chromium --reporter=list

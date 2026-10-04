@@ -260,7 +260,7 @@ spec:
     jobTemplate:
         spec:
             backoffLimit: 2
-            activeDeadlineSeconds: 600
+            activeDeadlineSeconds: 3600
             ttlSecondsAfterFinished: 86400
             template:
                 metadata:
@@ -284,13 +284,21 @@ spec:
                                     secretKeyRef:
                                         name: reelmark-secrets
                                         key: CRON_SECRET
+                          # Un appel par lot de comptes : chaque réponse donne le curseur du suivant,
+                          # vide une fois tous les comptes traités.
                           command:
                               - sh
                               - -c
-                              - >-
-                                  curl --fail-with-body --silent --show-error --max-time 540
-                                  -X POST -H "Authorization: Bearer $CRON_SECRET"
-                                  http://reelmark.reelmark.svc.cluster.local/api/cron/suggestions
+                              - |
+                                  after=""
+                                  while :; do
+                                    body=$(curl --fail-with-body --silent --show-error --max-time 300 \
+                                      -X POST -H "Authorization: Bearer $CRON_SECRET" \
+                                      "http://reelmark.reelmark.svc.cluster.local/api/cron/suggestions${after:+?after=$after}") || exit 1
+                                    echo "$body"
+                                    after=$(printf '%s' "$body" | sed -n 's/.*"nextCursor":"\([0-9a-f-]*\)".*/\1/p')
+                                    [ -n "$after" ] || break
+                                  done
                           securityContext:
                               allowPrivilegeEscalation: false
                               readOnlyRootFilesystem: true

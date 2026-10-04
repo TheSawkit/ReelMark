@@ -52,12 +52,12 @@ pnpm build       # next build --webpack (Serwist requires webpack, not Turbopack
 - **All mutations via Server Actions** (`app/actions/`), authenticated with `getAuthenticatedUser()`. Never call Supabase/TMDB from a client component.
 - **No hardcoded UI strings** — everything through `lib/i18n/translations.ts` (EN + FR).
 - **Design tokens only** — no arbitrary Tailwind colors (`bg-surface`, not `bg-[#...]`).
-- **No inline comments**; docstrings only on public functions (one line, what + why).
+- **Comments explain why**, never what the code already says; docstrings on exported functions.
 - Absolute imports via `@/` — never relative `../../`.
 
 ## Database changes
 
-The schema lives on the Supabase project (applied via SQL editor or MCP — no versioned .sql files in the repo). Document any schema change in [`docs/DATA-MODEL.md`](./docs/DATA-MODEL.md) and regenerate `types/database.ts`. Respect Row-Level Security — see the visibility model in that same document.
+The whole schema is versioned in `supabase/migrations/`: `20260101000000_baseline.sql` recreates the production schema as it stood on 2026-09-28 (rebuilt from its catalog), and every later migration follows. A database built from that folder alone matches production (see [`docs/SUPABASE-USAGE.md`](./docs/SUPABASE-USAGE.md#tests-e2e-et-environnement-de-dev)). A schema change is applied to production through the SQL editor or MCP `apply_migration` — never `supabase db push` / `db reset` against it — then committed as `supabase/migrations/<version>_<name>.sql`, `<version>` being the one Supabase recorded. Check it on a local stack first (`supabase start`, `supabase db reset`). Document any schema change in [`docs/DATA-MODEL.md`](./docs/DATA-MODEL.md) and regenerate `types/database.ts`. Respect Row-Level Security — see the visibility model in that same document. Before adding a query, read [`docs/SUPABASE-USAGE.md`](./docs/SUPABASE-USAGE.md): the project runs on the Free plan and its egress quota has already been exceeded once.
 
 ## Tests
 
@@ -66,7 +66,7 @@ The schema lives on the Supabase project (applied via SQL editor or MCP — no v
 
 ## Deployment
 
-Production deployment (Infomaniak Kubernetes) is documented in [`DEPLOYMENT.md`](./DEPLOYMENT.md). A push to `main` triggers the CI build + rollout.
+Production deployment (Infomaniak Kubernetes) is documented in [`DEPLOYMENT.md`](./DEPLOYMENT.md). A push to `main` runs the CI; the rollout (`deploy.yml`) starts only once that CI run succeeds, on the exact commit it tested.
 
 ## Project documentation
 

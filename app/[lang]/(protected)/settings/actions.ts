@@ -2,12 +2,19 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { revalidateLayoutAfterResponse } from '@/app/actions/_helpers';
+import { revalidateLayoutAfterResponse } from '@/lib/revalidate';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
-import { isOAuthOnly } from '@/lib/supabase/auth-helpers';
+import {
+	getAuthenticatedUser,
+	getFullUser,
+	isOAuthOnly,
+	redirectToLogin,
+	refreshSessionClaims,
+} from '@/lib/supabase/auth-helpers';
 import { getTranslations, getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import {
+	AVATAR_CACHE_CONTROL,
 	validatePassword,
 	validateUsername,
 	validateRegion,
@@ -15,6 +22,8 @@ import {
 	formStr,
 } from '@/lib/validators';
 import { ON_CONFLICT } from '@/lib/supabase/conflicts';
+import { purgeUserData } from '@/lib/data/account-purge';
+import { reportCritical, reportSwallowed } from '@/lib/report';
 
 async function syncUserProfile(
 	supabase: Awaited<ReturnType<typeof createClient>>,
@@ -41,16 +50,8 @@ async function syncUserProfile(
 }
 
 export async function updatePassword(prevState: unknown, formData: FormData) {
-	const supabase = await createClient();
+	const { supabase } = await getAuthenticatedUser();
 	const t = await getTranslations();
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
-
-	if (!user) {
-		return { error: t.auth.notAuthenticated, success: false };
-	}
 
 	const newPassword = validatePassword(formData.get('password'));
 	const confirmPassword = formData.get('confirm-password');
@@ -79,16 +80,8 @@ export async function updatePassword(prevState: unknown, formData: FormData) {
 }
 
 export async function updateProfile(prevState: unknown, formData: FormData) {
-	const supabase = await createClient();
+	const { supabase, user } = await getAuthenticatedUser();
 	const t = await getTranslations();
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
-
-	if (!user) {
-		return { error: t.auth.notAuthenticated, success: false };
-	}
 
 	const fullName = validateUsername(formData.get('fullName'));
 	const username = validateUsername(formData.get('username'));
@@ -110,6 +103,7 @@ export async function updateProfile(prevState: unknown, formData: FormData) {
 	if (error) {
 		return { error: error.message, success: false };
 	}
+	await refreshSessionClaims(supabase);
 
 	const syncError = await syncUserProfile(
 		supabase,
@@ -130,16 +124,8 @@ export async function updateProfile(prevState: unknown, formData: FormData) {
 }
 
 export async function updateAvatar(prevState: unknown, formData: FormData) {
-	const supabase = await createClient();
+	const { supabase, user } = await getAuthenticatedUser();
 	const t = await getTranslations();
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
-
-	if (!user) {
-		return { error: t.auth.notAuthenticated, success: false };
-	}
 
 	const avatarUrl = formStr(formData, 'avatarUrl');
 	const avatarFile = formData.get('avatarFile') as File | null;
@@ -165,11 +151,14 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
 		const buffer = await avatarFile.arrayBuffer();
 		const adminClient = createAdminClient();
 
-		const { data: currentProfile } = await supabase
-			.from('user_profiles')
-			.select('avatar_url')
-			.eq('user_id', user.id)
-			.maybeSingle();
+		const { data: currentProfile, error: currentProfileError } =
+			await supabase
+				.from('user_profiles')
+				.select('avatar_url')
+				.eq('user_id', user.id)
+				.maybeSingle();
+		if (currentProfileError)
+			reportSwallowed('settings:old-avatar', currentProfileError);
 		const oldAvatarUrl =
 			currentProfile?.avatar_url ??
 			(user.user_metadata?.avatar_url as string | undefined);
@@ -184,6 +173,7 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
 			.from('avatars')
 			.upload(fileName, buffer, {
 				contentType: avatarFile.type,
+				cacheControl: AVATAR_CACHE_CONTROL,
 				upsert: true,
 			});
 
@@ -225,16 +215,12 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
 }
 
 export async function deleteAccount(prevState: unknown, formData: FormData) {
-	const supabase = await createClient();
+	const { supabase } = await getAuthenticatedUser();
+	// The token carries no identities: the OAuth-only check and the re-auth email need the
+	// Auth record itself — one round-trip, on the rarest action of the app.
+	const user = await getFullUser();
+	if (!user) return redirectToLogin();
 	const t = await getTranslations();
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
-
-	if (!user) {
-		return { error: t.auth.notAuthenticated, success: false };
-	}
 
 	const confirmation = formData.get('confirmation');
 	const password = formData.get('password');
@@ -270,45 +256,22 @@ export async function deleteAccount(prevState: unknown, formData: FormData) {
 		}
 	}
 
-	await supabase.from('episode_watches').delete().eq('user_id', user.id);
-	await supabase.from('watchlist').delete().eq('user_id', user.id);
-	await supabase.from('reviews').delete().eq('user_id', user.id);
-
-	const { data: userPlaylists } = await supabase
-		.from('playlists')
-		.select('id')
-		.eq('user_id', user.id);
-	if (userPlaylists && userPlaylists.length > 0) {
-		await supabase
-			.from('playlist_items')
-			.delete()
-			.in(
-				'playlist_id',
-				userPlaylists.map((p) => p.id)
-			);
-	}
-	await supabase.from('playlists').delete().eq('user_id', user.id);
-	await supabase
-		.from('friendships')
-		.delete()
-		.or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
-	await supabase.from('privacy_settings').delete().eq('user_id', user.id);
-	await supabase.from('user_profiles').delete().eq('user_id', user.id);
-
 	const adminClient = createAdminClient();
 
-	// `notifications.sender_id` est NOT NULL alors que sa FK est ON DELETE SET NULL :
-	// sans cette purge, `deleteUser` échoue en 23502 dès que le compte a émis une
-	// notification. Les lignes émises appartiennent à leurs destinataires, d'où l'admin client.
-	await adminClient.from('notifications').delete().eq('user_id', user.id);
-	await adminClient.from('notifications').delete().eq('sender_id', user.id);
+	try {
+		await purgeUserData(adminClient, user.id);
+	} catch (error) {
+		reportSwallowed('settings:delete-account', error);
+		return { error: t.common.actionError, success: false };
+	}
 
-	const { data: avatarFiles } = await adminClient.storage
-		.from('avatars')
-		.list('', {
+	const { data: avatarFiles, error: avatarFilesError } =
+		await adminClient.storage.from('avatars').list('', {
 			limit: 1000,
 			search: user.id,
 		});
+	if (avatarFilesError)
+		reportCritical('account:avatar-files', avatarFilesError);
 	const userAvatarFiles = (avatarFiles ?? [])
 		.filter((f) => f.name.startsWith(`${user.id}-`))
 		.map((f) => f.name);

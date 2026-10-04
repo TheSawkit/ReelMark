@@ -19,4 +19,10 @@ overrides:
     # Next réclame ^0.34.5, dont libvips traîne CVE-2026-33196. Le forçage est sans risque ici :
     # `images.unoptimized` fait que sharp n'est jamais appelé, et il est déjà dans
     # ignoredBuiltDependencies donc jamais compilé.
-    sharp: '>=0.35.0'
+    sharp: '>=0.35.4'
+    # Failles de dépendances de build (plugin webpack de Sentry, build Serwist) : versions corrigées
+    # forcées dans leur majeure, pour ne rien changer aux autres paquets qui en dépendent.
+    'fast-uri@>=3.0.0 <3.1.8': '^3.1.8'
+    'brace-expansion@>=4.0.0 <5.0.12': '^5.0.12'
+    'nanoid@<3.3.18': '^3.3.18'
+    'browserslist@<4.28.7': '^4.28.7'

@@ -1,9 +1,12 @@
 import { Suspense } from 'react';
 import { requireAuth } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { isOAuthOnly } from '@/lib/supabase/auth-helpers';
+import {
+	getFullUser,
+	isOAuthOnly,
+	redirectToLogin,
+} from '@/lib/supabase/auth-helpers';
 import { SettingsContent } from '@/components/settings/SettingsContent';
-import { isSettingsTab, type SettingsTab } from '@/components/settings/tabs';
 import { SettingsContentSkeleton } from '@/components/settings/SettingsContentSkeleton';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
 import { getTranslations } from '@/lib/i18n/server';
@@ -12,13 +15,12 @@ import { getAvailableProviders } from '@/lib/tmdb';
 import { getUserRegion } from '@/lib/tmdb/client';
 import { getMyStreamingProviders } from '@/lib/data/recommendations';
 import { getNotificationPreferences } from '@/lib/data/notifications';
+import { getMcpLinkStatus } from '@/lib/data/mcp';
 import type { Language } from '@/lib/i18n/translations';
 import type { UserProfile, PrivacySettings } from '@/types/profile';
-import type { User } from '@supabase/supabase-js';
 
 type Props = {
 	params: Promise<{ lang: Language }>;
-	searchParams: Promise<{ section?: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
@@ -35,16 +37,11 @@ export async function generateMetadata({ params }: Props) {
 	};
 }
 
-async function SettingsSection({
-	user,
-	lang,
-	initialTab,
-}: {
-	user: User;
-	lang: Language;
-	initialTab: SettingsTab;
-}) {
-	const supabase = await createClient();
+async function SettingsSection({ lang }: { lang: Language }) {
+	// The one screen that needs the full Auth record (identities for the password/delete
+	// flows, the freshest email) — every other page reads the verified token instead.
+	const [user, supabase] = await Promise.all([getFullUser(), createClient()]);
+	if (!user) return redirectToLogin();
 
 	const [
 		profileResult,
@@ -52,6 +49,7 @@ async function SettingsSection({
 		region,
 		selectedProviderIds,
 		notificationPreferences,
+		mcpLink,
 	] = await Promise.all([
 		supabase
 			.from('user_profiles')
@@ -66,6 +64,7 @@ async function SettingsSection({
 		getUserRegion(lang),
 		getMyStreamingProviders(),
 		getNotificationPreferences(),
+		getMcpLinkStatus(),
 	]);
 
 	const streamingProviders = await getAvailableProviders(region, lang);
@@ -83,14 +82,14 @@ async function SettingsSection({
 			streamingProviders={streamingProviders}
 			selectedProviderIds={selectedProviderIds}
 			notificationPreferences={notificationPreferences}
-			initialTab={initialTab}
+			mcpLink={mcpLink}
 		/>
 	);
 }
 
-export default async function SettingsPage({ params, searchParams }: Props) {
-	const [{ lang }, { section }] = await Promise.all([params, searchParams]);
-	const user = await requireAuth();
+export default async function SettingsPage({ params }: Props) {
+	const { lang } = await params;
+	await requireAuth();
 	const t = await getTranslations(lang);
 
 	return (
@@ -100,11 +99,7 @@ export default async function SettingsPage({ params, searchParams }: Props) {
 				subtitle={t.settings.subtitle}
 			/>
 			<Suspense fallback={<SettingsContentSkeleton />}>
-				<SettingsSection
-					user={user}
-					lang={lang}
-					initialTab={isSettingsTab(section) ? section : 'profile'}
-				/>
+				<SettingsSection lang={lang} />
 			</Suspense>
 		</PageLayout>
 	);

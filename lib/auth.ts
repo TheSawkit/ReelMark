@@ -1,19 +1,21 @@
 import 'server-only';
 
-import { redirect } from 'next/navigation';
-import { getUserContext } from '@/lib/supabase/auth-helpers';
-import type { User } from '@supabase/supabase-js';
+import {
+	getUserContext,
+	redirectToLogin,
+	type SessionUser,
+} from '@/lib/supabase/auth-helpers';
 
 /**
  * Verifies that the current request is authenticated.
- * Redirects to `/login` if no session is found.
+ * Redirects to login, with a way back, if no session is found.
  *
- * @returns The authenticated Supabase `User` object.
+ * @returns The signed-in user, as the verified access token describes it.
  */
-export async function requireAuth(): Promise<User> {
+export async function requireAuth(): Promise<SessionUser> {
 	const { user } = await getUserContext();
 
-	if (!user) redirect('/login');
+	if (!user) return redirectToLogin();
 
 	return user;
 }

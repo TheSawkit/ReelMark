@@ -13,7 +13,8 @@ function detectLocale(request: NextRequest): Language {
 	return DEFAULT_LANGUAGE;
 }
 
-function hasSessionCookie(request: NextRequest): boolean {
+/** Whether the request carries a Supabase session cookie — no cookie, nothing to refresh or check. */
+export function hasSessionCookie(request: NextRequest): boolean {
 	return request.cookies
 		.getAll()
 		.some(
@@ -44,12 +45,20 @@ export function handleLocaleRedirect(
 	return NextResponse.redirect(url);
 }
 
-/** Forwards the request headers with the resolved locale so server code can read x-locale. */
+/**
+ * Forwards the request headers with the resolved locale (x-locale) and the requested page
+ * (x-url) — a Server Action posts to the page it runs on, so x-url is where a signed-out
+ * caller should come back to after logging in.
+ */
 export function buildRequestHeaders(
 	request: NextRequest,
 	locale: Language
 ): Headers {
 	const headers = new Headers(request.headers);
 	headers.set('x-locale', locale);
+	headers.set(
+		'x-url',
+		`${request.nextUrl.pathname}${request.nextUrl.search}`
+	);
 	return headers;
 }

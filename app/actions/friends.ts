@@ -1,7 +1,7 @@
 'use server';
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
-import { revalidateProfileAfterResponse } from '@/app/actions/_helpers';
+import { revalidateProfileAfterResponse } from '@/lib/revalidate';
 import { sendFriendPush } from '@/lib/push/notify-friend';
 import { enforceUserRateLimit } from '@/lib/rate-limiter';
 import { after } from 'next/server';

@@ -2,14 +2,16 @@ import type { Metadata } from 'next';
 import { AuthPageShell } from '@/components/auth/AuthPageShell';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { getUserContext } from '@/lib/supabase/auth-helpers';
 import { getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
+import { sanitizeRedirectPath } from '@/lib/validators';
 import { localizedAlternates } from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';
 
 type Props = {
 	params: Promise<{ lang: Language }>;
+	searchParams: Promise<{ next?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -38,20 +40,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	};
 }
 
-export default async function LoginPage({ params }: Props) {
-	const { lang } = await params;
-	const supabase = await createClient();
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+export default async function LoginPage({ params, searchParams }: Props) {
+	const [{ lang }, { next }] = await Promise.all([params, searchParams]);
+	const returnTo = sanitizeRedirectPath(next ?? null, '/dashboard');
+	const { user } = await getUserContext();
 
 	if (user) {
-		redirect(localizedHref(lang, '/dashboard'));
+		redirect(localizedHref(lang, returnTo));
 	}
 
 	return (
 		<AuthPageShell>
-			<LoginForm />
+			<LoginForm next={returnTo} />
 		</AuthPageShell>
 	);
 }

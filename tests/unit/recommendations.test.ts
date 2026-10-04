@@ -8,6 +8,8 @@ import {
 	isPersonSeedRating,
 	pickSuggestion,
 	pickSimilarSeeds,
+	rankSuggestions,
+	summarizeTaste,
 	type TasteProfile,
 } from '@/lib/recommendations';
 import type { MediaItem, WatchlistEntry, WatchStatus } from '@/types/tmdb';
@@ -17,7 +19,6 @@ let nextId = 1;
 function entry(overrides: Partial<WatchlistEntry> = {}): WatchlistEntry {
 	const id = overrides.media_id ?? nextId++;
 	return {
-		id: `row-${id}`,
 		media_id: id,
 		media_title: `Title ${id}`,
 		media_type: 'movie',
@@ -629,5 +630,79 @@ describe('pickSuggestion', () => {
 		expect(
 			pickSuggestion(entries, taste(), [], seeds, new Set())
 		).toBeNull();
+	});
+});
+
+describe('rankSuggestions', () => {
+	it('ranks every candidate outside the list, headed by the weekly pick', () => {
+		const seeds = [{ weight: 1, items: [item(301), item(302), item(303)] }];
+		const entries = [entry({ media_id: 302, status: 'watched' })];
+
+		const ranked = rankSuggestions(entries, taste(), [], seeds);
+
+		expect(ranked.map(({ id }) => id)).toEqual([301, 303]);
+		expect(pickSuggestion(entries, taste(), [], seeds, new Set())?.id).toBe(
+			ranked[0].id
+		);
+	});
+});
+
+describe('summarizeTaste', () => {
+	it('lists loved titles best first and disliked ones worst first', () => {
+		const entries = [
+			entry({ media_id: 401, genre_ids: [18] }),
+			entry({ media_id: 402, genre_ids: [18] }),
+			entry({ media_id: 403, genre_ids: [27] }),
+			entry({ media_id: 404, genre_ids: [27] }),
+		];
+		const summary = summarizeTaste(
+			entries,
+			taste({
+				ratings: {
+					'movie-401': 7,
+					'movie-402': 10,
+					'movie-403': 3,
+					'movie-404': 1,
+				},
+			})
+		);
+
+		expect(summary.topRated.map(({ entry }) => entry.media_id)).toEqual([
+			402, 401,
+		]);
+		expect(summary.lowRated.map(({ entry }) => entry.media_id)).toEqual([
+			404, 403,
+		]);
+		expect(summary.meanRating).toBe(5.25);
+		expect(summary.favoriteGenreIds).toContain(18);
+		expect(summary.dislikedGenreIds).toContain(27);
+	});
+
+	it('separates shows in progress, abandoned titles and status counts', () => {
+		const entries = [
+			entry({
+				media_id: 501,
+				media_type: 'tv',
+				status: 'to_watch',
+				total_episodes: 10,
+			}),
+			entry({ media_id: 502, media_type: 'tv', status: 'abandoned' }),
+			entry({ media_id: 503, media_type: 'tv', status: 'to_watch' }),
+		];
+		const summary = summarizeTaste(
+			entries,
+			taste({ episodesWatched: { 501: 4 } })
+		);
+
+		expect(summary.watching.map(({ media_id }) => media_id)).toEqual([501]);
+		expect(summary.abandoned.map(({ media_id }) => media_id)).toEqual([
+			502,
+		]);
+		expect(summary.counts).toEqual({
+			to_watch: 2,
+			watched: 0,
+			abandoned: 1,
+		});
+		expect(summary.meanRating).toBeNull();
 	});
 });

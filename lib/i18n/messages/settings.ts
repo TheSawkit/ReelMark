@@ -108,6 +108,40 @@ const fr = {
 		unsupported:
 			'Ton navigateur ne gère pas les clés d’accès. Essaie Safari, Chrome ou Edge à jour.',
 	},
+	aiAssistant: {
+		title: 'Assistant IA',
+		description:
+			'Connecte ton assistant (Claude, ChatGPT…) à ReelMark : il connaîtra tes goûts pour te conseiller films et séries. Si tu l’y autorises, il pourra aussi marquer un titre comme vu, à voir ou abandonné, à ta demande.',
+		allowWrite: 'Autoriser l’assistant à modifier ma bibliothèque',
+		allowWriteHint:
+			'Marquer un titre comme vu, à voir, abandonné, ou le retirer. Rien d’autre.',
+		accessRead: 'lecture seule',
+		accessWrite: 'lecture et modification',
+		accessMismatch:
+			'Ce réglage s’applique au prochain lien : régénère-le pour que l’assistant en tienne compte.',
+		generate: 'Générer mon lien',
+		regenerate: 'Régénérer le lien',
+		regenerateHint:
+			'Régénérer ou révoquer coupe immédiatement l’ancien lien.',
+		revoke: 'Révoquer',
+		revoked: 'Lien révoqué',
+		linkLabel: 'Ton lien de connexion',
+		copy: 'Copier',
+		copied: 'Lien copié',
+		showOnce:
+			'Copie-le maintenant : il ne sera plus affiché. Garde-le secret comme un mot de passe : toute personne qui l’a peut lire ta bibliothèque, et la modifier si tu l’as autorisé.',
+		activeSince: 'Lien actif depuis le',
+		lastUsed: 'dernière utilisation le',
+		neverUsed: 'jamais utilisé',
+		rateLimited: 'Trop de liens générés, réessaie dans un moment',
+		howTo: 'Où le brancher — au choix',
+		clients: [
+			'Claude : Paramètres → Connecteurs → Ajouter un connecteur personnalisé, puis colle le lien.',
+			'ChatGPT : Paramètres → Applications → active le mode développeur, puis crée une application avec ce lien, sans authentification.',
+			'Perplexity : Paramètres → Connecteurs → Connecteur personnalisé → Distant, colle le lien et choisis « Aucune » authentification.',
+			'Gemini (sur le web, pour l’instant aux États-Unis) : Paramètres → Applications connectées → Ajouter une application personnalisée, puis colle le lien.',
+		],
+	},
 	dangerZone: {
 		title: 'Données',
 		description: 'Les actions suivantes ne peuvent pas être annulées',
@@ -346,6 +380,40 @@ const en = {
 		removed: 'Passkey removed',
 		unsupported:
 			'Your browser doesn’t support passkeys. Try an up-to-date Safari, Chrome or Edge.',
+	},
+	aiAssistant: {
+		title: 'AI assistant',
+		description:
+			'Connect your assistant (Claude, ChatGPT…) to ReelMark: it will know your tastes to suggest movies and shows. If you allow it, it can also mark a title as watched, to watch or abandoned when you ask.',
+		allowWrite: 'Let the assistant change my library',
+		allowWriteHint:
+			'Mark a title as watched, to watch, abandoned, or remove it. Nothing else.',
+		accessRead: 'read-only',
+		accessWrite: 'read and change',
+		accessMismatch:
+			'This setting applies to the next link: regenerate it for the assistant to use it.',
+		generate: 'Generate my link',
+		regenerate: 'Regenerate link',
+		regenerateHint:
+			'Regenerating or revoking cuts off the old link immediately.',
+		revoke: 'Revoke',
+		revoked: 'Link revoked',
+		linkLabel: 'Your connection link',
+		copy: 'Copy',
+		copied: 'Link copied',
+		showOnce:
+			'Copy it now: it will not be shown again. Keep it secret like a password — anyone who has it can read your library, and change it if you allowed that.',
+		activeSince: 'Link active since',
+		lastUsed: 'last used on',
+		neverUsed: 'never used',
+		rateLimited: 'Too many links generated, try again in a moment',
+		howTo: 'Where to plug it in — pick one',
+		clients: [
+			'Claude: Settings → Connectors → Add custom connector, then paste the link.',
+			'ChatGPT: Settings → Apps → enable developer mode, then create an app with this link, no authentication.',
+			'Perplexity: Settings → Connectors → Custom connector → Remote, paste the link and pick “None” for authentication.',
+			'Gemini (on the web, US only for now): Settings → Connected apps → Add a custom app, then paste the link.',
+		],
 	},
 	dangerZone: {
 		title: 'Account Data',

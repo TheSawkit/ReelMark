@@ -12,6 +12,7 @@ import type {
 	FriendEntry,
 	PendingRequestEntry,
 } from '@/types/profile';
+import { reportSwallowed } from '@/lib/report';
 
 /**
  * Returns the friendship record between the authenticated user and a target user, or null.
@@ -24,7 +25,7 @@ export async function getFriendshipStatus(
 ): Promise<Friendship | null> {
 	const { supabase, userId } = await getAuthenticatedUser();
 
-	const { data } = await supabase
+	const { data, error } = await supabase
 		.from('friendships')
 		.select(FRIENDSHIP_COLUMNS)
 		.or(
@@ -32,6 +33,7 @@ export async function getFriendshipStatus(
 				`and(requester_id.eq.${targetUserId},addressee_id.eq.${userId})`
 		)
 		.maybeSingle();
+	if (error) reportSwallowed('friends:status', error);
 
 	return (data as Friendship) ?? null;
 }
@@ -61,10 +63,12 @@ export async function getPendingRequestsWithProfiles(): Promise<
 	const pending = rawPending as Friendship[];
 	const requesterIds = pending.map((f) => f.requester_id);
 
-	const { data: profiles } = await supabase
+	const { data: profiles, error: profilesError } = await supabase
 		.from('user_profiles')
 		.select('user_id, username, avatar_url, full_name')
 		.in('user_id', requesterIds);
+	if (profilesError)
+		reportSwallowed('friends:pending-profiles', profilesError);
 
 	const profileByUserId = new Map(profiles?.map((p) => [p.user_id, p]) ?? []);
 
@@ -124,10 +128,11 @@ export async function getFriendsWithProfiles(
 		f.requester_id === userId ? f.addressee_id : f.requester_id
 	);
 
-	const { data: profiles } = await supabase
+	const { data: profiles, error: profilesError } = await supabase
 		.from('user_profiles')
 		.select('user_id, username, avatar_url, full_name')
 		.in('user_id', friendUserIds);
+	if (profilesError) reportSwallowed('friends:profiles', profilesError);
 
 	const profileByUserId = new Map(profiles?.map((p) => [p.user_id, p]) ?? []);
 

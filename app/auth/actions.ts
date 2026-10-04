@@ -12,6 +12,8 @@ import {
 	validateUsername,
 	validateRegion,
 	validateLanguage,
+	sanitizeRedirectPath,
+	formStr,
 } from '@/lib/validators';
 import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
@@ -51,7 +53,12 @@ export async function login(prevState: unknown, formData: FormData) {
 	if (error) return { error: mapAuthError(error.message, t) };
 
 	revalidatePath('/', 'layout');
-	redirect(localizedHref(await getServerLanguage(), '/dashboard'));
+	redirect(
+		localizedHref(
+			await getServerLanguage(),
+			sanitizeRedirectPath(formStr(formData, 'next'), '/dashboard')
+		)
+	);
 }
 
 export async function signup(prevState: unknown, formData: FormData) {
@@ -135,7 +142,8 @@ export async function signout() {
  * @returns Success even when no account matches, so the response can't be used to probe emails.
  */
 export async function requestMagicLink(
-	email: string
+	email: string,
+	next?: string
 ): Promise<{ error?: string; success?: boolean }> {
 	const t = await getTranslations();
 	const validEmail = validateEmail(email);
@@ -146,7 +154,7 @@ export async function requestMagicLink(
 		email: validEmail,
 		options: {
 			shouldCreateUser: false,
-			emailRedirectTo: `${BASE_URL}/auth/confirm?next=/dashboard`,
+			emailRedirectTo: `${BASE_URL}/auth/confirm?next=${encodeURIComponent(sanitizeRedirectPath(next ?? null, '/dashboard'))}`,
 		},
 	});
 

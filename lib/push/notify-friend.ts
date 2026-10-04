@@ -12,7 +12,8 @@ type FriendPushType = 'friend_request' | 'friend_accepted';
 export async function recipientLanguage(userId: string): Promise<Language> {
 	try {
 		const supabase = createAdminClient();
-		const { data } = await supabase.auth.admin.getUserById(userId);
+		const { data, error } = await supabase.auth.admin.getUserById(userId);
+		if (error) throw error;
 		const lang = data.user?.user_metadata?.language;
 		return isLanguage(lang) ? lang : DEFAULT_LANGUAGE;
 	} catch (error) {

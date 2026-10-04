@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useRef, useEffect, useCallback, useTransition } from 'react';
 import { Loader2, Pencil } from 'lucide-react';
-import { toast } from 'sonner';
 import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { deleteReview, getUserReviews } from '@/app/actions/reviews';
 import { getImageUrl } from '@/lib/tmdb/images';
@@ -19,6 +18,7 @@ import { StarRating } from '@/components/ui/StarRating';
 import { DeleteIconButton } from '@/components/ui/DeleteIconButton';
 import { Button } from '@/components/ui/button';
 import { ReviewDialog } from '@/components/media/reviews/ReviewDialog';
+import { toastActionError } from '@/lib/action-toast';
 
 interface ReviewsSectionProps {
 	reviews: Review[];
@@ -85,8 +85,8 @@ export function ReviewsSection({
 			try {
 				await deleteReview(reviewId);
 				setReviews((prev) => prev.filter((r) => r.id !== reviewId));
-			} catch {
-				toast.error(t.common.actionError);
+			} catch (err) {
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	};

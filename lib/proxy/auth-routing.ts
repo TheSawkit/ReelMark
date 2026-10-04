@@ -1,7 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import type { User } from '@supabase/supabase-js';
+import {
+	sessionUserFromClaims,
+	type SessionUser,
+} from '@/lib/supabase/session-user';
 import { needsOnboarding } from '@/lib/onboarding';
+import { sanitizeRedirectPath } from '@/lib/validators';
+import { localizedHref } from '@/lib/i18n/utils';
+import { loginHref } from '@/lib/login-href';
 import type { Language } from '@/lib/i18n/translations';
 
 const PROTECTED_SEGMENTS = [
@@ -47,13 +53,74 @@ export function getRouteAccess(
 	};
 }
 
-function createSupabaseResponse(
+type ProxySupabase = ReturnType<typeof createServerClient>;
+
+/**
+ * Supabase client bound to the proxy's request and response. A refreshed session is written both
+ * ways: into the response cookies for the browser, and into the forwarded request so the Server
+ * Components of this same request read the new tokens instead of refreshing a second time — they
+ * cannot write cookies, and a rotated refresh token they drop gets the whole session revoked on
+ * its next reuse (the "randomly signed out" failure).
+ */
+function createProxySupabase(request: NextRequest, requestHeaders: Headers) {
+	let response = NextResponse.next({ request: { headers: requestHeaders } });
+
+	const supabase = createServerClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL!,
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+		{
+			cookies: {
+				getAll() {
+					return request.cookies.getAll();
+				},
+				setAll(cookiesToSet, headers) {
+					cookiesToSet.forEach(({ name, value }) =>
+						request.cookies.set(name, value)
+					);
+					requestHeaders.set(
+						'cookie',
+						request.headers.get('cookie') ?? ''
+					);
+					response = NextResponse.next({
+						request: { headers: requestHeaders },
+					});
+					cookiesToSet.forEach(({ name, value, options }) =>
+						response.cookies.set(name, value, options)
+					);
+					Object.entries(headers).forEach(([key, value]) =>
+						response.headers.set(key, value)
+					);
+				},
+			},
+		}
+	);
+
+	/** Redirect that keeps whatever session cookies the client just wrote (refreshed or cleared). */
+	const redirect = (url: URL) => {
+		const redirected = NextResponse.redirect(url);
+		response.cookies
+			.getAll()
+			.forEach((cookie) => redirected.cookies.set(cookie));
+		return redirected;
+	};
+
+	return { supabase, response: () => response, redirect };
+}
+
+/**
+ * Refreshes an expiring session on pages that do not need the user — the navbar still reads it,
+ * and only the proxy can store the rotated tokens. `getSession` refreshes only when the token
+ * has expired and never calls Auth otherwise; nothing here trusts its result, the Server
+ * Components still verify the user themselves. (`getClaims` would add an Auth round trip per
+ * page on projects still signing JWTs with the legacy symmetric secret.)
+ */
+export async function refreshSession(
 	request: NextRequest,
 	requestHeaders: Headers
-): NextResponse {
-	return NextResponse.next({
-		request: { headers: requestHeaders },
-	});
+): Promise<NextResponse> {
+	const { supabase, response } = createProxySupabase(request, requestHeaders);
+	await supabase.auth.getSession();
+	return response();
 }
 
 /**
@@ -61,8 +128,8 @@ function createSupabaseResponse(
  * the database, so the `onboarding_completed` lookup only runs for users mid-signup.
  */
 async function hasIncompleteOnboarding(
-	supabase: ReturnType<typeof createServerClient>,
-	user: User
+	supabase: ProxySupabase,
+	user: SessionUser
 ): Promise<boolean> {
 	if (!needsOnboarding(user.user_metadata, false)) return false;
 
@@ -82,46 +149,41 @@ export async function handleAuthRouting(
 	requestHeaders: Headers,
 	access: RouteAccess
 ): Promise<NextResponse> {
-	const response = createSupabaseResponse(request, requestHeaders);
-
-	const supabase = createServerClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL!,
-		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-		{
-			cookies: {
-				getAll() {
-					return request.cookies.getAll();
-				},
-				setAll(cookiesToSet) {
-					cookiesToSet.forEach(({ name, value, options }) => {
-						request.cookies.set(name, value);
-						response.cookies.set(name, value, options);
-					});
-				},
-			},
-		}
+	const { supabase, response, redirect } = createProxySupabase(
+		request,
+		requestHeaders
 	);
 
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+	// Verified locally against the cached JWKS (ES256 signing key) and refreshed when expired:
+	// the proxy runs on every protected navigation and prefetch, and getUser() made each one
+	// an Auth round-trip.
+	let user: SessionUser | null = null;
+	try {
+		const { data } = await supabase.auth.getClaims();
+		user = sessionUserFromClaims(data?.claims);
+	} catch {
+		// Unverifiable token: routed as signed out.
+	}
 
 	if (access.isProtected && !user) {
-		const loginUrl = request.nextUrl.clone();
-		loginUrl.pathname = `/${locale}/login`;
-		return NextResponse.redirect(loginUrl);
+		const { pathname, search } = request.nextUrl;
+		return redirect(
+			new URL(loginHref(locale, `${pathname}${search}`), request.nextUrl)
+		);
 	}
 
 	if (access.isRecovery && !user) {
 		const errorUrl = request.nextUrl.clone();
 		errorUrl.pathname = `/${locale}/auth/auth-code-error`;
-		return NextResponse.redirect(errorUrl);
+		return redirect(errorUrl);
 	}
 
 	if ((access.isAuthRoute || access.isLanding) && user) {
-		const dashboardUrl = request.nextUrl.clone();
-		dashboardUrl.pathname = `/${locale}/dashboard`;
-		return NextResponse.redirect(dashboardUrl);
+		const next = sanitizeRedirectPath(
+			request.nextUrl.searchParams.get('next'),
+			'/dashboard'
+		);
+		return redirect(new URL(localizedHref(locale, next), request.nextUrl));
 	}
 
 	if (access.isProtected && user && !access.isOnboarding) {
@@ -129,9 +191,9 @@ export async function handleAuthRouting(
 		if (incomplete) {
 			const onboardingUrl = request.nextUrl.clone();
 			onboardingUrl.pathname = `/${locale}${ONBOARDING_SEGMENT}`;
-			return NextResponse.redirect(onboardingUrl);
+			return redirect(onboardingUrl);
 		}
 	}
 
-	return response;
+	return response();
 }

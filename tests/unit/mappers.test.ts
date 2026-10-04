@@ -11,7 +11,6 @@ import type {
 } from '@/types/tmdb';
 
 const baseWatchlistEntry: WatchlistEntry = {
-	id: '1',
 	media_id: 550,
 	media_type: 'movie',
 	media_title: 'Fight Club',

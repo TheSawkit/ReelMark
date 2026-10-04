@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { requireAuth } from '@/lib/auth';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { resolveAvatarUrl } from '@/lib/avatar';
+import type { SessionUser } from '@/lib/supabase/session-user';
 import type { Language } from '@/lib/i18n/translations';
 import { getTranslations } from '@/lib/i18n/server';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -86,6 +87,37 @@ async function ProfileTabsSection({
 	const supabase = await createClient();
 	const isFriend = friendship?.status === 'accepted';
 
+	function canView(visibility: string): boolean {
+		if (isOwnProfile) return true;
+		if (visibility === 'public') return true;
+		if (visibility === 'friends' && isFriend) return true;
+		return false;
+	}
+
+	const privacyPromise = getPrivacySettings(profileUserId);
+
+	/**
+	 * Only the lists the viewer may open, and only the two statuses the tabs show: the whole
+	 * library (abandoned titles included) was downloaded before, even for a private profile.
+	 */
+	const watchlistPromise = privacyPromise.then((privacy) => {
+		const statuses = [
+			...(canView(privacy.watchlist_visibility) ? ['to_watch'] : []),
+			...(canView(privacy.watched_visibility) ? ['watched'] : []),
+		];
+		if (statuses.length === 0) return Promise.resolve([]);
+		return fetchAllRows((from, to) =>
+			supabase
+				.from('watchlist')
+				.select(WATCHLIST_COLUMNS)
+				.eq('user_id', profileUserId)
+				.in('status', statuses)
+				.order('created_at', { ascending: false })
+				.order('id')
+				.range(from, to)
+		);
+	});
+
 	const [
 		privacy,
 		reviewsPage,
@@ -97,7 +129,7 @@ async function ProfileTabsSection({
 		genreNames,
 		ratingByKey,
 	] = await Promise.all([
-		getPrivacySettings(profileUserId),
+		privacyPromise,
 		getUserReviews(profileUserId),
 		supabase
 			.from('reviews')
@@ -105,15 +137,7 @@ async function ProfileTabsSection({
 			.eq('user_id', profileUserId),
 		getUserPlaylists(profileUserId),
 		getFriendsWithProfiles(profileUserId),
-		fetchAllRows((from, to) =>
-			supabase
-				.from('watchlist')
-				.select(WATCHLIST_COLUMNS)
-				.eq('user_id', profileUserId)
-				.order('created_at', { ascending: false })
-				.order('id')
-				.range(from, to)
-		),
+		watchlistPromise,
 		isOwnProfile ? getPendingRequestsWithProfiles() : Promise.resolve([]),
 		getGenres(lang),
 		isOwnProfile
@@ -122,13 +146,6 @@ async function ProfileTabsSection({
 	]);
 
 	const watchlist = watchlistData as WatchlistEntry[];
-
-	function canView(visibility: string): boolean {
-		if (isOwnProfile) return true;
-		if (visibility === 'public') return true;
-		if (visibility === 'friends' && isFriend) return true;
-		return false;
-	}
 
 	const toWatch = canView(privacy.watchlist_visibility)
 		? watchlist.filter((e) => e.status === 'to_watch')
@@ -210,6 +227,23 @@ export default function ProfilePage({ params }: Props) {
 	);
 }
 
+/**
+ * The owner's Auth metadata, needed only for the OAuth picture of an account that never stored
+ * an avatar — the name comes from `user_profiles`. Every profile view used to cost an Auth admin
+ * round-trip; now only those accounts do, and the viewer's own profile reads its session.
+ */
+async function ownerAuthMetadata(
+	profile: { user_id: string; avatar_url: string | null },
+	self: SessionUser | null
+): Promise<Record<string, unknown> | null> {
+	if (profile.avatar_url) return null;
+	if (self) return self.user_metadata;
+	const { data } = await createAdminClient().auth.admin.getUserById(
+		profile.user_id
+	);
+	return data.user?.user_metadata ?? null;
+}
+
 async function ProfileContent({ params }: Props) {
 	const { lang, username } = await params;
 
@@ -220,23 +254,18 @@ async function ProfileContent({ params }: Props) {
 	if (!profile) notFound();
 
 	const isOwnProfile = currentUser.id === profile.user_id;
-	const adminClient = createAdminClient();
 
-	const [friendship, ownerAuth] = await Promise.all([
+	const [friendship, ownerMeta] = await Promise.all([
 		isOwnProfile
 			? Promise.resolve(null)
 			: getFriendshipStatus(profile.user_id),
-		adminClient.auth.admin.getUserById(profile.user_id),
+		ownerAuthMetadata(profile, isOwnProfile ? currentUser : null),
 	]);
 
-	const ownerMeta = ownerAuth.data.user?.user_metadata;
 	const avatarUrl =
 		resolveAvatarUrl(profile.avatar_url, ownerMeta?.avatar_url) ??
 		undefined;
-	const fullName =
-		typeof ownerMeta?.full_name === 'string'
-			? ownerMeta.full_name
-			: undefined;
+	const fullName = profile.full_name ?? undefined;
 
 	return (
 		<>

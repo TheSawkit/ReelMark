@@ -5,6 +5,7 @@ export type PrivacyVisibility = 'public' | 'friends' | 'private';
 export interface UserProfile {
 	user_id: string;
 	username: string;
+	full_name: string | null;
 	bio: string | null;
 	instagram: string | null;
 	tiktok: string | null;

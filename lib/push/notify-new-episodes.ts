@@ -73,18 +73,21 @@ export async function announceNewEpisodes(
 			.range(from, to)
 	);
 
-	const { data: optOuts } = await admin
-		.from('notification_preferences')
-		.select('user_id')
-		.eq('new_episodes', false);
-	const optedOut = new Set((optOuts ?? []).map((row) => row.user_id));
+	const optOuts = await fetchAllRows((from, to) =>
+		admin
+			.from('notification_preferences')
+			.select('user_id')
+			.eq('new_episodes', false)
+			.order('user_id')
+			.range(from, to)
+	);
+	const optedOut = new Set(optOuts.map((row) => row.user_id));
 
 	const followsByShow = new Map<number, FollowRow[]>();
 	for (const follow of follows) {
-		followsByShow.set(follow.media_id, [
-			...(followsByShow.get(follow.media_id) ?? []),
-			follow,
-		]);
+		const showFollows = followsByShow.get(follow.media_id);
+		if (showFollows) showFollows.push(follow);
+		else followsByShow.set(follow.media_id, [follow]);
 	}
 
 	const perShow = await mapLimit(
@@ -99,19 +102,20 @@ export async function announceNewEpisodes(
 				if (!aired || !isFreshEpisode(aired.air_date, today))
 					return NOT_FRESH;
 
-				const { data: sent } = await admin
+				const { data: sent, error: sentError } = await admin
 					.from('notifications')
 					.select('user_id')
 					.eq('type', 'new_episode')
 					.eq('media_id', tvId)
 					.eq('season_number', aired.season_number)
 					.eq('episode_number', aired.episode_number);
+				if (sentError) throw new Error(sentError.message);
 
 				const recipientIds = new Set(
 					recipientsFor(
 						showFollows.map((follow) => follow.user_id),
 						optedOut,
-						new Set((sent ?? []).map((row) => row.user_id))
+						new Set(sent.map((row) => row.user_id))
 					)
 				);
 				const recipients = showFollows.filter((follow) =>

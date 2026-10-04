@@ -128,6 +128,21 @@ function stateLabel(
 	return isWatched ? t.movie.markAsWatched : t.movie.addToList;
 }
 
+/** Phone-width form of an idle label, or null when it is already short. */
+function shortLabel(
+	t: Translations,
+	status: WatchStatus,
+	isActive: boolean,
+	hasError: boolean
+): string | null {
+	if (isActive || hasError) return null;
+	const [full, short] =
+		status === 'watched'
+			? [t.movie.markAsWatched, t.movie.markAsWatchedShort]
+			: [t.movie.addToList, t.movie.addToListShort];
+	return short === full ? null : short;
+}
+
 function ButtonLabel({
 	className,
 	children,
@@ -175,6 +190,7 @@ export function WatchButton({
 	blur = true,
 	fallbackStatus,
 	releaseDate,
+	compact = false,
 }: WatchButtonProps) {
 	const { loading, error, run } = useOptimisticAction();
 	const [reviewOpen, setReviewOpen] = useState(false);
@@ -218,13 +234,14 @@ export function WatchButton({
 
 	const style = VARIANT_STYLE[variant];
 	const label = stateLabel(t, status, isActive, error);
+	const short = compact ? shortLabel(t, status, isActive, error) : null;
 
 	return (
 		<>
 			<button
 				onClick={handleClick}
 				disabled={loading}
-				aria-label={style.iconOnlyBelowLg ? label : undefined}
+				aria-label={style.iconOnlyBelowLg || short ? label : undefined}
 				className={buttonClassName(variant, isActive, onDark, blur)}
 			>
 				<ActionStatusIcon
@@ -233,7 +250,16 @@ export function WatchButton({
 					icon={idleIcon(status, isActive)}
 					className={style.iconClass}
 				/>
-				<ButtonLabel className={style.labelClass}>{label}</ButtonLabel>
+				{short ? (
+					<>
+						<span className="truncate sm:hidden">{short}</span>
+						<span className="truncate max-sm:hidden">{label}</span>
+					</>
+				) : (
+					<ButtonLabel className={style.labelClass}>
+						{label}
+					</ButtonLabel>
+				)}
 			</button>
 			{reviewOpen && (
 				<ReviewDialog

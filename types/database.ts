@@ -68,6 +68,27 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			mcp_keys: {
+				Row: {
+					created_at: string;
+					key_hash: string;
+					last_used_at: string | null;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					key_hash: string;
+					last_used_at?: string | null;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					key_hash?: string;
+					last_used_at?: string | null;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
 			notification_preferences: {
 				Row: {
 					created_at: string;
@@ -277,6 +298,24 @@ export type Database = {
 					p256dh?: string;
 					user_agent?: string | null;
 					user_id?: string;
+				};
+				Relationships: [];
+			};
+			rate_limits: {
+				Row: {
+					count: number;
+					key: string;
+					reset_at: string;
+				};
+				Insert: {
+					count: number;
+					key: string;
+					reset_at: string;
+				};
+				Update: {
+					count?: number;
+					key?: string;
+					reset_at?: string;
 				};
 				Relationships: [];
 			};
@@ -490,6 +529,15 @@ export type Database = {
 				Args: { p_owner: string };
 				Returns: boolean;
 			};
+			consume_rate_limits: {
+				Args: {
+					p_cost: number;
+					p_keys: string[];
+					p_limits: number[];
+					p_window_seconds: number[];
+				};
+				Returns: string;
+			};
 			episode_last_watches: {
 				Args: never;
 				Returns: {
@@ -569,6 +617,33 @@ export type Database = {
 					count: number;
 				}[];
 			};
+			my_shell_state: {
+				Args: never;
+				Returns: {
+					avatar_url: string | null;
+					has_streaming_providers: boolean;
+					profile_created_at: string | null;
+					prompts: Json;
+					unread_notifications: number;
+					watchlist_count: number;
+				}[];
+			};
+			my_tv_progress: {
+				Args: { p_tv_ids: number[] };
+				Returns: {
+					last_watched_at: string;
+					tv_id: number;
+					watched_count: number;
+				}[];
+			};
+			reviewed_media_index: {
+				Args: never;
+				Returns: {
+					episode_tv_ids: number[];
+					movie_ids: number[];
+					tv_ids: number[];
+				}[];
+			};
 			sync_tv_watchlist_status: {
 				Args: {
 					p_poster?: string;
@@ -577,6 +652,21 @@ export type Database = {
 					p_tv_id: number;
 				};
 				Returns: undefined;
+			};
+			user_episode_watch_counts: {
+				Args: { p_tv_ids: number[]; p_user_id: string };
+				Returns: {
+					tv_id: number;
+					watched_count: number;
+				}[];
+			};
+			watchlist_counts: {
+				Args: never;
+				Returns: {
+					count: number;
+					media_type: string;
+					status: string;
+				}[];
 			};
 		};
 		Enums: {

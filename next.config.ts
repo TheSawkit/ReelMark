@@ -19,19 +19,31 @@ function localNetworkOrigins(): string[] {
 		.map((details) => details?.address ?? '')
 		.filter(Boolean);
 }
-const supabaseHost = new URL(
+const supabaseUrl = new URL(
 	process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://localhost'
-).hostname;
+);
+const supabaseHost = supabaseUrl.hostname;
+
+/**
+ * A Supabase outside `*.supabase.co` — the local stack of `supabase start`, which the CI E2E job
+ * runs on — must be reachable from the browser too (auth refresh, Realtime socket, avatars).
+ * Empty for the hosted project: the production policy is unchanged.
+ */
+const selfHostedSupabase = supabaseHost.endsWith('.supabase.co')
+	? ''
+	: ` ${supabaseUrl.origin} ${supabaseUrl.origin.replace(/^http/, 'ws')}`;
 
 const cspDirectives = [
 	"default-src 'self'",
 	"worker-src 'self'",
-	`script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.youtube.com https://s.ytimg.com`,
+	// static.cloudflareinsights.com : beacon Cloudflare Web Analytics, injecté par le proxy Cloudflare ;
+	// ses mesures repartent vers /cdn-cgi/rum sur le domaine lui-même, déjà couvert par 'self'.
+	`script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.youtube.com https://s.ytimg.com https://static.cloudflareinsights.com`,
 	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-	"img-src 'self' data: blob: https://image.tmdb.org https://i.ytimg.com https://lh3.googleusercontent.com https://*.supabase.co https://cdn.watchmode.com https://*.mzstatic.com",
+	`img-src 'self' data: blob: https://image.tmdb.org https://i.ytimg.com https://lh3.googleusercontent.com https://*.supabase.co https://cdn.watchmode.com https://*.mzstatic.com${selfHostedSupabase}`,
 	"font-src 'self' data: https://fonts.gstatic.com",
 	'frame-src https://www.youtube.com https://www.youtube-nocookie.com',
-	`connect-src 'self' https://*.supabase.co https://api.themoviedb.org https://image.tmdb.org https://api.watchmode.com https://www.youtube.com https://sentry.silexio.be${isDev ? ' ws: wss:' : ' wss:'}`,
+	`connect-src 'self' https://*.supabase.co${selfHostedSupabase} https://api.themoviedb.org https://image.tmdb.org https://api.watchmode.com https://www.youtube.com https://sentry.silexio.be${isDev ? ' ws: wss:' : ' wss:'}`,
 	"object-src 'none'",
 	"base-uri 'self'",
 	"form-action 'self'",

@@ -2,11 +2,15 @@
 // requête, personne ne le lit sur une entrée, et il pesait ~125 Ko du million d'octets que
 // /library sérialise pour une bibliothèque de 2 000 titres.
 export const WATCHLIST_COLUMNS =
-	'id, media_id, media_title, media_type, poster_path, status, created_at, total_episodes, release_date, genre_ids';
+	'media_id, media_title, media_type, poster_path, status, created_at, total_episodes, release_date, genre_ids';
+export const TASTE_COLUMNS =
+	'media_id, media_title, media_type, status, created_at, total_episodes, release_date, genre_ids';
+export const PLAYLIST_COLUMNS =
+	'id, user_id, name, description, visibility, created_at, updated_at, items:playlist_items(id, playlist_id, media_id, media_type, media_title, poster_path, added_at, release_date, genre_ids)';
 export const REVIEW_COLUMNS =
 	'id, user_id, media_id, media_type, media_title, poster_path, rating, content, tv_id, season_number, created_at, updated_at';
 export const USER_PROFILE_COLUMNS =
-	'user_id, username, bio, instagram, tiktok, letterboxd, twitter, website, avatar_url, onboarding_completed, created_at, updated_at';
+	'user_id, username, full_name, bio, instagram, tiktok, letterboxd, twitter, website, avatar_url, onboarding_completed, created_at, updated_at';
 export const PRIVACY_COLUMNS =
 	'user_id, watchlist_visibility, watched_visibility, reviews_visibility, playlists_visibility, friends_visibility';
 export const FRIENDSHIP_COLUMNS =

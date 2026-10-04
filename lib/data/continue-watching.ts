@@ -164,20 +164,12 @@ export const getContinueWatching = cache(
 		const { supabase, userId } = await getOptionalUser();
 		if (!userId) return [];
 
-		const { watchlist, tvProgress } = await getWatchlistWithProgress();
+		const { watchlist, tvProgress, lastWatchedAt } =
+			await getWatchlistWithProgress();
 		const candidates = watchlist.filter(
 			(entry) => entry.media_type === 'tv' && entry.status === 'to_watch'
 		);
 		if (candidates.length === 0) return [];
-
-		const { data: lastWatches } = await supabase.rpc(
-			'episode_last_watches'
-		);
-		const lastWatchedAt = new Map<number, string>();
-		for (const row of lastWatches ?? []) {
-			if (row.last_watched_at)
-				lastWatchedAt.set(row.tv_id, row.last_watched_at);
-		}
 
 		const ordered = orderByWatchRecency(
 			candidates,

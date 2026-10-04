@@ -28,8 +28,14 @@ Outils et pièges connus, appris en production. À lire avant de passer une heur
 - **Login OAuth qui atterrit sur un ancien domaine** → deux causes possibles, dans l'ordre : (1) Site URL / Redirect URLs obsolètes dans Supabase (Authentication → URL Configuration) ; (2) `NEXT_PUBLIC_BASE_URL` périmé **inliné dans l'image au build** — vérifier avec `curl <domaine>/sitemap.xml` (les URLs du sitemap révèlent le BASE_URL baké). Fix : corriger le secret GitHub et rebuilder l'image.
 - **Redirect vers `localhost:3000` en prod** → `NEXT_PUBLIC_BASE_URL` absent au build (fallback de `lib/metadata.ts`).
 - **`/api/*` redirigé vers `/en/api/*`** → `proxy.ts` doit court-circuiter les chemins `/api` et `/auth` avant le redirect locale (c'est le cas — ne pas le casser).
+- **Déconnecté au hasard, renvoyé sur la page de connexion alors que le compte est connecté** → la session n'a pas été rafraîchie par `proxy.ts`. Un Server Component (la navbar, par exemple) ne peut pas écrire de cookies : s'il rafraîchit lui-même un jeton expiré, le refresh token tourné est perdu, et sa réutilisation suivante révoque toute la session. Le proxy appelle `getSession()` (pages publiques) ou `getUser()` (pages protégées) sur toute page portant un cookie de session et recopie les jetons dans la requête transmise — ne pas retirer cet appel ni ajouter de code entre `createServerClient` et lui.
+- **Toast « Erreur — réessaie » juste avant d'arriver sur la connexion** → une action à compte appelée sans session redirige, et la promesse côté client rejette avec le signal de redirection. Tout `catch` d'appel d'action affiche son erreur via `toastActionError(err, message)` (`lib/action-toast.ts`), qui se tait sur ce signal, ou passe par l'option `errorToast` de `useAsyncAction`.
 
 ### i18n / UI
+
+- **Texte centré dans un bouton qui passe sur deux lignes** → un `<button>` centre son texte par défaut ; ajouter `text-left` aux entrées de liste ou de menu (cas de la nav des Réglages).
+- **Titres affichés en serif** → la police n'a pas chargé et le repli métrique de next/font vise Arial, absent de certains systèmes. Les piles de `globals.css` se terminent par une famille générique ; ne pas passer par l'option `fallback` de next/font, qui supprime ce repli métrique (et le gain de CLS).
+- **Erreur CSP sur `static.cloudflareinsights.com`** → beacon Cloudflare Web Analytics injecté par le proxy Cloudflare ; il est autorisé dans `script-src` (`next.config.ts`).
 
 - **Chaîne affichée en dur** → interdit ; tout passe par `lib/i18n/translations.ts`. Si TypeScript ne se plaint pas, la clé manque dans les deux langues.
 - **Skeleton qui ne ressemble pas à la page** → chaque `loading.tsx` compose les `*Skeleton.tsx` co-localisés ; quand on modifie un composant, mettre à jour son skeleton dans le même dossier.
@@ -48,11 +54,26 @@ Voir [`DEPLOYMENT.md`](../DEPLOYMENT.md) pour le runbook complet. Les trois pann
 - **`Failed to update prerender cache … ENOENT/EROFS` à chaque page** → le rootfs est en lecture seule et l'ISR écrit dans `.next/server/app`. `experimental.isrFlushToDisk: false` garde le cache en mémoire (LRU borné) — mesuré : même RSS, zéro erreur.
 - **Push ghcr refusé** → le nom d'image doit être en minuscules (`ghcr.io/thesawkit/reelmark`) et le token doit avoir `write:packages` (le PAT du pull secret est read-only ; la CI utilise `GITHUB_TOKEN`).
 
+### Assistant IA (MCP)
+
+- **L'assistant n'arrive pas à se connecter en production alors que `curl` fonctionne** → vérifier que les protections anti-bots de Cloudflare (Bot Fight Mode, challenges JavaScript) ne s'appliquent pas à `/api/mcp/*` : Claude, ChatGPT et les autres appellent depuis leurs serveurs et ne peuvent pas résoudre un challenge. Ajouter une règle d'exception sur ce chemin si besoin.
+- **Le lien répond `404`** → lien régénéré ou révoqué (un seul lien actif par compte), ou mal copié : le segment doit faire 43 caractères base64url.
+- **`429` côté assistant** → budget épuisé : 30 appels d'outils par minute, 100 par jour et par utilisateur (`lib/mcp/budget.ts`). Le reste du protocole ne compte pas. Le budget est partagé entre pods via la fonction SQL `consume_rate_limits` ; un avertissement `[mcp:budget]` dans les logs signale qu'elle manque ou échoue et que le budget est retombé en mémoire, par pod (voir `docs/DATA-MODEL.md`).
+- **L'assistant ne voit pas un changement fait dans l'app** → les goûts sont en cache 10 min par utilisateur (`lib/mcp/user-cache.ts`) ; une écriture par `update_library` vide ce cache, une écriture depuis l'app non. La langue et la région le sont 10 min.
+- **Tester à la main** → `POST` JSON-RPC sur `/api/mcp/<clé>` avec `Accept: application/json, text/event-stream` ; `GET` et `DELETE` répondent `405` (serveur sans état).
+
 ### Notifications / push
 
 - **Aucun push reçu sur un appareil** → vérifier que l'appareil a une ligne dans `push_subscriptions` (endpoint `fcm.googleapis.com` = Chrome/Android, `web.push.apple.com` = iOS installé). Brave refuse l'abonnement (`AbortError: push service error`) tant que « Utiliser les services Google pour la messagerie push » est désactivé ; les réglages l'affichent désormais.
 - **Badge de la cloche faux** → le compteur vit dans `NotificationsProvider` et se resynchronise au retour visible de l'app et à chaque reconnexion realtime. Ne pas compter sur l'événement realtime `DELETE` : Supabase ne le filtre que si la table est en `replica identity full`.
 - **Une notification disparaît de la cloche** → seuls « Marquer comme vu » et la suppression la sortent des non-lues ; l'ouvrir ne la marque pas.
+
+### Quota Supabase
+
+- **Toutes les requêtes Supabase en `402`** → quota Free dépassé (egress, logs…) : restrictions levées au cycle suivant ou par passage en Pro. Attribuer le trafic avec les requêtes de [SUPABASE-USAGE.md](./SUPABASE-USAGE.md#surveiller) avant de relancer quoi que ce soit.
+- **Un utilisateur renommé garde l'ancien nom (ou l'ancienne région) jusqu'à une heure** → les métadonnées sont lues dans le JWT. Toute action qui fait `updateUser({ data })` doit appeler `refreshSessionClaims()` ensuite.
+- **`invalid column for filter user_id` dans les logs Postgres** → un abonnement Realtime part avec le rôle `anon`. Passer par `withRealtimeClient`, jamais `.subscribe()` dès la création du client.
+- **`permission denied for table reviews` en rafale** → une RPC `SECURITY INVOKER` appelée en anonyme. `get_show_rating` / `get_season_rating` ne s'appellent que connecté.
 
 ### Données
 

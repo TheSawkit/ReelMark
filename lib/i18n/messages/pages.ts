@@ -5,12 +5,14 @@ const PUBLISHER_EN =
 	'ReelMark is published by Silexio, an independent engineering studio run by Nicolas Wieckiewicz, based in Chapelle-lez-Herlaimont (7160, Belgium).';
 const LEGAL_UPDATED_FR = 'Dernière mise à jour : 26 septembre 2026';
 const LEGAL_UPDATED_EN = 'Last updated: September 26, 2026';
+const PRIVACY_UPDATED_FR = 'Dernière mise à jour : 27 septembre 2026';
+const PRIVACY_UPDATED_EN = 'Last updated: September 27, 2026';
 
 const fr = {
 	legal: {
 		privacy: {
 			title: 'Politique de confidentialité',
-			updated: LEGAL_UPDATED_FR,
+			updated: PRIVACY_UPDATED_FR,
 			intro: 'ReelMark respecte votre vie privée. Cette déclaration explique quelles données personnelles nous traitons, pourquoi, et quels sont vos droits, conformément au Règlement général sur la protection des données (RGPD, UE 2016/679) et à la loi belge du 30 juillet 2018.',
 			sections: [
 				{
@@ -42,6 +44,7 @@ const fr = {
 					body: [
 						'Vos données sont traitées par nos sous-traitants techniques : Supabase (base de données et authentification), Infomaniak (hébergement en Suisse, pays reconnu adéquat par la Commission européenne) et Cloudflare (sécurité et diffusion du contenu, encadré par des clauses contractuelles types).',
 						'Les informations sur les films et séries proviennent de TMDB ; aucune donnée personnelle ne lui est transmise.',
+						"Assistant IA (facultatif) : si vous générez un lien de connexion (Réglages → Données), l'assistant auquel vous le confiez (par exemple Claude ou ChatGPT) peut, à votre demande, lire vos goûts, vos notes et votre bibliothèque ; si vous l’y autorisez, il peut aussi changer le statut d’un titre de votre bibliothèque (vu, à voir, abandonné, retiré), et rien d’autre. Ce transfert est déclenché par vous ; le fournisseur de l'assistant traite ces données selon sa propre politique de confidentialité. Vous pouvez révoquer le lien à tout moment.",
 						'Nous ne vendons ni ne louons vos données. Elles ne sont communiquées à aucun autre tiers, sauf obligation légale.',
 					],
 				},
@@ -258,7 +261,7 @@ const en = {
 	legal: {
 		privacy: {
 			title: 'Privacy Policy',
-			updated: LEGAL_UPDATED_EN,
+			updated: PRIVACY_UPDATED_EN,
 			intro: 'ReelMark respects your privacy. This statement explains what personal data we process, why, and what your rights are, in accordance with the General Data Protection Regulation (GDPR, EU 2016/679) and the Belgian law of July 30, 2018.',
 			sections: [
 				{
@@ -290,6 +293,7 @@ const en = {
 					body: [
 						'Your data is processed by our technical processors: Supabase (database and authentication), Infomaniak (hosting in Switzerland, a country recognized as adequate by the European Commission) and Cloudflare (security and content delivery, governed by standard contractual clauses).',
 						'Movie and TV show information comes from TMDB; no personal data is sent to them.',
+						"AI assistant (optional): if you generate a connection link (Settings → Data), the assistant you give it to (for example Claude or ChatGPT) can, on your request, read your tastes, ratings and library; if you allow it, it can also change a title's status in your library (watched, to watch, abandoned, removed), and nothing else. You initiate this transfer; the assistant's provider processes this data under its own privacy policy. You can revoke the link at any time.",
 						'We never sell or rent your data. It is not shared with any other third party, except where legally required.',
 					],
 				},

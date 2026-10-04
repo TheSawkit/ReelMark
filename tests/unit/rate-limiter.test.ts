@@ -95,3 +95,11 @@ describe('enforceUserRateLimit', () => {
 		).not.toThrow();
 	});
 });
+
+describe('checkRateLimit with a cost', () => {
+	it('spends several units at once, all or nothing', () => {
+		expect(checkRateLimit('cost:batch', 5, 60_000, 3).remaining).toBe(2);
+		expect(checkRateLimit('cost:batch', 5, 60_000, 3).allowed).toBe(false);
+		expect(checkRateLimit('cost:batch', 5, 60_000, 2).remaining).toBe(0);
+	});
+});

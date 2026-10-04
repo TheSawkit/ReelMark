@@ -28,6 +28,7 @@ import { VisibilitySelector } from '@/components/profile/VisibilitySelector';
 import { PlaylistGrid } from '@/components/profile/PlaylistGrid';
 import { PlaylistSearchResults } from '@/components/profile/PlaylistSearchResults';
 import { BASE_URL } from '@/lib/metadata';
+import { toastActionError } from '@/lib/action-toast';
 
 type DialogMode = 'edit' | 'view';
 
@@ -95,8 +96,8 @@ export function PlaylistEditDialog({
 				editDesc.trim() || null
 			);
 			onUpdateMeta?.(editName.trim(), editDesc.trim() || null);
-		} catch {
-			toast.error(t.profile.errorSavePlaylistMeta);
+		} catch (err) {
+			toastActionError(err, t.profile.errorSavePlaylistMeta);
 		} finally {
 			setIsSavingMeta(false);
 		}
@@ -108,10 +109,10 @@ export function PlaylistEditDialog({
 		onUpdateVisibility?.(v);
 		try {
 			await updatePlaylistVisibility(playlist.id, v);
-		} catch {
+		} catch (err) {
 			setCurrentVisibility(prev);
 			onUpdateVisibility?.(prev);
-			toast.error(t.profile.errorSavePlaylistMeta);
+			toastActionError(err, t.profile.errorSavePlaylistMeta);
 		}
 	};
 
@@ -146,8 +147,8 @@ export function PlaylistEditDialog({
 				genre_ids: item.genre_ids ?? null,
 			});
 			setQuery('');
-		} catch {
-			toast.error(t.profile.errorAdd);
+		} catch (err) {
+			toastActionError(err, t.profile.errorAdd);
 		} finally {
 			setPendingAdd(null);
 		}
@@ -167,8 +168,8 @@ export function PlaylistEditDialog({
 				item.media_type
 			);
 			onRemoveItem(item.media_id, item.media_type);
-		} catch {
-			toast.error(t.profile.errorRemove);
+		} catch (err) {
+			toastActionError(err, t.profile.errorRemove);
 		} finally {
 			setPendingRemove(null);
 		}

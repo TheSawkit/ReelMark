@@ -1,17 +1,17 @@
 'use server';
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
+import { revalidateWatchlistPaths } from '@/lib/revalidate';
 import {
-	SHARED_REVALIDATE_PATHS,
-	revalidateLocalizedAfterResponse,
-} from '@/app/actions/_helpers';
+	deleteWatchlistEntry,
+	upsertWatchlistEntry,
+} from '@/lib/data/watchlist-writes';
 import { VALID_STATUSES, VALID_MEDIA_TYPES } from '@/lib/validators';
 import type { WatchStatus, MediaType, WatchlistEntry } from '@/types/tmdb';
 import type { Database } from '@/types/database';
 import { getListMediaMetadata, type ListMediaMetadata } from '@/lib/tmdb';
 import { getWatchlistBucketWithProgress } from '@/lib/data/watchlist';
 import type { Language } from '@/lib/i18n/translations';
-import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 export interface LibraryBucket {
 	entries: WatchlistEntry[];
@@ -43,13 +43,6 @@ export async function fetchLibraryBucket(
 	);
 }
 
-function revalidateWatchlistPaths(mediaType: MediaType, mediaId: number) {
-	revalidateLocalizedAfterResponse([
-		...SHARED_REVALIDATE_PATHS,
-		`/${mediaType}/${mediaId}`,
-	]);
-}
-
 export async function addToWatchlist(
 	mediaId: number,
 	mediaTitle: string,
@@ -62,26 +55,13 @@ export async function addToWatchlist(
 		throw new Error('Invalid media_type');
 
 	const { supabase, userId } = await getAuthenticatedUser();
-
-	const { release_date, genre_ids, total_episodes } =
-		await getListMediaMetadata(mediaId, mediaType);
-
-	const { error } = await supabase.from('watchlist').upsert(
-		{
-			user_id: userId,
-			media_id: mediaId,
-			media_title: mediaTitle,
-			poster_path: posterPath,
-			status,
-			media_type: mediaType,
-			total_episodes,
-			release_date,
-			genre_ids,
-		},
-		{ onConflict: ON_CONFLICT.watchlist }
-	);
-
-	if (error) throw new Error(error.message);
+	await upsertWatchlistEntry(supabase, userId, {
+		mediaId,
+		mediaType,
+		mediaTitle,
+		posterPath,
+		status,
+	});
 
 	revalidateWatchlistPaths(mediaType, mediaId);
 }
@@ -266,23 +246,6 @@ export async function removeFromWatchlist(
 	mediaType: MediaType
 ): Promise<void> {
 	const { supabase, userId } = await getAuthenticatedUser();
-
-	const { error } = await supabase
-		.from('watchlist')
-		.delete()
-		.eq('user_id', userId)
-		.eq('media_id', mediaId)
-		.eq('media_type', mediaType);
-
-	if (error) throw new Error(error.message);
-
-	if (mediaType === 'tv') {
-		await supabase
-			.from('episode_watches')
-			.delete()
-			.eq('user_id', userId)
-			.eq('tv_id', mediaId);
-	}
-
+	await deleteWatchlistEntry(supabase, userId, mediaId, mediaType);
 	revalidateWatchlistPaths(mediaType, mediaId);
 }

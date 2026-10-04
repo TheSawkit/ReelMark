@@ -120,11 +120,13 @@ export async function fetchRelatedMedia<T>(
 /**
  * Returns watch providers for the viewer's region, preferring Watchmode's catalogue
  * over TMDB's when it has entries. Returns null when neither source covers the region.
+ * Pass `region` when the caller has no session cookie to resolve it from.
  */
 export async function fetchWatchProviders(
 	mediaType: MediaType,
 	id: number,
-	lang?: Language
+	lang?: Language,
+	knownRegion?: string
 ): Promise<WatchProvidersRegion | null> {
 	try {
 		const [tmdbData, region] = await Promise.all([
@@ -133,7 +135,7 @@ export async function fetchWatchProviders(
 				{},
 				{ revalidate: REVALIDATE.halfDay, lang }
 			),
-			getUserRegion(lang),
+			knownRegion ?? getUserRegion(lang),
 		]);
 		const watchmode = await getWatchmodeProviders(id, mediaType, region);
 		const tmdb = tmdbData.results[region] ?? null;

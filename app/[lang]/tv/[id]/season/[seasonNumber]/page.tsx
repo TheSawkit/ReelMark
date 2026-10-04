@@ -142,7 +142,7 @@ export default async function SeasonPage(props: SeasonPageProps) {
 		getSeasonEpisodeWatches(tvId, seasonNumber),
 		getTvShowWatchProgress(tvId),
 		getSeasonAverageRating(tvId, seasonNumber),
-		getPublicEpisodeReviews(episodeIds),
+		getPublicEpisodeReviews(episodeIds, tvId),
 		getMyEpisodeReviews(episodeIds),
 	]);
 

@@ -114,7 +114,7 @@ export function LibraryMediaSection({
 		>
 			{visibleEntries.map((entry, index) => (
 				<StaggeredItem
-					key={entry.id}
+					key={getMediaKey(mediaItems[index])}
 					index={index}
 					staggerMs={CARD_ANIMATION_DELAY_MS}
 					className="flex-none w-40 md:w-50 snap-start"

@@ -53,21 +53,25 @@ export async function sendPushToUser(
 	try {
 		const supabase = createAdminClient();
 
-		const { data: preferences } = await supabase
+		const { data: preferences, error } = await supabase
 			.from('notification_preferences')
 			.select(
 				'friend_requests, friend_accepted, new_episodes, suggestions'
 			)
 			.eq('user_id', userId)
 			.maybeSingle();
+		if (error) throw new Error(error.message);
 
 		if (preferences && preferences[PREFERENCE_BY_TYPE[type]] === false)
 			return;
 
-		const { data: subscriptions } = await supabase
-			.from('push_subscriptions')
-			.select('endpoint, p256dh, auth')
-			.eq('user_id', userId);
+		const { data: subscriptions, error: subscriptionsError } =
+			await supabase
+				.from('push_subscriptions')
+				.select('endpoint, p256dh, auth')
+				.eq('user_id', userId);
+		if (subscriptionsError)
+			reportSwallowed('push:subscriptions', subscriptionsError);
 
 		if (!subscriptions?.length) return;
 
@@ -99,10 +103,12 @@ export async function sendPushToUser(
 		);
 
 		if (staleEndpoints.length > 0) {
-			await supabase
+			const { error: staleError } = await supabase
 				.from('push_subscriptions')
 				.delete()
 				.in('endpoint', staleEndpoints);
+			if (staleError)
+				reportSwallowed('push:stale-subscriptions', staleError);
 		}
 	} catch (error) {
 		reportSwallowed('push:dispatch', error);

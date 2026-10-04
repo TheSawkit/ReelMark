@@ -9,6 +9,7 @@ import {
 	type AppNotification,
 	type NotificationPreferences,
 } from '@/types/notifications';
+import { reportSwallowed } from '@/lib/report';
 
 const NOTIFICATION_COLUMNS =
 	'id, type, sender_id, sender_username, media_id, media_type, media_title, poster_path, season_number, episode_number, url, read_at, created_at';
@@ -23,10 +24,11 @@ async function getSenderAvatars(
 ): Promise<Map<string, string>> {
 	if (senderIds.length === 0) return new Map();
 
-	const { data } = await supabase
+	const { data, error } = await supabase
 		.from('user_profiles')
 		.select('user_id, avatar_url')
 		.in('user_id', senderIds);
+	if (error) reportSwallowed('notifications:avatars', error);
 
 	const avatars = new Map<string, string>();
 	for (const profile of data ?? []) {
@@ -72,10 +74,11 @@ export async function getUnreadCount(): Promise<number> {
 /** Per-channel notification opt-ins, falling back to the all-on defaults. */
 export async function getNotificationPreferences(): Promise<NotificationPreferences> {
 	const { supabase, userId } = await getAuthenticatedUser();
-	const { data } = await supabase
+	const { data, error } = await supabase
 		.from('notification_preferences')
 		.select('friend_requests, friend_accepted, new_episodes, suggestions')
 		.eq('user_id', userId)
 		.maybeSingle();
+	if (error) reportSwallowed('notifications:preferences', error);
 	return data ?? DEFAULT_NOTIFICATION_PREFERENCES;
 }

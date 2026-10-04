@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { toast } from 'sonner';
 import { MediaCard } from '@/components/media/card/MediaCard';
 import { HorizontalScroll } from '@/components/shared/HorizontalScroll';
 import { SectionHeading } from '@/components/ui/SectionHeading';
@@ -11,6 +10,7 @@ import { dismissRecommendation } from '@/app/actions/recommendations';
 import { useTranslation } from '@/lib/i18n/context';
 import { getMediaKey } from '@/lib/media';
 import type { MediaItem, RecommendationSource } from '@/types/tmdb';
+import { toastActionError } from '@/lib/action-toast';
 
 const CARD_ANIMATION_DELAY_MS = 50;
 
@@ -54,13 +54,13 @@ export function ForYouSection({ title, items }: ForYouSectionProps) {
 				item.media_type,
 				item.genre_ids ?? []
 			);
-		} catch {
+		} catch (err) {
 			setDismissedKeys((previous) => {
 				const next = new Set(previous);
 				next.delete(key);
 				return next;
 			});
-			toast.error(t.common.actionError);
+			toastActionError(err, t.common.actionError);
 		}
 	}
 

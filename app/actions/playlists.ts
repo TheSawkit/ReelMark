@@ -5,7 +5,7 @@ import { getTranslations } from '@/lib/i18n/server';
 import {
 	revalidateProfileAfterResponse,
 	revalidatePlaylistMetaAfterResponse,
-} from '@/app/actions/_helpers';
+} from '@/lib/revalidate';
 import { parseVisibility, isVisibility } from '@/lib/privacy';
 import { getListMediaMetadata } from '@/lib/tmdb';
 import type { MediaType } from '@/types/tmdb';

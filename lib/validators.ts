@@ -1,4 +1,5 @@
 import { MAX_REVIEW_LENGTH } from '@/types/profile';
+import type { MediaType } from '@/types/tmdb';
 import {
 	NOTIFICATION_TYPES,
 	type NotificationType,
@@ -9,7 +10,16 @@ export const VALID_STATUSES = new Set<string>([
 	'to_watch',
 	'abandoned',
 ]);
-export const VALID_MEDIA_TYPES = new Set<string>(['movie', 'tv']);
+export const MEDIA_TYPES = [
+	'movie',
+	'tv',
+] as const satisfies readonly MediaType[];
+export const VALID_MEDIA_TYPES = new Set<string>(MEDIA_TYPES);
+
+/** Narrows a value read from the database or a request to a media type. */
+export function isMediaType(value: unknown): value is MediaType {
+	return typeof value === 'string' && VALID_MEDIA_TYPES.has(value);
+}
 
 export function validateRating(rating: unknown): number | null {
 	if (
@@ -49,6 +59,13 @@ const VALID_LANGUAGES = ['fr', 'en'] as const;
 const ALLOWED_AVATAR_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'] as const;
 const ALLOWED_AVATAR_MIMES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
+
+/**
+ * Browser/CDN cache lifetime of a stored avatar, in seconds. Each upload gets a new file name,
+ * so a stored file never changes: a year instead of the 1-hour default spares Supabase Storage
+ * a download on every visit.
+ */
+export const AVATAR_CACHE_CONTROL = '31536000';
 
 export type Region = (typeof VALID_REGIONS)[number];
 export type AppLanguage = (typeof VALID_LANGUAGES)[number];

@@ -128,6 +128,14 @@ kubectl -n ingress-nginx get svc ingress-nginx-controller -o wide
    Edge TTL 1 an. Ces fichiers sont immutables (hachés par build). C'est l'optimisation la plus
    rentable du setup : elle sort les assets des pods et fait tomber la charge CPU qui déclenche
    le HPA.
+6. **Rate limiting** (Security → WAF → Rate limiting rules) : une règle sur la recherche, la seule
+   route publique qui appelle TMDB à chaque requête non cachée. Expression
+   `http.request.uri.path eq "/api/search"`, comptage par IP, 10 requêtes par 10 s, action
+   _Block_ pendant 10 s (valeurs du plan Free : 1 règle, période et blocage de 10 s, comptage par
+   IP uniquement). Elle s'ajoute au budget en mémoire de l'app (30/min par IP et par pod).
+   Ne **pas** limiter `/api/mcp/*` par IP : Claude, ChatGPT et les autres appellent depuis les
+   IP partagées de leurs serveurs, une règle par IP bloquerait tous leurs utilisateurs à la fois.
+   Le budget de l'assistant est déjà par utilisateur et global, dans Postgres.
 
 ## 5. Registry ghcr.io — pull secret
 
@@ -168,14 +176,14 @@ kubectl -n reelmark rollout status deployment/reelmark
 `--server-side` n'est pas cosmétique : voir la section 8 pour la raison (`spec.replicas` appartient
 au HPA). `k8s/app.yaml` contient aussi deux CronJobs qui appellent le Service interne :
 `reelmark-new-episodes` (chaque jour à 8 h, `POST /api/cron/new-episodes`) et
-`reelmark-suggestions` (vendredi 18 h, `POST /api/cron/suggestions`), fuseau Europe/Brussels. Pour vérifier sans rien envoyer :
+`reelmark-suggestions` (vendredi 18 h, `POST /api/cron/suggestions`), fuseau Europe/Brussels. La suggestion traite 50 comptes par appel : la réponse porte `nextCursor`, que le CronJob renvoie en `?after=` jusqu'à ce qu'il soit `null` ; une relance du job saute les comptes déjà servis dans la semaine. Pour vérifier sans rien envoyer :
 
 ```bash
 kubectl -n reelmark exec deploy/reelmark -- sh -c \
   'wget -qO- --header "Authorization: Bearer $CRON_SECRET" --post-data "" \
    "http://localhost:3000/api/cron/new-episodes?dryRun=1"'
 kubectl -n reelmark create job --from=cronjob/reelmark-new-episodes manual-run   # envoi réel
-# même principe pour /api/cron/suggestions et cronjob/reelmark-suggestions
+# même principe pour /api/cron/suggestions (un lot par appel, ?after=<nextCursor>) et cronjob/reelmark-suggestions
 ```
 
 `k8s/ingress.yaml` n'est pas dans ce bloc — il est déployé par
@@ -268,7 +276,7 @@ kubectl get events -A --sort-by=.lastTimestamp | tail -30  # évictions, drains,
 ## 8. CI/CD (GitHub Actions)
 
 `.github/workflows/deploy.yml` build l'image, la push sur ghcr.io, puis **applique `k8s/app.yaml`**
-avec le SHA substitué à chaque push sur `main`. Le déploiement est déclaratif : toute modification
+avec le SHA substitué, dès que la CI d'un push sur `main` a réussi (`workflow_run`) — jamais un commit aux tests rouges, et toujours le commit que la CI a testé. Le déploiement est déclaratif : toute modification
 des resources, probes, PDB ou HPA part en prod avec le commit qui la contient — inutile de
 réappliquer à la main.
 
@@ -284,7 +292,7 @@ Deux workflows, deux rythmes :
 
 | Workflow                       | Déclencheur                          | Portée                                     |
 | ------------------------------ | ------------------------------------ | ------------------------------------------ |
-| `.github/workflows/deploy.yml` | tout push sur `main`                 | image + `k8s/app.yaml`                     |
+| `.github/workflows/deploy.yml` | CI réussie sur un push `main`        | image + `k8s/app.yaml`                     |
 | `.github/workflows/infra.yml`  | changement des fichiers edge, manuel | chart `ingress-nginx` + `k8s/ingress.yaml` |
 
 **Secrets GitHub à définir** (Settings → Secrets → Actions) :
@@ -296,6 +304,10 @@ Deux workflows, deux rythmes :
 | `NEXT_PUBLIC_BASE_URL`          | build-arg (client)          |
 | `NEXT_PUBLIC_SENTRY_DSN`        | build-arg (client, https)   |
 | `KUBECONFIG_B64`                | `base64 -w0 ~/.kube/config` |
+
+La CI n'utilise plus les secrets Supabase de la prod que pour le workflow `rls-production.yml` (sonde RLS
+anonyme) : le job E2E démarre sa propre base depuis `supabase/migrations/` (voir
+[docs/SUPABASE-USAGE.md](./docs/SUPABASE-USAGE.md#en-ci--une-base-locale-par-run)).
 
 **`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`** — à générer une fois, puis à ne plus jamais changer :
 

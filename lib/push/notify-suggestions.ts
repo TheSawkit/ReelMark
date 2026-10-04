@@ -1,33 +1,27 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/server';
-import { fetchAllRows } from '@/lib/supabase/pagination';
-import { WATCHLIST_COLUMNS } from '@/lib/supabase/columns';
 import { mapLimit } from '@/lib/data-transfer/resolve';
-import { getUserReviewSignals } from '@/lib/data/reviews';
-import { getUserTvWatchCounts } from '@/lib/data/episodes';
-import {
-	pickSeeds,
-	pickSuggestion,
-	type TasteProfile,
-} from '@/lib/recommendations';
+import { loadUserTaste, tasteOfType } from '@/lib/data/taste';
+import { pickSeeds, pickSuggestion } from '@/lib/recommendations';
 import { fetchSeedCandidates } from '@/lib/recommendations/candidates';
+import { MEDIA_TYPES } from '@/lib/validators';
 import { translations, type Language } from '@/lib/i18n/translations';
 import { localizedHref } from '@/lib/i18n/utils';
 import { reportSwallowed } from '@/lib/report';
 import { recipientLanguage } from '@/lib/push/notify-friend';
 import { sendPushToUser } from '@/lib/push/send';
-import type { MediaItem, MediaType, WatchlistEntry } from '@/types/tmdb';
+import type { MediaItem } from '@/types/tmdb';
 
 const USER_CONCURRENCY = 3;
-const MEDIA_TYPES: MediaType[] = ['movie', 'tv'];
+const RESEND_AFTER_MS = 6 * 86_400_000;
+const BATCH_SIZE = 50;
 
 export interface SuggestionResult {
 	users: number;
 	suggested: number;
+	/** Last account of this batch, to pass as `after` for the next one; null once every account is done. */
+	nextCursor: string | null;
 }
-
-const isShowToWatch = (entry: WatchlistEntry) =>
-	entry.media_type === 'tv' && entry.status === 'to_watch';
 
 async function suggestionFor(
 	userId: string,
@@ -35,56 +29,30 @@ async function suggestionFor(
 ): Promise<MediaItem | null> {
 	const admin = createAdminClient();
 
-	const entriesRead = fetchAllRows((from, to) =>
+	const [taste, past] = await Promise.all([
+		loadUserTaste(admin, userId),
 		admin
-			.from('watchlist')
-			.select(WATCHLIST_COLUMNS)
+			.from('notifications')
+			.select('media_id, media_type')
 			.eq('user_id', userId)
-			.order('id')
-			.range(from, to)
-	).then((rows) => rows as WatchlistEntry[]);
-
-	const [entries, reviewSignals, episodesWatched, dismissals, past] =
-		await Promise.all([
-			entriesRead,
-			getUserReviewSignals(userId, admin),
-			entriesRead.then((rows) =>
-				getUserTvWatchCounts(
-					admin,
-					userId,
-					rows.filter(isShowToWatch).map((entry) => entry.media_id)
-				)
-			),
-			admin
-				.from('recommendation_dismissals')
-				.select('media_id, media_type, genre_ids')
-				.eq('user_id', userId),
-			admin
-				.from('notifications')
-				.select('media_id, media_type')
-				.eq('user_id', userId)
-				.eq('type', 'suggestion'),
-		]);
-	const profile: TasteProfile = { ...reviewSignals, episodesWatched };
+			.eq('type', 'suggestion'),
+	]);
+	if (past.error) throw new Error(past.error.message);
 	const alreadySuggested = new Set(
-		(past.data ?? []).map((row) => `${row.media_type}-${row.media_id}`)
+		past.data.map((row) => `${row.media_type}-${row.media_id}`)
 	);
 
 	for (const type of MEDIA_TYPES) {
-		const typeEntries = entries.filter(
-			(entry) => entry.media_type === type
-		);
-		if (typeEntries.length === 0) continue;
+		const { entries, dismissals } = tasteOfType(taste, type);
+		if (entries.length === 0) continue;
 
 		const pick = pickSuggestion(
-			typeEntries,
-			profile,
-			(dismissals.data ?? [])
-				.filter((row) => row.media_type === type)
-				.map((row) => ({ ...row, media_type: type })),
+			entries,
+			taste.profile,
+			dismissals,
 			await fetchSeedCandidates(
 				type,
-				pickSeeds(typeEntries, profile),
+				pickSeeds(entries, taste.profile),
 				lang
 			),
 			alreadySuggested
@@ -94,26 +62,60 @@ async function suggestionFor(
 	return null;
 }
 
+/** Every account to suggest to this week: not opted out, and not already served — so a retried job never sends a second suggestion. */
+export function usersToSuggest(
+	profiles: ReadonlyArray<{ user_id: string }>,
+	skipped: ReadonlyArray<{ user_id: string }>
+): string[] {
+	const skippedIds = new Set(skipped.map((row) => row.user_id));
+	return profiles
+		.map((row) => row.user_id)
+		.filter((userId) => !skippedIds.has(userId));
+}
+
 /**
- * Sends each user one personalized title a week, picked by the dashboard's ranking and never
- * repeated, honouring the `suggestions` preference. `dryRun` counts without writing or pushing.
+ * Sends one batch of accounts their personalized title of the week, picked by the dashboard's
+ * ranking and never repeated, honouring the `suggestions` preference. Accounts go in `user_id`
+ * order, `BATCH_SIZE` at a time from `after`, so each call stays short whatever the user count;
+ * the caller loops on `nextCursor`. A failed read fails the batch: an empty list must not pass
+ * for "nobody to notify". `dryRun` counts without writing or pushing.
  */
 export async function sendWeeklySuggestions(
-	dryRun = false
+	dryRun = false,
+	after?: string
 ): Promise<SuggestionResult> {
 	const admin = createAdminClient();
 
-	const [{ data: profiles }, { data: optOuts }] = await Promise.all([
-		admin.from('user_profiles').select('user_id'),
+	const accounts = admin
+		.from('user_profiles')
+		.select('user_id')
+		.order('user_id')
+		.limit(BATCH_SIZE);
+	const { data: profiles, error } = await (after
+		? accounts.gt('user_id', after)
+		: accounts);
+	if (error) throw new Error(error.message);
+	if (profiles.length === 0)
+		return { users: 0, suggested: 0, nextCursor: null };
+
+	const ids = profiles.map((row) => row.user_id);
+	const since = new Date(Date.now() - RESEND_AFTER_MS).toISOString();
+	const [optOuts, recent] = await Promise.all([
 		admin
 			.from('notification_preferences')
 			.select('user_id')
-			.eq('suggestions', false),
+			.eq('suggestions', false)
+			.in('user_id', ids),
+		admin
+			.from('notifications')
+			.select('user_id')
+			.eq('type', 'suggestion')
+			.gte('created_at', since)
+			.in('user_id', ids),
 	]);
-	const optedOut = new Set((optOuts ?? []).map((row) => row.user_id));
-	const userIds = (profiles ?? [])
-		.map((row) => row.user_id)
-		.filter((userId) => !optedOut.has(userId));
+	if (optOuts.error) throw new Error(optOuts.error.message);
+	if (recent.error) throw new Error(recent.error.message);
+	const userIds = usersToSuggest(profiles, [...optOuts.data, ...recent.data]);
 
 	const sent = await mapLimit(userIds, USER_CONCURRENCY, async (userId) => {
 		try {
@@ -156,5 +158,6 @@ export async function sendWeeklySuggestions(
 	return {
 		users: userIds.length,
 		suggested: sent.filter(Boolean).length,
+		nextCursor: ids.length === BATCH_SIZE ? ids[ids.length - 1] : null,
 	};
 }

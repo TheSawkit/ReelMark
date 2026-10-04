@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { withBrowserClient } from '@/lib/supabase/lazy-client';
+import { withRealtimeClient } from '@/lib/supabase/lazy-client';
 import {
 	deleteNotification,
 	getUnreadCount,
@@ -126,7 +126,7 @@ export function NotificationsProvider({
 
 	useEffect(
 		() =>
-			withBrowserClient((supabase) => {
+			withRealtimeClient((supabase) => {
 				function showToast(n: AppNotification) {
 					const url = n.url;
 					toast.custom((id) => (

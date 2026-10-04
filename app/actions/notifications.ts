@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateLocalizedAfterResponse } from '@/app/actions/_helpers';
+import { revalidateLocalizedAfterResponse } from '@/lib/revalidate';
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import {
 	getNotifications as readNotifications,
