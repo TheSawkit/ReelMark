@@ -41,8 +41,12 @@ function createUserCache<T>(ttlMs: number, maxUsers: number): UserCache<T> {
 	};
 }
 
-/** Two minutes: a full load of a large library costs ~750 KB of Supabase egress. Few users, since each entry is heavy. */
-export const cachedUserTaste = createUserCache<UserTaste>(120_000, 10);
+/**
+ * Ten minutes: a full load of a large library costs ~0.5 MB of Supabase egress, and a conversation
+ * spans minutes. A change made in the app shows up in the assistant within that window; one made by
+ * `update_library` drops the entry at once. Few users, since each entry is heavy.
+ */
+export const cachedUserTaste = createUserCache<UserTaste>(600_000, 10);
 
 /** Ten minutes: language and region rarely change, and each miss is an Auth admin round trip. */
 export const cachedUserContext = createUserCache<McpUserContext>(600_000, 100);

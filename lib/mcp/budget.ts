@@ -3,6 +3,9 @@ import 'server-only';
 import { checkRateLimit, retryAfterSeconds } from '@/lib/rate-limiter';
 import { createAdminClient } from '@/lib/supabase/server';
 import { reportSwallowed } from '@/lib/report';
+import { z } from 'zod';
+
+const jsonRpcMethod = z.object({ method: z.string() });
 
 interface Budget {
 	scope: string;
@@ -15,10 +18,14 @@ const REQUEST_BUDGETS: Budget[] = [
 	{ scope: 'mcp-requests', limit: 120, windowMs: 60_000 },
 ];
 
-/** Tool calls — the only requests that read Supabase and TMDB, so the only ones the real budget counts, shared by every pod. */
+/**
+ * Tool calls — the only requests that read Supabase and TMDB, so the only ones the real budget
+ * counts, shared by every pod. 50 a day covers several conversations (5 to 15 calls each) and caps
+ * a leaked or looping link at ~0.2 GB of egress a month on the 5 GB Free plan.
+ */
 const TOOL_BUDGETS: Budget[] = [
 	{ scope: 'mcp-tools-minute', limit: 30, windowMs: 60_000 },
-	{ scope: 'mcp-tools-day', limit: 100, windowMs: 86_400_000 },
+	{ scope: 'mcp-tools-day', limit: 50, windowMs: 86_400_000 },
 ];
 
 /** Number of `tools/call` in a JSON-RPC body (one message or a batch); read from a clone, so the SDK still gets the body. */
@@ -28,8 +35,7 @@ export async function countToolCalls(request: Request): Promise<number> {
 		const messages: unknown[] = Array.isArray(body) ? body : [body];
 		return messages.filter(
 			(message) =>
-				(message as { method?: unknown } | null)?.method ===
-				'tools/call'
+				jsonRpcMethod.safeParse(message).data?.method === 'tools/call'
 		).length;
 	} catch {
 		return 0;

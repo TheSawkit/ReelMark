@@ -56,7 +56,7 @@ describe('chargeMcpRequest — shared budget', () => {
 				'mcp-tools-minute:shared-user',
 				'mcp-tools-day:shared-user',
 			],
-			p_limits: [30, 100],
+			p_limits: [30, 50],
 			p_window_seconds: [60, 86_400],
 			p_cost: 2,
 		});

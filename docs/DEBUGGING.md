@@ -59,7 +59,7 @@ Voir [`DEPLOYMENT.md`](../DEPLOYMENT.md) pour le runbook complet. Les trois pann
 - **L'assistant n'arrive pas à se connecter en production alors que `curl` fonctionne** → vérifier que les protections anti-bots de Cloudflare (Bot Fight Mode, challenges JavaScript) ne s'appliquent pas à `/api/mcp/*` : Claude, ChatGPT et les autres appellent depuis leurs serveurs et ne peuvent pas résoudre un challenge. Ajouter une règle d'exception sur ce chemin si besoin.
 - **Le lien répond `404`** → lien régénéré ou révoqué (un seul lien actif par compte), ou mal copié : le segment doit faire 43 caractères base64url.
 - **`429` côté assistant** → budget épuisé : 30 appels d'outils par minute, 100 par jour et par utilisateur (`lib/mcp/budget.ts`). Le reste du protocole ne compte pas. Le budget est partagé entre pods via la fonction SQL `consume_rate_limits` ; un avertissement `[mcp:budget]` dans les logs signale qu'elle manque ou échoue et que le budget est retombé en mémoire, par pod (voir `docs/DATA-MODEL.md`).
-- **L'assistant ne voit pas un changement fait dans l'app** → les goûts sont en cache 2 min par utilisateur (`lib/mcp/user-cache.ts`) ; une écriture par `update_library` vide ce cache, une écriture depuis l'app non. La langue et la région le sont 10 min.
+- **L'assistant ne voit pas un changement fait dans l'app** → les goûts sont en cache 10 min par utilisateur (`lib/mcp/user-cache.ts`) ; une écriture par `update_library` vide ce cache, une écriture depuis l'app non. La langue et la région le sont 10 min.
 - **Tester à la main** → `POST` JSON-RPC sur `/api/mcp/<clé>` avec `Accept: application/json, text/event-stream` ; `GET` et `DELETE` répondent `405` (serveur sans état).
 
 ### Notifications / push

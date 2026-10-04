@@ -50,8 +50,8 @@ Chaque utilisateur peut générer, dans Réglages → Données, un lien secret �
 - **Endpoint** : `app/api/mcp/[key]/route.ts`, `POST` uniquement, via `createMcpHandler` de `@modelcontextprotocol/server`. Le segment `[key]` est le secret : 256 bits aléatoires, dont seul le SHA-256 est stocké (`mcp_keys`). Un lien inconnu répond `404` sans corps.
 - **Accès** : lecture seule par défaut. Un lien en écriture porte le préfixe `rw-` _dans_ la valeur hachée (`lib/mcp/keys.ts`) : ajouter ce préfixe à un lien en lecture change son hash, il ne correspond plus à rien. L'accès se change donc en régénérant le lien ; l'ancien meurt aussitôt. Le compte retient le choix dans `user_metadata.mcp_access`, pour l'affichage seulement — l'autorisation vient toujours du secret. La route transmet l'accès au SDK par `authInfo.scopes` (`library:write`).
 - **Outils** (`lib/mcp/tools/`, assemblés par `lib/mcp/server.ts`) : `get_taste_profile`, `get_recommendations`, `search_titles`, `get_title`, `get_watchlist` en lecture ; `update_library` (marquer vu, à voir, abandonné, ou retirer) n'existe que sur un lien en écriture — un lien en lecture ne le liste même pas. Il est limité à la bibliothèque du propriétaire du lien et annoncé comme destructif pour que le client demande confirmation.
-- **Budget** (`lib/mcp/budget.ts`) : seuls les `tools/call` comptent (30/min, 100/jour par utilisateur) ; le reste du protocole (handshake, `tools/list`, notifications) ne passe que par un garde-fou de 120 requêtes/min.
-- **Cache** (`lib/mcp/user-cache.ts`) : goûts de l'utilisateur 2 min (une grosse bibliothèque pèse ~750 Ko d'egress Supabase), langue et région 10 min. Une écriture vide le cache des goûts.
+- **Budget** (`lib/mcp/budget.ts`) : seuls les `tools/call` comptent (30/min, 50/jour par utilisateur — un lien volé ou en boucle plafonne à ~0,2 Go d'egress par mois) ; le reste du protocole (handshake, `tools/list`, notifications) ne passe que par un garde-fou de 120 requêtes/min.
+- **Cache** (`lib/mcp/user-cache.ts`) : goûts de l'utilisateur 10 min (une grosse bibliothèque pèse ~0,5 Mo d'egress Supabase), langue et région 10 min. Une écriture vide le cache des goûts.
 - Les écritures passent par `lib/data/watchlist-writes.ts`, comme les Server Actions : mêmes métadonnées TMDB, même revalidation des pages.
 
 ## Données médias (TMDB / Watchmode)
@@ -81,7 +81,7 @@ Chaque utilisateur peut générer, dans Réglages → Données, un lien secret �
 | ------------------------- | ------------------------------------------------------------------------------- | ----------------------------------- |
 | TMDB                      | `"use cache"` + `cacheLife` (`lib/tmdb/client.ts`)                              | 1 h par défaut, 1 min sur échec     |
 | Watchmode                 | `fetch` + `next.revalidate`                                                     | 1 h                                 |
-| Assistant IA (MCP)        | mémoire, par utilisateur (`lib/mcp/user-cache.ts`)                              | goûts 2 min, langue/région 10 min   |
+| Assistant IA (MCP)        | mémoire, par utilisateur (`lib/mcp/user-cache.ts`)                              | goûts 10 min, langue/région 10 min  |
 | `/api/search`             | `Cache-Control: s-maxage=3600, stale-while-revalidate=86400` (edge Cloudflare)  | 1 h + SWR 24 h                      |
 | Router client             | Router Cache de Next (défauts, aucun réglage expérimental)                      | 0 s (dynamique) / 5 min (préchargé) |
 | Index des titres notés    | `'use cache'` + `cacheTag('reviewed-media-index')` (`lib/data/review-index.ts`) | 60 s, invalidé à l'écriture         |

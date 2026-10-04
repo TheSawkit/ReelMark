@@ -218,7 +218,7 @@ describe('cachedUserTaste', () => {
 		vi.useRealTimers();
 	});
 
-	it('loads a library once for a burst of tool calls, then again after two minutes', async () => {
+	it('loads a library once for a burst of tool calls, then again after ten minutes', async () => {
 		vi.useFakeTimers();
 		const load = vi.fn(async () => taste);
 
@@ -226,7 +226,7 @@ describe('cachedUserTaste', () => {
 			cachedUserTaste.get('burst-user', load),
 			cachedUserTaste.get('burst-user', load),
 		]);
-		vi.advanceTimersByTime(119_000);
+		vi.advanceTimersByTime(599_000);
 		await cachedUserTaste.get('burst-user', load);
 		expect(load).toHaveBeenCalledTimes(1);
 

@@ -16,11 +16,13 @@ const WRITE_SCOPE = 'library:write';
  * the SDK's per-principal channel.
  */
 const handler = createMcpHandler(
-	({ authInfo }) =>
-		createReelMarkMcpServer(
-			authInfo!.clientId,
-			authInfo!.scopes.includes(WRITE_SCOPE) ? 'write' : 'read'
-		),
+	({ authInfo }) => {
+		if (!authInfo) throw new Error('MCP request without a resolved link');
+		return createReelMarkMcpServer(
+			authInfo.clientId,
+			authInfo.scopes.includes(WRITE_SCOPE) ? 'write' : 'read'
+		);
+	},
 	{ onerror: (error) => reportSwallowed('mcp:handler', error) }
 );
 
