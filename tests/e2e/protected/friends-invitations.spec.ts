@@ -8,6 +8,14 @@ test.beforeEach(() => {
 	);
 });
 
+const pendingCard = (page: Page) =>
+	page.locator('button[aria-controls="pending-invitations-list"]');
+
+const pendingBadge = (page: Page) =>
+	page.locator(
+		'[aria-label="View pending invitations" i], [aria-label="Voir les invitations en attente" i]'
+	);
+
 async function getOwnProfileHref(page: Page): Promise<string | null> {
 	await page.goto('/en/dashboard');
 	const userMenuBtn = page.getByRole('button', {
@@ -50,7 +58,7 @@ test.describe('Friends tab — own profile', () => {
 		await expect(friendsTab).toBeVisible({ timeout: 5000 });
 	});
 
-	test('pending invitations card is hidden when no pending requests', async ({
+	test('pending invitations card shows exactly when the tab announces pending requests', async ({
 		page,
 	}) => {
 		const href = await getOwnProfileHref(page);
@@ -62,11 +70,11 @@ test.describe('Friends tab — own profile', () => {
 			.first();
 		await friendsTab.click();
 
-		await expect(
-			page.getByRole('button', {
-				name: /invitations en attente|pending invitations/i,
-			})
-		).not.toBeVisible();
+		if ((await pendingBadge(page).count()) > 0) {
+			await expect(pendingCard(page)).toBeVisible();
+		} else {
+			await expect(pendingCard(page)).not.toBeVisible();
+		}
 	});
 });
 
@@ -83,12 +91,8 @@ test.describe('Friends tab — pending invitations UI', () => {
 			.first();
 		await friendsTab.click();
 
-		const card = page.getByRole('button', {
-			name: /invitations en attente|pending invitations/i,
-		});
-		const isPresent = await card.isVisible();
-
-		if (!isPresent) {
+		const card = pendingCard(page);
+		if ((await pendingBadge(page).count()) === 0) {
 			test.skip(
 				true,
 				'No pending invitations — requires a second test user to send an invitation first'
@@ -96,6 +100,7 @@ test.describe('Friends tab — pending invitations UI', () => {
 			return;
 		}
 
+		await expect(card).toBeVisible();
 		await expect(card).toHaveAttribute('aria-expanded', 'false');
 		await card.click();
 		await expect(card).toHaveAttribute('aria-expanded', 'true');
