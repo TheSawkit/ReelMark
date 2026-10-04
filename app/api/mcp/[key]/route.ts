@@ -27,7 +27,15 @@ const handler = createMcpHandler(
 /** MCP endpoint of one user's AI link: the secret path segment is the credential and decides the access — read, or read and change title statuses in that user's library alone. */
 async function handle(request: Request, { params }: Context) {
 	const { key } = await params;
-	const owner = await resolveMcpKey(key);
+	const owner = await resolveMcpKey(key).catch((error: unknown) => {
+		reportSwallowed('mcp:resolve', error);
+		return undefined;
+	});
+	if (owner === undefined)
+		return new Response(null, {
+			status: 503,
+			headers: { 'Retry-After': '60' },
+		});
 	if (!owner) return new Response(null, { status: 404 });
 
 	const rejected = await chargeMcpRequest(owner.userId, request);

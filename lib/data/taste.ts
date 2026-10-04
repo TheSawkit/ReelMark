@@ -56,10 +56,12 @@ export async function loadUserTaste(
 				.eq('user_id', userId),
 		]);
 
+	if (dismissals.error) throw new Error(dismissals.error.message);
+
 	return {
 		entries,
 		profile: { ...reviewSignals, episodesWatched },
-		dismissals: (dismissals.data ?? []).flatMap(
+		dismissals: dismissals.data.flatMap(
 			({ media_id, media_type, genre_ids }) =>
 				isMediaType(media_type)
 					? [{ media_id, media_type, genre_ids }]

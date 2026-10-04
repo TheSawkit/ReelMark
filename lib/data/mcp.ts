@@ -39,14 +39,19 @@ export interface McpLinkOwner {
 	lastUsedAt: string | null;
 }
 
-/** Resolves a link secret to its owner, or null for an unknown or revoked link. */
+/**
+ * Resolves a link secret to its owner, or null for an unknown or revoked link.
+ *
+ * @throws Error when the lookup fails, so an outage is never reported as a revoked link.
+ */
 export async function resolveMcpKey(key: string): Promise<McpLinkOwner | null> {
 	if (!isMcpKeyFormat(key)) return null;
-	const { data } = await createAdminClient()
+	const { data, error } = await createAdminClient()
 		.from('mcp_keys')
 		.select('user_id, last_used_at')
 		.eq('key_hash', hashMcpKey(key))
 		.maybeSingle();
+	if (error) throw new Error(error.message);
 	return data
 		? { userId: data.user_id, lastUsedAt: data.last_used_at }
 		: null;
