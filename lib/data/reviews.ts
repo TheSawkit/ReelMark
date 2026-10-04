@@ -66,6 +66,12 @@ export interface ReviewSignals {
 	ratedAt: Record<string, string>;
 }
 
+const displayedReviewSignals = (signals: Promise<ReviewSignals>) =>
+	signals.catch((error: unknown): ReviewSignals => {
+		reportSwallowed('reviews:ratings', error);
+		return { ratings: {}, ratedAt: {} };
+	});
+
 /**
  * Returns a user's own movie/tv ratings keyed by media key, with when each was last rated —
  * the closest thing to a watch date the schema has, used to spot what the user saw recently.
@@ -73,6 +79,7 @@ export interface ReviewSignals {
  *
  * @param userId - Owner of the reviews.
  * @param client - Admin client for jobs that run without a session; defaults to the request's.
+ * @throws Error when the read fails — the taste engine must not rank as if the user had rated nothing.
  */
 export async function getUserReviewSignals(
 	userId: string,
@@ -90,10 +97,7 @@ export async function getUserReviewSignals(
 			.order('media_type')
 			.order('media_id')
 			.range(from, to)
-	).catch((error: unknown) => {
-		reportSwallowed('reviews:ratings', error);
-		return [];
-	});
+	);
 
 	const signals: ReviewSignals = { ratings: {}, ratedAt: {} };
 	for (const row of data) {
@@ -120,7 +124,8 @@ export async function getUserReviewRatings(
 	userId: string,
 	client?: SupabaseClient<Database>
 ): Promise<Record<string, number>> {
-	return (await getUserReviewSignals(userId, client)).ratings;
+	return (await displayedReviewSignals(getUserReviewSignals(userId, client)))
+		.ratings;
 }
 
 /** Returns the authenticated user's own `media_key → rating` map, or an empty map if signed out. */
@@ -132,7 +137,7 @@ export async function getMyReviewRatings(): Promise<Record<string, number>> {
 export async function getMyReviewSignals(): Promise<ReviewSignals> {
 	const { userId } = await getOptionalUser();
 	if (!userId) return { ratings: {}, ratedAt: {} };
-	return getUserReviewSignals(userId);
+	return displayedReviewSignals(getUserReviewSignals(userId));
 }
 
 /**
@@ -273,7 +278,10 @@ export async function getPublicReviews(
 		p_viewer_id: userId ?? undefined,
 	});
 
-	if (error) return [];
+	if (error) {
+		reportSwallowed('reviews:public', error);
+		return [];
+	}
 	return (data as PublicReview[]) ?? [];
 }
 
@@ -300,6 +308,9 @@ export async function getPublicEpisodeReviews(
 		p_viewer_id: userId ?? undefined,
 	});
 
-	if (error) return [];
+	if (error) {
+		reportSwallowed('reviews:public-episodes', error);
+		return [];
+	}
 	return (data as PublicReview[]) ?? [];
 }

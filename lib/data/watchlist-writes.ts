@@ -60,10 +60,11 @@ export async function deleteWatchlistEntry(
 	if (error) throw new Error(error.message);
 
 	if (mediaType === 'tv') {
-		await supabase
+		const { error: progressError } = await supabase
 			.from('episode_watches')
 			.delete()
 			.eq('user_id', userId)
 			.eq('tv_id', mediaId);
+		if (progressError) throw new Error(progressError.message);
 	}
 }

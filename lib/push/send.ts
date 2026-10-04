@@ -103,10 +103,12 @@ export async function sendPushToUser(
 		);
 
 		if (staleEndpoints.length > 0) {
-			await supabase
+			const { error: staleError } = await supabase
 				.from('push_subscriptions')
 				.delete()
 				.in('endpoint', staleEndpoints);
+			if (staleError)
+				reportSwallowed('push:stale-subscriptions', staleError);
 		}
 	} catch (error) {
 		reportSwallowed('push:dispatch', error);

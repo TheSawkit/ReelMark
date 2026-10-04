@@ -2,6 +2,7 @@ import 'server-only';
 
 import { cache } from 'react';
 import { getUserContext } from '@/lib/supabase/auth-helpers';
+import { reportSwallowed } from '@/lib/report';
 import {
 	isPromptKey,
 	isPromptState,
@@ -78,7 +79,10 @@ export const getShellState = cache(async (): Promise<ShellState> => {
 	if (!user) return EMPTY_SHELL_STATE;
 
 	const { data, error } = await supabase.rpc('my_shell_state');
-	if (error) return EMPTY_SHELL_STATE;
+	if (error) {
+		reportSwallowed('shell:state', error);
+		return EMPTY_SHELL_STATE;
+	}
 
 	return toShellState(data?.[0]);
 });

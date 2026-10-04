@@ -4,17 +4,17 @@ import { mapLimit } from '@/lib/data-transfer/resolve';
 import { loadUserTaste, tasteOfType } from '@/lib/data/taste';
 import { pickSeeds, pickSuggestion } from '@/lib/recommendations';
 import { fetchSeedCandidates } from '@/lib/recommendations/candidates';
+import { MEDIA_TYPES } from '@/lib/validators';
 import { translations, type Language } from '@/lib/i18n/translations';
 import { localizedHref } from '@/lib/i18n/utils';
 import { reportSwallowed } from '@/lib/report';
 import { recipientLanguage } from '@/lib/push/notify-friend';
 import { sendPushToUser } from '@/lib/push/send';
-import type { MediaItem, MediaType } from '@/types/tmdb';
+import type { MediaItem } from '@/types/tmdb';
 
 const USER_CONCURRENCY = 3;
 const RESEND_AFTER_MS = 6 * 86_400_000;
 const BATCH_SIZE = 50;
-const MEDIA_TYPES: MediaType[] = ['movie', 'tv'];
 
 export interface SuggestionResult {
 	users: number;
@@ -37,8 +37,9 @@ async function suggestionFor(
 			.eq('user_id', userId)
 			.eq('type', 'suggestion'),
 	]);
+	if (past.error) throw new Error(past.error.message);
 	const alreadySuggested = new Set(
-		(past.data ?? []).map((row) => `${row.media_type}-${row.media_id}`)
+		past.data.map((row) => `${row.media_type}-${row.media_id}`)
 	);
 
 	for (const type of MEDIA_TYPES) {

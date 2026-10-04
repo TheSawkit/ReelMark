@@ -11,6 +11,7 @@ import type {
 } from '@/lib/recommendations';
 import type { Database } from '@/types/database';
 import { getMediaKey } from '@/lib/media';
+import { isMediaType } from '@/lib/validators';
 import type { MediaType, TasteEntry, WatchStatus } from '@/types/tmdb';
 
 export interface UserTaste {
@@ -21,9 +22,6 @@ export interface UserTaste {
 
 const isShowToWatch = (entry: TasteEntry) =>
 	entry.media_type === 'tv' && entry.status === 'to_watch';
-
-const isMediaType = (value: string): value is MediaType =>
-	value === 'movie' || value === 'tv';
 
 /** Loads everything the recommendation engine reads about one user through an explicit client — the weekly cron and the MCP endpoint carry no session cookie. */
 export async function loadUserTaste(
@@ -113,16 +111,19 @@ export async function loadUserMarks(
 			.not('rating', 'is', null),
 	]);
 
+	if (watchlist.error) throw new Error(watchlist.error.message);
+	if (reviews.error) throw new Error(reviews.error.message);
+
 	const markOf = (mediaType: string, id: number) => {
 		const key = getMediaKey({ media_type: mediaType as MediaType, id });
 		const mark = marks.get(key) ?? {};
 		marks.set(key, mark);
 		return mark;
 	};
-	for (const row of watchlist.data ?? []) {
+	for (const row of watchlist.data) {
 		markOf(row.media_type, row.media_id).status = row.status as WatchStatus;
 	}
-	for (const row of reviews.data ?? []) {
+	for (const row of reviews.data) {
 		if (row.rating !== null)
 			markOf(row.media_type, row.media_id).rating = row.rating;
 	}
