@@ -5,7 +5,11 @@ const announceNewEpisodes = vi.fn(async () => ({
 	freshEpisodes: 1,
 	notified: 1,
 }));
-const sendWeeklySuggestions = vi.fn(async () => ({ users: 1, suggested: 1 }));
+const sendWeeklySuggestions = vi.fn(async () => ({
+	users: 1,
+	suggested: 1,
+	nextCursor: null,
+}));
 vi.mock('@/lib/push/notify-new-episodes', () => ({ announceNewEpisodes }));
 vi.mock('@/lib/push/notify-suggestions', () => ({ sendWeeklySuggestions }));
 
@@ -57,3 +61,31 @@ for (const { path, job, module } of routes) {
 		});
 	});
 }
+
+describe('POST /api/cron/suggestions — batches', () => {
+	const { POST } = routes[1].module;
+	const call = (query: string) =>
+		POST(
+			new Request(`http://localhost/api/cron/suggestions${query}`, {
+				method: 'POST',
+				headers: { authorization: 'Bearer right-secret' },
+			})
+		);
+
+	beforeEach(() => {
+		sendWeeklySuggestions.mockClear();
+		vi.stubEnv('CRON_SECRET', 'right-secret');
+	});
+	afterEach(() => vi.unstubAllEnvs());
+
+	it('resumes after the cursor of the previous batch', async () => {
+		const cursor = '00000000-0000-0000-0000-000000000042';
+		expect((await call(`?after=${cursor}`)).status).toBe(200);
+		expect(sendWeeklySuggestions).toHaveBeenCalledWith(false, cursor);
+	});
+
+	it('refuses a cursor that is not an account id', async () => {
+		expect((await call('?after=nope')).status).toBe(400);
+		expect(sendWeeklySuggestions).not.toHaveBeenCalled();
+	});
+});

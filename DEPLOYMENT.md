@@ -176,14 +176,14 @@ kubectl -n reelmark rollout status deployment/reelmark
 `--server-side` n'est pas cosmétique : voir la section 8 pour la raison (`spec.replicas` appartient
 au HPA). `k8s/app.yaml` contient aussi deux CronJobs qui appellent le Service interne :
 `reelmark-new-episodes` (chaque jour à 8 h, `POST /api/cron/new-episodes`) et
-`reelmark-suggestions` (vendredi 18 h, `POST /api/cron/suggestions`), fuseau Europe/Brussels. Pour vérifier sans rien envoyer :
+`reelmark-suggestions` (vendredi 18 h, `POST /api/cron/suggestions`), fuseau Europe/Brussels. La suggestion traite 50 comptes par appel : la réponse porte `nextCursor`, que le CronJob renvoie en `?after=` jusqu'à ce qu'il soit `null` ; une relance du job saute les comptes déjà servis dans la semaine. Pour vérifier sans rien envoyer :
 
 ```bash
 kubectl -n reelmark exec deploy/reelmark -- sh -c \
   'wget -qO- --header "Authorization: Bearer $CRON_SECRET" --post-data "" \
    "http://localhost:3000/api/cron/new-episodes?dryRun=1"'
 kubectl -n reelmark create job --from=cronjob/reelmark-new-episodes manual-run   # envoi réel
-# même principe pour /api/cron/suggestions et cronjob/reelmark-suggestions
+# même principe pour /api/cron/suggestions (un lot par appel, ?after=<nextCursor>) et cronjob/reelmark-suggestions
 ```
 
 `k8s/ingress.yaml` n'est pas dans ce bloc — il est déployé par

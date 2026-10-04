@@ -1,14 +1,41 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('server-only', () => ({}));
-vi.mock('@/lib/supabase/server', () => ({ createAdminClient: () => ({}) }));
-const fetchAllRows = vi.fn();
-vi.mock('@/lib/supabase/pagination', () => ({ fetchAllRows }));
+
+type Result = { data: unknown[] | null; error: { message: string } | null };
+const results = new Map<string, Result>();
+const calls: Array<{ table: string; gt?: string }> = [];
+
+function builder(table: string) {
+	const call: { table: string; gt?: string } = { table };
+	calls.push(call);
+	const query = {
+		select: () => query,
+		eq: () => query,
+		in: () => query,
+		gte: () => query,
+		order: () => query,
+		limit: () => query,
+		gt: (_column: string, value: string) => {
+			call.gt = value;
+			return query;
+		},
+		then: (resolve: (value: Result) => void) =>
+			resolve(results.get(table) ?? { data: [], error: null }),
+	};
+	return query;
+}
+
+vi.mock('@/lib/supabase/server', () => ({
+	createAdminClient: () => ({ from: builder }),
+}));
 vi.mock('@/lib/push/send', () => ({ sendPushToUser: vi.fn() }));
-vi.mock('@/lib/push/notify-friend', () => ({ recipientLanguage: vi.fn() }));
+vi.mock('@/lib/push/notify-friend', () => ({
+	recipientLanguage: async () => 'en',
+}));
 vi.mock('@/lib/data/taste', () => ({
-	loadUserTaste: vi.fn(),
-	tasteOfType: vi.fn(),
+	loadUserTaste: async () => ({ entries: [] }),
+	tasteOfType: () => ({ entries: [], dismissals: [] }),
 }));
 vi.mock('@/lib/recommendations/candidates', () => ({
 	fetchSeedCandidates: vi.fn(),
@@ -16,6 +43,16 @@ vi.mock('@/lib/recommendations/candidates', () => ({
 
 const { usersToSuggest, sendWeeklySuggestions } =
 	await import('@/lib/push/notify-suggestions');
+
+const accounts = (count: number) =>
+	Array.from({ length: count }, (_, i) => ({
+		user_id: `00000000-0000-0000-0000-${String(i).padStart(12, '0')}`,
+	}));
+
+beforeEach(() => {
+	results.clear();
+	calls.length = 0;
+});
 
 describe('usersToSuggest', () => {
 	it('skips opted-out accounts and those already served this week', () => {
@@ -29,8 +66,28 @@ describe('usersToSuggest', () => {
 });
 
 describe('sendWeeklySuggestions', () => {
+	it('hands back the last account of a full batch so the caller can resume after it', async () => {
+		const batch = accounts(50);
+		results.set('user_profiles', { data: batch, error: null });
+
+		const result = await sendWeeklySuggestions(true, 'cursor-from-before');
+
+		expect(result.nextCursor).toBe(batch[49].user_id);
+		expect(calls.find((call) => call.table === 'user_profiles')?.gt).toBe(
+			'cursor-from-before'
+		);
+	});
+
+	it('stops once a batch is not full', async () => {
+		results.set('user_profiles', { data: accounts(3), error: null });
+		expect((await sendWeeklySuggestions(true)).nextCursor).toBeNull();
+	});
+
 	it('fails instead of notifying nobody when an account read fails', async () => {
-		fetchAllRows.mockRejectedValue(new Error('payment required'));
+		results.set('user_profiles', {
+			data: null,
+			error: { message: 'payment required' },
+		});
 		await expect(sendWeeklySuggestions(true)).rejects.toThrow(
 			'payment required'
 		);

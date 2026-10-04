@@ -1,6 +1,5 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/server';
-import { fetchAllRows } from '@/lib/supabase/pagination';
 import { mapLimit } from '@/lib/data-transfer/resolve';
 import { loadUserTaste, tasteOfType } from '@/lib/data/taste';
 import { pickSeeds, pickSuggestion } from '@/lib/recommendations';
@@ -14,11 +13,14 @@ import type { MediaItem, MediaType } from '@/types/tmdb';
 
 const USER_CONCURRENCY = 3;
 const RESEND_AFTER_MS = 6 * 86_400_000;
+const BATCH_SIZE = 50;
 const MEDIA_TYPES: MediaType[] = ['movie', 'tv'];
 
 export interface SuggestionResult {
 	users: number;
 	suggested: number;
+	/** Last account of this batch, to pass as `after` for the next one; null once every account is done. */
+	nextCursor: string | null;
 }
 
 async function suggestionFor(
@@ -71,44 +73,48 @@ export function usersToSuggest(
 }
 
 /**
- * Sends each user one personalized title a week, picked by the dashboard's ranking and never
- * repeated, honouring the `suggestions` preference. `dryRun` counts without writing or pushing.
- * Reads every account page by page and fails loudly when a read fails: an empty list must not
- * pass for "nobody to notify".
+ * Sends one batch of accounts their personalized title of the week, picked by the dashboard's
+ * ranking and never repeated, honouring the `suggestions` preference. Accounts go in `user_id`
+ * order, `BATCH_SIZE` at a time from `after`, so each call stays short whatever the user count;
+ * the caller loops on `nextCursor`. A failed read fails the batch: an empty list must not pass
+ * for "nobody to notify". `dryRun` counts without writing or pushing.
  */
 export async function sendWeeklySuggestions(
-	dryRun = false
+	dryRun = false,
+	after?: string
 ): Promise<SuggestionResult> {
 	const admin = createAdminClient();
 
+	const accounts = admin
+		.from('user_profiles')
+		.select('user_id')
+		.order('user_id')
+		.limit(BATCH_SIZE);
+	const { data: profiles, error } = await (after
+		? accounts.gt('user_id', after)
+		: accounts);
+	if (error) throw new Error(error.message);
+	if (profiles.length === 0)
+		return { users: 0, suggested: 0, nextCursor: null };
+
+	const ids = profiles.map((row) => row.user_id);
 	const since = new Date(Date.now() - RESEND_AFTER_MS).toISOString();
-	const [profiles, optOuts, recent] = await Promise.all([
-		fetchAllRows((from, to) =>
-			admin
-				.from('user_profiles')
-				.select('user_id')
-				.order('user_id')
-				.range(from, to)
-		),
-		fetchAllRows((from, to) =>
-			admin
-				.from('notification_preferences')
-				.select('user_id')
-				.eq('suggestions', false)
-				.order('user_id')
-				.range(from, to)
-		),
-		fetchAllRows((from, to) =>
-			admin
-				.from('notifications')
-				.select('user_id')
-				.eq('type', 'suggestion')
-				.gte('created_at', since)
-				.order('id')
-				.range(from, to)
-		),
+	const [optOuts, recent] = await Promise.all([
+		admin
+			.from('notification_preferences')
+			.select('user_id')
+			.eq('suggestions', false)
+			.in('user_id', ids),
+		admin
+			.from('notifications')
+			.select('user_id')
+			.eq('type', 'suggestion')
+			.gte('created_at', since)
+			.in('user_id', ids),
 	]);
-	const userIds = usersToSuggest(profiles, [...optOuts, ...recent]);
+	if (optOuts.error) throw new Error(optOuts.error.message);
+	if (recent.error) throw new Error(recent.error.message);
+	const userIds = usersToSuggest(profiles, [...optOuts.data, ...recent.data]);
 
 	const sent = await mapLimit(userIds, USER_CONCURRENCY, async (userId) => {
 		try {
@@ -151,5 +157,6 @@ export async function sendWeeklySuggestions(
 	return {
 		users: userIds.length,
 		suggested: sent.filter(Boolean).length,
+		nextCursor: ids.length === BATCH_SIZE ? ids[ids.length - 1] : null,
 	};
 }
