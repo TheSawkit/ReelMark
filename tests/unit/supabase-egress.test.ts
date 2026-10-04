@@ -19,14 +19,16 @@ function entry(
 	media_type: 'movie' | 'tv' = 'movie'
 ): WatchlistEntry {
 	return {
-		id: `${media_type}-${media_id}`,
 		media_id,
 		media_type,
 		media_title: `Title ${media_id}`,
 		poster_path: null,
 		status: 'to_watch',
 		created_at: '2026-09-01T00:00:00Z',
-	} as WatchlistEntry;
+		total_episodes: null,
+		release_date: null,
+		genre_ids: null,
+	};
 }
 
 describe('createWatchlistEntryLoader', () => {

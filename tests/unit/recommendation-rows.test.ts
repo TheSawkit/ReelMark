@@ -6,7 +6,6 @@ import type { MediaItem, WatchlistEntry, WatchStatus } from '@/types/tmdb';
 function entry(overrides: Partial<WatchlistEntry> = {}): WatchlistEntry {
 	const id = overrides.media_id ?? 1;
 	return {
-		id: `row-${id}`,
 		media_id: id,
 		media_title: `Title ${id}`,
 		media_type: 'movie',

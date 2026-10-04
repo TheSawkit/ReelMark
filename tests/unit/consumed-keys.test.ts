@@ -9,7 +9,6 @@ const entry = (
 		status: WatchStatus;
 	}
 ): WatchlistEntry => ({
-	id: `row-${overrides.media_id}`,
 	media_title: 'Title',
 	poster_path: null,
 	created_at: '2026-01-01T00:00:00Z',

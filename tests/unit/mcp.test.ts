@@ -124,7 +124,6 @@ describe('toAssistantTitle', () => {
 describe('toAssistantEntry', () => {
 	it('describes a library entry with its status and rating', () => {
 		const entry: WatchlistEntry = {
-			id: 'row',
 			media_id: 1396,
 			media_title: 'Breaking Bad',
 			media_type: 'tv',

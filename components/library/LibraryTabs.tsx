@@ -240,10 +240,7 @@ export function LibraryTabs({
 												: undefined;
 										return (
 											<div
-												key={
-													entry?.id ??
-													getMediaKey(item)
-												}
+												key={getMediaKey(item)}
 												className="media-grid-cell"
 											>
 												<MediaCard
