@@ -22,6 +22,9 @@ const PRIVATE_TABLES = [
 /** Postgres refusing the table outright: as private as zero rows. Any other error means nothing was verified. */
 const INSUFFICIENT_PRIVILEGE = '42501';
 
+/** Supabase restricting the whole project (quota exceeded): no row reaches anyone, but RLS cannot be checked either. */
+const PROJECT_RESTRICTED = 402;
+
 test.describe('Row-Level Security', () => {
 	test('the anonymous key reads no private row', async () => {
 		const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -38,6 +41,10 @@ test.describe('Row-Level Security', () => {
 				.from(table)
 				.select('*')
 				.limit(1);
+			test.skip(
+				status === PROJECT_RESTRICTED,
+				`Supabase project restricted (HTTP ${PROJECT_RESTRICTED}): RLS cannot be checked until service is restored`
+			);
 			const denied = error?.code === INSUFFICIENT_PRIVILEGE;
 			expect(
 				denied || (error === null && data.length === 0),
