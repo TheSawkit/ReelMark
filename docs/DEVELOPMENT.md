@@ -129,7 +129,7 @@ ReelMark/
 
 ### Deployment
 
-Production runs on Infomaniak Public Cloud (managed Kubernetes) behind Cloudflare (TLS, CDN, WAF). The image is published to ghcr.io by GitHub Actions on every push to `main`. Step-by-step runbook: [DEPLOYMENT.md](../DEPLOYMENT.md).
+Production runs on Infomaniak Public Cloud (managed Kubernetes) behind Cloudflare (TLS, CDN, WAF). The image is published to ghcr.io by GitHub Actions once the CI of a push to `main` succeeds. Step-by-step runbook: [DEPLOYMENT.md](../DEPLOYMENT.md).
 
 Infomaniak only provides the control plane: install Cilium (CNI) and the OpenStack CCM first ([DEPLOYMENT.md § 2](../DEPLOYMENT.md)), otherwise nodes stay `NotReady`.
 
@@ -168,7 +168,7 @@ Prérequis : Node.js 24+, pnpm 11+, un token TMDB, un projet Supabase et, en opt
 
 - Le build **doit** passer par webpack (`next build --webpack`) : Serwist ne supporte pas Turbopack.
 - `pnpm screenshots` régénère les captures du README et du manifest ; avec `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`, il ajoute les pages connectées.
-- Production : Kubernetes managé Infomaniak derrière Cloudflare, image sur ghcr.io, déployée à chaque push sur `main`. Runbook : [DEPLOYMENT.md](../DEPLOYMENT.md). Infomaniak ne fournit que le control plane : installer Cilium et le CCM OpenStack d'abord.
+- Production : Kubernetes managé Infomaniak derrière Cloudflare, image sur ghcr.io, déployée quand la CI d'un push sur `main` a réussi. Runbook : [DEPLOYMENT.md](../DEPLOYMENT.md). Infomaniak ne fournit que le control plane : installer Cilium et le CCM OpenStack d'abord.
 - Contribution : branche depuis `dev`, PR vers `main`, Conventional Commits, `pnpm lint && pnpm test && pnpm test:e2e` avant toute PR ([CONTRIBUTING.md](../CONTRIBUTING.md)).
 
 ### Licence

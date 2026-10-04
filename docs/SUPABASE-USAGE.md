@@ -85,7 +85,7 @@ La stack locale signe ses JWT en ES256 comme la prod : `getClaims()` y vérifie 
 
 Le job `e2e` de `ci.yml` fait exactement le parcours local : `supabase start` (base vierge construite depuis `supabase/migrations/`), `pnpm seed:test`, puis la suite complète contre `pnpm start`. Le build inline l'URL `http://127.0.0.1:54321` et la clé anon de démonstration de la CLI dans le bundle servi par ce job. Aucun secret Supabase n'est nécessaire, et rien ne touche un projet hébergé.
 
-Le job `rls-production` garde, lui, un œil sur la prod : il lance `tests/e2e/rls.spec.ts` avec les secrets `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`, une dizaine de lectures anonymes qui échouent si une table privée devient lisible — par exemple après une modification faite à la main qui aurait divergé du repo. Il tourne sur les PR, sur `main` et à la demande.
+Le workflow `rls-production.yml`, séparé de la CI pour qu'un état de la prod (quota dépassé, panne) ne bloque pas le déploiement d'un code testé, garde un œil sur la prod : il lance `tests/e2e/rls.spec.ts` avec les secrets `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`, une dizaine de lectures anonymes qui échouent si une table privée devient lisible — par exemple après une modification faite à la main qui aurait divergé du repo. Il tourne sur les PR, sur `main` et à la demande.
 
 ### Sans Docker : un projet Supabase de test hébergé
 

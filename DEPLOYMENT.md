@@ -276,7 +276,7 @@ kubectl get events -A --sort-by=.lastTimestamp | tail -30  # évictions, drains,
 ## 8. CI/CD (GitHub Actions)
 
 `.github/workflows/deploy.yml` build l'image, la push sur ghcr.io, puis **applique `k8s/app.yaml`**
-avec le SHA substitué à chaque push sur `main`. Le déploiement est déclaratif : toute modification
+avec le SHA substitué, dès que la CI d'un push sur `main` a réussi (`workflow_run`) — jamais un commit aux tests rouges, et toujours le commit que la CI a testé. Le déploiement est déclaratif : toute modification
 des resources, probes, PDB ou HPA part en prod avec le commit qui la contient — inutile de
 réappliquer à la main.
 
@@ -292,7 +292,7 @@ Deux workflows, deux rythmes :
 
 | Workflow                       | Déclencheur                          | Portée                                     |
 | ------------------------------ | ------------------------------------ | ------------------------------------------ |
-| `.github/workflows/deploy.yml` | tout push sur `main`                 | image + `k8s/app.yaml`                     |
+| `.github/workflows/deploy.yml` | CI réussie sur un push `main`        | image + `k8s/app.yaml`                     |
 | `.github/workflows/infra.yml`  | changement des fichiers edge, manuel | chart `ingress-nginx` + `k8s/ingress.yaml` |
 
 **Secrets GitHub à définir** (Settings → Secrets → Actions) :
@@ -305,7 +305,7 @@ Deux workflows, deux rythmes :
 | `NEXT_PUBLIC_SENTRY_DSN`        | build-arg (client, https)   |
 | `KUBECONFIG_B64`                | `base64 -w0 ~/.kube/config` |
 
-La CI n'utilise plus les secrets Supabase de la prod que pour le job `rls-production` (sonde RLS
+La CI n'utilise plus les secrets Supabase de la prod que pour le workflow `rls-production.yml` (sonde RLS
 anonyme) : le job E2E démarre sa propre base depuis `supabase/migrations/` (voir
 [docs/SUPABASE-USAGE.md](./docs/SUPABASE-USAGE.md#en-ci--une-base-locale-par-run)).
 

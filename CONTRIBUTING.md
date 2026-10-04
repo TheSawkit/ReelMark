@@ -66,7 +66,7 @@ The whole schema is versioned in `supabase/migrations/`: `20260101000000_baselin
 
 ## Deployment
 
-Production deployment (Infomaniak Kubernetes) is documented in [`DEPLOYMENT.md`](./DEPLOYMENT.md). A push to `main` triggers the CI build + rollout.
+Production deployment (Infomaniak Kubernetes) is documented in [`DEPLOYMENT.md`](./DEPLOYMENT.md). A push to `main` runs the CI; the rollout (`deploy.yml`) starts only once that CI run succeeds, on the exact commit it tested.
 
 ## Project documentation
 

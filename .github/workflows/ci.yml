@@ -214,30 +214,3 @@ jobs:
                   name: playwright-report
                   path: playwright-report/
                   retention-days: 7
-
-    # La base locale vérifie les migrations ; celle-ci vérifie la production elle-même, où une
-    # modification faite à la main pourrait diverger du repo. Une dizaine de lectures anonymes
-    # par run, sans navigateur ni serveur (CI vidé : pas de webServer Playwright).
-    rls-production:
-        name: RLS of the production project
-        needs: setup
-        if: github.event_name != 'push' || github.ref == 'refs/heads/main'
-        runs-on: ubuntu-24.04
-        timeout-minutes: 10
-        env:
-            CI: ''
-            NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-            NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-        steps:
-            - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v5
-            - uses: actions/setup-node@v6
-              with:
-                  node-version: 24
-                  cache: pnpm
-            - uses: actions/cache/restore@v5
-              with:
-                  path: node_modules
-                  key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
-                  fail-on-cache-miss: true
-            - run: pnpm exec playwright test tests/e2e/rls.spec.ts --project=chromium --reporter=list
