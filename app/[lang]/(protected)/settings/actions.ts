@@ -23,7 +23,7 @@ import {
 } from '@/lib/validators';
 import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 import { purgeUserData } from '@/lib/data/account-purge';
-import { reportSwallowed } from '@/lib/report';
+import { reportCritical, reportSwallowed } from '@/lib/report';
 
 async function syncUserProfile(
 	supabase: Awaited<ReturnType<typeof createClient>>,
@@ -151,11 +151,14 @@ export async function updateAvatar(prevState: unknown, formData: FormData) {
 		const buffer = await avatarFile.arrayBuffer();
 		const adminClient = createAdminClient();
 
-		const { data: currentProfile } = await supabase
-			.from('user_profiles')
-			.select('avatar_url')
-			.eq('user_id', user.id)
-			.maybeSingle();
+		const { data: currentProfile, error: currentProfileError } =
+			await supabase
+				.from('user_profiles')
+				.select('avatar_url')
+				.eq('user_id', user.id)
+				.maybeSingle();
+		if (currentProfileError)
+			reportSwallowed('settings:old-avatar', currentProfileError);
 		const oldAvatarUrl =
 			currentProfile?.avatar_url ??
 			(user.user_metadata?.avatar_url as string | undefined);
@@ -262,12 +265,13 @@ export async function deleteAccount(prevState: unknown, formData: FormData) {
 		return { error: t.common.actionError, success: false };
 	}
 
-	const { data: avatarFiles } = await adminClient.storage
-		.from('avatars')
-		.list('', {
+	const { data: avatarFiles, error: avatarFilesError } =
+		await adminClient.storage.from('avatars').list('', {
 			limit: 1000,
 			search: user.id,
 		});
+	if (avatarFilesError)
+		reportCritical('account:avatar-files', avatarFilesError);
 	const userAvatarFiles = (avatarFiles ?? [])
 		.filter((f) => f.name.startsWith(`${user.id}-`))
 		.map((f) => f.name);

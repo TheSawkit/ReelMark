@@ -10,6 +10,7 @@ import {
 } from '@/lib/onboarding';
 import { OnboardingForm } from '@/components/onboarding/OnboardingForm';
 import type { Language } from '@/lib/i18n/translations';
+import { reportSwallowed } from '@/lib/report';
 
 type Props = {
 	params: Promise<{ lang: Language }>;
@@ -33,11 +34,12 @@ export default async function OnboardingPage({ params }: Props) {
 	const user = await requireAuth();
 	const supabase = await createClient();
 
-	const { data: profile } = await supabase
+	const { data: profile, error: profileError } = await supabase
 		.from('user_profiles')
 		.select('username, onboarding_completed')
 		.eq('user_id', user.id)
 		.maybeSingle();
+	if (profileError) reportSwallowed('onboarding:profile', profileError);
 
 	if (!needsOnboarding(user.user_metadata, profile?.onboarding_completed)) {
 		redirect(localizedHref(lang, '/dashboard'));

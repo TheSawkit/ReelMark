@@ -26,12 +26,13 @@ export async function getSeasonEpisodeWatches(
 
 	if (!userId) return new Set();
 
-	const { data: watches } = await supabase
+	const { data: watches, error: watchesError } = await supabase
 		.from('episode_watches')
 		.select('episode_number')
 		.eq('user_id', userId)
 		.eq('tv_id', tvId)
 		.eq('season_number', seasonNumber);
+	if (watchesError) reportSwallowed('episodes:season', watchesError);
 
 	return new Set((watches ?? []).map((w) => w.episode_number));
 }
@@ -137,9 +138,13 @@ export async function getProfileTvWatchProgress(
 		throw new Error('Invalid user ID');
 
 	const { supabase } = await getAuthenticatedUser();
-	const { data: counts } = await supabase.rpc('episode_watch_counts_for', {
-		p_user_id: profileUserId,
-	});
+	const { data: counts, error: countsError } = await supabase.rpc(
+		'episode_watch_counts_for',
+		{
+			p_user_id: profileUserId,
+		}
+	);
+	if (countsError) reportSwallowed('episodes:profile-progress', countsError);
 
 	const wanted = new Set(tvIds);
 	const totals: Record<number, number> = {};

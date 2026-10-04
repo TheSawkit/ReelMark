@@ -170,13 +170,14 @@ export async function getMediaWatchlistEntry(
 
 	if (!userId) return null;
 
-	const { data: entry } = await supabase
+	const { data: entry, error: entryError } = await supabase
 		.from('watchlist')
 		.select(WATCHLIST_COLUMNS)
 		.eq('user_id', userId)
 		.eq('media_id', mediaId)
 		.eq('media_type', mediaType)
 		.maybeSingle();
+	if (entryError) reportSwallowed('watchlist:entry', entryError);
 
 	return (entry as WatchlistEntry) ?? null;
 }

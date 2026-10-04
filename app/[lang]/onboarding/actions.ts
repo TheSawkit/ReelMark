@@ -10,6 +10,7 @@ import { getServerLanguage, getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import { validateUsername, validateRegion } from '@/lib/validators';
 import { ON_CONFLICT } from '@/lib/supabase/conflicts';
+import { reportSwallowed } from '@/lib/report';
 
 export async function completeOnboarding(
 	prevState: unknown,
@@ -23,11 +24,12 @@ export async function completeOnboarding(
 
 	if (!username || !region) return { error: t.settings.missingFields };
 
-	const { data: existing } = await supabase
+	const { data: existing, error: existingError } = await supabase
 		.from('user_profiles')
 		.select('user_id')
 		.ilike('username', username)
 		.maybeSingle();
+	if (existingError) reportSwallowed('onboarding:username', existingError);
 
 	if (existing && existing.user_id !== userId)
 		return { error: t.settings.usernameTaken };

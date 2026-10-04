@@ -5,6 +5,7 @@ import type { SessionUser } from '@/lib/supabase/session-user';
 import type { MediaType } from '@/types/tmdb';
 import { REVIEW_INDEX_TAG } from '@/lib/data/review-index';
 import type { createClient } from '@/lib/supabase/server';
+import { reportSwallowed } from '@/lib/report';
 
 export const SHARED_REVALIDATE_PATHS = ['/library', '/dashboard'] as const;
 
@@ -84,11 +85,12 @@ async function revalidateProfile(
 	if (username) revalidateLocalized(`/profile/${username}`);
 
 	if (otherUserId) {
-		const { data } = await supabase
+		const { data, error } = await supabase
 			.from('user_profiles')
 			.select('username')
 			.eq('user_id', otherUserId)
 			.maybeSingle();
+		if (error) reportSwallowed('revalidate:profile', error);
 		if (data?.username) revalidateLocalized(`/profile/${data.username}`);
 	}
 }

@@ -2,6 +2,7 @@ import 'server-only';
 
 import { getOptionalUser } from '@/lib/supabase/auth-helpers';
 import type { MediaType } from '@/types/tmdb';
+import { reportSwallowed } from '@/lib/report';
 
 export interface RecommendationDismissal {
 	media_id: number;
@@ -14,10 +15,11 @@ export async function getMyDismissals(): Promise<RecommendationDismissal[]> {
 	const { supabase, userId } = await getOptionalUser();
 	if (!userId) return [];
 
-	const { data } = await supabase
+	const { data, error } = await supabase
 		.from('recommendation_dismissals')
 		.select('media_id, media_type, genre_ids')
 		.eq('user_id', userId);
+	if (error) reportSwallowed('recommendations:dismissals', error);
 
 	return (data ?? []).map((row) => ({
 		media_id: row.media_id,
@@ -31,11 +33,12 @@ export async function getMyStreamingProviders(): Promise<number[]> {
 	const { supabase, userId } = await getOptionalUser();
 	if (!userId) return [];
 
-	const { data } = await supabase
+	const { data, error } = await supabase
 		.from('user_streaming_providers')
 		.select('provider_ids')
 		.eq('user_id', userId)
 		.maybeSingle();
+	if (error) reportSwallowed('recommendations:providers', error);
 
 	return data?.provider_ids ?? [];
 }

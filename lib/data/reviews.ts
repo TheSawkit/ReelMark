@@ -145,13 +145,14 @@ export async function getMediaReview(
 	const { supabase, userId } = await getOptionalUser();
 	if (!userId) return null;
 
-	const { data } = await supabase
+	const { data, error } = await supabase
 		.from('reviews')
 		.select(REVIEW_COLUMNS)
 		.eq('user_id', userId)
 		.eq('media_id', mediaId)
 		.eq('media_type', mediaType)
 		.maybeSingle();
+	if (error) reportSwallowed('reviews:mine', error);
 
 	return (data as Review) ?? null;
 }
@@ -167,12 +168,13 @@ export async function getMyEpisodeReviews(
 	const { supabase, userId } = await getOptionalUser();
 	if (!userId) return {};
 
-	const { data } = await supabase
+	const { data, error } = await supabase
 		.from('reviews')
 		.select(REVIEW_COLUMNS)
 		.eq('user_id', userId)
 		.eq('media_type', 'episode')
 		.in('media_id', episodeIds);
+	if (error) reportSwallowed('reviews:mine-episodes', error);
 
 	const byEpisodeId: Record<number, Review> = {};
 	for (const review of (data ?? []) as Review[]) {
@@ -206,10 +208,11 @@ export async function getAverageRating(
 	const { supabase, userId } = await getOptionalUser();
 	if (await skipForAnonymous(userId, mediaType, mediaId)) return null;
 
-	const { data } = await supabase.rpc('get_media_rating', {
+	const { data, error } = await supabase.rpc('get_media_rating', {
 		p_media_id: mediaId,
 		p_media_type: mediaType,
 	});
+	if (error) reportSwallowed('reviews:media-rating', error);
 	return parseRatingRow(data);
 }
 
@@ -228,10 +231,11 @@ export async function getSeasonAverageRating(
 	const { supabase, userId } = await getOptionalUser();
 	if (!userId) return null;
 
-	const { data } = await supabase.rpc('get_season_rating', {
+	const { data, error } = await supabase.rpc('get_season_rating', {
 		p_tv_id: tvId,
 		p_season_number: seasonNumber,
 	});
+	if (error) reportSwallowed('reviews:season-rating', error);
 	return parseRatingRow(data);
 }
 
@@ -246,7 +250,10 @@ export async function getShowAverageRating(
 	const { supabase, userId } = await getOptionalUser();
 	if (!userId) return null;
 
-	const { data } = await supabase.rpc('get_show_rating', { p_tv_id: tvId });
+	const { data, error } = await supabase.rpc('get_show_rating', {
+		p_tv_id: tvId,
+	});
+	if (error) reportSwallowed('reviews:show-rating', error);
 	return parseRatingRow(data);
 }
 

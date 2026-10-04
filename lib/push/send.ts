@@ -65,10 +65,13 @@ export async function sendPushToUser(
 		if (preferences && preferences[PREFERENCE_BY_TYPE[type]] === false)
 			return;
 
-		const { data: subscriptions } = await supabase
-			.from('push_subscriptions')
-			.select('endpoint, p256dh, auth')
-			.eq('user_id', userId);
+		const { data: subscriptions, error: subscriptionsError } =
+			await supabase
+				.from('push_subscriptions')
+				.select('endpoint, p256dh, auth')
+				.eq('user_id', userId);
+		if (subscriptionsError)
+			reportSwallowed('push:subscriptions', subscriptionsError);
 
 		if (!subscriptions?.length) return;
 

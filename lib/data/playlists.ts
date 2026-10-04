@@ -7,6 +7,7 @@ import {
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { resolveAvatarUrl } from '@/lib/avatar';
 import type { Playlist } from '@/types/profile';
+import { reportSwallowed } from '@/lib/report';
 
 /**
  * Returns all playlists for a given user visible to the current viewer, newest first.
@@ -45,19 +46,22 @@ export async function getPlaylistById(id: string): Promise<{
 } | null> {
 	const { supabase, userId } = await getOptionalUser();
 
-	const { data } = await supabase
+	const { data, error } = await supabase
 		.from('playlists')
 		.select('*, items:playlist_items(*)')
 		.eq('id', id)
 		.maybeSingle();
+	if (error) reportSwallowed('playlists:detail', error);
 
 	if (!data) return null;
 
-	const { data: ownerProfile } = await supabase
+	const { data: ownerProfile, error: ownerProfileError } = await supabase
 		.from('user_profiles')
 		.select('username, avatar_url')
 		.eq('user_id', data.user_id)
 		.maybeSingle();
+	if (ownerProfileError)
+		reportSwallowed('playlists:owner', ownerProfileError);
 
 	const ownerUsername = ownerProfile?.username ?? null;
 	const ownerAvatarUrl = resolveAvatarUrl(ownerProfile?.avatar_url, null);
