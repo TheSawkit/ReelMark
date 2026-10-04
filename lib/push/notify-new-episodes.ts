@@ -73,11 +73,15 @@ export async function announceNewEpisodes(
 			.range(from, to)
 	);
 
-	const { data: optOuts } = await admin
-		.from('notification_preferences')
-		.select('user_id')
-		.eq('new_episodes', false);
-	const optedOut = new Set((optOuts ?? []).map((row) => row.user_id));
+	const optOuts = await fetchAllRows((from, to) =>
+		admin
+			.from('notification_preferences')
+			.select('user_id')
+			.eq('new_episodes', false)
+			.order('user_id')
+			.range(from, to)
+	);
+	const optedOut = new Set(optOuts.map((row) => row.user_id));
 
 	const followsByShow = new Map<number, FollowRow[]>();
 	for (const follow of follows) {
