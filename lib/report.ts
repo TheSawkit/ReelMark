@@ -21,8 +21,8 @@ function shouldForward(key: string): boolean {
 
 /**
  * Logs a swallowed fallback error with a stable tag and forwards it to Sentry as a
- * warning, deduped per label+message for 5 min so routine failures (quota cooldowns)
- * surface without flooding. A TMDB 404 means the resource simply does not exist, which
+ * warning, deduped per label+message for 5 min and grouped into one issue per label+message
+ * (not one per page), so routine failures (quota cooldowns) surface without flooding. A TMDB 404 means the resource simply does not exist, which
  * every caller already handles with a fallback, so it stays at debug level rather than
  * filling the issue tracker. Next's own control-flow signals (`redirect`, `notFound`,
  * and the halt that stops a Cache Components prerender) are rethrown instead —
@@ -42,7 +42,11 @@ export function reportSwallowed(label: string, error: unknown): void {
 	if (!shouldForward(`${label}:${message}`)) return;
 	Sentry.captureException(
 		error instanceof Error ? error : new Error(`[${label}] ${message}`),
-		{ level: 'warning', tags: { label } }
+		{
+			level: 'warning',
+			tags: { label },
+			fingerprint: ['swallowed', label, message],
+		}
 	);
 }
 
