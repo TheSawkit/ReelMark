@@ -39,6 +39,7 @@ export function AiAssistantCard({
 		initialLink?.access ?? 'read'
 	);
 	const [freshUrl, setFreshUrl] = useState<string | null>(null);
+	const [confirmingRevoke, setConfirmingRevoke] = useState(false);
 	const [isPending, startTransition] = useGuardedTransition();
 
 	// The card streams in with the page, often after Next has tried to scroll to the anchor.
@@ -76,6 +77,7 @@ export function AiAssistantCard({
 				await revokeMcpLink();
 				setLink(null);
 				setFreshUrl(null);
+				setConfirmingRevoke(false);
 				toast.success(ta.revoked);
 			} catch (err) {
 				toastActionError(err, t.common.actionError);
@@ -174,9 +176,29 @@ export function AiAssistantCard({
 						<Sparkles className="h-4 w-4" />
 						{link ? ta.regenerate : ta.generate}
 					</Button>
-					{link && (
+					{link && confirmingRevoke && (
+						<>
+							<Button
+								onClick={handleRevoke}
+								disabled={isPending}
+								variant="ghost"
+								className="gap-2 text-red-text hover:bg-red/10"
+							>
+								<Unlink className="h-4 w-4" />
+								{t.common.confirm}
+							</Button>
+							<Button
+								onClick={() => setConfirmingRevoke(false)}
+								disabled={isPending}
+								variant="ghost"
+							>
+								{t.common.cancel}
+							</Button>
+						</>
+					)}
+					{link && !confirmingRevoke && (
 						<Button
-							onClick={handleRevoke}
+							onClick={() => setConfirmingRevoke(true)}
 							disabled={isPending}
 							variant="ghost"
 							className="gap-2"

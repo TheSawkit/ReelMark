@@ -52,6 +52,7 @@ export function ReviewDialog({
 	);
 	const [content, setContent] = useState(existingReview?.content ?? '');
 	const [isPending, startTransition] = useGuardedTransition();
+	const [confirmingDelete, setConfirmingDelete] = useState(false);
 
 	function handleOpenChange(open: boolean) {
 		if (!open) onClose();
@@ -145,9 +146,30 @@ export function ReviewDialog({
 				</div>
 
 				<div className="px-5 pb-5 flex items-center justify-between gap-3">
-					{existingReview ? (
+					{existingReview && confirmingDelete ? (
+						<div className="flex items-center gap-1">
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={handleDelete}
+								disabled={isPending}
+								className="text-xs text-red-text hover:bg-red/10"
+							>
+								{t.common.confirm}
+							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() => setConfirmingDelete(false)}
+								disabled={isPending}
+								className="text-xs text-muted"
+							>
+								{t.common.cancel}
+							</Button>
+						</div>
+					) : existingReview ? (
 						<button
-							onClick={handleDelete}
+							onClick={() => setConfirmingDelete(true)}
 							disabled={isPending}
 							className="flex items-center gap-1.5 text-xs text-muted hover:text-red-text transition-colors disabled:opacity-50 cursor-pointer"
 						>
