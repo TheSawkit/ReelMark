@@ -21,7 +21,7 @@ import { config } from 'dotenv';
 import { chromium } from '@playwright/test';
 import { createServerClient } from '@supabase/ssr';
 
-config({ path: '.env.local' });
+config({ path: '.env.local', quiet: true });
 
 const BASE_URL = (
 	process.env.SCREENSHOTS_BASE_URL ?? 'https://reelmark.silexio.be'

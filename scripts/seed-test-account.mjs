@@ -24,7 +24,7 @@
 import { config } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
-config({ path: '.env.local' });
+config({ path: '.env.local', quiet: true });
 
 const PRODUCTION_PROJECT_REF = 'xdcdbjgbasrfxbuxwbrl';
 const DAY_MS = 86_400_000;
