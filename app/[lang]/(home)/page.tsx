@@ -60,8 +60,8 @@ export default async function Home({
 			<JsonLd data={webSiteJsonLd(lang)} />
 			<JsonLd data={organizationJsonLd()} />
 			<HeroSection posters={[...movieItems, ...showItems]} lang={lang} />
-			<PreviewSection movies={movieItems} shows={showItems} />
-			<FeaturesSection />
+			<PreviewSection movies={movieItems} shows={showItems} lang={lang} />
+			<FeaturesSection lang={lang} />
 			<CTASection lang={lang} />
 		</div>
 	);

@@ -78,7 +78,7 @@ async function TvProvidersSection({
 	const providers = await getTvShowWatchProviders(tvId, lang).catch(
 		() => null
 	);
-	return <WatchProviders providers={providers} />;
+	return <WatchProviders providers={providers} lang={lang} />;
 }
 
 async function TvTrailersSection({
@@ -359,7 +359,11 @@ export default async function TvShowPage(props: TvPageProps) {
 					<Suspense
 						fallback={<Skeleton className="h-32 rounded-xl" />}
 					>
-						<PublicReviewsSection mediaId={tvId} mediaType="tv" />
+						<PublicReviewsSection
+							mediaId={tvId}
+							mediaType="tv"
+							lang={lang}
+						/>
 					</Suspense>
 				}
 				extraSections={seasonsSection}

@@ -3,19 +3,22 @@ import { SectionHeading } from '@/components/ui/SectionHeading';
 import { getTranslations } from '@/lib/i18n/server';
 import { ReviewsList } from '@/components/media/reviews/ReviewsList';
 import type { ReviewMediaType } from '@/types/profile';
+import type { Language } from '@/lib/i18n/translations';
 
 interface PublicReviewsSectionProps {
 	mediaId: number;
 	mediaType: ReviewMediaType;
+	lang: Language;
 }
 
 export async function PublicReviewsSection({
 	mediaId,
 	mediaType,
+	lang,
 }: PublicReviewsSectionProps) {
 	const [reviews, t] = await Promise.all([
 		getPublicReviews(mediaId, mediaType),
-		getTranslations(),
+		getTranslations(lang),
 	]);
 
 	if (reviews.length === 0) return null;

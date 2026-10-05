@@ -2,6 +2,7 @@ import { MovingRow } from '@/components/effects/MovingRow';
 import { MediaCard } from '@/components/media/card/MediaCard';
 import { getMediaKey } from '@/lib/media';
 import { getTranslations } from '@/lib/i18n/server';
+import type { Language } from '@/lib/i18n/translations';
 import type { MediaItem } from '@/types/tmdb';
 
 function PosterRow({
@@ -26,11 +27,13 @@ function PosterRow({
 export default async function PreviewSection({
 	movies,
 	shows,
+	lang,
 }: {
 	movies: MediaItem[];
 	shows: MediaItem[];
+	lang: Language;
 }) {
-	const t = await getTranslations();
+	const t = await getTranslations(lang);
 	if (movies.length === 0 && shows.length === 0) return null;
 
 	return (

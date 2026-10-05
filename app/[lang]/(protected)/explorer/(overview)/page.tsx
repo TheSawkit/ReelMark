@@ -76,6 +76,7 @@ async function TrendingHero({ t, lang }: { t: Translations; lang: Language }) {
 						key={item.id}
 						item={item}
 						priority={index === 0}
+						lang={lang}
 						badgeLabel={t.pages.explorer.featured}
 						ctaLabel={t.pages.dashboard.discover}
 					/>

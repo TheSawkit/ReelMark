@@ -2,31 +2,32 @@ import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { getImageUrl } from '@/lib/tmdb/images';
 import { getMediaHref } from '@/lib/media';
-import { getServerLanguage } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
 import { riseStyle } from '@/lib/motion';
 import { CinematicBackdrop } from '@/components/media/detail/CinematicBackdrop';
 import { WatchButton } from '@/components/media/detail/WatchButton';
 import type { MediaItem } from '@/types/tmdb';
+import type { Language } from '@/lib/i18n/translations';
 
 interface SpotlightPickProps {
 	item: MediaItem;
 	badgeLabel: string;
 	ctaLabel: string;
 	priority?: boolean;
+	lang: Language;
 }
 
 /**
  * Full-bleed "number one this week" hero: fills the Explorer stage it is rendered in (the
  * parent owns the `.hero-stage` box), poster art on phones, backdrop on wider screens.
  */
-export async function SpotlightPick({
+export function SpotlightPick({
 	item,
 	badgeLabel,
 	ctaLabel,
 	priority,
+	lang,
 }: SpotlightPickProps) {
-	const lang = await getServerLanguage();
 	const entry = item.watchlistEntry;
 
 	return (

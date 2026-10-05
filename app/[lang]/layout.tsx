@@ -179,7 +179,7 @@ export default async function RootLayout({
 						zIndex={9999}
 					/>
 					<Suspense fallback={<NavbarFallback />}>
-						<Navbar />
+						<Navbar lang={lang} />
 					</Suspense>
 					<PageTopGradient />
 					{/* Sans hauteur plancher, le pied de page est visible tant que le contenu n'est pas

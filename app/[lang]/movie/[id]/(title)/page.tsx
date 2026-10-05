@@ -69,7 +69,7 @@ async function MovieProvidersSection({
 	const providers = await getMovieWatchProviders(movieId, lang).catch(
 		() => null
 	);
-	return <WatchProviders providers={providers} />;
+	return <WatchProviders providers={providers} lang={lang} />;
 }
 
 async function MovieTrailersSection({
@@ -268,6 +268,7 @@ export default async function MoviePage(props: MoviePageProps) {
 						<PublicReviewsSection
 							mediaId={movieId}
 							mediaType="movie"
+							lang={lang}
 						/>
 					</Suspense>
 				}
