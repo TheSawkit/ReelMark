@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, redirect } from 'next/navigation';
-import { fetchTMDB } from '@/lib/tmdb/client';
+import { fetchTMDB, REVALIDATE } from '@/lib/tmdb/client';
 import { isTMDBNotFound } from '@/lib/tmdb/errors';
 import { FALLBACK_TITLE } from '@/lib/metadata';
 import { Suspense, cache } from 'react';
@@ -229,7 +229,11 @@ export default async function TvShowPage(props: TvPageProps) {
 
 		let isMovie = false;
 		try {
-			await fetchTMDB(`/movie/${tvId}`, {}, { revalidate: 86400 });
+			await fetchTMDB(
+				`/movie/${tvId}`,
+				{},
+				{ revalidate: REVALIDATE.day }
+			);
 			isMovie = true;
 		} catch (probeError) {
 			if (!isTMDBNotFound(probeError)) throw probeError;
