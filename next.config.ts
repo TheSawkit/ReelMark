@@ -140,6 +140,7 @@ const withPWA = withSerwist({
 	swSrc: 'app/service-worker.ts',
 	swDest: 'public/sw.js',
 	disable: isDev,
+	register: false,
 	reloadOnOnline: false,
 	additionalPrecacheEntries: [
 		{ url: '/en/offline', revision: offlineRevision },
