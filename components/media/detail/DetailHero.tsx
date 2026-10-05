@@ -79,7 +79,7 @@ export function DetailHero({
 						</h1>
 						{tagline && (
 							<p
-								className="hero-rise line-clamp-3 max-w-2xl text-base italic text-text-muted sm:text-lg"
+								className="hero-rise line-clamp-3 max-w-2xl text-base italic text-text drop-shadow-text sm:text-lg md:text-text-muted"
 								style={riseStyle(2)}
 							>
 								{tagline}
