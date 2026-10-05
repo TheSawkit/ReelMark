@@ -269,12 +269,22 @@ export function ImportDataCard() {
 											: td.showFailed}
 									</button>
 									<button
-										onClick={async () => {
-											await navigator.clipboard.writeText(
-												phase.failed.join('\n')
-											);
-											toast.success(td.failedCopied);
-										}}
+										onClick={() =>
+											navigator.clipboard
+												.writeText(
+													phase.failed.join('\n')
+												)
+												.then(() =>
+													toast.success(
+														td.failedCopied
+													)
+												)
+												.catch(() =>
+													toast.error(
+														t.common.actionError
+													)
+												)
+										}
 										className="flex items-center gap-1.5 text-xs font-medium text-muted hover:text-text transition-colors cursor-pointer"
 									>
 										<Copy className="h-3.5 w-3.5" />

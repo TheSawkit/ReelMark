@@ -85,10 +85,12 @@ export function AiAssistantCard({
 		});
 	}
 
-	async function handleCopy() {
+	function handleCopy() {
 		if (!freshUrl) return;
-		await navigator.clipboard.writeText(freshUrl);
-		toast.success(ta.copied);
+		navigator.clipboard
+			.writeText(freshUrl)
+			.then(() => toast.success(ta.copied))
+			.catch(() => toast.error(t.common.actionError));
 	}
 
 	return (
