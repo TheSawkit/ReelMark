@@ -166,7 +166,7 @@ export function ImportDataCard() {
 										</span>
 										<span className="text-xs">
 											{td.importDropzoneHint}
-											<span className="font-mono text-primary/80">
+											<span className="font-mono text-red-text">
 												{td.importFormats[platform]}
 											</span>
 										</span>

@@ -17,7 +17,7 @@ const buttonVariants = cva(
 					'border border-border bg-surface text-text hover:bg-surface-2',
 				secondary: 'bg-surface-2 text-text hover:bg-surface',
 				ghost: 'hover:bg-surface-2/80 text-text',
-				link: 'text-red underline-offset-4 hover:underline',
+				link: 'text-red-text underline-offset-4 hover:underline',
 			},
 			size: {
 				default: 'px-5 py-2.5 has-[>svg]:px-4',

@@ -97,7 +97,7 @@ export function RegionalSettings({ user }: RegionalSettingsProps) {
 					</FieldGroup>
 
 					{state.error && (
-						<p className="text-sm text-red">{state.error}</p>
+						<p className="text-sm text-red-text">{state.error}</p>
 					)}
 					{state.success && (
 						<p className="text-sm text-gold">{state.message}</p>

@@ -157,7 +157,7 @@ export function ReviewsSection({
 									)}
 									prefetch={false}
 								>
-									<p className="font-medium text-sm text-text hover:text-primary transition-colors truncate">
+									<p className="font-medium text-sm text-text hover:text-red-text transition-colors truncate">
 										{review.media_title}
 									</p>
 								</Link>
@@ -192,7 +192,7 @@ export function ReviewsSection({
 												handleDeleteConfirm(review.id)
 											}
 											disabled={isPending}
-											className="h-8 px-2 text-xs text-red-2 hover:text-red hover:bg-red/10"
+											className="h-8 px-2 text-xs text-red-text hover:bg-red/10"
 										>
 											{t.common.confirm}
 										</Button>

@@ -251,7 +251,7 @@ export function PlaylistEditDialog({
 								<button
 									onClick={handleSaveMeta}
 									disabled={isSavingMeta || !editName.trim()}
-									className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors disabled:opacity-40"
+									className="flex items-center gap-1 text-xs text-red-text hover:text-red-text/80 transition-colors disabled:opacity-40"
 									aria-label={t.profile.savePlaylistMeta}
 								>
 									{isSavingMeta ? (

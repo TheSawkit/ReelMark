@@ -136,7 +136,7 @@ export function EpisodeCard({
 								e.preventDefault();
 								setIsExpanded(true);
 							}}
-							className="text-text text-xs font-semibold self-start hover:text-primary transition-colors cursor-pointer mt-1"
+							className="text-text text-xs font-semibold self-start hover:text-red-text transition-colors cursor-pointer mt-1"
 						>
 							{t.movie.readMore}
 						</button>

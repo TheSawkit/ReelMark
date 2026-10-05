@@ -79,7 +79,7 @@ function ReviewCard({
 						username={review.username}
 						avatarUrl={review.avatar_url}
 					/>
-					<span className="font-semibold text-sm text-text truncate group-hover:text-primary transition-colors">
+					<span className="font-semibold text-sm text-text truncate group-hover:text-red-text transition-colors">
 						@{review.username}
 					</span>
 				</Link>
@@ -146,7 +146,7 @@ export function ReviewsList({
 			<>
 				<button
 					onClick={() => setOpen(true)}
-					className="text-xs font-semibold text-muted hover:text-primary transition-colors cursor-pointer"
+					className="text-xs font-semibold text-muted hover:text-red-text transition-colors cursor-pointer"
 				>
 					{reviews.length} {t.movie.reviewsCount}
 				</button>
@@ -170,7 +170,7 @@ export function ReviewsList({
 			{reviews.length > 3 && (
 				<button
 					onClick={() => setOpen(true)}
-					className="flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80 transition-colors cursor-pointer mt-2"
+					className="flex items-center gap-1 text-sm font-semibold text-red-text hover:text-red-text/80 transition-colors cursor-pointer mt-2"
 				>
 					{t.movie.seeAllReviews} ({reviews.length})
 					<ChevronRight className="h-4 w-4" />

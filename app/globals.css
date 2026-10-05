@@ -18,6 +18,7 @@
 	--color-success: var(--success);
 	--color-red: #b9090b;
 	--color-red-2: #8b0000;
+	--color-red-text: var(--red-text);
 
 	--color-border: var(--border);
 	--color-border-subtle: var(--border-subtle);
@@ -116,6 +117,7 @@
 	--surface-3: #1a1a1a;
 	--text: #ffffff;
 	--muted: #a3a3a3;
+	--red-text: #ff6b6b;
 	--border: rgba(255, 255, 255, 0.08);
 	--border-subtle: rgba(255, 255, 255, 0.05);
 	--border-card: rgba(245, 197, 24, 0.15);
@@ -178,6 +180,7 @@
 	--surface-3: #e5e5ea;
 	--text: #1d1d1f;
 	--muted: #48484a;
+	--red-text: #b9090b;
 	--border: rgba(0, 0, 0, 0.06);
 	--border-subtle: rgba(0, 0, 0, 0.04);
 	--border-card: rgba(0, 0, 0, 0.05);

@@ -87,7 +87,7 @@ export function SeasonCard({
 				</div>
 
 				<div className="flex flex-col flex-1 py-1 min-w-0">
-					<h3 className="text-lg font-bold text-text group-hover:text-primary transition-colors line-clamp-2">
+					<h3 className="text-lg font-bold text-text group-hover:text-red-text transition-colors line-clamp-2">
 						{season.name}
 					</h3>
 					<div className="flex flex-col gap-1 mt-auto">

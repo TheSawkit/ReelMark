@@ -91,7 +91,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
 			<Link
 				href={localizedHref(lang, '/notifications')}
 				onClick={onClose}
-				className="mt-1 block rounded-lg px-3 py-2 text-center text-sm font-medium text-primary transition-colors hover:bg-surface-2"
+				className="mt-1 block rounded-lg px-3 py-2 text-center text-sm font-medium text-red-text transition-colors hover:bg-surface-2"
 			>
 				{t.notifications.seeAll}
 			</Link>

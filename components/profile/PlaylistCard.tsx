@@ -225,7 +225,7 @@ export function PlaylistCard({
 							<button
 								onClick={handleDelete}
 								disabled={isPending}
-								className="px-4 py-1.5 rounded-lg bg-red/20 border border-red/40 text-red text-sm font-medium hover:bg-red/30 transition-colors disabled:opacity-50"
+								className="px-4 py-1.5 rounded-lg bg-red/20 border border-red/40 text-red-text text-sm font-medium hover:bg-red/30 transition-colors disabled:opacity-50"
 							>
 								{t.profile.deleteConfirm}
 							</button>
