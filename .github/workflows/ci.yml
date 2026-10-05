@@ -37,14 +37,14 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 10
         steps:
-            - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v5
-            - uses: actions/setup-node@v6
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 24
                   cache: pnpm
             - run: pnpm install --frozen-lockfile
-            - uses: actions/cache/save@v5
+            - uses: actions/cache/save@v6
               with:
                   path: node_modules
                   key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -55,13 +55,13 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 10
         steps:
-            - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v5
-            - uses: actions/setup-node@v6
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 24
                   cache: pnpm
-            - uses: actions/cache/restore@v5
+            - uses: actions/cache/restore@v6
               with:
                   path: node_modules
                   key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -74,13 +74,13 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 10
         steps:
-            - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v5
-            - uses: actions/setup-node@v6
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 24
                   cache: pnpm
-            - uses: actions/cache/restore@v5
+            - uses: actions/cache/restore@v6
               with:
                   path: node_modules
                   key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -93,13 +93,13 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 10
         steps:
-            - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v5
-            - uses: actions/setup-node@v6
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 24
                   cache: pnpm
-            - uses: actions/cache/restore@v5
+            - uses: actions/cache/restore@v6
               with:
                   path: node_modules
                   key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -112,13 +112,13 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 10
         steps:
-            - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v5
-            - uses: actions/setup-node@v6
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 24
                   cache: pnpm
-            - uses: actions/cache/restore@v5
+            - uses: actions/cache/restore@v6
               with:
                   path: node_modules
                   key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -131,18 +131,18 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 20
         steps:
-            - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v5
-            - uses: actions/setup-node@v6
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 24
                   cache: pnpm
-            - uses: actions/cache/restore@v5
+            - uses: actions/cache/restore@v6
               with:
                   path: node_modules
                   key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
                   fail-on-cache-miss: true
-            - uses: actions/cache/restore@v5
+            - uses: actions/cache/restore@v6
               with:
                   path: .next/cache
                   key: nextjs-${{ github.ref_name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -150,13 +150,13 @@ jobs:
                       nextjs-${{ github.ref_name }}-
                       nextjs-main-
             - run: pnpm run build
-            - uses: actions/cache/save@v5
+            - uses: actions/cache/save@v6
               with:
                   path: .next/cache
                   key: nextjs-${{ github.ref_name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
             # Serwist écrit le service worker dans public/, pas dans .next, et public/sw.js
             # est gitignoré : sans lui le job e2e sert /sw.js en 500 et la PWA n'est pas testée.
-            - uses: actions/cache/save@v5
+            - uses: actions/cache/save@v6
               with:
                   path: |
                       .next
@@ -170,18 +170,18 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 30
         steps:
-            - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v5
-            - uses: actions/setup-node@v6
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 24
                   cache: pnpm
-            - uses: actions/cache/restore@v5
+            - uses: actions/cache/restore@v6
               with:
                   path: node_modules
                   key: node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
                   fail-on-cache-miss: true
-            - uses: actions/cache/restore@v5
+            - uses: actions/cache/restore@v6
               with:
                   path: |
                       .next
@@ -190,13 +190,13 @@ jobs:
                   key: next-build-${{ github.sha }}
                   fail-on-cache-miss: true
             - id: playwright-cache
-              uses: actions/cache/restore@v5
+              uses: actions/cache/restore@v6
               with:
                   path: ~/.cache/ms-playwright
                   key: playwright-chromium-${{ hashFiles('**/pnpm-lock.yaml') }}
             - run: pnpm exec playwright install --with-deps chromium
               if: steps.playwright-cache.outputs.cache-hit != 'true'
-            - uses: actions/cache/save@v5
+            - uses: actions/cache/save@v6
               if: steps.playwright-cache.outputs.cache-hit != 'true'
               with:
                   path: ~/.cache/ms-playwright
@@ -208,7 +208,7 @@ jobs:
               run: npx -y supabase@2.118.0 start -x studio,imgproxy,logflare,vector,edge-runtime,mailpit,postgres-meta,supavisor
             - run: pnpm seed:test
             - run: pnpm run test:e2e
-            - uses: actions/upload-artifact@v6
+            - uses: actions/upload-artifact@v7
               if: always()
               with:
                   name: playwright-report
