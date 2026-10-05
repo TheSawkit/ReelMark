@@ -206,7 +206,7 @@ export function SearchBar({
 						<div className="relative">
 							<span
 								className={cn(
-									'block transition-all duration-(--duration-base) ease-apple text-muted/50 whitespace-nowrap',
+									'block transition-all duration-(--duration-base) ease-apple text-muted whitespace-nowrap',
 									isCompact ? 'text-sm' : 'text-base',
 									isFocused
 										? 'opacity-0 -translate-y-2'
@@ -217,7 +217,7 @@ export function SearchBar({
 							</span>
 							<span
 								className={cn(
-									'absolute inset-0 transition-all duration-(--duration-base) ease-apple text-muted/50 whitespace-nowrap',
+									'absolute inset-0 transition-all duration-(--duration-base) ease-apple text-muted whitespace-nowrap',
 									isCompact ? 'text-sm' : 'text-base',
 									isFocused
 										? 'opacity-100 translate-y-0'

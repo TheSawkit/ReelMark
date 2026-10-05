@@ -218,7 +218,7 @@ export function PlaylistEditDialog({
 										}
 										onBlur={handleSaveMeta}
 										placeholder={t.profile.playlistName}
-										className="w-full text-base font-semibold text-text bg-transparent outline-none border-b border-transparent focus:border-border-subtle transition-colors placeholder:text-muted truncate"
+										className="w-full text-base font-semibold text-text bg-transparent outline-none border-b border-transparent focus:border-border-subtle focus-visible:border-primary transition-colors placeholder:text-muted truncate"
 									/>
 									<input
 										type="text"
@@ -230,7 +230,7 @@ export function PlaylistEditDialog({
 										placeholder={
 											t.profile.playlistDescription
 										}
-										className="w-full text-xs text-muted bg-transparent outline-none border-b border-transparent focus:border-border-subtle transition-colors placeholder:text-muted/50 truncate"
+										className="w-full text-xs text-muted bg-transparent outline-none border-b border-transparent focus:border-border-subtle focus-visible:border-primary transition-colors placeholder:text-muted truncate"
 									/>
 								</div>
 							) : (
@@ -294,7 +294,7 @@ export function PlaylistEditDialog({
 								value={query}
 								onChange={(e) => setQuery(e.target.value)}
 								placeholder={t.profile.searchContent}
-								className="w-full h-10 pl-10 pr-10 rounded-lg bg-surface-2 border border-border-subtle text-sm text-text placeholder:text-muted outline-none focus:border-border transition-colors"
+								className="w-full h-10 pl-10 pr-10 rounded-lg bg-surface-2 border border-border-subtle text-sm text-text placeholder:text-muted outline-none focus:border-border focus-visible:border-primary transition-colors"
 							/>
 							{isSearching ? (
 								<Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted animate-spin pointer-events-none" />

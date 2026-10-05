@@ -138,7 +138,7 @@ export function ReviewDialog({
 							placeholder={t.movie.reviewPlaceholder}
 							rows={5}
 							maxLength={MAX_REVIEW_LENGTH}
-							className="w-full rounded-lg bg-surface-2/40 border border-border/30 text-text text-sm px-3 py-2.5 placeholder:text-muted resize-none focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+							className="w-full rounded-lg bg-surface-2/40 border border-border/30 text-text text-sm px-3 py-2.5 placeholder:text-muted resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
 						/>
 						<p className="text-xs text-muted text-right tabular-nums">
 							{content.length.toLocaleString()} /{' '}
