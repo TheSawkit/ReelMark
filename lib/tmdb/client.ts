@@ -3,6 +3,7 @@ import { cacheLife } from 'next/cache';
 import { getServerLocale, getServerLanguage } from '@/lib/i18n/server';
 import { getUserContext } from '@/lib/supabase/auth-helpers';
 import { TMDBNotFoundError } from '@/lib/tmdb/errors';
+import { createTokenBucket } from '@/lib/tmdb/rate-limit';
 import type { Language } from '@/lib/i18n/translations';
 
 export interface FetchTMDBOptions {
@@ -70,6 +71,14 @@ const TRANSIENT_FAILURE_CACHE = { stale: 0, revalidate: 60, expire: 300 };
 const MISSING_ENTRY_CACHE = { stale: 0, revalidate: 3600, expire: 86400 };
 const TMDB_TIMEOUT_MS = 10_000;
 const MAX_RETRY_AFTER_MS = 5_000;
+const MAX_QUEUE_WAIT_MS = 8_000;
+
+/** TMDB caps each IP near 50 requests/s; 20/s per pod keeps two pods under it while a cold page's burst goes out at once. */
+const tmdbBucket = createTokenBucket({ capacity: 40, refillPerSecond: 20 });
+
+function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function retryDelay(attempt: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
@@ -92,6 +101,14 @@ async function fetchTMDBUrl<T>(
 	cacheLife({ stale: 300, revalidate, expire: revalidate * 24 });
 
 	for (let attempt = 0; ; attempt++) {
+		const wait = tmdbBucket.reserve();
+		if (wait > MAX_QUEUE_WAIT_MS) {
+			tmdbBucket.refund();
+			cacheLife(TRANSIENT_FAILURE_CACHE);
+			return { ok: false, status: 429, statusText: 'Local rate limit' };
+		}
+		if (wait > 0) await sleep(wait);
+
 		let response: Response;
 		try {
 			response = await fetch(url, {
