@@ -89,7 +89,18 @@ export function FriendshipButton({
 	const handleSendRequest = () => {
 		startTransition(async () => {
 			try {
-				await sendFriendRequest(targetUserId);
+				const refusal = await sendFriendRequest(targetUserId);
+				if (refusal) {
+					toast.error(
+						{
+							SELF_REQUEST: t.profile.errors.selfRequest,
+							DUPLICATE_REQUEST:
+								t.profile.errors.duplicateRequest,
+							[RATE_LIMITED]: t.profile.errors.rateLimited,
+						}[refusal.refused]
+					);
+					return;
+				}
 				setLocalFriendship({
 					id: crypto.randomUUID(),
 					requester_id: currentUserId,
@@ -100,14 +111,7 @@ export function FriendshipButton({
 				});
 				toast.success(t.profile.requestSentToast);
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : '';
-				if (msg === 'SELF_REQUEST')
-					toastActionError(err, t.profile.errors.selfRequest);
-				else if (msg === 'DUPLICATE_REQUEST')
-					toastActionError(err, t.profile.errors.duplicateRequest);
-				else if (msg === RATE_LIMITED)
-					toastActionError(err, t.profile.errors.rateLimited);
-				else toastActionError(err, t.common.actionError);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	};

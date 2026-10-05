@@ -74,10 +74,7 @@ export function ReviewDialog({
 				onSave?.(saved);
 				onClose();
 			} catch (err) {
-				toastActionError(
-					err,
-					err instanceof Error ? err.message : t.common.actionError
-				);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	}

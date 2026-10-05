@@ -19,7 +19,7 @@ import { useTranslation } from '@/lib/i18n/context';
 import { getLocale } from '@/lib/i18n/utils';
 import { formatShortDate } from '@/lib/format';
 import { BASE_URL } from '@/lib/metadata';
-import { RATE_LIMITED } from '@/lib/action-errors';
+import { isRefusal } from '@/lib/action-errors';
 import { createMcpLink, revokeMcpLink } from '@/app/actions/mcp';
 import { AI_ASSISTANT_ANCHOR } from './tabs';
 import type { McpAccess, McpLinkStatus } from '@/types/mcp';
@@ -54,6 +54,10 @@ export function AiAssistantCard({
 		startTransition(async () => {
 			try {
 				const key = await createMcpLink(access);
+				if (isRefusal(key)) {
+					toast.error(ta.rateLimited);
+					return;
+				}
 				setFreshUrl(`${BASE_URL}/api/mcp/${key}`);
 				setLink({
 					createdAt: new Date().toISOString(),
@@ -61,13 +65,7 @@ export function AiAssistantCard({
 					access,
 				});
 			} catch (err) {
-				const message = err instanceof Error ? err.message : '';
-				toastActionError(
-					err,
-					message === RATE_LIMITED
-						? ta.rateLimited
-						: t.common.actionError
-				);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	}
