@@ -180,7 +180,7 @@ export function NotificationsProvider({
 							filter: `user_id=eq.${userId}`,
 						},
 						(payload) => {
-							setUnreadCount((c) => c + 1);
+							void refresh();
 							const row = payload.new as NotificationRow;
 							if (row.type === 'friend_request')
 								promptStore.requestPush();
