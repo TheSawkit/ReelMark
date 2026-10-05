@@ -26,6 +26,14 @@ const ReviewDialog = dynamic(
 	{ ssr: false }
 );
 
+const RemoveShowDialog = dynamic(
+	() =>
+		import('@/components/media/tv/RemoveShowDialog').then(
+			(m) => m.RemoveShowDialog
+		),
+	{ ssr: false }
+);
+
 type Variant = NonNullable<WatchButtonProps['variant']>;
 type TargetStatus = WatchStatus | 'none';
 
@@ -35,6 +43,9 @@ interface MediaRef {
 	mediaType: MediaType;
 	posterPath: string | null;
 }
+
+/** Dialogs portal out of the DOM but not out of the React tree: their clicks would reach a parent card's Link and navigate. */
+const stopPortalClick = (e: React.MouseEvent) => e.stopPropagation();
 
 const FOCUS_RING =
 	'transition focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none';
@@ -194,6 +205,7 @@ export function WatchButton({
 }: WatchButtonProps) {
 	const { loading, error, run } = useOptimisticAction();
 	const [reviewOpen, setReviewOpen] = useState(false);
+	const [confirmingRemoval, setConfirmingRemoval] = useState(false);
 	const { t } = useTranslation();
 	const router = useRouter();
 	const storedStatus = useMediaWatch(mediaType, mediaId);
@@ -205,12 +217,17 @@ export function WatchButton({
 
 	const media: MediaRef = { mediaId, mediaTitle, mediaType, posterPath };
 
-	async function handleClick(e: React.MouseEvent) {
+	function handleClick(e: React.MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
 
-		const previous = mediaWatchStore.get(mediaType, mediaId);
 		const target = isActive ? (fallbackStatus ?? 'none') : status;
+		if (target === 'none' && mediaType === 'tv') setConfirmingRemoval(true);
+		else void applyTarget(target);
+	}
+
+	async function applyTarget(target: TargetStatus) {
+		const previous = mediaWatchStore.get(mediaType, mediaId);
 		const effectivePrevious =
 			previous?.status ?? (initialIsActive ? status : 'none');
 		const changesMembership =
@@ -261,21 +278,40 @@ export function WatchButton({
 					</ButtonLabel>
 				)}
 			</button>
-			{reviewOpen && (
-				<ReviewDialog
-					open={reviewOpen}
-					onClose={() => setReviewOpen(false)}
-					mediaId={mediaId}
-					mediaType={mediaType}
-					mediaTitle={mediaTitle}
-					posterPath={posterPath}
-					onSave={(saved) => {
-						mediaRatingStore.setMyReview(mediaType, mediaId, saved);
-						mediaRatingStore.invalidateRating(mediaType, mediaId);
-						router.refresh();
-					}}
-				/>
-			)}
+			<span className="contents" onClick={stopPortalClick}>
+				{confirmingRemoval && (
+					<RemoveShowDialog
+						showTitle={mediaTitle}
+						onClose={() => setConfirmingRemoval(false)}
+						onConfirm={() => {
+							setConfirmingRemoval(false);
+							void applyTarget('none');
+						}}
+					/>
+				)}
+				{reviewOpen && (
+					<ReviewDialog
+						open={reviewOpen}
+						onClose={() => setReviewOpen(false)}
+						mediaId={mediaId}
+						mediaType={mediaType}
+						mediaTitle={mediaTitle}
+						posterPath={posterPath}
+						onSave={(saved) => {
+							mediaRatingStore.setMyReview(
+								mediaType,
+								mediaId,
+								saved
+							);
+							mediaRatingStore.invalidateRating(
+								mediaType,
+								mediaId
+							);
+							router.refresh();
+						}}
+					/>
+				)}
+			</span>
 		</>
 	);
 }
