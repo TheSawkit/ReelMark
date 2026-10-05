@@ -32,18 +32,19 @@ cp .env.example .env.local
 
 Remplir `.env.local` :
 
-| Variable                                                               | Où la trouver                                                                                         |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`                                             | Supabase → Settings → API                                                                             |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`                                        | Supabase → Settings → API (clé publishable)                                                           |
-| `SUPABASE_SERVICE_ROLE_KEY`                                            | Supabase → Settings → API (secrète — jamais côté client)                                              |
-| `TMDB_READ_ACCESS_TOKEN`                                               | TMDB → Settings → API → API Read Access Token                                                         |
-| `WATCHMODE_API_KEY`                                                    | watchmode.com → dashboard                                                                             |
-| `NEXT_PUBLIC_BASE_URL`                                                 | `http://localhost:3000` en dev, le domaine en prod                                                    |
-| `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN`                                | Bugsink → projet → DSN (**https obligatoire** en prod)                                                |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | `npx web-push generate-vapid-keys` ; `VAPID_SUBJECT` = `mailto:` de contact (notifications push)      |
-| `CRON_SECRET`                                                          | chaîne aléatoire longue (`openssl rand -hex 32`) ; les CronJobs l'envoient en `Authorization: Bearer` |
-| `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`                               | compte de test créé à la main, pour les E2E authentifiés et `pnpm screenshots`                        |
+| Variable                                                               | Où la trouver                                                                                                                                                      |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_SUPABASE_URL`                                             | Supabase → Settings → API                                                                                                                                          |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`                                        | Supabase → Settings → API (clé publishable)                                                                                                                        |
+| `SUPABASE_SERVICE_ROLE_KEY`                                            | Supabase → Settings → API (secrète — jamais côté client)                                                                                                           |
+| `TMDB_READ_ACCESS_TOKEN`                                               | TMDB → Settings → API → API Read Access Token                                                                                                                      |
+| `WATCHMODE_API_KEY`                                                    | watchmode.com → dashboard                                                                                                                                          |
+| `NEXT_PUBLIC_BASE_URL`                                                 | `http://localhost:3000` en dev, le domaine en prod                                                                                                                 |
+| `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN`                                | Bugsink → projet → DSN (**https obligatoire** en prod)                                                                                                             |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | `npx web-push generate-vapid-keys` ; `VAPID_SUBJECT` = `mailto:` de contact (notifications push)                                                                   |
+| `CRON_SECRET`                                                          | chaîne aléatoire longue (`openssl rand -hex 32`) ; les CronJobs l'envoient en `Authorization: Bearer`                                                              |
+| `BUGSINK_ALERT_SECRET` / `LINEAR_API_KEY` / `LINEAR_TEAM_ID`           | optionnel, relais Bugsink → Linear : secret aléatoire (`openssl rand -hex 32`), clé personnelle Linear (Settings → Security & access → API), id de l'équipe Linear |
+| `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`                               | compte de test créé à la main, pour les E2E authentifiés et `pnpm screenshots`                                                                                     |
 
 Piège : pour les env vars pouvant valoir `""`, le code utilise `||` et non `??` — une chaîne vide doit retomber sur le défaut.
 

@@ -71,20 +71,21 @@ The database schema lives on the Supabase project (15 tables). To recreate it, f
 
 All variables live in `.env.local` (template: `.env.example`). `NEXT_PUBLIC_*` values reach the browser and are inlined at build time; the rest stay on the server.
 
-| Variable                                                             | Scope  | Description                                                   |
-| :------------------------------------------------------------------- | :----- | :------------------------------------------------------------ |
-| `NEXT_PUBLIC_SUPABASE_URL`                                           | public | Supabase project URL                                          |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`                                      | public | Supabase publishable key                                      |
-| `SUPABASE_SERVICE_ROLE_KEY`                                          | server | Supabase admin key — never exposed to the client              |
-| `TMDB_READ_ACCESS_TOKEN`                                             | server | TMDB API v4 read access token                                 |
-| `WATCHMODE_API_KEY`                                                  | server | Watchmode API key (streaming providers)                       |
-| `NEXT_PUBLIC_BASE_URL`                                               | public | Site URL, e.g. `https://reelmark.silexio.be`                  |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY`                 | mixed  | Web Push key pair (`npx web-push generate-vapid-keys`)        |
-| `VAPID_SUBJECT`                                                      | server | Web Push contact, `mailto:…`                                  |
-| `CRON_SECRET`                                                        | server | Bearer token expected by `/api/cron/*`; unset = routes closed |
-| `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN`                              | mixed  | Bugsink DSN — must be `https`                                 |
-| `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_URL` / `SENTRY_AUTH_TOKEN` | build  | Source map upload; skipped when the token is unset            |
-| `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`                             | test   | Dedicated account for authenticated E2E tests and screenshots |
+| Variable                                                             | Scope  | Description                                                                           |
+| :------------------------------------------------------------------- | :----- | :------------------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_SUPABASE_URL`                                           | public | Supabase project URL                                                                  |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`                                      | public | Supabase publishable key                                                              |
+| `SUPABASE_SERVICE_ROLE_KEY`                                          | server | Supabase admin key — never exposed to the client                                      |
+| `TMDB_READ_ACCESS_TOKEN`                                             | server | TMDB API v4 read access token                                                         |
+| `WATCHMODE_API_KEY`                                                  | server | Watchmode API key (streaming providers)                                               |
+| `NEXT_PUBLIC_BASE_URL`                                               | public | Site URL, e.g. `https://reelmark.silexio.be`                                          |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY`                 | mixed  | Web Push key pair (`npx web-push generate-vapid-keys`)                                |
+| `VAPID_SUBJECT`                                                      | server | Web Push contact, `mailto:…`                                                          |
+| `CRON_SECRET`                                                        | server | Bearer token expected by `/api/cron/*`; unset = routes closed                         |
+| `BUGSINK_ALERT_SECRET` / `LINEAR_API_KEY` / `LINEAR_TEAM_ID`         | server | Bugsink → Linear relay (`/api/bugsink-alert/<secret>`); any unset = route answers 404 |
+| `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN`                              | mixed  | Bugsink DSN — must be `https`                                                         |
+| `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_URL` / `SENTRY_AUTH_TOKEN` | build  | Source map upload; skipped when the token is unset                                    |
+| `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`                             | test   | Dedicated account for authenticated E2E tests and screenshots                         |
 
 ### Scripts
 

@@ -106,6 +106,7 @@ Bugsink groupe par transaction (projet en groupement v1) : sans précaution, une
 - `beforeSend` serveur et edge = `filterServerEvent` (`lib/sentry-filters.ts`). Il écarte les rejets `HANGING_PROMISE_REJECTION` que Next 16.3 lève sur `headers()`/`cookies()`/`"use cache"` quand il interrompt un prérendu (absents de ses digests connus, ils remontaient par `onRequestError` : 884 096 événements sur une seule issue). Il donne une empreinte `upstream-api` par type d'erreur aux pannes TMDB, Watchmode et au quota Supabase.
 - `reportSwallowed` (`lib/report.ts`) envoie ses avertissements avec l'empreinte `swallowed/<label>/<message>` : un message de repli doit donc rester constant (pas d'identifiant ni de compteur dedans).
 - Les issues de quota (Watchmode, TMDB 429, quota Supabase) sont mutées dans Bugsink, pas résolues : elles reviendront à chaque dépassement.
+- Relais vers Linear : Bugsink (Alerting → Custom webhook) poste chaque issue nouvelle, régressée ou démutée sur `/api/bugsink-alert/<BUGSINK_ALERT_SECRET>` (`lib/bugsink-linear.ts`). Un ticket par issue, retrouvé par l'URL Bugsink jointe : une régression commente le ticket existant au lieu d'en ouvrir un autre. Un échec Linear répond 502 (Bugsink note la livraison ratée) et n'est que journalisé, pour ne pas boucler par Sentry.
 
 ## Arborescence
 
