@@ -66,7 +66,6 @@ export function MediaSection({
 					<MediaCard
 						media={media}
 						hideRating={hideRating}
-						priority={index < 4}
 						className="h-full"
 					/>
 				</StaggeredItem>
@@ -124,7 +123,6 @@ export function LibraryMediaSection({
 						watchlistEntry={entry}
 						tvProgress={tvProgress?.[entry.media_id]}
 						hideRating
-						priority={index < 4}
 						className="h-full"
 					/>
 				</StaggeredItem>
