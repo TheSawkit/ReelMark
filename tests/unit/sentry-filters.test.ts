@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import type { ErrorEvent } from '@sentry/nextjs';
-import { filterServerEvent } from '@/lib/sentry-filters';
+import { vi } from 'vitest';
+import {
+	filterServerEvent,
+	isErrorReportingEnabled,
+} from '@/lib/sentry-filters';
 
 function eventWith(value: string): ErrorEvent {
 	return {
@@ -55,5 +59,26 @@ describe('filterServerEvent', () => {
 			{}
 		);
 		expect(event?.fingerprint).toBeUndefined();
+	});
+});
+
+describe('isErrorReportingEnabled', () => {
+	it('stays off for a local build, whose errors would land among production ones', () => {
+		vi.stubEnv('NEXT_PUBLIC_BASE_URL', 'http://localhost:3000');
+		expect(isErrorReportingEnabled('https://key@sentry.silexio.be/1')).toBe(
+			false
+		);
+		vi.stubEnv('NEXT_PUBLIC_BASE_URL', 'http://127.0.0.1:3000');
+		expect(isErrorReportingEnabled('https://key@sentry.silexio.be/1')).toBe(
+			false
+		);
+	});
+
+	it('reports from the deployed site, and never without a DSN', () => {
+		vi.stubEnv('NEXT_PUBLIC_BASE_URL', 'https://reelmark.silexio.be');
+		expect(isErrorReportingEnabled('https://key@sentry.silexio.be/1')).toBe(
+			true
+		);
+		expect(isErrorReportingEnabled(undefined)).toBe(false);
 	});
 });

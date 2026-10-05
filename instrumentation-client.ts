@@ -4,9 +4,11 @@ import {
 	isStaleBuildError,
 	recoverFromStaleBuild,
 } from '@/lib/stale-build';
+import { isErrorReportingEnabled } from '@/lib/sentry-filters';
 
 Sentry.init({
 	dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+	enabled: isErrorReportingEnabled(process.env.NEXT_PUBLIC_SENTRY_DSN),
 	tracesSampleRate: 0,
 	debug: false,
 	ignoreErrors: [STALE_BUILD_PATTERN],

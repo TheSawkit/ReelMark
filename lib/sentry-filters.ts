@@ -3,6 +3,16 @@ import type { ErrorEvent, EventHint } from '@sentry/nextjs';
 const UPSTREAM_FAILURE =
 	/^(TMDB API Error|Watchmode API Error|Service for this project is restricted)/;
 
+const LOCAL_BASE_URL = /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/;
+
+/** Whether this build reports to Bugsink: never from a local build (`NEXT_PUBLIC_BASE_URL` on localhost), whose errors would land among production's. */
+export function isErrorReportingEnabled(dsn: string | undefined): boolean {
+	return (
+		Boolean(dsn) &&
+		!LOCAL_BASE_URL.test(process.env.NEXT_PUBLIC_BASE_URL ?? '')
+	);
+}
+
 function isPrerenderAbort(error: unknown): boolean {
 	return (
 		typeof error === 'object' &&
