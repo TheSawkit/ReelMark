@@ -1,0 +1,29 @@
+name: Release
+
+on:
+    push:
+        tags: ['v*']
+
+permissions:
+    contents: write
+
+env:
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+    release:
+        name: GitHub Release
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
+
+            # Une version publiée correspond à ce qui tourne en production : le tag doit être sur main.
+            - name: Vérifier que le tag est sur main
+              run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+            - name: Créer la release et son changelog
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes --title "$GITHUB_REF_NAME"

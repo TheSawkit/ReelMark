@@ -52,6 +52,7 @@ export function ReviewDialog({
 	);
 	const [content, setContent] = useState(existingReview?.content ?? '');
 	const [isPending, startTransition] = useGuardedTransition();
+	const [confirmingDelete, setConfirmingDelete] = useState(false);
 
 	function handleOpenChange(open: boolean) {
 		if (!open) onClose();
@@ -74,10 +75,7 @@ export function ReviewDialog({
 				onSave?.(saved);
 				onClose();
 			} catch (err) {
-				toastActionError(
-					err,
-					err instanceof Error ? err.message : t.common.actionError
-				);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	}
@@ -138,7 +136,7 @@ export function ReviewDialog({
 							placeholder={t.movie.reviewPlaceholder}
 							rows={5}
 							maxLength={MAX_REVIEW_LENGTH}
-							className="w-full rounded-lg bg-surface-2/40 border border-border/30 text-text text-sm px-3 py-2.5 placeholder:text-muted resize-none focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+							className="w-full rounded-lg bg-surface-2/40 border border-border/30 text-text text-sm px-3 py-2.5 placeholder:text-muted resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
 						/>
 						<p className="text-xs text-muted text-right tabular-nums">
 							{content.length.toLocaleString()} /{' '}
@@ -148,11 +146,32 @@ export function ReviewDialog({
 				</div>
 
 				<div className="px-5 pb-5 flex items-center justify-between gap-3">
-					{existingReview ? (
+					{existingReview && confirmingDelete ? (
+						<div className="flex items-center gap-1">
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={handleDelete}
+								disabled={isPending}
+								className="text-xs text-red-text hover:bg-red/10"
+							>
+								{t.common.confirm}
+							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() => setConfirmingDelete(false)}
+								disabled={isPending}
+								className="text-xs text-muted"
+							>
+								{t.common.cancel}
+							</Button>
+						</div>
+					) : existingReview ? (
 						<button
-							onClick={handleDelete}
+							onClick={() => setConfirmingDelete(true)}
 							disabled={isPending}
-							className="flex items-center gap-1.5 text-xs text-muted hover:text-red transition-colors disabled:opacity-50 cursor-pointer"
+							className="flex items-center gap-1.5 text-xs text-muted hover:text-red-text transition-colors disabled:opacity-50 cursor-pointer"
 						>
 							<Trash2 className="w-3.5 h-3.5" />
 							{t.movie.deleteReview}

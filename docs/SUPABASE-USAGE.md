@@ -27,6 +27,17 @@ Ce qui pesait, par ordre d'impact :
 | 9   | Realtime : abonnement lancé avant que le socket ait le JWT → rôle `anon` → `invalid column for filter user_id` (5 000 erreurs/jour) puis rejoin                                                  | `withRealtimeClient` attend `realtime.setAuth()` et une session                                                                                                                                                                 |
 | 10  | CI : la suite E2E tournait contre la base de prod (7 000 à 26 000 requêtes par run), deux fois par push sur `dev` avec une PR ouverte (événements `push` + `pull_request`)                       | La CI démarre sa propre base Supabase depuis `supabase/migrations/` (`supabase start`), la seede et joue la suite dessus : plus aucune requête vers un projet hébergé, hormis la sonde RLS de la prod (une dizaine de lectures) |
 
+## Mesure du 2026-10-05 (après déploiement de la PR #120)
+
+| Fenêtre (edge logs)                       | Requêtes / heure |
+| ----------------------------------------- | ---------------- |
+| 2026-10-04, 10 h – 21 h (avant)           | 3 060 à 8 588    |
+| 2026-10-04 22 h – 2026-10-05 10 h (après) | 207 à 243        |
+
+- Le reste, c'est `reviewed_media_index` (2 185 appels sur 10 h). La réponse pèse 274 octets (une ligne, 44 titres notés). En régime normal, ça fait 2 pods × 60 appels/h ≈ 0,1 Go/mois en comptant les en-têtes, et au pire 0,4 Go à 10 pods. Pendant une panne, l'échec n'est gardé que 30 s, ce qui double les appels : d'où les ~215/h mesurés quand le projet est restreint.
+- Tout le reste vient des comptes connectés (6 comptes, 5 769 lignes de watchlist, 40 949 épisodes, base de 25 Mo). Le plus lourd est un chargement complet de grosse bibliothèque, environ 0,5 Mo : 5 Go représentent environ 10 000 chargements de ce type par mois.
+- Les pages anonymes ne lisent plus Supabase que par cet index : un robot qui parcourt les fiches ne coûte plus rien côté base.
+
 ## Règles
 
 - **Jamais `fetchAllRows` pour afficher une page.** Il rapatrie tout, par pages de 1 000. Réservé aux exports, imports, jobs et au moteur de goûts, qui lisent réellement toute la bibliothèque.

@@ -1,5 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { BASE_URL } from '@/lib/metadata';
+import { SUPPORTED_LANGUAGES } from '@/lib/i18n/config';
+import { PROTECTED_SEGMENTS } from '@/lib/proxy/auth-routing';
 
 const BLOCKED_BOTS = [
 	'GPTBot',
@@ -27,8 +29,15 @@ export default function robots(): MetadataRoute.Robots {
 			})),
 			{
 				userAgent: '*',
-				allow: ['/', '/login', '/signup'],
-				disallow: ['/dashboard', '/library', '/settings', '/api/'],
+				allow: '/',
+				disallow: [
+					...SUPPORTED_LANGUAGES.flatMap((lang) =>
+						PROTECTED_SEGMENTS.map(
+							(segment) => `/${lang}${segment}`
+						)
+					),
+					'/api/',
+				],
 			},
 		],
 		sitemap: `${BASE_URL}/sitemap.xml`,

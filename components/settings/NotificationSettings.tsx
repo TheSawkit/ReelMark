@@ -29,7 +29,7 @@ export function NotificationSettings({
 	initialPreferences,
 }: NotificationSettingsProps) {
 	const { t } = useTranslation();
-	const push = usePushSubscription();
+	const push = usePushSubscription({ signedIn: true });
 	const [prefs, setPrefs] =
 		useState<NotificationPreferences>(initialPreferences);
 

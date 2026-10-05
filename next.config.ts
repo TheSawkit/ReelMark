@@ -1,5 +1,5 @@
 import { networkInterfaces } from 'node:os';
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from '@sentry/nextjs/config';
 import type { NextConfig } from 'next';
 import withSerwist from '@serwist/next';
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from './lib/i18n/config';
@@ -140,6 +140,7 @@ const withPWA = withSerwist({
 	swSrc: 'app/service-worker.ts',
 	swDest: 'public/sw.js',
 	disable: isDev,
+	register: false,
 	reloadOnOnline: false,
 	additionalPrecacheEntries: [
 		{ url: '/en/offline', revision: offlineRevision },

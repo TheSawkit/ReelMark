@@ -1,38 +1,58 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { RATE_LIMITED } from '@/lib/action-errors';
 
-describe('friends guards', () => {
-	it('SELF_REQUEST is thrown when addresseeId equals userId', () => {
-		const userId = 'abc-123';
-		const addresseeId = 'abc-123';
+const insertError = vi.hoisted(() => ({
+	current: null as { code: string; message: string } | null,
+}));
 
-		const guardFn = (uid: string, aid: string) => {
-			if (aid === uid) throw new Error('SELF_REQUEST');
-		};
+vi.mock('next/server', () => ({ after: vi.fn() }));
+vi.mock('@/lib/revalidate', () => ({
+	revalidateProfileAfterResponse: vi.fn(),
+}));
+vi.mock('@/lib/push/notify-friend', () => ({ sendFriendPush: vi.fn() }));
+vi.mock('@/lib/supabase/auth-helpers', () => ({
+	getAuthenticatedUser: async () => ({
+		userId: 'me',
+		user: { user_metadata: {} },
+		supabase: {
+			from: () => ({
+				insert: async () => ({ error: insertError.current }),
+			}),
+		},
+	}),
+}));
 
-		expect(() => guardFn(userId, addresseeId)).toThrow('SELF_REQUEST');
+const { sendFriendRequest } = await import('@/app/actions/friends');
+
+beforeEach(() => {
+	insertError.current = null;
+});
+
+describe('sendFriendRequest — refusals travel as return values, production hides thrown messages', () => {
+	it('refuses a request to oneself', async () => {
+		await expect(sendFriendRequest('me')).resolves.toEqual({
+			refused: 'SELF_REQUEST',
+		});
 	});
 
-	it('SELF_REQUEST is not thrown when addresseeId differs from userId', () => {
-		const userId = 'abc-123';
-		const addresseeId = 'xyz-456';
-
-		const guardFn = (uid: string, aid: string) => {
-			if (aid === uid) throw new Error('SELF_REQUEST');
-		};
-
-		expect(() => guardFn(userId, addresseeId)).not.toThrow();
+	it('refuses a request that already exists', async () => {
+		insertError.current = { code: '23505', message: 'duplicate key' };
+		await expect(sendFriendRequest('duplicate-target')).resolves.toEqual({
+			refused: 'DUPLICATE_REQUEST',
+		});
 	});
 
-	it('DUPLICATE_REQUEST error code 23505 is mapped correctly', () => {
-		const mapError = (code: string, message: string) => {
-			if (code === '23505') return 'DUPLICATE_REQUEST';
-			return message;
-		};
-
-		expect(mapError('23505', 'duplicate key')).toBe('DUPLICATE_REQUEST');
-		expect(mapError('42501', 'permission denied')).toBe(
+	it('still throws on an unexpected database failure', async () => {
+		insertError.current = { code: '42501', message: 'permission denied' };
+		await expect(sendFriendRequest('other')).rejects.toThrow(
 			'permission denied'
 		);
+	});
+	it('refuses once the hourly budget is spent', async () => {
+		for (let i = 0; i < 30; i++) await sendFriendRequest(`target-${i}`);
+		await expect(sendFriendRequest('one-too-many')).resolves.toEqual({
+			refused: RATE_LIMITED,
+		});
 	});
 });
 

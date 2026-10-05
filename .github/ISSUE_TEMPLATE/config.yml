@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+    - name: Tickets ReelMark (Linear)
+      url: https://linear.app/silexio/team/DEV/all
+      about: Bugs, idées et tâches se suivent dans Linear, équipe Développement.
+    - name: Faille de sécurité
+      url: https://github.com/TheSawkit/ReelMark/security/advisories/new
+      about: Signalement privé — jamais dans un ticket public.

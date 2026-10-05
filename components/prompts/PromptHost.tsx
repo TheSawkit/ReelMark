@@ -114,6 +114,7 @@ interface PromptHostProps {
 	accountCreatedAt: number | null;
 	canImport: boolean;
 	canPickServices: boolean;
+	signedIn: boolean;
 }
 
 /** Renders the single call-to-action the prompt engine allows for this session, if any. */
@@ -122,11 +123,12 @@ export function PromptHost({
 	accountCreatedAt,
 	canImport,
 	canPickServices,
+	signedIn,
 }: PromptHostProps) {
 	const { t, lang } = useTranslation();
 	const router = useRouter();
 	const pwa = usePWAInstall();
-	const push = usePushSubscription();
+	const push = usePushSubscription({ signedIn });
 	const pushRequested = usePushRequested();
 	const { active, open } = usePromptSlot();
 	const [pending, setPending] = useState(false);

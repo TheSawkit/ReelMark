@@ -9,9 +9,10 @@ import {
 import FeatureCard from './FeatureCard';
 import { StaggeredItem } from '@/components/ui/StaggeredItem';
 import { getTranslations } from '@/lib/i18n/server';
+import type { Language } from '@/lib/i18n/translations';
 
-export default async function FeaturesSection() {
-	const t = await getTranslations();
+export default async function FeaturesSection({ lang }: { lang: Language }) {
+	const t = await getTranslations(lang);
 
 	const features = [
 		{

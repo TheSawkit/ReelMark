@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
+	movieJsonLd,
 	movieSeriesJsonLd,
 	personJsonLd,
 	serializeJsonLd,
 	tvSeasonJsonLd,
+	tvSeriesJsonLd,
 } from '@/lib/structured-data';
 import type {
 	CollectionDetails,
+	Credits,
 	CrewDetails,
+	MovieDetails,
 	SeasonDetails,
 	TvShowDetails,
 } from '@/types/tmdb';
@@ -95,6 +99,34 @@ describe('serializeJsonLd', () => {
 	it('escapes < so a title cannot close the script tag', () => {
 		expect(serializeJsonLd({ name: '</script>' })).not.toContain(
 			'</script>'
+		);
+	});
+});
+
+describe('movieJsonLd / tvSeriesJsonLd', () => {
+	const credits = { cast: [], crew: [] } as unknown as Credits;
+
+	it('carry no TMDB rating — Google forbids ratings aggregated from other sites', () => {
+		const movie = {
+			id: 550,
+			title: 'Fight Club',
+			genres: [],
+			vote_average: 8.4,
+			vote_count: 30000,
+		} as unknown as MovieDetails;
+		const show = {
+			...tv,
+			genres: [],
+			created_by: [],
+			vote_average: 9.2,
+			vote_count: 25000,
+		} as TvShowDetails;
+
+		expect(movieJsonLd(movie, credits, 'en')).not.toHaveProperty(
+			'aggregateRating'
+		);
+		expect(tvSeriesJsonLd(show, credits, 'en')).not.toHaveProperty(
+			'aggregateRating'
 		);
 	});
 });

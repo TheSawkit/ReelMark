@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-	"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-cinema text-sm font-semibold transition duration-(--duration-fast) ease-apple transform hover:scale-105 active:scale-97 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+	"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-cinema text-sm font-semibold transition duration-(--duration-fast) ease-apple transform hover:scale-105 active:scale-97 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
 	{
 		variants: {
 			variant: {
@@ -17,7 +17,7 @@ const buttonVariants = cva(
 					'border border-border bg-surface text-text hover:bg-surface-2',
 				secondary: 'bg-surface-2 text-text hover:bg-surface',
 				ghost: 'hover:bg-surface-2/80 text-text',
-				link: 'text-red underline-offset-4 hover:underline',
+				link: 'text-red-text underline-offset-4 hover:underline',
 			},
 			size: {
 				default: 'px-5 py-2.5 has-[>svg]:px-4',

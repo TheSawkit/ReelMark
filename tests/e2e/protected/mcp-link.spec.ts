@@ -124,6 +124,7 @@ test.describe('AI assistant link', () => {
 		expect(replaced.status()).toBe(404);
 
 		await page.getByRole('button', { name: 'Révoquer' }).click();
+		await page.getByRole('button', { name: 'Confirmer' }).click();
 		await expect(
 			page.getByRole('button', { name: 'Générer mon lien' })
 		).toBeVisible();

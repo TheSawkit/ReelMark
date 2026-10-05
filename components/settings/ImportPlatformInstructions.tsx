@@ -93,7 +93,7 @@ export function PlatformInstructions({
 					<span className="text-xs font-semibold text-text">
 						{td.method.extension}
 					</span>
-					<span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
+					<span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold text-red-text">
 						{td.method.recommended}
 					</span>
 					<span className="rounded-full bg-surface-3 px-2 py-0.5 text-[10px] text-muted">

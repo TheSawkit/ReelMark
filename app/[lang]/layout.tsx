@@ -16,6 +16,7 @@ import { BASE_URL, DEFAULT_OG_IMAGE } from '@/lib/metadata';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
 import { PreventImageContextMenu } from '@/components/shared/PreventImageContextMenu';
 import { PreventPinchZoom } from '@/components/shared/PreventPinchZoom';
+import { RegisterServiceWorker } from '@/components/shared/RegisterServiceWorker';
 import { PromptSlot } from '@/components/prompts/PromptSlot';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import NextTopLoader from 'nextjs-toploader';
@@ -161,6 +162,7 @@ export default async function RootLayout({
 			>
 				<PreventImageContextMenu />
 				<PreventPinchZoom />
+				<RegisterServiceWorker />
 				<Providers initialLang={lang}>
 					<ScrollToTop />
 					<a
@@ -179,7 +181,7 @@ export default async function RootLayout({
 						zIndex={9999}
 					/>
 					<Suspense fallback={<NavbarFallback />}>
-						<Navbar />
+						<Navbar lang={lang} />
 					</Suspense>
 					<PageTopGradient />
 					{/* Sans hauteur plancher, le pied de page est visible tant que le contenu n'est pas

@@ -1,7 +1,7 @@
 import 'server-only';
-import { createAdminClient } from '@/lib/supabase/server';
 import { translations, type Language } from '@/lib/i18n/translations';
-import { DEFAULT_LANGUAGE, isLanguage } from '@/lib/i18n/config';
+import { DEFAULT_LANGUAGE } from '@/lib/i18n/config';
+import { getAccountLocale } from '@/lib/data/mcp';
 import { localizedHref } from '@/lib/i18n/utils';
 import { reportSwallowed } from '@/lib/report';
 import { sendPushToUser } from '@/lib/push/send';
@@ -11,11 +11,7 @@ type FriendPushType = 'friend_request' | 'friend_accepted';
 /** The recipient's UI language, so a push reads like the rest of their app. */
 export async function recipientLanguage(userId: string): Promise<Language> {
 	try {
-		const supabase = createAdminClient();
-		const { data, error } = await supabase.auth.admin.getUserById(userId);
-		if (error) throw error;
-		const lang = data.user?.user_metadata?.language;
-		return isLanguage(lang) ? lang : DEFAULT_LANGUAGE;
+		return (await getAccountLocale(userId)).lang;
 	} catch (error) {
 		reportSwallowed('push:recipient-language', error);
 		return DEFAULT_LANGUAGE;

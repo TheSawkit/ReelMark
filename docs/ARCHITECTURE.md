@@ -56,7 +56,8 @@ Chaque utilisateur peut générer, dans Réglages → Données, un lien secret �
 
 ## Données médias (TMDB / Watchmode)
 
-- Tous les appels TMDB passent par `fetchTMDB()` (`lib/tmdb/client.ts`) : injection du token, de la langue et de la région, mise en cache par `"use cache"` + `cacheLife` (1 h par défaut, jusqu'à une semaine pour les genres ; les échecs sont gardés moins longtemps que les réponses). Jamais d'appel TMDB direct depuis le client — le navigateur passe par `/api/search` ou par des Server Actions.
+- Tous les appels TMDB passent par `fetchTMDB()` (`lib/tmdb/client.ts`) : injection du token, de la langue et de la région, mise en cache par `"use cache"` + `cacheLife` (1 h par défaut, jusqu'à une semaine pour les genres ; les échecs sont gardés moins longtemps que les réponses).
+- Un 429 de TMDB (plafond près de 50 requêtes/s par IP, atteint quand un robot parcourt les fiches la nuit) est retenté en respectant `Retry-After` (plafonné à 5 s pour qu'un remplissage `"use cache"` reste sous les 50 s d'un prérendu). Un limiteur par pod a été essayé puis retiré : plus strict que TMDB, il vidait les rangées d'un chargement à froid (bannière Explorer sans diapositive en CI) sans plafonner le total des pods.
 - La Belgique (`BE`) fusionne les régions BE + FR (`REGION_MERGE_CONFIG`).
 - Watchmode fournit les plateformes de streaming (`lib/watchmode/`), mis en cache par `fetch` + `next.revalidate` (1 h, une semaine pour les logos des stores).
 - La recherche utilise `searchMulti` (`lib/tmdb/search.ts`) avec un ranking custom (`lib/search/score.ts`) et des requêtes de repli si trop peu de résultats.
@@ -99,6 +100,13 @@ Chaque utilisateur peut générer, dans Réglages → Données, un lien secret �
 ## Observabilité
 
 Erreurs client, serveur et edge envoyées à **Bugsink** (compatible protocole Sentry, auto-hébergé sur `sentry.silexio.be`) via `@sentry/nextjs` : `instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, et `onRequestError` dans `instrumentation.ts`. Le DSN doit être en **https** (CSP `connect-src`).
+
+Bugsink groupe par transaction (projet en groupement v1) : sans précaution, une même erreur ouvre une issue par URL. D'où :
+
+- `beforeSend` serveur et edge = `filterServerEvent` (`lib/sentry-filters.ts`). Il écarte les rejets `HANGING_PROMISE_REJECTION` que Next 16.3 lève sur `headers()`/`cookies()`/`"use cache"` quand il interrompt un prérendu (absents de ses digests connus, ils remontaient par `onRequestError` : 884 096 événements sur une seule issue). Il donne une empreinte `upstream-api` par type d'erreur aux pannes TMDB, Watchmode et au quota Supabase.
+- `reportSwallowed` (`lib/report.ts`) envoie ses avertissements avec l'empreinte `swallowed/<label>/<message>` : un message de repli doit donc rester constant (pas d'identifiant ni de compteur dedans).
+- Les issues de quota (Watchmode, TMDB 429, quota Supabase) sont mutées dans Bugsink, pas résolues : elles reviendront à chaque dépassement.
+- Relais vers Linear : Bugsink (Alerting → Custom webhook) poste chaque issue nouvelle, régressée ou démutée sur `/api/bugsink-alert/<BUGSINK_ALERT_SECRET>` (`lib/bugsink-linear.ts`). Un ticket par issue, retrouvé par l'URL Bugsink jointe : une régression commente le ticket existant au lieu d'en ouvrir un autre. Un échec Linear répond 502 (Bugsink note la livraison ratée) et n'est que journalisé, pour ne pas boucler par Sentry.
 
 ## Arborescence
 

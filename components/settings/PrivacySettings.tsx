@@ -144,7 +144,7 @@ export function PrivacySettings({ settings }: PrivacySettingsProps) {
 					</div>
 
 					{state.error && (
-						<p role="alert" className="text-sm text-red">
+						<p role="alert" className="text-sm text-red-text">
 							{state.error}
 						</p>
 					)}

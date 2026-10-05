@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, redirect } from 'next/navigation';
-import { fetchTMDB } from '@/lib/tmdb/client';
+import { fetchTMDB, REVALIDATE } from '@/lib/tmdb/client';
 import { isTMDBNotFound } from '@/lib/tmdb/errors';
 import { FALLBACK_TITLE } from '@/lib/metadata';
 import { Suspense, cache } from 'react';
@@ -69,7 +69,7 @@ async function MovieProvidersSection({
 	const providers = await getMovieWatchProviders(movieId, lang).catch(
 		() => null
 	);
-	return <WatchProviders providers={providers} />;
+	return <WatchProviders providers={providers} lang={lang} />;
 }
 
 async function MovieTrailersSection({
@@ -174,7 +174,11 @@ export default async function MoviePage(props: MoviePageProps) {
 
 		let isTvShow = false;
 		try {
-			await fetchTMDB(`/tv/${movieId}`, {}, { revalidate: 86400 });
+			await fetchTMDB(
+				`/tv/${movieId}`,
+				{},
+				{ revalidate: REVALIDATE.day }
+			);
 			isTvShow = true;
 		} catch (probeError) {
 			if (!isTMDBNotFound(probeError)) throw probeError;
@@ -264,6 +268,7 @@ export default async function MoviePage(props: MoviePageProps) {
 						<PublicReviewsSection
 							mediaId={movieId}
 							mediaType="movie"
+							lang={lang}
 						/>
 					</Suspense>
 				}

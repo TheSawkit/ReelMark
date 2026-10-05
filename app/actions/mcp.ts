@@ -1,7 +1,8 @@
 'use server';
 
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
-import { enforceUserRateLimit } from '@/lib/rate-limiter';
+import { withinUserRateLimit } from '@/lib/rate-limiter';
+import { RATE_LIMITED, type Refusal } from '@/lib/action-errors';
 import { generateMcpKey } from '@/lib/mcp/keys';
 import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 import { reportSwallowed } from '@/lib/report';
@@ -15,12 +16,15 @@ const LINK_WINDOW_MS = 3_600_000;
  * exists. Its access is bound to the secret itself; the account only remembers it for display.
  *
  * @param access - 'write' lets the assistant change title statuses; anything else is read-only.
- * @returns The link secret — returned once, only its hash is stored.
- * @throws Error('RATE_LIMITED') once the hourly budget is exhausted.
+ * @returns The link secret — returned once, only its hash is stored — or a refusal once the hourly
+ * budget is exhausted.
  */
-export async function createMcpLink(access: McpAccess): Promise<string> {
+export async function createMcpLink(
+	access: McpAccess
+): Promise<string | Refusal<typeof RATE_LIMITED>> {
 	const { supabase, userId } = await getAuthenticatedUser();
-	enforceUserRateLimit('mcp-link', userId, LINK_LIMIT, LINK_WINDOW_MS);
+	if (!withinUserRateLimit('mcp-link', userId, LINK_LIMIT, LINK_WINDOW_MS))
+		return { refused: RATE_LIMITED };
 
 	const granted: McpAccess = access === 'write' ? 'write' : 'read';
 	const { key, hash } = generateMcpKey(granted);

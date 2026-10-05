@@ -38,7 +38,7 @@ export function CrewBio({ biography }: CrewBioProps) {
 			{shouldTruncate && (
 				<Button
 					variant="ghost"
-					className="text-red-2 hover:text-red hover:bg-red/10 cursor-pointer"
+					className="text-red-text hover:bg-red/10 cursor-pointer"
 					onClick={() => setIsExpanded(!isExpanded)}
 				>
 					{isExpanded ? t.movie.readLess : t.movie.readMore}

@@ -107,8 +107,8 @@ export function SearchDropdown({
 											className={cn(
 												'font-semibold truncate transition-colors duration-(--duration-fast) ease-apple',
 												isActive
-													? 'text-red'
-													: 'text-text group-hover:text-red'
+													? 'text-red-text'
+													: 'text-text group-hover:text-red-text'
 											)}
 										>
 											@{user.username}
@@ -127,7 +127,7 @@ export function SearchDropdown({
 												: 'opacity-0 group-hover:opacity-100'
 										)}
 									>
-										<span className="text-xs font-bold px-2 py-1 bg-red/10 text-red rounded-full border border-red/20">
+										<span className="text-xs font-bold px-2 py-1 bg-red/10 text-red-text rounded-full border border-red/20">
 											{t.common.view}
 										</span>
 									</div>
@@ -209,8 +209,8 @@ export function SearchDropdown({
 										className={cn(
 											'font-semibold truncate transition-colors duration-(--duration-fast) ease-apple',
 											isActive
-												? 'text-red'
-												: 'text-text group-hover:text-red'
+												? 'text-red-text'
+												: 'text-text group-hover:text-red-text'
 										)}
 									>
 										{item.title}
@@ -231,7 +231,7 @@ export function SearchDropdown({
 											: 'opacity-0 group-hover:opacity-100'
 									)}
 								>
-									<span className="text-xs font-bold px-2 py-1 bg-red/10 text-red rounded-full border border-red/20">
+									<span className="text-xs font-bold px-2 py-1 bg-red/10 text-red-text rounded-full border border-red/20">
 										{t.common.view}
 									</span>
 								</div>
@@ -249,7 +249,7 @@ export function SearchDropdown({
 						lang,
 						`/explorer/search?q=${encodeURIComponent(query)}`
 					)}
-					className="text-xs font-bold text-red hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
+					className="text-xs font-bold text-red-text hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
 					onClick={onClose}
 				>
 					{t.common.viewAll}

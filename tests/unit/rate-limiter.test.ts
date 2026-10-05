@@ -1,6 +1,5 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { checkRateLimit, enforceUserRateLimit } from '@/lib/rate-limiter';
-import { RATE_LIMITED } from '@/lib/action-errors';
+import { checkRateLimit, withinUserRateLimit } from '@/lib/rate-limiter';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
@@ -58,41 +57,33 @@ describe('checkRateLimit', () => {
 	});
 });
 
-describe('enforceUserRateLimit', () => {
-	it('stays silent while the budget lasts, then throws RATE_LIMITED', () => {
+describe('withinUserRateLimit', () => {
+	it('allows while the budget lasts, then refuses', () => {
 		for (let i = 0; i < 3; i++) {
-			expect(() =>
-				enforceUserRateLimit('scope-a', 'user-1', 3, 60_000)
-			).not.toThrow();
+			expect(withinUserRateLimit('scope-a', 'user-1', 3, 60_000)).toBe(
+				true
+			);
 		}
-		expect(() =>
-			enforceUserRateLimit('scope-a', 'user-1', 3, 60_000)
-		).toThrow(RATE_LIMITED);
+		expect(withinUserRateLimit('scope-a', 'user-1', 3, 60_000)).toBe(false);
 	});
 
 	it('budgets each user separately', () => {
 		for (let i = 0; i < 3; i++)
-			enforceUserRateLimit('scope-b', 'user-1', 3, 60_000);
-		expect(() =>
-			enforceUserRateLimit('scope-b', 'user-2', 3, 60_000)
-		).not.toThrow();
+			withinUserRateLimit('scope-b', 'user-1', 3, 60_000);
+		expect(withinUserRateLimit('scope-b', 'user-2', 3, 60_000)).toBe(true);
 	});
 
 	it('budgets each scope separately for the same user', () => {
 		for (let i = 0; i < 3; i++)
-			enforceUserRateLimit('scope-c', 'user-3', 3, 60_000);
-		expect(() =>
-			enforceUserRateLimit('scope-d', 'user-3', 3, 60_000)
-		).not.toThrow();
+			withinUserRateLimit('scope-c', 'user-3', 3, 60_000);
+		expect(withinUserRateLimit('scope-d', 'user-3', 3, 60_000)).toBe(true);
 	});
 
 	it('lets the user through again once the window expires', () => {
 		for (let i = 0; i < 3; i++)
-			enforceUserRateLimit('scope-e', 'user-4', 3, 60_000);
+			withinUserRateLimit('scope-e', 'user-4', 3, 60_000);
 		vi.advanceTimersByTime(61_000);
-		expect(() =>
-			enforceUserRateLimit('scope-e', 'user-4', 3, 60_000)
-		).not.toThrow();
+		expect(withinUserRateLimit('scope-e', 'user-4', 3, 60_000)).toBe(true);
 	});
 });
 

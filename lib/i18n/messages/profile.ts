@@ -29,8 +29,6 @@ const fr = {
 	friendRemovedToast: 'Ami retiré',
 	friendRequestReceived: "A envoyé une invitation d'amitié",
 	friendOptions: "Options de l'ami",
-	reportUser: "Signaler l'utilisateur",
-	reportSentToast: 'Signalement envoyé',
 	tabs: {
 		watchlist: 'Watchlist',
 		watched: 'Vus',
@@ -128,8 +126,6 @@ const en = {
 	friendRemovedToast: 'Friend removed',
 	friendRequestReceived: 'Sent you a friend request',
 	friendOptions: 'Friend options',
-	reportUser: 'Report user',
-	reportSentToast: 'Report sent',
 	tabs: {
 		watchlist: 'Watchlist',
 		watched: 'Watched',

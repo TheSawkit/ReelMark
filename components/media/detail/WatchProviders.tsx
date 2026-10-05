@@ -12,9 +12,11 @@ import { webLinkOrNull } from '@/lib/safe-link';
 import { WatchNowPublisher } from '@/components/media/detail/WatchNowPublisher';
 import { WHERE_TO_WATCH_ID } from '@/lib/watch-now';
 import type { WatchProvidersRegion, WatchProvider } from '@/types/tmdb';
+import type { Language } from '@/lib/i18n/translations';
 
 interface WatchProvidersProps {
 	providers: WatchProvidersRegion | null;
+	lang: Language;
 }
 
 const REGION_CURRENCY: Record<string, string> = {
@@ -174,8 +176,11 @@ function ProviderGroup({
 	);
 }
 
-export async function WatchProviders({ providers }: WatchProvidersProps) {
-	const [t, region] = await Promise.all([getTranslations(), getUserRegion()]);
+export async function WatchProviders({ providers, lang }: WatchProvidersProps) {
+	const [t, region] = await Promise.all([
+		getTranslations(lang),
+		getUserRegion(),
+	]);
 	const [logoMap, appStoreMap] = await Promise.all([
 		getTmdbProviderLogoMap(),
 		getAppStoreIconMap(region),

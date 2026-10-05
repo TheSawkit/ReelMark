@@ -4,7 +4,8 @@ import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { fetchAllRows } from '@/lib/supabase/pagination';
 import { parseVisibility } from '@/lib/privacy';
 import { reportCritical } from '@/lib/report';
-import { enforceUserRateLimit } from '@/lib/rate-limiter';
+import { withinUserRateLimit } from '@/lib/rate-limiter';
+import { RATE_LIMITED, type Refusal } from '@/lib/action-errors';
 import { revalidateProfileAfterResponse } from '@/lib/revalidate';
 import { VALID_STATUSES, validateRating } from '@/lib/validators';
 import {
@@ -33,20 +34,23 @@ type WatchlistRow = {
 	status: WatchStatus;
 };
 
-/**
- * Full RGPD export of the authenticated user's data.
- * Rate-limited: one call dumps every watchlist, review and episode row the account owns.
- *
- * @throws Error('RATE_LIMITED') once the hourly export budget is exhausted.
- */
 const MAX_BATCH_ITEMS = 50;
 const MAX_BATCH_EPISODES = 5000;
 const EPISODE_UPSERT_CHUNK = 1000;
 
-export async function exportUserData(): Promise<ExportData> {
+/**
+ * Full RGPD export of the authenticated user's data.
+ * Rate-limited: one call dumps every watchlist, review and episode row the account owns.
+ *
+ * @returns The export, or a refusal once the hourly export budget is exhausted.
+ */
+export async function exportUserData(): Promise<
+	ExportData | Refusal<typeof RATE_LIMITED>
+> {
 	const { supabase, userId } = await getAuthenticatedUser();
 
-	enforceUserRateLimit('export', userId, EXPORT_LIMIT, EXPORT_WINDOW_MS);
+	if (!withinUserRateLimit('export', userId, EXPORT_LIMIT, EXPORT_WINDOW_MS))
+		return { refused: RATE_LIMITED };
 
 	const [watchlistRows, reviewRows, episodeRows] = await Promise.all([
 		fetchAllRows((from, to) =>

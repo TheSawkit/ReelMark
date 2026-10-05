@@ -29,12 +29,11 @@ export function PlaylistHero({
 	const items = playlist.items ?? [];
 	const previewItems = items.slice(0, 5);
 	const backgroundPoster = items[0]?.poster_path;
-	const handleShare = async () => {
-		await navigator.clipboard.writeText(
-			`${BASE_URL}/playlist/${playlist.id}`
-		);
-		toast.success(t.profile.linkCopied);
-	};
+	const handleShare = () =>
+		navigator.clipboard
+			.writeText(`${BASE_URL}/playlist/${playlist.id}`)
+			.then(() => toast.success(t.profile.linkCopied))
+			.catch(() => toast.error(t.common.actionError));
 
 	return (
 		<section className="relative isolate overflow-hidden banner-pull-top banner-safe-pad min-h-[20vh] md:min-h-[50vh] flex flex-col justify-end">

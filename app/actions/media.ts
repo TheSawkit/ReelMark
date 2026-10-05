@@ -173,7 +173,7 @@ export async function filterListByActor(
 	if (scoped.length < items.length) {
 		reportSwallowed(
 			'media:actor-filter-cap',
-			`capped actor matching to ${ACTOR_FILTER_MAX_ITEMS}/${items.length} items`
+			`capped actor matching to the first ${ACTOR_FILTER_MAX_ITEMS} items`
 		);
 	}
 

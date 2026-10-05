@@ -19,7 +19,7 @@ import { useTranslation } from '@/lib/i18n/context';
 import { getLocale } from '@/lib/i18n/utils';
 import { formatShortDate } from '@/lib/format';
 import { BASE_URL } from '@/lib/metadata';
-import { RATE_LIMITED } from '@/lib/action-errors';
+import { isRefusal } from '@/lib/action-errors';
 import { createMcpLink, revokeMcpLink } from '@/app/actions/mcp';
 import { AI_ASSISTANT_ANCHOR } from './tabs';
 import type { McpAccess, McpLinkStatus } from '@/types/mcp';
@@ -39,6 +39,7 @@ export function AiAssistantCard({
 		initialLink?.access ?? 'read'
 	);
 	const [freshUrl, setFreshUrl] = useState<string | null>(null);
+	const [confirmingRevoke, setConfirmingRevoke] = useState(false);
 	const [isPending, startTransition] = useGuardedTransition();
 
 	// The card streams in with the page, often after Next has tried to scroll to the anchor.
@@ -54,6 +55,10 @@ export function AiAssistantCard({
 		startTransition(async () => {
 			try {
 				const key = await createMcpLink(access);
+				if (isRefusal(key)) {
+					toast.error(ta.rateLimited);
+					return;
+				}
 				setFreshUrl(`${BASE_URL}/api/mcp/${key}`);
 				setLink({
 					createdAt: new Date().toISOString(),
@@ -61,13 +66,7 @@ export function AiAssistantCard({
 					access,
 				});
 			} catch (err) {
-				const message = err instanceof Error ? err.message : '';
-				toastActionError(
-					err,
-					message === RATE_LIMITED
-						? ta.rateLimited
-						: t.common.actionError
-				);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	}
@@ -78,6 +77,7 @@ export function AiAssistantCard({
 				await revokeMcpLink();
 				setLink(null);
 				setFreshUrl(null);
+				setConfirmingRevoke(false);
 				toast.success(ta.revoked);
 			} catch (err) {
 				toastActionError(err, t.common.actionError);
@@ -85,10 +85,12 @@ export function AiAssistantCard({
 		});
 	}
 
-	async function handleCopy() {
+	function handleCopy() {
 		if (!freshUrl) return;
-		await navigator.clipboard.writeText(freshUrl);
-		toast.success(ta.copied);
+		navigator.clipboard
+			.writeText(freshUrl)
+			.then(() => toast.success(ta.copied))
+			.catch(() => toast.error(t.common.actionError));
 	}
 
 	return (
@@ -176,9 +178,29 @@ export function AiAssistantCard({
 						<Sparkles className="h-4 w-4" />
 						{link ? ta.regenerate : ta.generate}
 					</Button>
-					{link && (
+					{link && confirmingRevoke && (
+						<>
+							<Button
+								onClick={handleRevoke}
+								disabled={isPending}
+								variant="ghost"
+								className="gap-2 text-red-text hover:bg-red/10"
+							>
+								<Unlink className="h-4 w-4" />
+								{t.common.confirm}
+							</Button>
+							<Button
+								onClick={() => setConfirmingRevoke(false)}
+								disabled={isPending}
+								variant="ghost"
+							>
+								{t.common.cancel}
+							</Button>
+						</>
+					)}
+					{link && !confirmingRevoke && (
 						<Button
-							onClick={handleRevoke}
+							onClick={() => setConfirmingRevoke(true)}
 							disabled={isPending}
 							variant="ghost"
 							className="gap-2"

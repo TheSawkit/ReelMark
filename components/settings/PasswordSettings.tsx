@@ -84,7 +84,7 @@ export function PasswordSettings({ isOAuthOnly }: PasswordSettingsProps) {
 					</FieldGroup>
 
 					{state.error && (
-						<p role="alert" className="text-sm text-red">
+						<p role="alert" className="text-sm text-red-text">
 							{state.error}
 						</p>
 					)}

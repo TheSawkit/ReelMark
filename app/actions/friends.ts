@@ -3,7 +3,8 @@
 import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import { revalidateProfileAfterResponse } from '@/lib/revalidate';
 import { sendFriendPush } from '@/lib/push/notify-friend';
-import { enforceUserRateLimit } from '@/lib/rate-limiter';
+import { withinUserRateLimit } from '@/lib/rate-limiter';
+import { RATE_LIMITED, type Refusal } from '@/lib/action-errors';
 import { after } from 'next/server';
 
 const FRIEND_REQUEST_LIMIT = 30;
@@ -33,6 +34,9 @@ export async function cancelFriendRequest(
 	revalidateProfileAfterResponse(supabase, user, addresseeId);
 }
 
+type FriendRequestRefusal =
+	'SELF_REQUEST' | 'DUPLICATE_REQUEST' | typeof RATE_LIMITED;
+
 /**
  * Sends a friend request from the authenticated user to another user.
  *
@@ -40,28 +44,32 @@ export async function cancelFriendRequest(
  * fast one account can notify its way through the user base.
  *
  * @param addresseeId - Supabase user ID of the recipient.
- * @throws Error('SELF_REQUEST') if trying to friend oneself.
- * @throws Error('DUPLICATE_REQUEST') if a request already exists.
- * @throws Error('RATE_LIMITED') once the hourly request budget is exhausted.
+ * @returns A refusal when friending oneself, when a request already exists, or once the hourly
+ * request budget is exhausted; nothing once the request is sent.
  */
-export async function sendFriendRequest(addresseeId: string): Promise<void> {
+export async function sendFriendRequest(
+	addresseeId: string
+): Promise<Refusal<FriendRequestRefusal> | undefined> {
 	const { supabase, userId, user } = await getAuthenticatedUser();
 
-	if (addresseeId === userId) throw new Error('SELF_REQUEST');
+	if (addresseeId === userId) return { refused: 'SELF_REQUEST' };
 
-	enforceUserRateLimit(
-		'friend-request',
-		userId,
-		FRIEND_REQUEST_LIMIT,
-		FRIEND_REQUEST_WINDOW_MS
-	);
+	if (
+		!withinUserRateLimit(
+			'friend-request',
+			userId,
+			FRIEND_REQUEST_LIMIT,
+			FRIEND_REQUEST_WINDOW_MS
+		)
+	)
+		return { refused: RATE_LIMITED };
 
 	const { error } = await supabase
 		.from('friendships')
 		.insert({ requester_id: userId, addressee_id: addresseeId });
 
 	if (error) {
-		if (error.code === '23505') throw new Error('DUPLICATE_REQUEST');
+		if (error.code === '23505') return { refused: 'DUPLICATE_REQUEST' };
 		throw new Error(error.message);
 	}
 

@@ -51,7 +51,7 @@ export function DangerZone({ isOAuthOnly }: DangerZoneProps) {
 	return (
 		<Card className="border-red">
 			<CardHeader>
-				<CardTitle className="text-red">
+				<CardTitle className="text-red-text">
 					{t.settings.dangerZone.title}
 				</CardTitle>
 				<CardDescription>
@@ -69,10 +69,10 @@ export function DangerZone({ isOAuthOnly }: DangerZoneProps) {
 				) : (
 					<form action={handleDelete} className="space-y-6">
 						<div className="bg-red/10 border border-red/20 rounded-lg p-4">
-							<p className="text-sm font-medium text-red mb-3">
+							<p className="text-sm font-medium text-red-text mb-3">
 								{t.danger.warning}
 							</p>
-							<ul className="text-sm text-red/90 space-y-2 ml-4 list-disc">
+							<ul className="text-sm text-red-text space-y-2 ml-4 list-disc">
 								<li>{t.danger.allDataWillBeDeleted}</li>
 								<li>{t.danger.accountCannotBeRecovered}</li>
 								<li>{t.danger.actionCannotBeUndone}</li>
@@ -123,7 +123,7 @@ export function DangerZone({ isOAuthOnly }: DangerZoneProps) {
 						</FieldGroup>
 
 						{state.error && (
-							<p role="alert" className="text-sm text-red">
+							<p role="alert" className="text-sm text-red-text">
 								{state.error}
 							</p>
 						)}

@@ -54,7 +54,7 @@ async function SeasonProvidersSection({
 	const providers = await getTvShowWatchProviders(tvId, lang).catch(
 		() => null
 	);
-	return <WatchProviders providers={providers} />;
+	return <WatchProviders providers={providers} lang={lang} />;
 }
 
 /**

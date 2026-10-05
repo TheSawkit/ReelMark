@@ -80,7 +80,7 @@ function DropdownMenuItem({
 			data-inset={inset}
 			data-variant={variant}
 			className={cn(
-				"focus:bg-surface-2 focus:text-text data-[variant=destructive]:text-red data-[variant=destructive]:focus:bg-red/10 dark:data-[variant=destructive]:focus:bg-red/20 data-[variant=destructive]:focus:text-red data-[variant=destructive]:focus:border-red data-[variant=destructive]:*:[svg]:text-red! [&_svg:not([class*='text-'])]:text-muted relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+				"focus:bg-surface-2 focus:text-text data-[variant=destructive]:text-red-text data-[variant=destructive]:focus:bg-red/10 dark:data-[variant=destructive]:focus:bg-red/20 data-[variant=destructive]:focus:text-red-text data-[variant=destructive]:focus:border-red data-[variant=destructive]:*:[svg]:text-red! [&_svg:not([class*='text-'])]:text-muted relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 				className
 			)}
 			{...props}

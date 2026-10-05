@@ -2,7 +2,7 @@ import 'server-only';
 
 import { createAdminClient } from '@/lib/supabase/server';
 import { loadUserTaste, type UserTaste } from '@/lib/data/taste';
-import { getMcpUserContext } from '@/lib/data/mcp';
+import { getAccountLocale } from '@/lib/data/mcp';
 import { cachedUserTaste } from '@/lib/mcp/user-cache';
 import { getGenres } from '@/lib/tmdb';
 import { BASE_URL } from '@/lib/metadata';
@@ -29,7 +29,7 @@ const titleUrl = (lang: Language, type: MediaType, id: number) =>
 
 export function createUserScope(userId: string, access: McpAccess): UserScope {
 	const admin = createAdminClient();
-	const context = () => getMcpUserContext(userId);
+	const context = () => getAccountLocale(userId);
 
 	return {
 		userId,

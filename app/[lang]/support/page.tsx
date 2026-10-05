@@ -17,6 +17,7 @@ export async function generateMetadata({
 	const t = await getTranslations(lang);
 	return {
 		...buildPageMetadata(t.support.title, t.support.subtitle),
+		title: { absolute: t.support.title },
 		alternates: localizedAlternates(lang, '/support'),
 	};
 }

@@ -198,7 +198,7 @@ export function ProfileSettings({
 													{avatarState.error && (
 														<p
 															role="alert"
-															className="text-sm text-red"
+															className="text-sm text-red-text"
 														>
 															{avatarState.error}
 														</p>
@@ -271,7 +271,7 @@ export function ProfileSettings({
 						</FieldGroup>
 
 						{state.error && (
-							<p role="alert" className="text-sm text-red">
+							<p role="alert" className="text-sm text-red-text">
 								{state.error}
 							</p>
 						)}

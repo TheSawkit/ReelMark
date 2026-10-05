@@ -19,20 +19,6 @@ function person(name: string): StructuredData {
 	return { '@type': 'Person', name };
 }
 
-function aggregateRating(
-	voteAverage: number,
-	voteCount: number
-): StructuredData | undefined {
-	if (voteCount <= 0 || voteAverage <= 0) return undefined;
-	return {
-		'@type': 'AggregateRating',
-		ratingValue: Number(voteAverage.toFixed(1)),
-		ratingCount: voteCount,
-		bestRating: 10,
-		worstRating: 0,
-	};
-}
-
 /** Builds schema.org Movie structured data for a movie detail page. */
 export function movieJsonLd(
 	movie: MovieDetails,
@@ -40,8 +26,6 @@ export function movieJsonLd(
 	lang: Language
 ): StructuredData {
 	const directors = credits.crew.filter((c) => c.job === 'Director');
-	const rating = aggregateRating(movie.vote_average, movie.vote_count);
-
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'Movie',
@@ -61,7 +45,6 @@ export function movieJsonLd(
 		...(credits.cast.length > 0 && {
 			actor: credits.cast.slice(0, MAX_ACTORS).map((c) => person(c.name)),
 		}),
-		...(rating && { aggregateRating: rating }),
 	};
 }
 
@@ -71,8 +54,6 @@ export function tvSeriesJsonLd(
 	credits: Credits,
 	lang: Language
 ): StructuredData {
-	const rating = aggregateRating(tv.vote_average, tv.vote_count);
-
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'TVSeries',
@@ -90,7 +71,6 @@ export function tvSeriesJsonLd(
 		...(credits.cast.length > 0 && {
 			actor: credits.cast.slice(0, MAX_ACTORS).map((c) => person(c.name)),
 		}),
-		...(rating && { aggregateRating: rating }),
 	};
 }
 

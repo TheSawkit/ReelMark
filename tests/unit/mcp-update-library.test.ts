@@ -11,7 +11,7 @@ const writes = vi.hoisted(() => ({
 
 vi.mock('@/lib/supabase/server', () => ({ createAdminClient: () => ({}) }));
 vi.mock('@/lib/data/mcp', () => ({
-	getMcpUserContext: async () => ({ lang: 'fr', region: 'BE' }),
+	getAccountLocale: async () => ({ lang: 'fr', region: 'BE' }),
 }));
 vi.mock('@/lib/data/watchlist-writes', () => ({
 	upsertWatchlistEntry: writes.upsert,

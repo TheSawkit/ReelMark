@@ -22,12 +22,15 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 10
         env:
+            # Vide : playwright.config.ts ne démarre son webServer (next start) que si CI est défini,
+            # et la sonde n'interroge que l'API Supabase — aucun build, aucun serveur.
+            CI: ''
             NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
             NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         steps:
-            - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v5
-            - uses: actions/setup-node@v6
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 24
                   cache: pnpm

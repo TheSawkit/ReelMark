@@ -25,7 +25,7 @@ export function BottomTabBar({ username }: BottomTabBarProps) {
 						href={href}
 						prefetch
 						aria-current={active ? 'page' : undefined}
-						className="relative flex h-full flex-1 flex-col items-center justify-center gap-1 transition-transform duration-(--duration-fast) ease-apple active:scale-90 focus-visible:outline-none"
+						className="relative flex h-full flex-1 flex-col items-center justify-center gap-1 transition-transform duration-(--duration-fast) ease-apple active:scale-90 rounded-(--radius-banner) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
 					>
 						{active && (
 							<span

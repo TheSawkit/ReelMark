@@ -10,7 +10,7 @@ export function FormError({ children, className }: FormErrorProps) {
 	return (
 		<p
 			role="alert"
-			className={cn('text-sm text-red-2 text-center', className)}
+			className={cn('text-sm text-red-text text-center', className)}
 		>
 			{children}
 		</p>

@@ -140,7 +140,7 @@ export function SocialLinksSettings({ profile }: SocialLinksSettingsProps) {
 					</FieldGroup>
 
 					{state.error && (
-						<p role="alert" className="text-sm text-red">
+						<p role="alert" className="text-sm text-red-text">
 							{state.error}
 						</p>
 					)}

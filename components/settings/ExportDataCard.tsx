@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useGuardedTransition } from '@/hooks/useGuardedTransition';
 import { useTranslation } from '@/lib/i18n/context';
 import { exportUserData } from '@/app/actions/data';
-import { RATE_LIMITED } from '@/lib/action-errors';
+import { isRefusal } from '@/lib/action-errors';
 import { toastActionError } from '@/lib/action-toast';
 
 function downloadJson(data: unknown, filename: string) {
@@ -39,17 +39,15 @@ export function ExportDataCard() {
 		startExport(async () => {
 			try {
 				const data = await exportUserData();
+				if (isRefusal(data)) {
+					toast.error(td.exportRateLimited);
+					return;
+				}
 				const day = new Date().toISOString().split('T')[0];
 				downloadJson(data, `reelmark-export-${day}.json`);
 				toast.success(td.exportSuccess);
 			} catch (err) {
-				const message = err instanceof Error ? err.message : '';
-				toastActionError(
-					err,
-					message === RATE_LIMITED
-						? td.exportRateLimited
-						: t.common.actionError
-				);
+				toastActionError(err, t.common.actionError);
 			}
 		});
 	}

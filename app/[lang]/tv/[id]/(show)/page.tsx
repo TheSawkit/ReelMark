@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, redirect } from 'next/navigation';
-import { fetchTMDB } from '@/lib/tmdb/client';
+import { fetchTMDB, REVALIDATE } from '@/lib/tmdb/client';
 import { isTMDBNotFound } from '@/lib/tmdb/errors';
 import { FALLBACK_TITLE } from '@/lib/metadata';
 import { Suspense, cache } from 'react';
@@ -78,7 +78,7 @@ async function TvProvidersSection({
 	const providers = await getTvShowWatchProviders(tvId, lang).catch(
 		() => null
 	);
-	return <WatchProviders providers={providers} />;
+	return <WatchProviders providers={providers} lang={lang} />;
 }
 
 async function TvTrailersSection({
@@ -229,7 +229,11 @@ export default async function TvShowPage(props: TvPageProps) {
 
 		let isMovie = false;
 		try {
-			await fetchTMDB(`/movie/${tvId}`, {}, { revalidate: 86400 });
+			await fetchTMDB(
+				`/movie/${tvId}`,
+				{},
+				{ revalidate: REVALIDATE.day }
+			);
 			isMovie = true;
 		} catch (probeError) {
 			if (!isTMDBNotFound(probeError)) throw probeError;
@@ -355,7 +359,11 @@ export default async function TvShowPage(props: TvPageProps) {
 					<Suspense
 						fallback={<Skeleton className="h-32 rounded-xl" />}
 					>
-						<PublicReviewsSection mediaId={tvId} mediaType="tv" />
+						<PublicReviewsSection
+							mediaId={tvId}
+							mediaType="tv"
+							lang={lang}
+						/>
 					</Suspense>
 				}
 				extraSections={seasonsSection}

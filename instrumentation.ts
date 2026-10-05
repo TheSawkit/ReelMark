@@ -24,6 +24,9 @@ export async function register() {
 		'VAPID_PRIVATE_KEY',
 		'VAPID_SUBJECT',
 		'CRON_SECRET',
+		'BUGSINK_ALERT_SECRET',
+		'LINEAR_API_KEY',
+		'LINEAR_TEAM_ID',
 	];
 
 	const absent = degradesSilently.filter((key) => !process.env[key]);

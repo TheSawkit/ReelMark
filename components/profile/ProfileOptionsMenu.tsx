@@ -9,9 +9,8 @@ import {
 	DropdownMenuTrigger,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, UserMinus, Flag } from 'lucide-react';
+import { MoreHorizontal, UserMinus } from 'lucide-react';
 import { removeFriend } from '@/app/actions/friends';
 import type { Friendship } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
@@ -47,7 +46,7 @@ export function ProfileOptionsMenu({
 		});
 	};
 
-	const handleReport = () => toast.success(t.profile.reportSentToast);
+	if (localFriendship?.status !== 'accepted') return null;
 
 	return (
 		<DropdownMenu>
@@ -62,22 +61,13 @@ export function ProfileOptionsMenu({
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="start">
-				{localFriendship?.status === 'accepted' && (
-					<>
-						<DropdownMenuItem
-							variant="destructive"
-							onClick={handleRemove}
-							disabled={isPending}
-						>
-							<UserMinus className="h-4 w-4 mr-2" />
-							{t.profile.removeFriend}
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-					</>
-				)}
-				<DropdownMenuItem onClick={handleReport}>
-					<Flag className="h-4 w-4 mr-2" />
-					{t.profile.reportUser}
+				<DropdownMenuItem
+					variant="destructive"
+					onClick={handleRemove}
+					disabled={isPending}
+				>
+					<UserMinus className="h-4 w-4 mr-2" />
+					{t.profile.removeFriend}
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>

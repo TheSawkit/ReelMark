@@ -151,4 +151,13 @@ describe('localizedAlternates', () => {
 	it('maps the root path to the bare locale prefix', () => {
 		expect(localizedAlternates('en', '/').canonical).toBe(`${BASE_URL}/en`);
 	});
+
+	it('points x-default at the unprefixed URL, which redirects by visitor language', () => {
+		expect(
+			localizedAlternates('fr', '/movie/157336').languages
+		).toMatchObject({ 'x-default': `${BASE_URL}/movie/157336` });
+		expect(localizedAlternates('fr', '/').languages).toMatchObject({
+			'x-default': BASE_URL,
+		});
+	});
 });

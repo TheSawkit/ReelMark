@@ -26,6 +26,10 @@ const fr = {
 	watched: 'Vu',
 	markAsWatched: 'Marquer comme vu',
 	markAsWatchedShort: 'Déjà vu',
+	removeShowTitle: 'Retirer cette série de ta liste ?',
+	removeShowDescription:
+		'Ta progression sera effacée : tous les épisodes cochés de cette série seront décochés.',
+	removeShowConfirm: 'Retirer',
 	addToList: 'Ajouter à la liste',
 	addToListShort: 'À voir',
 	filmography: 'Filmographie',
@@ -195,6 +199,10 @@ const en = {
 	watched: 'Watched',
 	markAsWatched: 'Mark as watched',
 	markAsWatchedShort: 'Seen it',
+	removeShowTitle: 'Remove this show from your list?',
+	removeShowDescription:
+		'Your progress will be erased: every episode checked for this show will be unchecked.',
+	removeShowConfirm: 'Remove',
 	addToList: 'Add to list',
 	addToListShort: 'Add to list',
 	filmography: 'Filmography',

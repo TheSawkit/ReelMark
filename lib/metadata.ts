@@ -32,18 +32,24 @@ interface PageMetadataOptions {
 	canonical?: string;
 }
 
+/** hreflang map of a locale-agnostic app path; x-default is the unprefixed URL, which redirects by visitor language. */
+export function hreflangUrls(path: string): Record<string, string> {
+	const suffix = path === '/' ? '' : path;
+	return {
+		...Object.fromEntries(
+			SUPPORTED_LANGUAGES.map((l) => [l, `${BASE_URL}/${l}${suffix}`])
+		),
+		'x-default': `${BASE_URL}${suffix}`,
+	};
+}
+
 /** Builds locale-aware canonical + hreflang alternates for a locale-agnostic app path (routes live under /[lang]). */
 export function localizedAlternates(
 	lang: Language,
 	path: string
 ): NonNullable<Metadata['alternates']> {
-	const url = (l: string) => `${BASE_URL}/${l}${path === '/' ? '' : path}`;
-	return {
-		canonical: url(lang),
-		languages: Object.fromEntries(
-			SUPPORTED_LANGUAGES.map((l) => [l, url(l)])
-		),
-	};
+	const languages = hreflangUrls(path);
+	return { canonical: languages[lang], languages };
 }
 
 /** Builds standard Next.js Metadata for static app pages, avoiding title/description repetition. */
