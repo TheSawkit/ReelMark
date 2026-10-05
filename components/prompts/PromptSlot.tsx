@@ -19,6 +19,7 @@ export async function PromptSlot() {
 				accountCreatedAt={null}
 				canImport={false}
 				canPickServices={false}
+				signedIn={false}
 			/>
 		);
 
@@ -33,6 +34,7 @@ export async function PromptSlot() {
 				!shell.hasStreamingProviders &&
 				shell.watchlistCount >= SERVICES_THRESHOLD
 			}
+			signedIn
 		/>
 	);
 }

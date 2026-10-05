@@ -80,8 +80,10 @@ function toSubscriptionInput(subscription: PushSubscription) {
 /**
  * Manages this device's web push subscription: current state, opt-in and opt-out.
  * iOS only exposes the Push API once the PWA is installed to the home screen.
+ * Only a signed-in session re-saves an existing subscription: a browser keeps it after logout,
+ * and the account-only save would send an anonymous visitor to the login page.
  */
-export function usePushSubscription() {
+export function usePushSubscription({ signedIn }: { signedIn: boolean }) {
 	const [status, setStatus] = useState<PushStatus>('loading');
 	const [isPending, setIsPending] = useState(false);
 
@@ -106,9 +108,10 @@ export function usePushSubscription() {
 					await registration.pushManager.getSubscription();
 				if (!subscription) return 'off';
 
-				void savePushSubscription(
-					toSubscriptionInput(subscription)
-				).catch((error) => reportSwallowed('push:resync', error));
+				if (signedIn)
+					void savePushSubscription(
+						toSubscriptionInput(subscription)
+					).catch((error) => reportSwallowed('push:resync', error));
 				return 'on';
 			} catch (error) {
 				reportSwallowed('push:status', error);
@@ -123,7 +126,7 @@ export function usePushSubscription() {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [signedIn]);
 
 	const enable = useCallback(async () => {
 		if (!VAPID_PUBLIC_KEY) return;
