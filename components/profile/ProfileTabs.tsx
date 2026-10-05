@@ -97,17 +97,21 @@ export function ProfileTabs({
 
 	return (
 		<div>
-			<m.nav
+			<m.div
 				layoutScroll
+				role="tablist"
 				className="flex gap-1 border-b border-border-subtle mb-6 overflow-y-hidden overflow-x-auto scrollbar-hide"
 				aria-label={t.profile.profileNav}
 			>
 				{TABS.map((tab) => (
 					<button
 						key={tab.id}
+						role="tab"
+						aria-selected={activeTab === tab.id}
+						aria-controls={`${indicatorId}-panel`}
 						onClick={() => setActiveTab(tab.id)}
 						className={cn(
-							'relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 border-transparent -mb-px transition-colors cursor-pointer active:scale-95 focus-visible:outline-none',
+							'relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 border-transparent -mb-px transition-colors cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary',
 							activeTab === tab.id
 								? 'text-text'
 								: 'text-muted hover:text-text'
@@ -128,88 +132,89 @@ export function ProfileTabs({
 						{tab.id === 'friends' &&
 							isOwnProfile &&
 							pendingCount > 0 && (
-								<span
-									className="text-xs bg-red text-white px-1.5 py-0.5 rounded-full font-medium"
-									aria-label={
-										t.profile.pendingInvitationsAria
-									}
-								>
+								<span className="text-xs bg-red text-white px-1.5 py-0.5 rounded-full font-medium">
 									{pendingCount}
+									<span className="sr-only">
+										{' '}
+										{t.profile.pendingInvitations}
+									</span>
 								</span>
 							)}
 					</button>
 				))}
-			</m.nav>
+			</m.div>
 
 			<SwapIn swapKey={activeTab}>
-				{activeTab === 'watchlist' && (
-					<WatchlistSection
-						entries={toWatch}
-						visibility={privacy.watchlist_visibility}
-						canView={canViewWithVisibility(
-							privacy.watchlist_visibility,
-							viewCtx
-						)}
-						isOwnProfile={isOwnProfile}
-						tvProgress={tvProgress}
-						sectionKey="profile-watchlist"
-						genreNames={genreNames}
-						ratingByKey={ratingByKey}
-					/>
-				)}
-				{activeTab === 'watched' && (
-					<WatchlistSection
-						entries={watched}
-						visibility={privacy.watched_visibility}
-						canView={canViewWithVisibility(
-							privacy.watched_visibility,
-							viewCtx
-						)}
-						isOwnProfile={isOwnProfile}
-						tvProgress={tvProgress}
-						sectionKey="profile-watched"
-						genreNames={genreNames}
-						ratingByKey={ratingByKey}
-					/>
-				)}
-				{activeTab === 'reviews' && (
-					<ReviewsSection
-						reviews={reviews}
-						initialNextCursor={initialReviewsCursor}
-						profileUserId={profileUserId}
-						visibility={privacy.reviews_visibility}
-						canView={canViewWithVisibility(
-							privacy.reviews_visibility,
-							viewCtx
-						)}
-						isOwnProfile={isOwnProfile}
-					/>
-				)}
-				{activeTab === 'playlists' && (
-					<PlaylistsSection
-						playlists={playlists}
-						defaultVisibility={privacy.playlists_visibility}
-						isOwnProfile={isOwnProfile}
-					/>
-				)}
-				{activeTab === 'friends' && (
-					<div className="space-y-6">
-						{isOwnProfile && pendingCount > 0 && (
-							<PendingInvitations
-								requests={pendingRequests}
-								onCountChange={setPendingCount}
-							/>
-						)}
-						<FriendsSection
-							friends={friends}
-							visibility={privacy.friends_visibility}
+				<div role="tabpanel" id={`${indicatorId}-panel`}>
+					{activeTab === 'watchlist' && (
+						<WatchlistSection
+							entries={toWatch}
+							visibility={privacy.watchlist_visibility}
 							canView={canViewWithVisibility(
-								privacy.friends_visibility,
+								privacy.watchlist_visibility,
 								viewCtx
 							)}
+							isOwnProfile={isOwnProfile}
+							tvProgress={tvProgress}
+							sectionKey="profile-watchlist"
+							genreNames={genreNames}
+							ratingByKey={ratingByKey}
 						/>
-					</div>
-				)}
+					)}
+					{activeTab === 'watched' && (
+						<WatchlistSection
+							entries={watched}
+							visibility={privacy.watched_visibility}
+							canView={canViewWithVisibility(
+								privacy.watched_visibility,
+								viewCtx
+							)}
+							isOwnProfile={isOwnProfile}
+							tvProgress={tvProgress}
+							sectionKey="profile-watched"
+							genreNames={genreNames}
+							ratingByKey={ratingByKey}
+						/>
+					)}
+					{activeTab === 'reviews' && (
+						<ReviewsSection
+							reviews={reviews}
+							initialNextCursor={initialReviewsCursor}
+							profileUserId={profileUserId}
+							visibility={privacy.reviews_visibility}
+							canView={canViewWithVisibility(
+								privacy.reviews_visibility,
+								viewCtx
+							)}
+							isOwnProfile={isOwnProfile}
+						/>
+					)}
+					{activeTab === 'playlists' && (
+						<PlaylistsSection
+							playlists={playlists}
+							defaultVisibility={privacy.playlists_visibility}
+							isOwnProfile={isOwnProfile}
+						/>
+					)}
+					{activeTab === 'friends' && (
+						<div className="space-y-6">
+							{isOwnProfile && pendingCount > 0 && (
+								<PendingInvitations
+									requests={pendingRequests}
+									onCountChange={setPendingCount}
+								/>
+							)}
+							<FriendsSection
+								friends={friends}
+								visibility={privacy.friends_visibility}
+								canView={canViewWithVisibility(
+									privacy.friends_visibility,
+									viewCtx
+								)}
+							/>
+						</div>
+					)}
+				</div>
 			</SwapIn>
 		</div>
 	);

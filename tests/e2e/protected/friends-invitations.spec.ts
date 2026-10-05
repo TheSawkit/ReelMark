@@ -12,9 +12,9 @@ const pendingCard = (page: Page) =>
 	page.locator('button[aria-controls="pending-invitations-list"]');
 
 const pendingBadge = (page: Page) =>
-	page.locator(
-		'[aria-label="View pending invitations" i], [aria-label="Voir les invitations en attente" i]'
-	);
+	page.getByRole('tab', {
+		name: /invitations en attente|pending invitations/i,
+	});
 
 async function getOwnProfileHref(page: Page): Promise<string | null> {
 	await page.goto('/en/dashboard');
@@ -41,7 +41,7 @@ test.describe('Friends tab — own profile', () => {
 
 		await page.goto(href!);
 		await expect(
-			page.getByRole('button', { name: /amis|friends/i }).first()
+			page.getByRole('tab', { name: /amis|friends/i }).first()
 		).toBeVisible({ timeout: 10000 });
 	});
 
@@ -51,7 +51,7 @@ test.describe('Friends tab — own profile', () => {
 
 		await page.goto(href!);
 		const friendsTab = page
-			.getByRole('button', { name: /amis|friends/i })
+			.getByRole('tab', { name: /amis|friends/i })
 			.first();
 		await friendsTab.click();
 
@@ -66,7 +66,7 @@ test.describe('Friends tab — own profile', () => {
 
 		await page.goto(href!);
 		const friendsTab = page
-			.getByRole('button', { name: /amis|friends/i })
+			.getByRole('tab', { name: /amis|friends/i })
 			.first();
 		await friendsTab.click();
 
@@ -87,7 +87,7 @@ test.describe('Friends tab — pending invitations UI', () => {
 
 		await page.goto(href!);
 		const friendsTab = page
-			.getByRole('button', { name: /amis|friends/i })
+			.getByRole('tab', { name: /amis|friends/i })
 			.first();
 		await friendsTab.click();
 
