@@ -71,7 +71,7 @@ const TRANSIENT_FAILURE_CACHE = { stale: 0, revalidate: 60, expire: 300 };
 const MISSING_ENTRY_CACHE = { stale: 0, revalidate: 3600, expire: 86400 };
 const TMDB_TIMEOUT_MS = 10_000;
 const MAX_RETRY_AFTER_MS = 5_000;
-const MAX_QUEUE_WAIT_MS = 8_000;
+const MAX_QUEUE_WAIT_MS = 2_000;
 
 /** TMDB caps each IP near 50 requests/s; 20/s per pod keeps two pods under it while a cold page's burst goes out at once. */
 const tmdbBucket = createTokenBucket({ capacity: 40, refillPerSecond: 20 });
