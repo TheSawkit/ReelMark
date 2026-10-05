@@ -10,7 +10,7 @@ import { localizedHref } from '@/lib/i18n/utils';
 import { loginHref } from '@/lib/login-href';
 import type { Language } from '@/lib/i18n/translations';
 
-const PROTECTED_SEGMENTS = [
+export const PROTECTED_SEGMENTS = [
 	'/dashboard',
 	'/library',
 	'/settings',

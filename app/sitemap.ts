@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
-import { BASE_URL } from '@/lib/metadata';
-import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '@/lib/i18n/config';
+import { hreflangUrls } from '@/lib/metadata';
+import { DEFAULT_LANGUAGE } from '@/lib/i18n/config';
 import {
 	getPopularMovies,
 	getTopRatedMovies,
@@ -15,49 +15,19 @@ function localizedEntry(
 	path: string,
 	rest: Omit<SitemapEntry, 'url' | 'alternates'>
 ): SitemapEntry {
-	const url = (lang: string) => `${BASE_URL}/${lang}${path}`;
+	const languages = hreflangUrls(path);
 	return {
-		url: url(DEFAULT_LANGUAGE),
-		alternates: {
-			languages: Object.fromEntries(
-				SUPPORTED_LANGUAGES.map((lang) => [lang, url(lang)])
-			),
-		},
+		url: languages[DEFAULT_LANGUAGE],
+		alternates: { languages },
 		...rest,
 	};
 }
 
 const STATIC_ROUTES: MetadataRoute.Sitemap = [
-	localizedEntry('', {
-		lastModified: new Date(),
-		changeFrequency: 'daily',
-		priority: 1,
-	}),
-	localizedEntry('/login', {
-		lastModified: new Date(),
-		changeFrequency: 'monthly',
-		priority: 0.4,
-	}),
-	localizedEntry('/support', {
-		lastModified: new Date(),
-		changeFrequency: 'yearly',
-		priority: 0.3,
-	}),
-	localizedEntry('/terms', {
-		lastModified: new Date(),
-		changeFrequency: 'yearly',
-		priority: 0.2,
-	}),
-	localizedEntry('/privacy', {
-		lastModified: new Date(),
-		changeFrequency: 'yearly',
-		priority: 0.2,
-	}),
-	localizedEntry('/signup', {
-		lastModified: new Date(),
-		changeFrequency: 'monthly',
-		priority: 0.4,
-	}),
+	localizedEntry('/', { changeFrequency: 'daily', priority: 1 }),
+	localizedEntry('/support', { changeFrequency: 'yearly', priority: 0.3 }),
+	localizedEntry('/terms', { changeFrequency: 'yearly', priority: 0.2 }),
+	localizedEntry('/privacy', { changeFrequency: 'yearly', priority: 0.2 }),
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -87,7 +57,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		...new Map(movies.map((m) => [m.id, m])).values(),
 	].map((m) =>
 		localizedEntry(`/movie/${m.id}`, {
-			lastModified: new Date(),
 			changeFrequency: 'weekly',
 			priority: 0.7,
 		})
@@ -97,7 +66,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		...new Map(shows.map((s) => [s.id, s])).values(),
 	].map((s) =>
 		localizedEntry(`/tv/${s.id}`, {
-			lastModified: new Date(),
 			changeFrequency: 'weekly',
 			priority: 0.7,
 		})
