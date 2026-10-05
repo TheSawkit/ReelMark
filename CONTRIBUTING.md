@@ -45,11 +45,18 @@ pnpm test:e2e    # Playwright — needs TEST_USER_EMAIL / TEST_USER_PASSWORD
 pnpm build       # next build --webpack (Serwist requires webpack, not Turbopack)
 ```
 
+The pull request template (`.github/PULL_REQUEST_TEMPLATE.md`) carries the full checklist. Tickets live in Linear.
+
+## Releases
+
+Push a `v*` tag on a `main` commit: `.github/workflows/release.yml` creates the GitHub Release with notes generated from the merged PRs, and refuses a tag that is not on `main`.
+
 ## Code conventions
 
 - **TypeScript strict** — no `any`, `as const` over enums, `unknown` + narrowing.
 - **Server Components by default** — `'use client'` only for events, hooks, or browser APIs.
 - **All mutations via Server Actions** (`app/actions/`), authenticated with `getAuthenticatedUser()`. Never call Supabase/TMDB from a client component.
+- **An expected refusal is returned, never thrown**: production React sends only an error's `digest`, so a client can't branch on `err.message`. Return `{ refused: code }` (`Refusal`, `isRefusal` in `lib/action-errors.ts`); unexpected failures still throw.
 - **No hardcoded UI strings** — everything through `lib/i18n/translations.ts` (EN + FR).
 - **Design tokens only** — no arbitrary Tailwind colors (`bg-surface`, not `bg-[#...]`).
 - **Comments explain why**, never what the code already says; docstrings on exported functions.
