@@ -113,7 +113,7 @@ export function PlaylistGrid({
 									'w-6 h-6 rounded-full flex items-center justify-center',
 									'poster-chip-button shadow-card-sm text-text',
 									'transition duration-(--duration-instant)',
-									'sm:opacity-0 sm:scale-75 sm:group-hover:opacity-100 sm:group-hover:scale-100',
+									'pointer-fine:opacity-0 pointer-fine:scale-75 pointer-fine:group-hover:opacity-100 pointer-fine:group-hover:scale-100 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-focus-within:scale-100',
 									isRemoving
 										? 'opacity-100 scale-100'
 										: 'cursor-pointer hover:bg-red/70 hover:border-red/50 hover:text-white'
