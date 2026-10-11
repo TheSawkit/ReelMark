@@ -1,6 +1,9 @@
 import { getTranslations } from '@/lib/i18n/server';
 import { PageLayout, PageHeader } from '@/components/layout/PageLayout';
-import { getNotifications } from '@/lib/data/notifications';
+import {
+	getNotifications,
+	NOTIFICATIONS_PAGE_SIZE,
+} from '@/lib/data/notifications';
 import { NotificationsList } from '@/components/notifications/NotificationsList';
 import { BASE_URL, buildPageMetadata } from '@/lib/metadata';
 import type { Language } from '@/lib/i18n/translations';
@@ -21,7 +24,7 @@ export async function generateMetadata({ params }: Props) {
 export default async function NotificationsPage({ params }: Props) {
 	const { lang } = await params;
 	const t = await getTranslations(lang);
-	const notifications = await getNotifications(50);
+	const notifications = await getNotifications(NOTIFICATIONS_PAGE_SIZE);
 
 	return (
 		<PageLayout>

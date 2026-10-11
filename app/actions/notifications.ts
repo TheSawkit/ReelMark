@@ -5,7 +5,9 @@ import { getAuthenticatedUser } from '@/lib/supabase/auth-helpers';
 import {
 	getNotifications as readNotifications,
 	getUnreadCount as readUnreadCount,
+	NOTIFICATIONS_PAGE_SIZE,
 } from '@/lib/data/notifications';
+import { validateLimit, validateUUID } from '@/lib/validators';
 import type {
 	AppNotification,
 	NotificationPreferences,
@@ -14,6 +16,8 @@ import { ON_CONFLICT } from '@/lib/supabase/conflicts';
 
 /** Lazy-loaded notification list for the dropdown panel, which only opens on demand. */
 export async function getNotifications(limit = 30): Promise<AppNotification[]> {
+	if (validateLimit(limit, NOTIFICATIONS_PAGE_SIZE) === null)
+		throw new Error('Invalid notifications limit');
 	return readNotifications(limit);
 }
 
@@ -23,6 +27,7 @@ export async function getUnreadCount(): Promise<number> {
 }
 
 export async function markNotificationRead(id: string): Promise<void> {
+	if (validateUUID(id) === null) throw new Error('Invalid notification ID');
 	const { supabase, userId } = await getAuthenticatedUser();
 	const { error } = await supabase
 		.from('notifications')
@@ -34,6 +39,7 @@ export async function markNotificationRead(id: string): Promise<void> {
 	revalidateLocalizedAfterResponse(['/notifications']);
 }
 
+/** Marks every notification seen; the caller marks the rows it has listed, so nothing but the write travels. */
 export async function markAllNotificationsRead(): Promise<void> {
 	const { supabase, userId } = await getAuthenticatedUser();
 	const { error } = await supabase
@@ -46,6 +52,7 @@ export async function markAllNotificationsRead(): Promise<void> {
 }
 
 export async function deleteNotification(id: string): Promise<void> {
+	if (validateUUID(id) === null) throw new Error('Invalid notification ID');
 	const { supabase, userId } = await getAuthenticatedUser();
 	const { error } = await supabase
 		.from('notifications')
