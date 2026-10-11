@@ -1,62 +1,46 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, use } from 'react';
 import Link from 'next/link';
 import { Bell, CheckCheck } from 'lucide-react';
 import { NotificationItem } from '@/components/notifications/NotificationItem';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { useNotifications } from '@/components/notifications/NotificationsProvider';
-import { getNotifications } from '@/app/actions/notifications';
-import { reportSwallowed } from '@/lib/report';
+import { useNotificationActions } from '@/hooks/useNotificationActions';
+import { useNotificationChanges } from '@/lib/stores/notifications';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 import type { AppNotification } from '@/types/notifications';
 
 interface NotificationPanelProps {
+	notifications: Promise<AppNotification[]>;
 	onClose: () => void;
 }
 
-export function NotificationPanel({ onClose }: NotificationPanelProps) {
+function PanelItems({ notifications, onClose }: NotificationPanelProps) {
+	const { t } = useTranslation();
+	const items = useNotificationChanges(use(notifications));
+	const { markRead, remove } = useNotificationActions();
+
+	if (items.length === 0)
+		return <EmptyState icon={Bell} message={t.notifications.empty} />;
+
+	return items.map((n) => (
+		<NotificationItem
+			key={n.id}
+			notification={n}
+			onClick={onClose}
+			onMarkRead={markRead}
+			onDelete={remove}
+		/>
+	));
+}
+
+export function NotificationPanel({
+	notifications,
+	onClose,
+}: NotificationPanelProps) {
 	const { t, lang } = useTranslation();
-	const { markRead, remove, markAllRead } = useNotifications();
-	const [items, setItems] = useState<AppNotification[] | null>(null);
-
-	useEffect(() => {
-		getNotifications(8)
-			.then(setItems)
-			.catch((error) => {
-				reportSwallowed('notifications:panel', error);
-				setItems([]);
-			});
-	}, []);
-
-	const handleMarkRead = (n: AppNotification) => {
-		markRead(n);
-		setItems(
-			(prev) =>
-				prev?.map((x) =>
-					x.id === n.id
-						? { ...x, readAt: new Date().toISOString() }
-						: x
-				) ?? null
-		);
-	};
-
-	const handleDelete = (n: AppNotification) => {
-		remove(n);
-		setItems((prev) => prev?.filter((x) => x.id !== n.id) ?? null);
-	};
-
-	const handleMarkAllRead = () => {
-		markAllRead();
-		setItems(
-			(prev) =>
-				prev?.map((x) => ({
-					...x,
-					readAt: x.readAt ?? new Date().toISOString(),
-				})) ?? null
-		);
-	};
+	const { markAllRead } = useNotificationActions();
 
 	return (
 		<div className="w-80 max-w-[calc(100vw-2rem)] p-2">
@@ -65,7 +49,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
 					{t.notifications.title}
 				</span>
 				<button
-					onClick={handleMarkAllRead}
+					onClick={markAllRead}
 					className="flex cursor-pointer items-center gap-1 text-xs text-muted transition-colors hover:text-text"
 				>
 					<CheckCheck className="h-3.5 w-3.5" />
@@ -74,18 +58,12 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
 			</div>
 
 			<div className="max-h-[60vh] space-y-0.5 overflow-y-auto">
-				{items && items.length === 0 && (
-					<EmptyState icon={Bell} message={t.notifications.empty} />
-				)}
-				{items?.map((n) => (
-					<NotificationItem
-						key={n.id}
-						notification={n}
-						onClick={onClose}
-						onMarkRead={handleMarkRead}
-						onDelete={handleDelete}
+				<Suspense fallback={null}>
+					<PanelItems
+						notifications={notifications}
+						onClose={onClose}
 					/>
-				))}
+				</Suspense>
 			</div>
 
 			<Link

@@ -22,7 +22,7 @@ import {
 import { useMediaHeader } from '@/lib/stores/media-header';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
-import { NotificationsProvider } from '@/components/notifications/NotificationsProvider';
+import { NotificationsSync } from '@/components/notifications/NotificationsSync';
 import { RealtimeUserSync } from '@/components/sync/RealtimeUserSync';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import type { NavbarUser } from '@/types/components';
@@ -109,7 +109,13 @@ export function NavbarClient({
 									{user ? (
 										<>
 											<SearchModal key={pathname} />
-											<NotificationBell variant="mobile" />
+											<NotificationBell
+												variant="mobile"
+												userId={user.id}
+												initialUnreadCount={
+													initialUnreadCount
+												}
+											/>
 										</>
 									) : (
 										<div className="flex gap-2">
@@ -170,7 +176,13 @@ export function NavbarClient({
 								{user ? (
 									<div className="flex items-center gap-4">
 										<SearchModal key={pathname} />
-										<NotificationBell variant="desktop" />
+										<NotificationBell
+											variant="desktop"
+											userId={user.id}
+											initialUnreadCount={
+												initialUnreadCount
+											}
+										/>
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
 												<Button
@@ -330,15 +342,18 @@ export function NavbarClient({
 		</>
 	);
 
-	return user ? (
-		<NotificationsProvider
-			userId={user.id}
-			initialUnreadCount={initialUnreadCount}
-		>
-			<RealtimeUserSync userId={user.id} />
+	return (
+		<>
+			{user && (
+				<>
+					<NotificationsSync
+						userId={user.id}
+						initialUnreadCount={initialUnreadCount}
+					/>
+					<RealtimeUserSync userId={user.id} />
+				</>
+			)}
 			{content}
-		</NotificationsProvider>
-	) : (
-		content
+		</>
 	);
 }

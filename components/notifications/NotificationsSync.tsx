@@ -1,108 +1,45 @@
 'use client';
 
-import {
-	createContext,
-	useContext,
-	useEffect,
-	useState,
-	useCallback,
-	type ReactNode,
-} from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { withRealtimeClient } from '@/lib/supabase/lazy-client';
-import {
-	deleteNotification,
-	getUnreadCount,
-	markAllNotificationsRead,
-	markNotificationRead,
-} from '@/app/actions/notifications';
 import { NotificationToast } from '@/components/notifications/NotificationToast';
+import { refreshUnreadCount } from '@/components/notifications/requests';
 import { resolveAvatarUrl } from '@/lib/avatar';
 import { rowToAppNotification, notificationMessage } from '@/lib/notifications';
 import { promptStore } from '@/lib/prompts/store';
 import { reportSwallowed } from '@/lib/report';
+import {
+	notificationsStore,
+	useUnreadNotifications,
+} from '@/lib/stores/notifications';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 import type { AppNotification } from '@/types/notifications';
 
-interface NotificationsContextValue {
-	unreadCount: number;
-	refresh: () => Promise<void>;
-	markRead: (notification: AppNotification) => void;
-	remove: (notification: AppNotification) => void;
-	markAllRead: () => void;
-}
-
-const NotificationsContext = createContext<NotificationsContextValue>({
-	unreadCount: 0,
-	refresh: async () => {},
-	markRead: () => {},
-	remove: () => {},
-	markAllRead: () => {},
-});
-
-interface ProviderProps {
+interface NotificationsSyncProps {
 	userId: string;
 	initialUnreadCount: number;
-	children: ReactNode;
 }
 
 type NotificationRow = Parameters<typeof rowToAppNotification>[0] & {
 	sender_id?: string;
 };
 
-export function NotificationsProvider({
+/** Keeps the unread count live (seed, app icon badge, resync on tab return, realtime) and toasts incoming notifications; renders nothing. */
+export function NotificationsSync({
 	userId,
 	initialUnreadCount,
-	children,
-}: ProviderProps) {
+}: NotificationsSyncProps) {
 	const { t, lang } = useTranslation();
 	const router = useRouter();
-	const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+	const unreadCount = useUnreadNotifications(initialUnreadCount, userId);
 
-	const refresh = useCallback(async () => {
-		try {
-			setUnreadCount(await getUnreadCount());
-		} catch (error) {
-			reportSwallowed('notifications:refresh', error);
-		}
-	}, []);
-
-	const settle = useCallback(
-		(label: string, action: Promise<void>) => {
-			void action.catch((error) => {
-				reportSwallowed(label, error);
-				void refresh();
-			});
-		},
-		[refresh]
-	);
-
-	const markRead = useCallback(
-		(notification: AppNotification) => {
-			if (notification.readAt) return;
-			setUnreadCount((c) => Math.max(0, c - 1));
-			settle(
-				'notifications:markRead',
-				markNotificationRead(notification.id)
-			);
-		},
-		[settle]
-	);
-
-	const remove = useCallback(
-		(notification: AppNotification) => {
-			if (!notification.readAt) setUnreadCount((c) => Math.max(0, c - 1));
-			settle('notifications:delete', deleteNotification(notification.id));
-		},
-		[settle]
-	);
-
-	const markAllRead = useCallback(() => {
-		setUnreadCount(0);
-		settle('notifications:markAllRead', markAllNotificationsRead());
-	}, [settle]);
+	useEffect(() => {
+		notificationsStore.adopt(userId);
+		notificationsStore.setUnreadCount(initialUnreadCount, userId);
+	}, [userId, initialUnreadCount]);
 
 	useEffect(() => {
 		if (!('setAppBadge' in navigator)) return;
@@ -117,12 +54,13 @@ export function NotificationsProvider({
 
 	useEffect(() => {
 		function resyncWhenVisible() {
-			if (document.visibilityState === 'visible') void refresh();
+			if (document.visibilityState === 'visible')
+				void refreshUnreadCount();
 		}
 		document.addEventListener('visibilitychange', resyncWhenVisible);
 		return () =>
 			document.removeEventListener('visibilitychange', resyncWhenVisible);
-	}, [refresh]);
+	}, []);
 
 	useEffect(
 		() =>
@@ -151,10 +89,6 @@ export function NotificationsProvider({
 					));
 				}
 
-				/**
-				 * The realtime payload carries `sender_id`, never the picture, so the avatar costs one
-				 * extra read — spent only on the notifications that actually show a face.
-				 */
 				async function resolveSenderAvatar(
 					row: NotificationRow
 				): Promise<string | null> {
@@ -180,7 +114,7 @@ export function NotificationsProvider({
 							filter: `user_id=eq.${userId}`,
 						},
 						(payload) => {
-							void refresh();
+							void refreshUnreadCount();
 							const row = payload.new as NotificationRow;
 							if (row.type === 'friend_request')
 								promptStore.requestPush();
@@ -208,21 +142,11 @@ export function NotificationsProvider({
 							table: 'notifications',
 							filter: `user_id=eq.${userId}`,
 						},
-						() => void refresh()
-					)
-					.on(
-						'postgres_changes',
-						{
-							event: 'DELETE',
-							schema: 'public',
-							table: 'notifications',
-							filter: `user_id=eq.${userId}`,
-						},
-						() => void refresh()
+						() => void refreshUnreadCount()
 					)
 					.subscribe((status) => {
 						if (status !== 'SUBSCRIBED') return;
-						if (hasJoinedOnce) void refresh();
+						if (hasJoinedOnce) void refreshUnreadCount();
 						hasJoinedOnce = true;
 					});
 
@@ -230,26 +154,8 @@ export function NotificationsProvider({
 					void supabase.removeChannel(channel);
 				};
 			}),
-		[
-			userId,
-			refresh,
-			router,
-			lang,
-			t.notifications.templates,
-			t.notifications.open,
-		]
+		[userId, router, lang, t.notifications.templates, t.notifications.open]
 	);
 
-	return (
-		<NotificationsContext.Provider
-			value={{ unreadCount, refresh, markRead, remove, markAllRead }}
-		>
-			{children}
-		</NotificationsContext.Provider>
-	);
-}
-
-/** Access notification badge state and actions. Must be inside NotificationsProvider. */
-export function useNotifications() {
-	return useContext(NotificationsContext);
+	return null;
 }
