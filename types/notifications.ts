@@ -23,6 +23,12 @@ export interface AppNotification {
 	createdAt: string;
 }
 
+/** An optimistic write already shown on screen: `undo` reverts it without any request; `confirm`, when present, completes it once the server accepted it. */
+export interface OptimisticChange {
+	confirm?: () => void;
+	undo: () => void;
+}
+
 export interface NotificationPreferences {
 	friend_requests: boolean;
 	friend_accepted: boolean;

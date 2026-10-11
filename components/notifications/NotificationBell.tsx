@@ -10,9 +10,11 @@ import {
 	PopoverContent,
 } from '@/components/ui/popover';
 import { NotificationPanel } from '@/components/notifications/NotificationPanel';
-import { useNotifications } from '@/components/notifications/NotificationsProvider';
+import { loadPanelNotifications } from '@/components/notifications/requests';
+import { useUnreadNotifications } from '@/lib/stores/notifications';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
+import type { AppNotification } from '@/types/notifications';
 
 function Badge({ count }: { count: number }) {
 	if (count <= 0) return null;
@@ -23,14 +25,28 @@ function Badge({ count }: { count: number }) {
 	);
 }
 
+interface NotificationBellProps {
+	variant: 'desktop' | 'mobile';
+	userId: string;
+	initialUnreadCount: number;
+}
+
 export function NotificationBell({
 	variant,
-}: {
-	variant: 'desktop' | 'mobile';
-}) {
+	userId,
+	initialUnreadCount,
+}: NotificationBellProps) {
 	const { t, lang } = useTranslation();
-	const { unreadCount } = useNotifications();
+	const unreadCount = useUnreadNotifications(initialUnreadCount, userId);
 	const [open, setOpen] = useState(false);
+	const [notifications, setNotifications] = useState<Promise<
+		AppNotification[]
+	> | null>(null);
+
+	function handleOpenChange(nextOpen: boolean) {
+		if (nextOpen) setNotifications(loadPanelNotifications());
+		setOpen(nextOpen);
+	}
 
 	if (variant === 'mobile') {
 		return (
@@ -50,7 +66,7 @@ export function NotificationBell({
 	}
 
 	return (
-		<Popover open={open} onOpenChange={setOpen}>
+		<Popover open={open} onOpenChange={handleOpenChange}>
 			<PopoverTrigger asChild>
 				<Button
 					variant="ghost"
@@ -63,7 +79,12 @@ export function NotificationBell({
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent>
-				<NotificationPanel onClose={() => setOpen(false)} />
+				{notifications && (
+					<NotificationPanel
+						notifications={notifications}
+						onClose={() => setOpen(false)}
+					/>
+				)}
 			</PopoverContent>
 		</Popover>
 	);

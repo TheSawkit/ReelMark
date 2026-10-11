@@ -526,6 +526,26 @@ a {
 			animation-range: entry 0% entry 70%;
 		}
 	}
+
+	/* Une opacité animée sur un ancêtre coupe un élément en verre de l'image peinte derrière lui :
+	   son `backdrop-filter` n'a plus rien à flouter. Les boutons du héros perdaient leur flou au
+	   défilement sur iPhone (fondu du conteneur), et ne l'avaient jamais dans Chrome (fondu
+	   d'entrée, même terminé). Un bloc qui contient du verre bouge donc sans fondu. */
+	:is(.hero-rise, .hero-scroll-fade):has(
+		.glass-surface,
+		.glass-bar,
+		.glass-popover,
+		.glass-overlay,
+		.glass-overlay-button
+	) {
+		&.hero-rise {
+			animation-name: heroRiseDrift;
+		}
+
+		&.hero-scroll-fade {
+			animation-name: heroScrollDrift;
+		}
+	}
 }
 
 @keyframes heroSettle {
@@ -547,6 +567,22 @@ a {
 	to {
 		opacity: 1;
 		transform: none;
+	}
+}
+
+@keyframes heroRiseDrift {
+	from {
+		transform: translateY(16px);
+	}
+
+	to {
+		transform: none;
+	}
+}
+
+@keyframes heroScrollDrift {
+	to {
+		transform: translateY(-32px);
 	}
 }
 

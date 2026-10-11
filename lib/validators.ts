@@ -113,6 +113,12 @@ export function validateUUID(value: unknown): string | null {
 	return value;
 }
 
+/** A page size between 1 and `max`, or null — keeps a client from asking a Server Action for an unbounded list. */
+export function validateLimit(value: unknown, max: number): number | null {
+	if (typeof value !== 'number' || !Number.isInteger(value)) return null;
+	return value >= 1 && value <= max ? value : null;
+}
+
 export function validateRegion(region: unknown): Region | null {
 	if (typeof region !== 'string') return null;
 	const upper = region.toUpperCase() as Region;

@@ -11,6 +11,9 @@ import {
 } from '@/types/notifications';
 import { reportSwallowed } from '@/lib/report';
 
+/** How many notifications the notifications page lists; the bell panel shows a subset of the same newest rows. */
+export const NOTIFICATIONS_PAGE_SIZE = 50;
+
 const NOTIFICATION_COLUMNS =
 	'id, type, sender_id, sender_username, media_id, media_type, media_title, poster_path, season_number, episode_number, url, read_at, created_at';
 

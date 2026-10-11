@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createInFlightGuard } from '@/lib/in-flight-guard';
+import { coalesceInFlight, createInFlightGuard } from '@/lib/in-flight-guard';
 
 function deferred<T>() {
 	let resolve!: (value: T) => void;
@@ -84,5 +84,136 @@ describe('createInFlightGuard', () => {
 		expect(await third).toBeUndefined();
 		await first;
 		expect(calls).toBe(1);
+	});
+});
+
+describe('coalesceInFlight', () => {
+	const flush = () => new Promise((resolve) => setTimeout(resolve));
+
+	it('answers a burst of calls with the run in flight plus one more run', async () => {
+		const runs = [deferred<void>(), deferred<void>()];
+		let calls = 0;
+		const refresh = coalesceInFlight(() => runs[calls++]!.promise);
+
+		const first = refresh();
+		await flush();
+		void refresh();
+		void refresh();
+		void refresh();
+		expect(calls).toBe(1);
+
+		runs[0]!.resolve();
+		await flush();
+		expect(calls).toBe(2);
+
+		runs[1]!.resolve();
+		await first;
+		expect(calls).toBe(2);
+	});
+
+	it('lets calls made before the run starts share that run', async () => {
+		let calls = 0;
+		const refresh = coalesceInFlight(async () => {
+			calls++;
+		});
+
+		await Promise.all([refresh(), refresh(), refresh()]);
+
+		expect(calls).toBe(1);
+	});
+
+	it('does not rerun when nothing was asked meanwhile', async () => {
+		let calls = 0;
+		const refresh = coalesceInFlight(async () => {
+			calls++;
+		});
+
+		await refresh();
+		await refresh();
+
+		expect(calls).toBe(2);
+	});
+
+	it('settles a caller who arrived mid-run only after a run that started after its call', async () => {
+		const runs = [deferred<void>(), deferred<void>()];
+		let calls = 0;
+		const refresh = coalesceInFlight(() => runs[calls++]!.promise);
+
+		void refresh();
+		await flush();
+		let lateCallerSettled = false;
+		const late = refresh().then(() => {
+			lateCallerSettled = true;
+		});
+
+		runs[0]!.resolve();
+		await flush();
+		expect(calls).toBe(2);
+		expect(lateCallerSettled).toBe(false);
+
+		runs[1]!.resolve();
+		await late;
+		expect(lateCallerSettled).toBe(true);
+	});
+
+	it('gives a call made during the rerun a run of its own', async () => {
+		const runs = [deferred<void>(), deferred<void>(), deferred<void>()];
+		let calls = 0;
+		const refresh = coalesceInFlight(() => runs[calls++]!.promise);
+
+		void refresh();
+		await flush();
+		void refresh();
+		runs[0]!.resolve();
+		await flush();
+		expect(calls).toBe(2);
+
+		void refresh();
+		runs[1]!.resolve();
+		await flush();
+		expect(calls).toBe(3);
+		runs[2]!.resolve();
+	});
+
+	it('accepts new calls after a run rejected', async () => {
+		let calls = 0;
+		const refresh = coalesceInFlight(() =>
+			calls++ === 0
+				? Promise.reject(new Error('boom'))
+				: Promise.resolve()
+		);
+
+		await expect(refresh()).rejects.toThrow('boom');
+		await expect(refresh()).resolves.toBeUndefined();
+		expect(calls).toBe(2);
+	});
+
+	it('keeps working after a task that throws synchronously', async () => {
+		let calls = 0;
+		const refresh = coalesceInFlight(() => {
+			calls++;
+			if (calls === 1) throw new Error('sync');
+			return Promise.resolve();
+		});
+
+		await expect(refresh()).rejects.toThrow('sync');
+		await expect(refresh()).resolves.toBeUndefined();
+		expect(calls).toBe(2);
+	});
+
+	it('still runs the rerun asked for while a run was failing', async () => {
+		const runs = [deferred<void>(), deferred<void>()];
+		let calls = 0;
+		const refresh = coalesceInFlight(() => runs[calls++]!.promise);
+
+		const pending = refresh();
+		await flush();
+		void refresh();
+		runs[0]!.reject(new Error('boom'));
+		await flush();
+		expect(calls).toBe(2);
+
+		runs[1]!.resolve();
+		await expect(pending).resolves.toBeUndefined();
 	});
 });

@@ -65,7 +65,8 @@ Voir [`DEPLOYMENT.md`](../DEPLOYMENT.md) pour le runbook complet. Les trois pann
 ### Notifications / push
 
 - **Aucun push reçu sur un appareil** → vérifier que l'appareil a une ligne dans `push_subscriptions` (endpoint `fcm.googleapis.com` = Chrome/Android, `web.push.apple.com` = iOS installé). Brave refuse l'abonnement (`AbortError: push service error`) tant que « Utiliser les services Google pour la messagerie push » est désactivé ; les réglages l'affichent désormais.
-- **Badge de la cloche faux** → le compteur vit dans `NotificationsProvider` et se resynchronise au retour visible de l'app et à chaque reconnexion realtime. Ne pas compter sur l'événement realtime `DELETE` : Supabase ne le filtre que si la table est en `replica identity full`.
+- **Badge de la cloche faux** → le compteur vit dans `lib/stores/notifications.ts` : estimation locale (−1 au clic, rendue si l'écriture échoue) écrasée par chaque relecture serveur. `NotificationsSync` relit (`refreshUnreadCount`) à chaque INSERT/UPDATE realtime, à chaque reconnexion et au retour visible de l'app. Supabase ne livre **jamais** un événement realtime `DELETE` filtré (« Delete events are not filterable », doc Postgres Changes, section Limitations) : une suppression relit donc le compte elle-même (`useNotificationActions`).
+- **Un bouton de la page `/notifications` ne fait rien côté serveur** → la page et la cloche sont dans deux branches du layout : leur état partagé passe par le store, jamais par un contexte posé autour de la navbar (cause du bug d'octobre 2026 : valeur par défaut no-op, aucune Server Action envoyée).
 - **Une notification disparaît de la cloche** → seuls « Marquer comme vu » et la suppression la sortent des non-lues ; l'ouvrir ne la marque pas.
 
 ### Quota Supabase
