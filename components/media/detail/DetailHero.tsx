@@ -8,6 +8,7 @@ import { useBannerHeader } from '@/hooks/useBannerHeader';
 import { riseStyle } from '@/lib/motion';
 import { NavbarGradient } from '@/components/navigation/NavbarGradient';
 import { CinematicBackdrop } from '@/components/media/detail/CinematicBackdrop';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 interface DetailHeroProps {
 	title: string;
@@ -20,6 +21,7 @@ interface DetailHeroProps {
 	meta: ReactNode;
 	genres?: { id: number; name: string }[];
 	actions?: ReactNode;
+	share?: { path: string; title: string };
 }
 
 /**
@@ -38,6 +40,7 @@ export function DetailHero({
 	meta,
 	genres,
 	actions,
+	share,
 }: DetailHeroProps) {
 	const bottomRef = useBannerHeader(title);
 	const dominantColor = useDominantColor(getColorSampleUrl(backdropUrl));
@@ -52,7 +55,16 @@ export function DetailHero({
 			/>
 
 			<div className="hero-scroll-fade relative z-10 container mx-auto px-6 lg:px-12">
-				<div className="mb-8 flex max-lg:hidden">{backControl}</div>
+				<div className="mb-8 flex items-center justify-between max-lg:hidden">
+					{backControl}
+					{share && (
+						<ShareButton
+							variant="hero"
+							path={share.path}
+							title={share.title}
+						/>
+					)}
+				</div>
 
 				<div className="flex flex-col items-center gap-8 text-center md:flex-row md:items-end md:text-left">
 					<div className="hero-rise relative aspect-2/3 w-48 lg:w-56 shrink-0 overflow-hidden rounded-lg border-2 border-gold/30 shadow-poster max-md:hidden">
@@ -102,10 +114,18 @@ export function DetailHero({
 						{actions ? (
 							<div
 								ref={bottomRef}
-								className="hero-rise mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center"
+								className="hero-rise mt-2 flex w-full flex-wrap items-center gap-3 sm:w-auto"
 								style={riseStyle(4)}
 							>
 								{actions}
+								{share && (
+									<ShareButton
+										variant="hero"
+										path={share.path}
+										title={share.title}
+										className="lg:hidden"
+									/>
+								)}
 							</div>
 						) : (
 							<div ref={bottomRef} aria-hidden />

@@ -23,7 +23,8 @@ export function DetailBannerSkeleton({
 	return (
 		<Skeleton className="hero-stage relative isolate w-full flex flex-col justify-end overflow-hidden banner-pull-top banner-safe-pad pb-8 sm:pb-12 rounded-none">
 			<div className="relative z-10 container mx-auto px-6 lg:px-12">
-				<div className="mb-8 flex max-lg:hidden">
+				<div className="mb-8 flex items-center justify-between max-lg:hidden">
+					<div className="h-11 w-11 rounded-full bg-surface-3" />
 					<div className="h-11 w-11 rounded-full bg-surface-3" />
 				</div>
 				<div className="flex flex-col items-center gap-8 md:flex-row md:items-end">
@@ -48,12 +49,13 @@ export function DetailBannerSkeleton({
 						{actions ? (
 							<>
 								<div className="h-5 w-40 rounded bg-surface-3" />
-								<div className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+								<div className="mt-2 flex w-full flex-wrap items-center gap-3 sm:w-auto">
 									<div className="h-12 w-full sm:w-44 rounded-xl bg-surface-3" />
-									<div className="flex gap-2">
+									<div className="flex min-w-0 flex-auto gap-2 sm:flex-none">
 										<div className="h-11 flex-1 sm:w-36 rounded-full bg-surface-3" />
 										<div className="h-11 flex-1 sm:w-36 rounded-full bg-surface-3" />
 									</div>
+									<div className="h-11 w-11 shrink-0 rounded-full bg-surface-3 lg:hidden" />
 								</div>
 							</>
 						) : (
@@ -86,7 +88,7 @@ export function WatchActionsSkeleton({
 	}
 
 	return (
-		<div className="flex w-full gap-2 sm:w-auto">
+		<div className="flex min-w-0 flex-auto gap-2 sm:flex-none">
 			<Skeleton className="h-11 flex-1 sm:w-40 sm:flex-none rounded-full" />
 			<Skeleton className="h-11 flex-1 sm:w-40 sm:flex-none rounded-full" />
 		</div>

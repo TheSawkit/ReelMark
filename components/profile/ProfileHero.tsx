@@ -14,6 +14,8 @@ import type { UserProfile } from '@/types/profile';
 import { useTranslation } from '@/lib/i18n/context';
 import { localizedHref } from '@/lib/i18n/utils';
 import { useBrokenImage } from '@/hooks/useBrokenImage';
+import { ShareButton } from '@/components/shared/ShareButton';
+import { SHARE_PATH } from '@/lib/share';
 
 interface IconProps {
 	className?: string;
@@ -217,7 +219,7 @@ export function ProfileHero({
 				</div>
 
 				<div
-					className="hero-rise flex flex-wrap gap-2 sm:pb-1"
+					className="hero-rise flex flex-wrap items-center justify-center gap-2 sm:pb-1"
 					style={riseStyle(4)}
 				>
 					{isOwnProfile ? (
@@ -229,6 +231,11 @@ export function ProfileHero({
 					) : (
 						friendshipButton
 					)}
+					<ShareButton
+						variant="outline"
+						path={SHARE_PATH.profile(profile.username)}
+						title={displayName}
+					/>
 				</div>
 			</div>
 		</section>

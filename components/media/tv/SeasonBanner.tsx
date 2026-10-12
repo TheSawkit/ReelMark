@@ -11,6 +11,7 @@ import { ProgressBar } from '@/components/shared/ProgressBar';
 import { SeasonWatchButton } from '@/components/media/tv/SeasonWatchButton';
 import { useSeasonWatch } from '@/lib/stores/episode-watch';
 import { SeasonSwitcher } from '@/components/media/tv/SeasonSwitcher';
+import { SHARE_PATH } from '@/lib/share';
 import type { SeasonOption } from '@/lib/seasons';
 
 interface SeasonBannerProps {
@@ -68,6 +69,10 @@ export function SeasonBanner({
 			backdropUrl={backdropUrl}
 			posterPath={posterPath}
 			genres={genres}
+			share={{
+				path: SHARE_PATH.season(tvId, seasonNumber),
+				title: `${tvName} — ${seasonName}`,
+			}}
 			backControl={
 				<Link
 					href={showHref}
@@ -105,7 +110,7 @@ export function SeasonBanner({
 						watchedCount={watchedCount}
 					/>
 					{liveCount > 0 && (
-						<div className="flex items-center gap-3 px-4 py-2 rounded-full glass-surface shadow-card-sm">
+						<div className="flex flex-auto items-center justify-between gap-3 px-4 py-2 rounded-full glass-surface shadow-card-sm sm:flex-none">
 							<span className="text-xs uppercase tracking-wider font-bold text-muted">
 								{liveCount}/{totalEpisodes} {t.movie.episodes}
 							</span>

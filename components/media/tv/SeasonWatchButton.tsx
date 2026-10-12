@@ -69,7 +69,7 @@ export function SeasonWatchButton({
 			onClick={() => toggle(!allWatched)}
 			disabled={loading}
 			className={cn(
-				'flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold sm:w-auto',
+				'flex min-h-11 min-w-0 flex-auto items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold sm:flex-none',
 				'transition active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
 				allWatched
 					? 'border-gold/40 bg-gold/15 text-gold'

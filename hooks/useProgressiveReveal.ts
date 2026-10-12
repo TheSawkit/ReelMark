@@ -30,6 +30,11 @@ export function useProgressiveReveal(
 	}, [isLoaderVisible, hasMore, pageSize]);
 
 	const reset = useCallback(() => setVisibleCount(pageSize), [pageSize]);
+	const revealAtLeast = useCallback(
+		(count: number) =>
+			setVisibleCount((current) => Math.max(current, count)),
+		[]
+	);
 
-	return { visibleCount, hasMore, loaderRef, reset };
+	return { visibleCount, hasMore, loaderRef, reset, revealAtLeast };
 }
