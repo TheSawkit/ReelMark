@@ -8,6 +8,7 @@ import { formatDate, formatRuntime } from '@/lib/format';
 import { EpisodeWatchButton } from '@/components/media/tv/EpisodeWatchButton';
 import { EpisodeRating } from '@/components/media/tv/EpisodeRating';
 import { ReviewsList } from '@/components/media/reviews/ReviewsList';
+import { ShareButton } from '@/components/shared/ShareButton';
 import {
 	Dialog,
 	DialogContent,
@@ -16,6 +17,7 @@ import {
 	DialogDescription,
 } from '@/components/ui/dialog';
 import { useTranslation } from '@/lib/i18n/context';
+import { SHARE_PATH, episodeAnchorId } from '@/lib/share';
 import { cn } from '@/lib/utils';
 import type { Episode } from '@/types/tmdb';
 import type { PublicReview, Review } from '@/types/profile';
@@ -69,8 +71,9 @@ export function EpisodeCard({
 
 	return (
 		<div
+			id={episodeAnchorId(episode.episode_number)}
 			className={cn(
-				'relative flex flex-col overflow-hidden bg-surface-2 border border-border rounded-poster transition-colors duration-(--duration-base) hover:shadow-glow-gold shadow-card group focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
+				'relative flex flex-col overflow-hidden scroll-mt-24 bg-surface-2 border border-border rounded-poster transition-colors duration-(--duration-base) hover:shadow-glow-gold shadow-card group focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
 				isWatched
 					? 'border-primary/40'
 					: 'hover:border-gold/40 hover:border-t-gold/60'
@@ -160,13 +163,24 @@ export function EpisodeCard({
 						) : (
 							<div />
 						)}
-						<EpisodeWatchButton
-							tvId={tvId}
-							seasonNumber={seasonNumber}
-							episodeNumber={episode.episode_number}
-							totalEpisodes={totalEpisodes}
-							initialWatched={isWatched}
-						/>
+						<div className="flex items-center gap-2">
+							<ShareButton
+								variant="card"
+								path={SHARE_PATH.episode(
+									tvId,
+									seasonNumber,
+									episode.episode_number
+								)}
+								title={episode.name}
+							/>
+							<EpisodeWatchButton
+								tvId={tvId}
+								seasonNumber={seasonNumber}
+								episodeNumber={episode.episode_number}
+								totalEpisodes={totalEpisodes}
+								initialWatched={isWatched}
+							/>
+						</div>
 					</div>
 				</div>
 			</div>

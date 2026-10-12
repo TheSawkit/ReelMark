@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
 import { EpisodeCard } from '@/components/media/tv/EpisodeCard';
 import { episodeWatchStore } from '@/lib/stores/episode-watch';
 import { useProgressiveReveal } from '@/hooks/useProgressiveReveal';
 import { useTranslation } from '@/lib/i18n/context';
+import { episodeAnchorId, episodeNumberFromHash } from '@/lib/share';
 import type { Episode } from '@/types/tmdb';
 import type { PublicReview, Review } from '@/types/profile';
 
@@ -37,11 +38,30 @@ export function SeasonEpisodesList({
 	labels,
 }: SeasonEpisodesListProps) {
 	const { t } = useTranslation();
-	const { visibleCount, hasMore, loaderRef } = useProgressiveReveal(
-		episodes.length,
-		EPISODES_PAGE_SIZE
-	);
+	const { visibleCount, hasMore, loaderRef, revealAtLeast } =
+		useProgressiveReveal(episodes.length, EPISODES_PAGE_SIZE);
 	const watched = new Set(watchedEpisodeNumbers);
+	const linkedEpisode = useRef<number | null>(null);
+
+	useEffect(() => {
+		const linked = episodeNumberFromHash(window.location.hash);
+		const position = episodes.findIndex(
+			(episode) => episode.episode_number === linked
+		);
+		if (position < 0) return;
+		linkedEpisode.current = linked;
+		revealAtLeast(position + 1);
+	}, [episodes, revealAtLeast]);
+
+	useEffect(() => {
+		if (linkedEpisode.current === null) return;
+		const card = document.getElementById(
+			episodeAnchorId(linkedEpisode.current)
+		);
+		if (!card) return;
+		card.scrollIntoView();
+		linkedEpisode.current = null;
+	}, [visibleCount]);
 
 	useEffect(() => {
 		episodeWatchStore.seed(
