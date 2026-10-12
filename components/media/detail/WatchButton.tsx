@@ -88,7 +88,7 @@ function stateClass(
 ): string {
 	if (variant === 'pill') {
 		return isActive
-			? 'border-gold/40 bg-gold/15 text-gold'
+			? 'glass-tint border-gold/40 bg-gold/15 text-gold'
 			: 'glass-surface border-glass-border text-text hover:bg-glass-bg-hover';
 	}
 	if (isActive) return ACTIVE_SOLID;
