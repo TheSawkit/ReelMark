@@ -533,6 +533,7 @@ a {
 	   d'entrée, même terminé). Un bloc qui contient du verre bouge donc sans fondu. */
 	:is(.hero-rise, .hero-scroll-fade):has(
 		.glass-surface,
+		.glass-tint,
 		.glass-bar,
 		.glass-popover,
 		.glass-overlay,
@@ -657,6 +658,15 @@ a {
 		backdrop-filter: var(--glass-filter);
 		border: 1px solid var(--border);
 		border-top-color: var(--glass-border-hover);
+	}
+
+	/* Le flou du verre sans son fond : pour un bouton posé sur une image qui porte déjà sa propre
+	   teinte translucide (état actif doré, pastille). Sans lui la teinte laisse passer l'image
+	   nette et le libellé devient illisible. Réservé aux singletons, comme tout verre flouté. */
+	.glass-tint {
+		--glass-filter: blur(24px) saturate(150%);
+		-webkit-backdrop-filter: var(--glass-filter);
+		backdrop-filter: var(--glass-filter);
 	}
 
 	/* Chips repeated on every card (rating badge, dismiss button): the glass-overlay tint without

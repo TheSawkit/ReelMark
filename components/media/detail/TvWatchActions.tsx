@@ -60,7 +60,10 @@ export function TvWatchActions({
 				<AbandonShowMenu
 					tvId={mediaId}
 					initialStatus={status}
-					className="h-11 w-11 shrink-0"
+					className={cn(
+						'h-11 w-11 shrink-0',
+						variant === 'banner' && 'glass-tint'
+					)}
 				/>
 			)}
 		</div>
