@@ -38,6 +38,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import { localizedHref } from '@/lib/i18n/utils';
+import { SHARE_PATH } from '@/lib/share';
 import type { MovieDetails } from '@/types/tmdb';
 import type { Language } from '@/lib/i18n/translations';
 
@@ -213,6 +214,7 @@ export default async function MoviePage(props: MoviePageProps) {
 				</Suspense>
 			}
 			genres={movieDetails.genres}
+			sharePath={SHARE_PATH.movie(movieId)}
 			communityBadge={
 				<Suspense fallback={null}>
 					<MovieCommunityBadge movie={movieDetails} />

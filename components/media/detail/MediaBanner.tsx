@@ -17,6 +17,7 @@ export function MediaBanner({
 	genres,
 	actions,
 	communityBadge,
+	sharePath,
 }: MediaBannerProps) {
 	return (
 		<DetailHero
@@ -26,6 +27,7 @@ export function MediaBanner({
 			tagline={tagline}
 			genres={genres}
 			actions={actions}
+			share={{ path: sharePath, title }}
 			backControl={<BackButton />}
 			meta={
 				<>

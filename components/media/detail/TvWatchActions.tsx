@@ -37,7 +37,7 @@ export function TvWatchActions({
 		<div
 			className={cn(
 				'flex items-center gap-2',
-				variant === 'banner' && 'w-full sm:w-auto'
+				variant === 'banner' && 'min-w-0 flex-auto sm:flex-none'
 			)}
 		>
 			<div

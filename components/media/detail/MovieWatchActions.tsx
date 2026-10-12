@@ -74,7 +74,7 @@ export function MovieWatchActions({
 	const watchedDate = isWatched ? (watchedAt ?? sessionWatchedAt) : null;
 
 	return (
-		<div className="flex w-full items-center gap-2 sm:w-auto">
+		<div className="flex min-w-0 flex-auto items-center gap-2 sm:flex-none">
 			{!isWatched && (
 				<WatchButton
 					{...shared}

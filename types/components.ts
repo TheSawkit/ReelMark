@@ -54,6 +54,7 @@ export interface MediaBannerProps {
 	genres?: { id: number; name: string }[];
 	actions?: ReactNode;
 	communityBadge?: ReactNode;
+	sharePath: string;
 }
 
 export interface MediaDescriptionProps {

@@ -43,6 +43,7 @@ import { groupCrew } from '@/lib/crew';
 import { filterAvailableVideos } from '@/lib/youtube';
 import { getServerLocale, getTranslations } from '@/lib/i18n/server';
 import { localizedHref } from '@/lib/i18n/utils';
+import { SHARE_PATH } from '@/lib/share';
 import type { Season, TvShowDetails } from '@/types/tmdb';
 import type { Language } from '@/lib/i18n/translations';
 
@@ -280,6 +281,7 @@ export default async function TvShowPage(props: TvPageProps) {
 				</Suspense>
 			}
 			genres={tvDetails.genres}
+			sharePath={SHARE_PATH.show(tvId)}
 			communityBadge={
 				<Suspense fallback={null}>
 					<TvCommunityBadge show={tvDetails} />
